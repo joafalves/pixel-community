@@ -1,0 +1,19 @@
+/*
+ * This software is available under Apache License
+ * Copyright (c) 2020
+ */
+
+// main project settings:
+rootProject.name = "pixel"
+
+// modules:
+include "modules/commons", "modules/core", "modules/input", "modules/math", "modules/gui", "modules/physics",
+        "modules/examples"
+
+// demos
+include "demos/learning"
+
+rootProject.children.each {
+    it.name = rootProject.name + "-" + it.name.split("/").last()
+    println it.name
+}

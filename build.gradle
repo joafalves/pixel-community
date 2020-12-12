@@ -1,0 +1,120 @@
+/*
+ * This software is available under Apache License
+ * Copyright (c) 2020
+ */
+
+version = "0.5.0"
+
+def lwjglVersion = "3.2.3"
+def buildTarget = System.getenv("BUILD_TARGET")
+if (buildTarget == null) {
+    buildTarget = "all"
+}
+
+println "Build target: '${buildTarget}'"
+
+allprojects {
+    // plugins
+    apply plugin: "java"
+    apply plugin: 'java-library'
+
+    // project version
+    version rootProject.version
+
+    repositories {
+        mavenCentral()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+    }
+
+    dependencies {
+        // lwjgl-general
+        api group: "org.lwjgl", name: "lwjgl", version: lwjglVersion
+        api group: "org.lwjgl", name: "lwjgl-glfw", version: lwjglVersion
+        api group: "org.lwjgl", name: "lwjgl-opengl", version: lwjglVersion
+        api group: "org.lwjgl", name: "lwjgl-openal", version: lwjglVersion
+        api group: "org.lwjgl", name: "lwjgl-stb", version: lwjglVersion
+        api group: "org.lwjgl", name: "lwjgl-nanovg", version: lwjglVersion
+        api group: "org.lwjgl", name: "lwjgl-yoga", version: lwjglVersion
+
+        // lwjgl-macos
+        if (buildTarget == "macos" || buildTarget == "all") {
+            api group: "org.lwjgl", name: "lwjgl", version: lwjglVersion, classifier: "natives-macos"
+            api group: "org.lwjgl", name: "lwjgl-opengl", version: lwjglVersion, classifier: "natives-macos"
+            api group: "org.lwjgl", name: "lwjgl-openal", version: lwjglVersion, classifier: "natives-macos"
+            api group: "org.lwjgl", name: "lwjgl-glfw", version: lwjglVersion, classifier: "natives-macos"
+            api group: "org.lwjgl", name: "lwjgl-stb", version: lwjglVersion, classifier: "natives-macos"
+            api group: "org.lwjgl", name: "lwjgl-nanovg", version: lwjglVersion, classifier: "natives-macos"
+            api group: "org.lwjgl", name: "lwjgl-yoga", version: lwjglVersion, classifier: "natives-macos"
+        }
+
+        // lwjgl-windows
+        if (buildTarget == "windows" || buildTarget == "all") {
+            api group: "org.lwjgl", name: "lwjgl", version: lwjglVersion, classifier: "natives-windows"
+            api group: "org.lwjgl", name: "lwjgl-opengl", version: lwjglVersion, classifier: "natives-windows"
+            api group: "org.lwjgl", name: "lwjgl-openal", version: lwjglVersion, classifier: "natives-windows"
+            api group: "org.lwjgl", name: "lwjgl-glfw", version: lwjglVersion, classifier: "natives-windows"
+            api group: "org.lwjgl", name: "lwjgl-stb", version: lwjglVersion, classifier: "natives-windows"
+            api group: "org.lwjgl", name: "lwjgl-nanovg", version: lwjglVersion, classifier: "natives-windows"
+            api group: "org.lwjgl", name: "lwjgl-yoga", version: lwjglVersion, classifier: "natives-windows"
+        }
+
+        // lwjgl-linux
+        if (buildTarget == "linux" || buildTarget == "all") {
+            api group: "org.lwjgl", name: "lwjgl", version: lwjglVersion, classifier: "natives-linux"
+            api group: "org.lwjgl", name: "lwjgl-opengl", version: lwjglVersion, classifier: "natives-linux"
+            api group: "org.lwjgl", name: "lwjgl-openal", version: lwjglVersion, classifier: "natives-linux"
+            api group: "org.lwjgl", name: "lwjgl-glfw", version: lwjglVersion, classifier: "natives-linux"
+            api group: "org.lwjgl", name: "lwjgl-stb", version: lwjglVersion, classifier: "natives-linux"
+            api group: "org.lwjgl", name: "lwjgl-nanovg", version: lwjglVersion, classifier: "natives-linux"
+            api group: "org.lwjgl", name: "lwjgl-yoga", version: lwjglVersion, classifier: "natives-linux"
+        }
+
+        // lombok
+        compileOnly 'org.projectlombok:lombok:1.18.12'
+        annotationProcessor 'org.projectlombok:lombok:1.18.12'
+
+        // other:
+        testImplementation group: "junit", name: "junit", version: "4.12"
+    }
+
+    // test.onlyIf { Boolean.getBoolean("build.runTests") }
+
+    jar {
+        manifest {
+            attributes(
+                    "Implementation-Title": jar.getArchiveBaseName(),
+                    "Implementation-Version": getArchiveVersion()
+            )
+        }
+    }
+}
+
+javadoc {
+    source = sourceSets.main.allJava
+    classpath = configurations.compile
+}
+
+//def bundleList = rootProject.subprojects.collect { ":" + it.name } // kinda cool but not configurable
+def bundleList = [":pixel-commons", ":pixel-core", ":pixel-gui", ":pixel-input", ":pixel-math"]
+task bundle(type: Jar, dependsOn: bundleList.collect { it + ":compileJava" }) {
+    // bundle jar name
+    archivesBaseName = rootProject.name + "-bundle-" + buildTarget
+    group = "build"
+    // bundle manifest
+    manifest {
+        attributes(
+                "Implementation-Title": getArchiveBaseName(),
+                "Implementation-Version": getArchiveVersion()
+        )
+    }
+    // module output files included in bundle
+    from files(bundleList.collect {
+        project(it).sourceSets.main.output
+    })
+    from {
+        // bundle all sub-dependencies in each project as well:
+        bundleList.collect {
+            project(it).configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+        }
+    }
+}

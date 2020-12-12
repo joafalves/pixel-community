@@ -7,115 +7,94 @@
 ### What is this repository for? ###
 
 This repository contains the Pixel Java Framework and associated modules and dependencies. 
-**At the moment this software is in Development Stage and not ready for production use.** 
+**At the moment this software is in Development Stage and not ready for production use. Feel free to experiment and help this project grow.** 
 
 ### Description ###
 
 The Pixel Framework aims to provide a high performance and lightweight OpenGL (lwjgl-glfw) 2D game development workflow. 
-Directly inspired in existing frameworks such as XNA, this framework it's not strictly imposing and empowers personal development preferences.
+Directly inspired in existing frameworks such as XNA, this framework it's not strictly imposing and enables personal development workflows.
 
-:book: For practical details on how to use this framework, please check our [wiki page]()   
+:book: For practical details on how to use this framework, please check our [wiki page]()  (under construction) 
 
 ### Examples ##
 
-##### Drawing text #####
+Check the :file_folder: demos folder for more examples and development approaches.
+
+##### Drawing a Sprite #####
 
 ```java
-public class SpriteBatchFontGame extends Game {
+public class SingleSpriteDemo extends Game {
 
-    private Font font;
+    private ContentManager content;
     private SpriteBatch spriteBatch;
-    private KeyboardState lastKeyboardState;
 
-    private String text;
+    private Texture spriteTex;
+    private Vector2 spritePos;
+    private Vector2 spriteAnchor;
 
-    /**
-     * Constructor
-     *
-     * @param gameSettings
-     */
-    public SpriteBatchFontGame(GameSettings gameSettings) {
-        super(gameSettings);
+    public SingleSpriteDemo(GameSettings settings) {
+        super(settings);
+        setBackgroundColor(Color.BLACK);
     }
 
-    /**
-     * Load and initialize game assets
-     */
     @Override
     public void load() {
+        // game related changes & definitions
         gameCamera.setOrigin(Vector2.zero());
-        text = "The quick brown fox jumps over the lazy dog\nType something on the keyboard:\n";
+
+        // general game instances
+        content = new ContentManager();
         spriteBatch = new SpriteBatch();
-        setBackgroundColor(Color.BLACK);
 
-        font = new Font("./common/fonts/DejaVuSansMono.ttf", 24, 1);
-        font.setVerticalSpacing(0);
+        // load texture into memory
+        spriteTex = content.load("images/earth-48x48.png", Texture.class);
+
+        // related sprite properties
+        spriteAnchor = Vector2.half();
+        spritePos = new Vector2(getVirtualWidth() / 2f, getVirtualHeight() / 2f);
     }
 
-    /**
-     * Update game logic
-     *
-     * @param delta
-     */
     @Override
-    public void update(double delta) {
-        KeyboardState keyboardState = Keyboard.getState();
-        keyboardState.downKeys().forEach(key -> {
-            // add pressed keys to existing text
-            if (lastKeyboardState != null && lastKeyboardState.isKeyUp(key)) {
-                if (key.equals(Keys.ENTER.getValue())) text += '\n';
-                else text += Character.toString(key);
-            }
-        });
-
-        lastKeyboardState = keyboardState; // update last keyboard info for state comparison on the next cycle
+    public void update(float delta) {
+        // game update logic goes here
     }
 
-    /**
-     * Draw game scene
-     *
-     * @param delta
-     */
     @Override
-    public void draw(double delta) {
-        spriteBatch.begin(gameCamera.getMatrix());
-        spriteBatch.putText(font, text, new Vector2(100, 100), Color.WHITE, 24);
+    public void draw(float delta) {
+        // begin the spritebatch phase:
+        spriteBatch.begin(gameCamera.getViewMatrix(), BlendMode.NORMAL_BLEND);
+
+        // sprite definition for this drawing phase:
+        spriteBatch.draw(spriteTex, spritePos, Color.WHITE, spriteAnchor, 3f);
+
+        // end and draw all sprites stored:
         spriteBatch.end();
-    }
-
-    /**
-     * Dispose game instances
-     */
-    @Override
-    public void dispose() {
-        font.dispose();
-        spriteBatch.dispose();
     }
 }
 ```
 
 ### Project Structure ###
 
-The framework base functions are divided into different modules (bundle will be available including 
-the most demanded features) which can be imported as required.
+The framework functionality is divided into multiple modules which can be imported individually as required.
 
 ##### Root Directory Structure #####
 
     .build/                         # Bundle .jar files (run 'bundle' gradle task)
+    .demos/                         # Feature showroom and learning examples
     .modules/
         ├── commons                 # Common utility classes
         ├── content                 # Resource modules
         ├── core                    # Main module, contains principal classes
-        ├── examples                # Example demos
         ├── gui                     # Graphical interface module
         ├── input                   # Input module
+        ├── physics                 # Physics module
         └── math                    # Math module
     .resources/
         └── images                  # Project resource images
     .build.gradle                   # Gradle build file
     .settings.gradle                # Gradle settings file
     
-##### Module Structure #####
+##### Inner Module Structure #####
 
     .modules/
         └── *module*                 # Presented file structure similar in all modules
@@ -129,13 +108,13 @@ the most demanded features) which can be imported as required.
 
 ### Third-party libs ###
 
-    lwjgl 3.x       (runtime required)
-    org.json 2018+  (runtime required)
-    junit 4.x       (test required)
+    lwjgl 3.x       (runtime)
+    org.json 2018+  (runtime)
+    junit 4.x       (test)
    
 ### Setup Requirements ###
 
-1. Java 8+ (tested up to version 12)
+1. Java 8+ (tested up to version 15)
 2. Gradle 4.x+
 
 ### FAQ ###

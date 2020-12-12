@@ -1,0 +1,14 @@
+/*
+ * This software is available under Apache License
+ * Copyright (c) 2020
+ */
+
+apply plugin: "application"
+
+dependencies {
+    api project(":${rootProject.name}-core")
+    api project(":${rootProject.name}-input")
+    api project(":${rootProject.name}-gui")
+    api project(":${rootProject.name}-physics");
+    api project(":${rootProject.name}-math");
+}

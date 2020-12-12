@@ -1,0 +1,9 @@
+/*
+ * This software is available under Apache License
+ * Copyright (c) 2020
+ */
+
+dependencies {
+    api project(":${rootProject.name}-commons")
+    api project(":${rootProject.name}-math")
+}
