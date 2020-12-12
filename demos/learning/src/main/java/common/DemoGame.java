@@ -14,7 +14,7 @@ public abstract class DemoGame extends Game {
 
     protected final static Logger log = LoggerFactory.getLogger(FpsCounter.class);
 
-    private FpsCounter fpsCounter;
+    private final FpsCounter fpsCounter;
 
     /**
      * Constructor

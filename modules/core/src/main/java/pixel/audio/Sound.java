@@ -10,7 +10,7 @@ import pixel.commons.lifecycle.Disposable;
 
 public class Sound implements Disposable {
 
-    private int sourcePointer;
+    private final int sourcePointer;
     private float gain;
     private float pitch;
 
