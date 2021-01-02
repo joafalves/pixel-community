@@ -19,6 +19,7 @@ public class GameSettings {
     private boolean windowResizable;
     private boolean vsync;
     private boolean debugMode;
+    private boolean idleThrottle;
     private String windowTitle;
     private WindowMode windowMode;
     private Properties clientProperties;
@@ -41,6 +42,7 @@ public class GameSettings {
         this.windowWidth = virtualWidth;
         this.windowHeight = virtualHeight;
         this.windowResizable = false;
+        this.idleThrottle = true;
         this.vsync = true;
         this.windowMode = WindowMode.WINDOWED;
         this.multisampling = 0;
@@ -146,6 +148,14 @@ public class GameSettings {
 
     public void setBackgroundColor(Color backgroundColor) {
         this.backgroundColor = backgroundColor;
+    }
+
+    public boolean isIdleThrottle() {
+        return idleThrottle;
+    }
+
+    public void setIdleThrottle(boolean idleThrottle) {
+        this.idleThrottle = idleThrottle;
     }
 
     //endregion

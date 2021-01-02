@@ -12,7 +12,7 @@ import pixel.core.GameSettings;
 
 public abstract class DemoGame extends Game {
 
-    protected final static Logger log = LoggerFactory.getLogger(FpsCounter.class);
+    protected final static Logger log = LoggerFactory.getLogger(DemoGame.class);
 
     private final FpsCounter fpsCounter;
 

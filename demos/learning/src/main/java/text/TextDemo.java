@@ -80,6 +80,7 @@ public class TextDemo extends DemoGame {
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
+        settings.setDebugMode(true);
 
         Game game = new TextDemo(settings);
         game.start();

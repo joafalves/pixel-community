@@ -91,6 +91,7 @@ public class AnimatedSpriteDemo extends DemoGame {
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
+        settings.setDebugMode(true);
 
         Game game = new AnimatedSpriteDemo(settings);
         game.start();

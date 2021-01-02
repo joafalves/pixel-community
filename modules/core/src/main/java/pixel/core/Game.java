@@ -12,6 +12,9 @@ import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GLUtil;
+import org.lwjgl.system.Callback;
+import org.lwjgl.system.Configuration;
 import org.lwjgl.system.MemoryStack;
 import pixel.commons.lifecycle.Disposable;
 import pixel.commons.lifecycle.Drawable;
@@ -45,24 +48,26 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
     private static final String DEFAULT_WINDOW_ICON_PATH_32 = "images/app-icon@32.png";
     private static final Logger LOG = LoggerFactory.getLogger(Game.class);
 
-    private List<GameWindowEventListener> gameWindowEventListeners;
+    private final List<GameWindowEventListener> gameWindowEventListeners;
 
-    private Color backgroundColor;
-    private String windowTitle;
+    private final Properties clientProperties;
+    private final WindowDimensions windowDimensions;
+    private final String windowTitle;
+    private final boolean windowResizable;
+    private final boolean idleThrottling;
+    private final boolean debugMode;
+    private final int[] audioAttributes = {0};
+    private final int multisampling;
+
     private long windowHnd;
     private long audioDevice;
     private long audioContext;
     private boolean initialized;
-    private boolean windowResizable;
+    private boolean windowFocused;
     private boolean vsyncEnabled;
-    private boolean debugMode;
-    private int multisampling;
-    private int[] audioAttributes = {0};
-
-    private Properties clientProperties;
-    private ALCCapabilities alcCapabilities;
-    private WindowDimensions windowDimensions;
     private WindowMode windowMode;
+    private Color backgroundColor;
+    private Callback debugLocalCallback;
 
     protected Camera2D gameCamera;
 
@@ -80,6 +85,7 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
         this.debugMode = settings.isDebugMode();
         this.windowTitle = settings.getWindowTitle();
         this.windowMode = settings.getWindowMode();
+        this.idleThrottling = settings.isIdleThrottle();
         this.windowDimensions = WindowDimensions.builder()
                 .windowWidth(settings.getWindowWidth())
                 .windowHeight(settings.getWindowHeight())
@@ -133,8 +139,9 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
             glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
         }
 
-        // Default camera
+        // Initial values
         gameCamera = new Camera2D(0, 0, windowDimensions.getVirtualWidth(), windowDimensions.getVirtualHeight());
+        windowFocused = true;
 
         // Create the windowHnd
         long monitor = windowMode.equals(WindowMode.FULLSCREEN) ? glfwGetPrimaryMonitor() : NULL;
@@ -183,9 +190,9 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
         // creates the GLCapabilities instance and makes the OpenGL
         // bindings available for use.
         GL.createCapabilities();
-
-        // DEBUG CONTEXT
-        //Callback debugProc = GLUtil.setupDebugMessageCallback(); // may return null if the debug mode is not available
+        if (debugMode) {
+            debugLocalCallback = GLUtil.setupDebugMessageCallback(); // must be called after "createCapabilities()"
+        }
 
         // OpenGL general setup:
         glDisable(GL_CULL_FACE);
@@ -195,8 +202,7 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
         glEnable(GL_STENCIL_TEST);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        // TODO: enable the following for production builds:
-        // Configuration.DISABLE_CHECKS.set(true);
+        Configuration.DISABLE_CHECKS.set(!debugMode);
 
         // set resize callback:
         glfwSetWindowSizeCallback(windowHnd, (window, width, height) -> {
@@ -205,6 +211,11 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
             updateViewport();
             triggerWindowSizeChangeEvent();
         });
+
+        glfwSetWindowFocusCallback(windowHnd, ((window, focused) -> {
+            LOG.debug("Windows focus changed: %b", focused);
+            windowFocused = focused;
+        }));
 
         // setup audio main device
         try {
@@ -220,7 +231,7 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
 
             alcMakeContextCurrent(audioContext);
 
-            alcCapabilities = ALC.createCapabilities(audioDevice);
+            ALCCapabilities alcCapabilities = ALC.createCapabilities(audioDevice);
             AL.createCapabilities(alcCapabilities);
 
         } catch (Exception e) {
@@ -232,7 +243,7 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
         setWindowIcon(DEFAULT_WINDOW_ICON_PATH_64, DEFAULT_WINDOW_ICON_PATH_32);
         load();
 
-        this.initialized = true;
+        initialized = true;
     }
 
     /**
@@ -324,8 +335,16 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
             // invoked during this call.
             glfwPollEvents();
 
+            if (!windowFocused && idleThrottling) {
+                try {
+                    Thread.sleep(100);
+
+                } catch (InterruptedException e) {
+                    LOG.error("Exception caught!", e);
+                }
+            }
+
             // TODO: frame cap mechanism (when v-sync is off)
-            // TODO: idle mechanism
             // the possibility to run the game in low-resource usage should be available when the windows isn't focused
 
             // TODO: study the feasibility/impact of implementing a multi-threaded mechanism on the game loop
@@ -337,6 +356,10 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
     public void dispose() {
         alcCloseDevice(audioDevice);
         alcDestroyContext(audioContext);
+
+        if (debugLocalCallback != null) {
+            debugLocalCallback.free();
+        }
     }
 
     /**
@@ -598,5 +621,9 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
         if (vsyncEnabled == this.vsyncEnabled) return;
         this.vsyncEnabled = vsyncEnabled;
         glfwSwapInterval(vsyncEnabled ? GLFW_TRUE : GLFW_FALSE);
+    }
+
+    public boolean isWindowFocused() {
+        return windowFocused;
     }
 }

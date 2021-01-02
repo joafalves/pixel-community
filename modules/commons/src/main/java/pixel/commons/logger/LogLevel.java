@@ -15,7 +15,7 @@ public enum LogLevel {
     WARN((byte) 0b101), // 5
     ERROR((byte) 0b110);// 6
 
-    private byte value;
+    private final byte value;
 
     //endregion
 

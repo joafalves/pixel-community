@@ -46,6 +46,7 @@ public class PostProcessingDemo extends SingleSpriteDemo {
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
+        settings.setDebugMode(true);
 
         Game game = new PostProcessingDemo(settings);
         game.start();
