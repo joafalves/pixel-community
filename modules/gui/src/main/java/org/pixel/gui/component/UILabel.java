@@ -66,7 +66,7 @@ public class UILabel extends UIBoxComponent {
     }
 
     /**
-     * Set label org.pixel.text
+     * Set label text
      *
      * @param text
      */

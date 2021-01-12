@@ -42,7 +42,7 @@ public class SpriteBatch extends DrawBatch {
     //region private properties
 
     private static final int BUFFER_UNIT_LENGTH = 256; // maximum sprites per batch
-    private static final int SPRITE_UNIT_LENGTH = 48; // number of attributes information units per org.pixel.sprite
+    private static final int SPRITE_UNIT_LENGTH = 48; // number of attributes information units per sprite
     private static final int ATTRIBUTE_STRIDE = 32; // attribute stride (bytes) between each vertex info
 
     private static final Matrix4 spriteViewMatrix = new Matrix4();
@@ -124,7 +124,7 @@ public class SpriteBatch extends DrawBatch {
         glEnableVertexAttribArray(aVertexColor);
         glVertexAttribPointer(aVertexColor, 4, GL_FLOAT, false, ATTRIBUTE_STRIDE, 4 * Float.BYTES);
 
-        // initialize org.pixel.sprite data objects
+        // initialize sprite data objects
         for (int i = 0; i < BUFFER_UNIT_LENGTH; i++) {
             this.spriteData[i] = new SpriteData();
         }
@@ -141,7 +141,7 @@ public class SpriteBatch extends DrawBatch {
     }
 
     private void flush() {
-        // draw the org.pixel.sprite data..
+        // draw the sprite data..
         for (int i = 0, count = 1; i < bufferCount; i++, count++) {
             SpriteData sprite = spriteData[i];
 
@@ -178,7 +178,7 @@ public class SpriteBatch extends DrawBatch {
     }
 
     private void processSpriteData(SpriteData sprite) {
-        // bind the org.pixel.sprite matrix with the current org.pixel.sprite data
+        // bind the sprite matrix with the current sprite data
         sprite.computeViewMatrix();
 
         // note that both position and source data have the following coordinate orientation:
@@ -422,7 +422,7 @@ public class SpriteBatch extends DrawBatch {
      * @param fontSize
      */
     public void drawText(Font font, String text, Vector2 position, Color color, int fontSize) {
-        // we are going to create a org.pixel.sprite data for each org.pixel.text character:
+        // we are going to create a sprite data for each text character:
         float computedScale = fontSize / (float) font.getComputedFontSize();
         float scale = fontSize / (float) font.getFontSize();
         int x = (int) position.getX(); // initial x position

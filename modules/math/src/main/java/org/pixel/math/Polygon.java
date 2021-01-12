@@ -61,7 +61,7 @@ public class Polygon implements Serializable {
     //region public static methods
 
     /**
-     * Tests if two polygons are overlapping each org.pixel.other ()
+     * Tests if two polygons are overlapping each other
      *
      * @param a
      * @param b

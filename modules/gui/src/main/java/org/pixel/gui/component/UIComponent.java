@@ -103,7 +103,7 @@ public abstract class UIComponent implements Disposable {
             return max * (unit.getValue() / 100.f);
 
         } else if (unit.getType().equals(DisplayUnit.Type.AUTO)) {
-            return 0.f; // can't infer any org.pixel.other value at this point
+            return 0.f; // can't infer any other value at this point
         }
 
         return null;
@@ -439,7 +439,7 @@ public abstract class UIComponent implements Disposable {
             this.styleProperties = StyleUtils.getComputedProperties(this, style);
 
         } else if (this.styleProperties == null) {
-            this.styleProperties = directProperties; // no org.pixel.other properties, use this as the main source
+            this.styleProperties = directProperties; // no other properties, use this as the main source
         }
 
         this.propertiesChanged = true;

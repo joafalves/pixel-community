@@ -3,31 +3,35 @@
  * Copyright (c) 2020
  */
 
-package org.pixel.text;
+package org.pixel.learning.sprite;
 
-import org.pixel.common.DemoGame;
+import org.pixel.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
-import org.pixel.content.Font;
+import org.pixel.content.Texture;
 import org.pixel.core.Game;
 import org.pixel.core.GameSettings;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 
-public class TextDemo extends DemoGame {
+public class AnimatedSpriteDemo extends DemoGame {
 
-    private static final String TEXT = "The quick brown fox jumps over the lazy dog\nABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final int ANIM_STEPS = 3;
+    private static final float ANIM_DELAY = 0.2f;
 
     private ContentManager content;
     private SpriteBatch spriteBatch;
 
-    private Font font;
-    private Vector2 textPos;
-    private Vector2 smallTextPos;
+    private Texture spriteTex;
+    private Vector2 spritePos;
+    private int animStep;
+    private float animDelay;
 
-    public TextDemo(GameSettings settings) {
+    public AnimatedSpriteDemo(GameSettings settings) {
         super(settings);
+        setBackgroundColor(Color.BLACK);
     }
 
     @Override
@@ -39,18 +43,27 @@ public class TextDemo extends DemoGame {
         content = new ContentManager();
         spriteBatch = new SpriteBatch();
 
-        // load font into memory
-        font = content.load("fonts/gidole-regular.ttf", Font.class);
-        font.setFontSize(32);
+        // load texture into memory
+        spriteTex = content.load("images/char-anim-50x85.png", Texture.class);
 
-        // related properties
-        textPos = new Vector2(10, 10);
-        smallTextPos = new Vector2(10, 100);
+        // related org.pixel.learning.sprite properties
+        spritePos = new Vector2(10, 10);
     }
 
     @Override
     public void update(float delta) {
         super.update(delta);
+
+        animDelay += delta;
+        if (animDelay > ANIM_DELAY) {
+            log.debug("Animation yield exceeded %f", animDelay);
+
+            animDelay = 0;
+            animStep++;
+            if (animStep > ANIM_STEPS) {
+                animStep = 0;
+            }
+        }
     }
 
     @Override
@@ -58,11 +71,9 @@ public class TextDemo extends DemoGame {
         // begin the spritebatch phase:
         spriteBatch.begin(gameCamera.getViewMatrix(), BlendMode.NORMAL_BLEND);
 
-        // font definition for this drawing phase:
-        spriteBatch.drawText(font, TEXT, textPos, Color.WHITE);
-
-        // font definition for this drawing phase (downscaled):
-        spriteBatch.drawText(font, TEXT, smallTextPos, Color.GOLD, 18);
+        // org.pixel.learning.sprite definition for this drawing phase:
+        spriteBatch.draw(spriteTex, spritePos, new Rectangle(50 * animStep, 0, 50, 85), Color.WHITE,
+                Vector2.zero(), 2f, 2f, 0f);
 
         // end and draw all sprites stored:
         spriteBatch.end();
@@ -72,7 +83,7 @@ public class TextDemo extends DemoGame {
     public void dispose() {
         content.dispose();
         spriteBatch.dispose();
-        font.dispose();
+        spriteTex.dispose();
     }
 
     public static void main(String[] args) {
@@ -82,7 +93,7 @@ public class TextDemo extends DemoGame {
         settings.setVsync(true);
         settings.setDebugMode(true);
 
-        Game game = new TextDemo(settings);
+        Game game = new AnimatedSpriteDemo(settings);
         game.start();
     }
 }

@@ -3,11 +3,11 @@
  * Copyright (c) 2020
  */
 
-package org.pixel.sprite;
+package org.pixel.learning.text;
 
-import org.pixel.common.DemoGame;
+import org.pixel.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
-import org.pixel.content.Texture;
+import org.pixel.content.Font;
 import org.pixel.core.Game;
 import org.pixel.core.GameSettings;
 import org.pixel.graphics.Color;
@@ -15,18 +15,19 @@ import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Vector2;
 
-public class SingleSpriteDemo extends DemoGame {
+public class TextDemo extends DemoGame {
+
+    private static final String TEXT = "The quick brown fox jumps over the lazy dog\nABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     private ContentManager content;
     private SpriteBatch spriteBatch;
 
-    private Texture spriteTex;
-    private Vector2 spritePos;
-    private Vector2 spriteAnchor;
+    private Font font;
+    private Vector2 textPos;
+    private Vector2 smallTextPos;
 
-    public SingleSpriteDemo(GameSettings settings) {
+    public TextDemo(GameSettings settings) {
         super(settings);
-        setBackgroundColor(Color.BLACK);
     }
 
     @Override
@@ -38,12 +39,13 @@ public class SingleSpriteDemo extends DemoGame {
         content = new ContentManager();
         spriteBatch = new SpriteBatch();
 
-        // load texture into memory
-        spriteTex = content.load("images/earth-48x48.png", Texture.class);
+        // load font into memory
+        font = content.load("fonts/gidole-regular.ttf", Font.class);
+        font.setFontSize(32);
 
-        // related org.pixel.sprite properties
-        spriteAnchor = Vector2.half();
-        spritePos = new Vector2(getVirtualWidth() / 2f, getVirtualHeight() / 2f);
+        // related properties
+        textPos = new Vector2(10, 10);
+        smallTextPos = new Vector2(10, 100);
     }
 
     @Override
@@ -56,8 +58,11 @@ public class SingleSpriteDemo extends DemoGame {
         // begin the spritebatch phase:
         spriteBatch.begin(gameCamera.getViewMatrix(), BlendMode.NORMAL_BLEND);
 
-        // org.pixel.sprite definition for this drawing phase:
-        spriteBatch.draw(spriteTex, spritePos, Color.WHITE, spriteAnchor, 3f);
+        // font definition for this drawing phase:
+        spriteBatch.drawText(font, TEXT, textPos, Color.WHITE);
+
+        // font definition for this drawing phase (downscaled):
+        spriteBatch.drawText(font, TEXT, smallTextPos, Color.GOLD, 18);
 
         // end and draw all sprites stored:
         spriteBatch.end();
@@ -67,7 +72,7 @@ public class SingleSpriteDemo extends DemoGame {
     public void dispose() {
         content.dispose();
         spriteBatch.dispose();
-        spriteTex.dispose();
+        font.dispose();
     }
 
     public static void main(String[] args) {
@@ -77,7 +82,7 @@ public class SingleSpriteDemo extends DemoGame {
         settings.setVsync(true);
         settings.setDebugMode(true);
 
-        Game game = new SingleSpriteDemo(settings);
+        Game game = new TextDemo(settings);
         game.start();
     }
 }

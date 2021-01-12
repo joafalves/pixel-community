@@ -48,7 +48,7 @@ public class BackgroundPropertyProcessor implements StylePropertyProcessor {
     private StyleProperty processBackground(List<StylePropertyValue> values) {
         // https://www.w3schools.com/cssref/css3_pr_background.asp
         // note for now.. we are considering only 1 format: bg-color
-        // TODO: add support for org.pixel.other formats..
+        // TODO: add support for other formats..
         return processBackgroundColor(values);
     }
 

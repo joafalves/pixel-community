@@ -260,7 +260,7 @@ public class Boundary implements Serializable {
     //region public static methods
 
     /**
-     * Tests if two boundaries are overlapping each org.pixel.other
+     * Tests if two boundaries are overlapping each other
      *
      * @param a
      * @param b

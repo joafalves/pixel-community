@@ -51,7 +51,7 @@ public class UIButton extends UIBoxComponent {
     }
 
     /**
-     * Set button org.pixel.text
+     * Set button text
      *
      * @param text
      */

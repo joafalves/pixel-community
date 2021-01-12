@@ -3,9 +3,9 @@
  * Copyright (c) 2020
  */
 
-package org.pixel.input;
+package org.pixel.learning.input;
 
-import org.pixel.common.DemoGame;
+import org.pixel.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.core.Game;
@@ -47,7 +47,7 @@ public class GamePadInputDemo extends DemoGame {
         // load texture into memory
         spriteTex = content.load("images/earth-48x48.png", Texture.class);
 
-        // related org.pixel.sprite properties
+        // related org.pixel.learning.sprite properties
         spriteAnchor = Vector2.half();
         spritePos = new Vector2(getVirtualWidth() / 2f, getVirtualHeight() / 2f);
     }
@@ -74,7 +74,7 @@ public class GamePadInputDemo extends DemoGame {
         // begin the spritebatch phase:
         spriteBatch.begin(gameCamera.getViewMatrix(), BlendMode.NORMAL_BLEND);
 
-        // org.pixel.sprite definition for this drawing phase:
+        // org.pixel.learning.sprite definition for this drawing phase:
         spriteBatch.draw(spriteTex, spritePos, Color.WHITE, spriteAnchor, 3f);
 
         // end and draw all sprites stored:

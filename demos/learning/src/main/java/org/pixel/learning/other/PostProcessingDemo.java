@@ -3,13 +3,13 @@
  * Copyright (c) 2020
  */
 
-package org.pixel.other;
+package org.pixel.learning.other;
 
 import org.pixel.core.Game;
 import org.pixel.core.GameSettings;
 import org.pixel.graphics.render.ShaderPostProcessor;
 import org.pixel.graphics.shader.effect.SepiaEffectShader;
-import org.pixel.sprite.SingleSpriteDemo;
+import org.pixel.learning.sprite.SingleSpriteDemo;
 
 public class PostProcessingDemo extends SingleSpriteDemo {
 
@@ -23,7 +23,7 @@ public class PostProcessingDemo extends SingleSpriteDemo {
     public void load() {
         super.load();
 
-        // note: try using org.pixel.other shaders.. or make your own! :)
+        // note: try using org.pixel.learning.other shaders.. or make your own! :)
         pp = new ShaderPostProcessor(new SepiaEffectShader(1f), getBackgroundColor(),
                 getVirtualWidth(), getVirtualHeight());
     }
@@ -34,7 +34,7 @@ public class PostProcessingDemo extends SingleSpriteDemo {
         // to have the effect)
         pp.begin();
 
-        // typical drawing phase goes here, using the org.pixel.sprite code as an example
+        // typical drawing phase goes here, using the org.pixel.learning.sprite code as an example
         super.draw(delta);
 
         // apply and output the render using the selected post processor effect

@@ -1,6 +1,6 @@
-package org.pixel.primitive;
+package org.pixel.learning.primitive;
 
-import org.pixel.common.DemoGame;
+import org.pixel.learning.common.DemoGame;
 import org.pixel.core.Game;
 import org.pixel.core.GameSettings;
 import org.pixel.graphics.Color;

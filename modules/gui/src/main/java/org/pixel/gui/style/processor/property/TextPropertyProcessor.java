@@ -23,9 +23,9 @@ public class TextPropertyProcessor implements StylePropertyProcessor {
      */
     @Override
     public boolean match(String selectorName) {
-        return selectorName.equalsIgnoreCase("org.pixel.text-align") ||
-                selectorName.equalsIgnoreCase("org.pixel.text-h-align") ||
-                selectorName.equalsIgnoreCase("org.pixel.text-v-align");
+        return selectorName.equalsIgnoreCase("text-align") ||
+                selectorName.equalsIgnoreCase("text-h-align") ||
+                selectorName.equalsIgnoreCase("text-v-align");
     }
 
     /**
@@ -35,7 +35,7 @@ public class TextPropertyProcessor implements StylePropertyProcessor {
      */
     @Override
     public StyleProperty process(String declaration, List<StylePropertyValue> values) {
-        if (declaration.equalsIgnoreCase("org.pixel.text-align")) {
+        if (declaration.equalsIgnoreCase("text-align")) {
             if (values.size() == 1) {
                 return TextStyle.builder()
                         .horizontalAlignment(HorizontalAlignment.fromString(values.get(0).getValue()))
@@ -50,12 +50,12 @@ public class TextPropertyProcessor implements StylePropertyProcessor {
 
             return null;
 
-        } else if (declaration.equalsIgnoreCase("org.pixel.text-h-align")) {
+        } else if (declaration.equalsIgnoreCase("text-h-align")) {
             return TextStyle.builder()
                     .horizontalAlignment(HorizontalAlignment.fromString(values.get(0).getValue()))
                     .build();
 
-        } else if (declaration.equalsIgnoreCase("org.pixel.text-v-align")) {
+        } else if (declaration.equalsIgnoreCase("text-v-align")) {
             return TextStyle.builder()
                     .verticalAlignment(VerticalAlignment.fromString(values.get(0).getValue()))
                     .build();

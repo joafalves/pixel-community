@@ -3,9 +3,11 @@
  * Copyright (c) 2020
  */
 
-package org.pixel.audio;
+package org.pixel.learning.audio;
 
-import org.pixel.common.DemoGame;
+import org.pixel.audio.AudioDevice;
+import org.pixel.audio.Sound;
+import org.pixel.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
 import org.pixel.core.Game;
 import org.pixel.core.GameSettings;

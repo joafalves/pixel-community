@@ -167,7 +167,7 @@ public class DataBuffer {
     }
 
     /**
-     * Get readable org.pixel.text
+     * Get readable text
      *
      * @return
      */

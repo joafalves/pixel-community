@@ -100,7 +100,7 @@ public class Font implements Disposable {
         ByteBuffer alphaBitmap = createByteBuffer(this.textureWidth * this.textureHeight);
         stbtt_PackBegin(pc, alphaBitmap, this.textureWidth, this.textureHeight, 0, GLYPH_TEXTURE_PADDING, NULL);
         // load up data to our buffer:
-        packedBuffer.limit(255); // org.pixel.common org.pixel.text ascii range (32-127)
+        packedBuffer.limit(255); // text ascii range (32-127)
         packedBuffer.position(32);
         stbtt_PackSetOversampling(pc, oversampling, oversampling);
         stbtt_PackFontRange(pc, fontData.getSource(), 0, getFontSize(), 32, packedBuffer);

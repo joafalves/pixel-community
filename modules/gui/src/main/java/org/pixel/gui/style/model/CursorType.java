@@ -48,7 +48,7 @@ public enum CursorType {
             case "crosshair":
                 return CROSSHAIR;
             case "ibeam":
-            case "org.pixel.text":
+            case "text":
                 return IBEAM;
             case "hresize":
             case "ew-resize":

@@ -3,7 +3,7 @@
  * Copyright (c) 2020
  */
 
-package org.pixel.common;
+package org.pixel.learning.common;
 
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
