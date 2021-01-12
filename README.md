@@ -49,7 +49,7 @@ public class SingleSpriteDemo extends Game {
         // load texture into memory
         spriteTex = content.load("images/earth-48x48.png", Texture.class);
 
-        // related sprite properties
+        // related org.pixel.sprite properties
         spriteAnchor = Vector2.half();
         spritePos = new Vector2(getVirtualWidth() / 2f, getVirtualHeight() / 2f);
     }
@@ -64,7 +64,7 @@ public class SingleSpriteDemo extends Game {
         // begin the spritebatch phase:
         spriteBatch.begin(gameCamera.getViewMatrix(), BlendMode.NORMAL_BLEND);
 
-        // sprite definition for this drawing phase:
+        // org.pixel.sprite definition for this drawing phase:
         spriteBatch.draw(spriteTex, spritePos, Color.WHITE, spriteAnchor, 3f);
 
         // end and draw all sprites stored:
@@ -86,7 +86,7 @@ The framework functionality is divided into multiple modules which can be import
         ├── content                 # Resource modules
         ├── core                    # Main module, contains principal classes
         ├── gui                     # Graphical interface module
-        ├── input                   # Input module
+        ├── org.pixel.input                   # Input module
         ├── physics                 # Physics module
         └── math                    # Math module
     .resources/
