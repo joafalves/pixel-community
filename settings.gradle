@@ -11,7 +11,7 @@ include "modules/commons", "modules/core", "modules/input", "modules/math", "mod
         "modules/examples"
 
 // demos
-include "demos/learning", "demos/concept"
+include "demos/learning", "demos/space-shooter"
 
 rootProject.children.each {
     it.name = rootProject.name + "-" + it.name.split("/").last()
