@@ -16,7 +16,6 @@ import org.pixel.content.importer.settings.ContentImporterSettings;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 /**
  * @author João Filipe Alves
  */
@@ -41,6 +40,7 @@ public class ContentManager implements Disposable {
      * Init function
      */
     private void init() {
+        // default importers:
         this.addContentImporter(new TextureImporter());
         this.addContentImporter(new VorbisAudioImporter());
         this.addContentImporter(new TextImporter());

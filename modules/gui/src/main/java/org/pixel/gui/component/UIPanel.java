@@ -7,13 +7,13 @@ package org.pixel.gui.component;
 
 public class UIPanel extends UIContainer {
 
-    public static final String NAME = "panel";
+    public static final String ID = "panel";
 
     /**
      * Constructor
      */
     public UIPanel() {
-        super(NAME);
+        super(ID);
     }
 
 }

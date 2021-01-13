@@ -5,9 +5,6 @@
 
 package org.pixel.commons.util;
 
-import org.pixel.commons.logger.Logger;
-import org.pixel.commons.logger.LoggerFactory;
-
 import java.io.File;
 
 /**
@@ -16,7 +13,6 @@ import java.io.File;
 public class FileUtils {
 
     public static final String FILE_SEPARATOR = "/";
-    private static final Logger LOG = LoggerFactory.getLogger(FileUtils.class);
 
     /**
      * Gets the parent directory of a given path

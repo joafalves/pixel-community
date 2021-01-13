@@ -14,7 +14,7 @@ import org.pixel.gui.style.properties.TextStyle;
 
 public class UIButton extends UIBoxComponent {
 
-    public static final String NAME = "button";
+    public static final String ID = "button";
 
     private String text;
 
@@ -26,7 +26,7 @@ public class UIButton extends UIBoxComponent {
      * Constructor
      */
     public UIButton() {
-        super(NAME);
+        super(ID);
         this.text = "";
     }
 

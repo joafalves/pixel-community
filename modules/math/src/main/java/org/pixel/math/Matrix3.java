@@ -13,6 +13,7 @@ public class Matrix3 implements Serializable {
     //region properties
 
     private float[][] m = new float[3][3];
+    private float[][] tmp = new float[3][3];
 
     //endregion
 
@@ -23,6 +24,24 @@ public class Matrix3 implements Serializable {
      */
     public Matrix3() {
         setIdentity();
+    }
+
+    //endregion
+
+    //region private methods
+
+    private void assignFromTmp() {
+        m[0][0] = tmp[0][0];
+        m[1][0] = tmp[1][0];
+        m[2][0] = tmp[2][0];
+
+        m[0][1] = tmp[0][1];
+        m[1][1] = tmp[1][1];
+        m[2][1] = tmp[2][1];
+
+        m[0][2] = tmp[0][2];
+        m[1][2] = tmp[1][2];
+        m[2][2] = tmp[2][2];
     }
 
     //endregion
@@ -70,8 +89,6 @@ public class Matrix3 implements Serializable {
      * @param matrix
      */
     public void multiply(Matrix3 matrix) {
-        float[][] tmp = new float[3][3];
-
         tmp[0][0] = m[0][0] * matrix.m[0][0] + m[0][1] * matrix.m[1][0] + m[0][2] * matrix.m[2][0];
         tmp[1][0] = m[1][0] * matrix.m[0][0] + m[1][1] * matrix.m[1][0] + m[1][2] * matrix.m[2][0];
         tmp[2][0] = m[2][0] * matrix.m[0][0] + m[2][1] * matrix.m[1][0] + m[2][2] * matrix.m[2][0];
@@ -84,7 +101,7 @@ public class Matrix3 implements Serializable {
         tmp[1][2] = m[1][0] * matrix.m[0][2] + m[1][1] * matrix.m[1][2] + m[1][2] * matrix.m[2][2];
         tmp[2][2] = m[2][0] * matrix.m[0][2] + m[2][1] * matrix.m[1][2] + m[2][2] * matrix.m[2][2];
 
-        this.m = tmp;
+        assignFromTmp();
     }
 
     /**
@@ -116,8 +133,6 @@ public class Matrix3 implements Serializable {
      *
      */
     public void transpose() {
-        float[][] tmp = new float[3][3];
-
         tmp[0][0] = m[0][0];
         tmp[1][0] = m[0][1];
         tmp[2][0] = m[0][2];
@@ -130,7 +145,7 @@ public class Matrix3 implements Serializable {
         tmp[1][2] = m[2][1];
         tmp[2][2] = m[2][2];
 
-        this.m = tmp;
+        assignFromTmp();
     }
 
     /**

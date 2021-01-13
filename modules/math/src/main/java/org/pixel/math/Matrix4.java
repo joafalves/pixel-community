@@ -13,6 +13,7 @@ public class Matrix4 implements Serializable {
     //region properties
 
     private float[][] m = new float[4][4];
+    private float[][] tmp = new float[4][4];
 
     //endregion
 
@@ -93,6 +94,32 @@ public class Matrix4 implements Serializable {
         matrix.m[3][3] = 0f;
 
         return matrix;
+    }
+
+    //endregion
+
+    //region private methods
+
+    private void assignFromTmp() {
+        m[0][0] = tmp[0][0];
+        m[1][0] = tmp[1][0];
+        m[2][0] = tmp[2][0];
+        m[3][0] = tmp[3][0];
+
+        m[0][1] = tmp[0][1];
+        m[1][1] = tmp[1][1];
+        m[2][1] = tmp[2][1];
+        m[3][1] = tmp[3][1];
+
+        m[0][2] = tmp[0][2];
+        m[1][2] = tmp[1][2];
+        m[2][2] = tmp[2][2];
+        m[3][2] = tmp[3][2];
+
+        m[0][3] = tmp[0][3];
+        m[1][3] = tmp[1][3];
+        m[2][3] = tmp[2][3];
+        m[3][3] = tmp[3][3];
     }
 
     //endregion
@@ -190,8 +217,6 @@ public class Matrix4 implements Serializable {
      * @param matrix
      */
     public void multiply(Matrix4 matrix) {
-        float[][] tmp = new float[4][4];
-
         tmp[0][0] = m[0][0] * matrix.m[0][0] + m[0][1] * matrix.m[1][0] + m[0][2] * matrix.m[2][0] + m[0][3] * m[3][0];
         tmp[1][0] = m[1][0] * matrix.m[0][0] + m[1][1] * matrix.m[1][0] + m[1][2] * matrix.m[2][0] + m[1][3] * m[3][0];
         tmp[2][0] = m[2][0] * matrix.m[0][0] + m[2][1] * matrix.m[1][0] + m[2][2] * matrix.m[2][0] + m[2][3] * m[3][0];
@@ -212,7 +237,7 @@ public class Matrix4 implements Serializable {
         tmp[2][3] = m[2][0] * matrix.m[0][3] + m[2][1] * matrix.m[1][3] + m[2][2] * matrix.m[2][3] + m[2][3] * m[3][3];
         tmp[3][3] = m[3][0] * matrix.m[0][3] + m[3][1] * matrix.m[1][3] + m[3][2] * matrix.m[2][3] + m[3][3] * m[3][3];
 
-        this.m = tmp;
+        assignFromTmp();
     }
 
     /**
@@ -296,11 +321,9 @@ public class Matrix4 implements Serializable {
     }
 
     /**
-     *
+     * Transpose Matrix
      */
     public void transpose() {
-        float[][] tmp = new float[4][4];
-
         tmp[0][0] = m[0][0];
         tmp[1][0] = m[0][1];
         tmp[2][0] = m[0][2];
@@ -321,7 +344,7 @@ public class Matrix4 implements Serializable {
         tmp[2][3] = m[3][2];
         tmp[3][3] = m[3][3];
 
-        this.m = tmp;
+        assignFromTmp();
     }
 
     /**

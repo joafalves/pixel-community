@@ -30,10 +30,10 @@ public abstract class UIContainer extends UIBoxComponent {
     /**
      * Constructor
      *
-     * @param name
+     * @param identifier
      */
-    public UIContainer(String name) {
-        super(name);
+    public UIContainer(String identifier) {
+        super(identifier);
         xOffset = 0.f;
         yOffset = 0.f;
     }

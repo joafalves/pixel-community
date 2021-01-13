@@ -13,6 +13,7 @@ public class Matrix2 implements Serializable {
     //region properties
 
     private float[][] m = new float[2][2];
+    private float[][] tmp = new float[2][2];
 
     //endregion
 
@@ -23,6 +24,18 @@ public class Matrix2 implements Serializable {
      */
     public Matrix2() {
         setIdentity();
+    }
+
+    //endregion
+
+    //region private methods
+
+    private void assignFromTmp() {
+        m[0][0] = tmp[0][0];
+        m[1][0] = tmp[1][0];
+
+        m[0][1] = tmp[0][1];
+        m[1][1] = tmp[1][1];
     }
 
     //endregion
@@ -65,15 +78,13 @@ public class Matrix2 implements Serializable {
      * @param matrix
      */
     public void multiply(Matrix2 matrix) {
-        float[][] tmp = new float[2][2];
-
         tmp[0][0] = m[0][0] * matrix.m[0][0] + m[0][1] * matrix.m[1][0];
         tmp[1][0] = m[1][0] * matrix.m[0][0] + m[1][1] * matrix.m[1][0];
 
         tmp[0][1] = m[0][0] * matrix.m[0][1] + m[0][1] * matrix.m[1][1];
         tmp[1][1] = m[1][0] * matrix.m[0][1] + m[1][1] * matrix.m[1][1];
 
-        this.m = tmp;
+        assignFromTmp();
     }
 
     /**

@@ -14,7 +14,7 @@ import org.pixel.gui.style.properties.TextStyle;
 
 public class UILabel extends UIBoxComponent {
 
-    public static final String NAME = "label";
+    public static final String ID = "label";
 
     private String text;
 
@@ -26,7 +26,7 @@ public class UILabel extends UIBoxComponent {
      * Constructor
      */
     public UILabel() {
-        super(NAME);
+        super(ID);
         this.text = "";
     }
 

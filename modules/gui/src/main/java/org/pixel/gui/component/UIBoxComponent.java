@@ -5,8 +5,6 @@
 
 package org.pixel.gui.component;
 
-import org.pixel.commons.logger.Logger;
-import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.commons.model.Solidity;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.RenderEngine2D;
@@ -17,8 +15,6 @@ import org.pixel.gui.style.properties.*;
 
 public abstract class UIBoxComponent extends UIComponent {
 
-    private static final Logger LOG = LoggerFactory.getLogger(UIBoxComponent.class);
-
     protected PaddingStyle paddingStyle;
     protected BackgroundStyle bgStyle;
     protected SizeStyle sizeStyle;
@@ -27,10 +23,10 @@ public abstract class UIBoxComponent extends UIComponent {
     /**
      * Constructor
      *
-     * @param name
+     * @param identifier
      */
-    public UIBoxComponent(String name) {
-        super(name);
+    public UIBoxComponent(String identifier) {
+        super(identifier);
     }
 
     /**
