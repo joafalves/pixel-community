@@ -5,11 +5,13 @@
 
 package org.pixel.commons.lifecycle;
 
+import org.pixel.commons.DeltaTime;
+
 public interface Updatable {
     /**
      * Update function
      *
-     * @param delta
+     * @param delta (milliseconds)
      */
-    void update(float delta);
+    void update(DeltaTime delta);
 }

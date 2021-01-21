@@ -5,6 +5,7 @@
 
 package org.pixel.gui.component;
 
+import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.gui.common.UIContext;
 import org.pixel.gui.model.ComponentState;
@@ -240,7 +241,7 @@ public abstract class UIComponent implements Disposable {
      * @param ctx
      * @param delta
      */
-    public void update(UIContext ctx, float delta) {
+    public void update(UIContext ctx, DeltaTime delta) {
         if (this.style != ctx.getStyle() && ctx.getStyle() != null) {
             this.setStyle(ctx.getStyle());
         }
@@ -256,7 +257,7 @@ public abstract class UIComponent implements Disposable {
      * @param ctx
      * @param delta
      */
-    public void lateUpdate(UIContext ctx, float delta) {
+    public void lateUpdate(UIContext ctx, DeltaTime delta) {
         // intentionally empty
     }
 
@@ -275,7 +276,7 @@ public abstract class UIComponent implements Disposable {
      * @param ctx
      * @param delta
      */
-    public void draw(UIContext ctx, float delta) {
+    public void draw(UIContext ctx, DeltaTime delta) {
 
     }
 

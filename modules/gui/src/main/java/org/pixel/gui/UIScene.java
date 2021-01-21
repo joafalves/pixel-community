@@ -9,6 +9,7 @@ import org.pixel.commons.lifecycle.Drawable;
 import org.pixel.commons.lifecycle.Updatable;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.commons.DeltaTime;
 import org.pixel.graphics.render.RenderEngine2D;
 import org.pixel.gui.common.UIContext;
 import org.pixel.gui.component.UIComponent;
@@ -43,7 +44,7 @@ public class UIScene implements Updatable, Drawable {
      * @param delta
      */
     @Override
-    public void update(float delta) {
+    public void update(DeltaTime delta) {
         if (components.size() > 0) {
             updateRecursive(components, delta, false);
             updateRecursive(components, delta, true);
@@ -54,7 +55,7 @@ public class UIScene implements Updatable, Drawable {
      * @param components
      * @param delta
      */
-    private void updateRecursive(List<UIComponent> components, float delta, boolean lateUpdate) {
+    private void updateRecursive(List<UIComponent> components, DeltaTime delta, boolean lateUpdate) {
         if (components == null || components.size() == 0) {
             return;
         }
@@ -85,7 +86,7 @@ public class UIScene implements Updatable, Drawable {
      * @param delta
      */
     @Override
-    public void draw(float delta) {
+    public void draw(DeltaTime delta) {
         if (components.size() > 0) {
             context.getRenderEngine().begin();
             drawRecursive(components, delta, 0, 0);
@@ -97,7 +98,7 @@ public class UIScene implements Updatable, Drawable {
      * @param components
      * @param delta
      */
-    private void drawRecursive(List<UIComponent> components, float delta, float tx, float ty) {
+    private void drawRecursive(List<UIComponent> components, DeltaTime delta, float tx, float ty) {
         if (components == null || components.size() == 0) {
             return;
         }

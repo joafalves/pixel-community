@@ -1,5 +1,6 @@
 package org.pixel.learning.primitive;
 
+import org.pixel.commons.DeltaTime;
 import org.pixel.learning.common.DemoGame;
 import org.pixel.core.Game;
 import org.pixel.core.GameSettings;
@@ -28,7 +29,7 @@ public class PrimitivesDemo extends DemoGame {
     }
 
     @Override
-    public void draw(float delta) {
+    public void draw(DeltaTime delta) {
         re.begin();
         re.strokeWidth(6);
         re.fillColor(fillColor);

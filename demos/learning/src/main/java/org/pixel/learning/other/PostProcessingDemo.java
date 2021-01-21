@@ -5,6 +5,7 @@
 
 package org.pixel.learning.other;
 
+import org.pixel.commons.DeltaTime;
 import org.pixel.core.Game;
 import org.pixel.core.GameSettings;
 import org.pixel.graphics.render.ShaderPostProcessor;
@@ -29,7 +30,7 @@ public class PostProcessingDemo extends SingleSpriteDemo {
     }
 
     @Override
-    public void draw(float delta) {
+    public void draw(DeltaTime delta) {
         // post processing affects whole renders, therefore they must begin before the drawing phase (of what you wish
         // to have the effect)
         pp.begin();

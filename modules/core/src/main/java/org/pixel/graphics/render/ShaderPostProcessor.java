@@ -5,12 +5,13 @@
 
 package org.pixel.graphics.render;
 
+import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.content.Texture;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.shader.Shader;
 import org.pixel.graphics.shader.ShaderManager;
-import org.pixel.content.Texture;
 import org.pixel.math.Size;
 
 import static org.lwjgl.opengl.GL11.GL_CLAMP;
@@ -30,8 +31,8 @@ public class ShaderPostProcessor implements PostProcessor {
     private int rbo;
     private int vao;
     private int vbo;
-    private float uTime;
     private int stage = 0;
+    private float uTime;
 
     /**
      * Constructor
@@ -151,9 +152,10 @@ public class ShaderPostProcessor implements PostProcessor {
 
     /**
      * Apply post processing
+     * @param delta
      */
     @Override
-    public void apply(float delta) {
+    public void apply(DeltaTime delta) {
         // to make things practical:
         if (stage == 0) {
             begin();
@@ -163,7 +165,7 @@ public class ShaderPostProcessor implements PostProcessor {
             end();
         }
 
-        uTime += delta;
+        uTime += delta.getElapsed();
         ShaderManager.useShader(shader);
         shader.apply();
         if (shader.getUniformLocation("uTime") != null) {

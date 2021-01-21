@@ -133,8 +133,20 @@ public class Color {
         this.a = a;
     }
 
-    public void setAlpha(float a) {
-        this.a = a;
+    private void setRed(float value) {
+        this.r = value;
+    }
+
+    private void setGreen(float value) {
+        this.g = value;
+    }
+
+    private void setBlue(float value) {
+        this.b = value;
+    }
+
+    public void setAlpha(float value) {
+        this.a = value;
     }
 
     public void set(int rgba8888) {

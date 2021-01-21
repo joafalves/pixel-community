@@ -7,6 +7,7 @@ package org.pixel.physics;
 
 import org.pixel.commons.lifecycle.Clearable;
 import org.pixel.commons.lifecycle.Updatable;
+import org.pixel.commons.DeltaTime;
 import org.pixel.math.Vector2;
 
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class World implements Updatable, Clearable {
      * @param delta
      */
     @Override
-    public void update(float delta) {
+    public void update(DeltaTime delta) {
         // test/solve collisions:
         stepCollisions = collisionManager.detectCollisions(bodyList);
 
@@ -49,7 +50,7 @@ public class World implements Updatable, Clearable {
         }
 
         // apply velocity
-        bodyList.iterator().forEachRemaining(body -> applyVelocity(body, delta));
+        bodyList.iterator().forEachRemaining(body -> applyVelocity(body, delta.getElapsed()));
 
         endUpdate();
     }
@@ -81,15 +82,16 @@ public class World implements Updatable, Clearable {
      * @param body
      * @param delta
      */
-    private void applyIntegratedForces(Body body, float delta) {
+    private void applyIntegratedForces(Body body, DeltaTime delta) {
         if (body.getType() != BodyType.DYNAMIC) {
             return; // nothing to do, no mass..
         }
 
-        body.getVelocity().add(body.getForce().getX() * body.getMass() * delta,
-                body.getForce().getY() * body.getMass() * delta);
-        body.getVelocity().add(gravity.getX() * body.getMass() * delta, gravity.getY() * body.getMass() * delta);
-        body.setAngularVelocity(body.getAngularVelocity() + body.getTorque() * body.getInertia() * delta);
+        body.getVelocity().add(body.getForce().getX() * body.getMass() * delta.getElapsed(),
+                body.getForce().getY() * body.getMass() * delta.getElapsed());
+        body.getVelocity().add(gravity.getX() * body.getMass() * delta.getElapsed(),
+                gravity.getY() * body.getMass() * delta.getElapsed());
+        body.setAngularVelocity(body.getAngularVelocity() + body.getTorque() * body.getInertia() * delta.getElapsed());
     }
 
     /**

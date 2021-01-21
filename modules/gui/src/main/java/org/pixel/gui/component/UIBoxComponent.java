@@ -5,6 +5,7 @@
 
 package org.pixel.gui.component;
 
+import org.pixel.commons.DeltaTime;
 import org.pixel.commons.model.Solidity;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.RenderEngine2D;
@@ -46,7 +47,7 @@ public abstract class UIBoxComponent extends UIComponent {
      * @param delta
      */
     @Override
-    public void draw(UIContext ctx, float delta) {
+    public void draw(UIContext ctx, DeltaTime delta) {
         super.draw(ctx, delta);
 
         RenderEngine2D re = ctx.getRenderEngine();

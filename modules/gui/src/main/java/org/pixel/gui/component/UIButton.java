@@ -5,6 +5,7 @@
 
 package org.pixel.gui.component;
 
+import org.pixel.commons.DeltaTime;
 import org.pixel.graphics.render.RenderEngine2D;
 import org.pixel.gui.common.UIContext;
 import org.pixel.gui.style.StyleUtils;
@@ -39,7 +40,7 @@ public class UIButton extends UIBoxComponent {
     }
 
     @Override
-    public void draw(UIContext ctx, float delta) {
+    public void draw(UIContext ctx, DeltaTime delta) {
         super.draw(ctx, delta);
 
         RenderEngine2D re = context.getRenderEngine();

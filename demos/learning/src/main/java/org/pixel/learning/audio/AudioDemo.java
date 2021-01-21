@@ -7,6 +7,7 @@ package org.pixel.learning.audio;
 
 import org.pixel.audio.AudioDevice;
 import org.pixel.audio.Sound;
+import org.pixel.commons.DeltaTime;
 import org.pixel.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
 import org.pixel.core.Game;
@@ -34,10 +35,10 @@ public class AudioDemo extends DemoGame {
     }
 
     @Override
-    public void update(float delta) {
+    public void update(DeltaTime delta) {
         super.update(delta);
 
-        soundElapsed += delta;
+        soundElapsed += delta.getElapsed();
         if (soundElapsed > SOUND_DURATION) {
             soundElapsed = 0;
             // AudioDevice is used to play, stop and pause sound sources
@@ -46,7 +47,7 @@ public class AudioDemo extends DemoGame {
     }
 
     @Override
-    public void draw(float delta) {
+    public void draw(DeltaTime delta) {
         // draw game elements here
     }
 

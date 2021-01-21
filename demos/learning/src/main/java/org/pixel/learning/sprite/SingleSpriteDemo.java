@@ -5,6 +5,7 @@
 
 package org.pixel.learning.sprite;
 
+import org.pixel.commons.DeltaTime;
 import org.pixel.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
@@ -47,12 +48,12 @@ public class SingleSpriteDemo extends DemoGame {
     }
 
     @Override
-    public void update(float delta) {
+    public void update(DeltaTime delta) {
         super.update(delta);
     }
 
     @Override
-    public void draw(float delta) {
+    public void draw(DeltaTime delta) {
         // begin the spritebatch phase:
         spriteBatch.begin(gameCamera.getViewMatrix(), BlendMode.NORMAL_BLEND);
 

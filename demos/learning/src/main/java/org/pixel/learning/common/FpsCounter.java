@@ -5,6 +5,7 @@
 
 package org.pixel.learning.common;
 
+import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 
@@ -15,11 +16,11 @@ public class FpsCounter {
     private float elapsed = 0;
     private int count = 0;
 
-    public void update(float delta) {
+    public void update(DeltaTime delta) {
         count++;
-        elapsed += delta;
+        elapsed += delta.getElapsed();
 
-        if (elapsed + delta > 1) {
+        if (elapsed + delta.getElapsed() > 1) {
             log.debug("FPS: %d", count);
 
             elapsed = 0;

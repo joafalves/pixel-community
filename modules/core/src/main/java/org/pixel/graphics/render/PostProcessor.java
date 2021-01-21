@@ -6,6 +6,7 @@
 package org.pixel.graphics.render;
 
 import org.pixel.commons.lifecycle.Disposable;
+import org.pixel.commons.DeltaTime;
 
 public interface PostProcessor extends Disposable {
 
@@ -24,6 +25,6 @@ public interface PostProcessor extends Disposable {
      *
      * @param delta
      */
-    void apply(float delta);
+    void apply(DeltaTime delta);
 
 }

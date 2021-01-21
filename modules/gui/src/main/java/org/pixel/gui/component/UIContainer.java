@@ -5,6 +5,7 @@
 
 package org.pixel.gui.component;
 
+import org.pixel.commons.DeltaTime;
 import org.pixel.gui.common.UIContext;
 import org.pixel.gui.layout.LayoutFactory;
 import org.pixel.gui.layout.LayoutHandler;
@@ -71,12 +72,11 @@ public abstract class UIContainer extends UIBoxComponent {
 
     /**
      * Second (and last) update phase of the current frame
-     *
-     * @param ctx
+     *  @param ctx
      * @param delta
      */
     @Override
-    public void lateUpdate(UIContext ctx, float delta) {
+    public void lateUpdate(UIContext ctx, DeltaTime delta) {
         super.lateUpdate(ctx, delta);
 
         if (layoutDirty) {

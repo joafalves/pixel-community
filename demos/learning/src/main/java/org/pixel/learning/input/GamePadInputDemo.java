@@ -5,6 +5,7 @@
 
 package org.pixel.learning.input;
 
+import org.pixel.commons.DeltaTime;
 import org.pixel.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
@@ -53,7 +54,7 @@ public class GamePadInputDemo extends DemoGame {
     }
 
     @Override
-    public void update(float delta) {
+    public void update(DeltaTime delta) {
         super.update(delta);
 
         // attempt to grab the game pad state from player1
@@ -61,16 +62,16 @@ public class GamePadInputDemo extends DemoGame {
 
         if (state != null) { // is game pad data from player 1 available?
             if (state.isButtonDown(GamePadButton.DPAD_UP)) {
-                gameCamera.translate(0,-MOVEMENT_SPEED * delta); // translate camera vertically
+                gameCamera.translate(0,-MOVEMENT_SPEED * delta.getElapsed()); // translate camera vertically
 
             } else if (state.isButtonDown(GamePadButton.DPAD_DOWN)) {
-                gameCamera.translate(0,MOVEMENT_SPEED * delta); // translate camera vertically
+                gameCamera.translate(0,MOVEMENT_SPEED * delta.getElapsed()); // translate camera vertically
             }
         }
     }
 
     @Override
-    public void draw(float delta) {
+    public void draw(DeltaTime delta) {
         // begin the spritebatch phase:
         spriteBatch.begin(gameCamera.getViewMatrix(), BlendMode.NORMAL_BLEND);
 

@@ -82,10 +82,8 @@ public class Matrix4 implements Serializable {
      * @return Perspective matrix
      */
     public static Matrix4 perspective(float fovy, float aspect, float near, float far) {
-        Matrix4 matrix = new Matrix4();
-
         float o = (float) (1.0f / Math.tan(fovy / 2.0f));
-
+        Matrix4 matrix = new Matrix4();
         matrix.m[0][0] = o / aspect;
         matrix.m[1][1] = o;
         matrix.m[2][2] = (far + near) / (near - far);

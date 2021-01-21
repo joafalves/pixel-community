@@ -11,6 +11,7 @@ import org.pixel.commons.lifecycle.Updatable;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.commons.util.IOUtils;
+import org.pixel.commons.DeltaTime;
 import org.pixel.graphics.shader.ShaderManager;
 import org.pixel.core.Game;
 import org.pixel.core.GameWindowEventListener;
@@ -123,7 +124,7 @@ public class UIView implements Updatable, Loadable, Disposable, GameWindowEventL
      * @param delta
      */
     @Override
-    public void update(float delta) {
+    public void update(DeltaTime delta) {
         if (scene != null) {
             scene.update(delta);
         }
@@ -134,8 +135,8 @@ public class UIView implements Updatable, Loadable, Disposable, GameWindowEventL
      *
      * @param delta
      */
-    public void draw(float delta) {
-        elapsed += delta;
+    public void draw(DeltaTime delta) {
+        elapsed += delta.getElapsed();
         if (scene != null && elapsed > 1.0 / targetFps) {
             elapsed = 0;
             // capture the GUI drawing data to the render buffer:

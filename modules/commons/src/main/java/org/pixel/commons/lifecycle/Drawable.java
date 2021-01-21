@@ -5,11 +5,13 @@
 
 package org.pixel.commons.lifecycle;
 
+import org.pixel.commons.DeltaTime;
+
 public interface Drawable {
     /**
      * Draw function
      *
      * @param delta
      */
-    void draw(float delta);
+    void draw(DeltaTime delta);
 }

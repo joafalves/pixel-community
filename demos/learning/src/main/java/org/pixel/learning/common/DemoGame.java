@@ -7,6 +7,7 @@ package org.pixel.learning.common;
 
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.commons.DeltaTime;
 import org.pixel.core.Game;
 import org.pixel.core.GameSettings;
 
@@ -28,7 +29,7 @@ public abstract class DemoGame extends Game {
     }
 
     @Override
-    public void update(float delta) {
+    public void update(DeltaTime delta) {
         fpsCounter.update(delta);
     }
 }

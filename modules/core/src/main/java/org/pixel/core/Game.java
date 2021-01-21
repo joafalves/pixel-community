@@ -16,6 +16,7 @@ import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.Callback;
 import org.lwjgl.system.Configuration;
 import org.lwjgl.system.MemoryStack;
+import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.commons.lifecycle.Drawable;
 import org.pixel.commons.lifecycle.Loadable;
@@ -308,9 +309,7 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
 
     private void gameLoop() {
         // pre-variable configurations
-        double now;
-        float dt;
-        double lastTime = System.nanoTime();
+        DeltaTime delta = new DeltaTime();
 
         glClearColor(backgroundColor.getRed(), backgroundColor.getGreen(), backgroundColor.getBlue(), 0.0f);
 
@@ -320,14 +319,14 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // clear the screen
 
             // call the game user loop:
-            now = System.nanoTime();
-            dt = ((float) (now - lastTime)) / 1000000000.0f;
+            delta.tick();
+
             // update call
-            update(dt);
+            update(delta);
+
             // draw call
-            draw(dt);
-            // update timings:
-            lastTime = now;
+            draw(delta);
+
             // swap the color buffers
             glfwSwapBuffers(windowHnd);
 

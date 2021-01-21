@@ -5,6 +5,7 @@
 
 package org.pixel.learning.input;
 
+import org.pixel.commons.DeltaTime;
 import org.pixel.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
@@ -54,15 +55,15 @@ public class KeyboardInputDemo extends DemoGame {
     }
 
     @Override
-    public void update(float delta) {
+    public void update(DeltaTime delta) {
         super.update(delta);
 
         // Keyboard direct state access for org.pixel.input detection:
         if (Keyboard.isKeyDown(KeyboardKey.UP) || Keyboard.isKeyDown(KeyboardKey.W)) {
-            gameCamera.translate(0,-MOVEMENT_SPEED * delta); // translate camera vertically
+            gameCamera.translate(0,-MOVEMENT_SPEED * delta.getElapsed()); // translate camera vertically
 
         } else if (Keyboard.isKeyDown(KeyboardKey.DOWN) || Keyboard.isKeyDown(KeyboardKey.S)) {
-            gameCamera.translate(0,MOVEMENT_SPEED * delta); // translate camera vertically
+            gameCamera.translate(0,MOVEMENT_SPEED * delta.getElapsed()); // translate camera vertically
         }
 
         // In addition to direct state access, the Keyboard instance also supports snapshots by calling
@@ -77,7 +78,7 @@ public class KeyboardInputDemo extends DemoGame {
     }
 
     @Override
-    public void draw(float delta) {
+    public void draw(DeltaTime delta) {
         // begin the spritebatch phase:
         spriteBatch.begin(gameCamera.getViewMatrix(), BlendMode.NORMAL_BLEND);
 
