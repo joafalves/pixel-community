@@ -17,9 +17,9 @@ public class Texture implements Disposable {
     //region properties
 
     //private ByteBuffer imageData;
+    private final int id;
     private float width;
     private float height;
-    private int id;
 
     //endregion
 

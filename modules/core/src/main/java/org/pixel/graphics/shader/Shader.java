@@ -26,17 +26,17 @@ public abstract class Shader implements Disposable {
 
     private static final Logger log = LoggerFactory.getLogger(Shader.class);
 
-    private String vertSrc;
-    private String fragSrc;
+    private final String vertSrc;
+    private final String fragSrc;
 
     private int vertId;
     private int fragId;
     private int programId;
 
-    private List<String> attributes;
-    private List<String> uniforms;
-    private HashMap<String, Integer> attributeLocationMap;
-    private HashMap<String, Integer> uniformLocationMap;
+    private final List<String> attributes;
+    private final List<String> uniforms;
+    private final HashMap<String, Integer> attributeLocationMap;
+    private final HashMap<String, Integer> uniformLocationMap;
 
     //endregion
 

@@ -13,10 +13,10 @@ import java.nio.ByteBuffer;
  * @author João Filipe Alves
  */
 public class ImportContext {
-    private ContentManager contentManager;
+    private final ContentManager contentManager;
+    private final ByteBuffer buffer;
+    private final String filepath;
     private ContentImporterSettings settings;
-    private ByteBuffer buffer;
-    private String filepath;
 
     /**
      * Constructor

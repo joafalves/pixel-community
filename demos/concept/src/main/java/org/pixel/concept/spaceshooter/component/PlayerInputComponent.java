@@ -12,8 +12,8 @@ import org.pixel.input.keyboard.KeyboardKey;
 
 public class PlayerInputComponent extends GameComponent {
 
-    private final float SPEED_Y = 50.f;
-    private final float SPEED_X = 65.f;
+    private final float SPEED_Y = 100.f;
+    private final float SPEED_X = 150.f;
 
     @Override
     public void update(DeltaTime delta) {

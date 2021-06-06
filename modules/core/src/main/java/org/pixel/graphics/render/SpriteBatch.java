@@ -526,7 +526,7 @@ public class SpriteBatch extends DrawBatch {
     /**
      * SpriteData class
      */
-    private class SpriteData {
+    private static class SpriteData {
 
         int textureId;
         float textureWidth;

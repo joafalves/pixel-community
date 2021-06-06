@@ -29,6 +29,7 @@ public class Font implements Disposable {
     private static final int GLYPH_TEXTURE_PADDING = 1;
     private static final int GLYPH_TEXTURE_PADDING_COMPENSATION = 4;
 
+    private final FontData fontData;
     private int textureId;
     private int textureWidth;
     private int textureHeight;
@@ -39,7 +40,6 @@ public class Font implements Disposable {
     private STBTTPackedchar.Buffer packedBuffer;
     private ByteBuffer bitmap;
     private ConcurrentHashMap<Character, FontGlyph> glyphCache;
-    private FontData fontData;
 
     //endregion
 

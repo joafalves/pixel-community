@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
 
 public class FontData {
 
-    private ByteBuffer source;
+    private final ByteBuffer source;
 
     public FontData(ByteBuffer source) {
         this.source = source;

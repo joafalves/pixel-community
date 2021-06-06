@@ -14,8 +14,8 @@ import java.util.Map;
  */
 public class TexturePack implements Disposable {
 
-    private Texture texture;
-    private Map<String, TextureFrame> frameMap;
+    private final Texture texture;
+    private final Map<String, TextureFrame> frameMap;
 
     /**
      * Constructor

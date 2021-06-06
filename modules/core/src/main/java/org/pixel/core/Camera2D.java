@@ -15,11 +15,11 @@ public class Camera2D implements Disposable, Serializable {
 
     //region private properties
 
+    private final Vector2 position;
+    private final Vector2 origin;
     private float width;
     private float height;
     private float zoom;
-    private Vector2 position;
-    private Vector2 origin;
     private Matrix4 matrixCache;
     private boolean dirty;
 
