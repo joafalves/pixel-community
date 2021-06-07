@@ -42,9 +42,12 @@ public class TexturePack implements Disposable {
      * @return
      */
     public List<TextureFrame> getFrames(String... frameNames) {
-        List<TextureFrame> frames = new ArrayList<>();
+        var frames = new ArrayList<TextureFrame>();
         for (String frameName : frameNames) {
-            frames.add(getFrame(frameName));
+            var frame = getFrame(frameName);
+            if (frame != null) {
+                frames.add(frame);
+            }
         }
 
         return frames;
