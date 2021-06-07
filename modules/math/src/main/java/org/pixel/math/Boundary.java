@@ -13,10 +13,10 @@ public class Boundary implements Serializable {
 
     //region public properties
 
-    private Vector2 topLeft;
-    private Vector2 topRight;
-    private Vector2 bottomLeft;
-    private Vector2 bottomRight;
+    private final Vector2 topLeft;
+    private final Vector2 topRight;
+    private final Vector2 bottomLeft;
+    private final Vector2 bottomRight;
     private List<Vector2> vectorCache;
 
     //endregion

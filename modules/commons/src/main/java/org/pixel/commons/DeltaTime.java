@@ -37,7 +37,7 @@ public class DeltaTime {
     }
 
     /**
-     * Update elapsed time
+     * Update elapsed time (calculates delta since last tick)
      */
     public void tick() {
         long now = System.nanoTime() / 1000000;

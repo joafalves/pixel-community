@@ -28,7 +28,7 @@ public class HashUtils {
     }
 
     /**
-     * Generate a unique identification value
+     * Generate a numeric unique identification value
      *
      * @return
      */

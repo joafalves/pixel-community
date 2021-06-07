@@ -5,6 +5,8 @@
 
 package org.pixel.content;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.pixel.commons.lifecycle.Disposable;
 
 import java.util.Map;
@@ -33,6 +35,19 @@ public class TexturePack implements Disposable {
      */
     public TextureFrame getFrame(String frameName) {
         return frameMap.get(frameName);
+    }
+
+    /**
+     * @param frameNames
+     * @return
+     */
+    public List<TextureFrame> getFrames(String... frameNames) {
+        List<TextureFrame> frames = new ArrayList<>();
+        for (String frameName : frameNames) {
+            frames.add(getFrame(frameName));
+        }
+
+        return frames;
     }
 
     /**
