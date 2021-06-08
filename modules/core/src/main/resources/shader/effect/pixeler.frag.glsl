@@ -26,7 +26,6 @@ void main(void) {
         floor((vTextureCoordinates.y) * 100.0 / blockSizeV) * blockSizeV / 100.0 + sy);
     }
 
-
     vec4 color = texture(uTextureImage, clip);
     oFragColor = color;
 }

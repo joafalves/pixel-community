@@ -1,14 +1,17 @@
 package org.pixel.concept.spaceshooter;
 
+import org.pixel.commons.DeltaTime;
 import org.pixel.concept.spaceshooter.component.PlayerInputComponent;
-import org.pixel.concept.spaceshooter.object.PlayerShip;
+import org.pixel.concept.spaceshooter.content.BackgroundTexture;
+import org.pixel.concept.spaceshooter.game.BackgroundSprite;
+import org.pixel.concept.spaceshooter.game.PlayerSprite;
 import org.pixel.content.ContentManager;
 import org.pixel.content.TexturePack;
-import org.pixel.commons.DeltaTime;
 import org.pixel.core.Game;
 import org.pixel.core.GameSettings;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.MathHelper;
+import org.pixel.math.Rectangle;
 
 public class SpaceShooterGame extends Game {
 
@@ -16,7 +19,8 @@ public class SpaceShooterGame extends Game {
     private ContentManager content;
     private SpriteBatch spriteBatch;
 
-    private PlayerShip player;
+    private PlayerSprite player;
+    private BackgroundSprite bg;
 
     /**
      * Constructor
@@ -31,25 +35,34 @@ public class SpaceShooterGame extends Game {
     public void load() {
         spriteBatch = new SpriteBatch();
         content = new ContentManager();
+        gameCamera.setOrigin(0);
 
         // content load
         texturePack = content.load("spaceshooter/spritemap.json", TexturePack.class);
 
         // instances
-        player = new PlayerShip(spriteBatch, texturePack, texturePack.getFrame("player-ship"));
+        player = new PlayerSprite(spriteBatch, texturePack, texturePack.getFrame("player-ship"));
+        player.getTransform().setPosition(getVirtualWidth() / 2.f, getVirtualHeight() / 2.f);
         player.getTransform().setRotation(MathHelper.PIo2);
         player.addComponent(new PlayerInputComponent());
+
+        BackgroundTexture bgTex = new BackgroundTexture();
+        bgTex.setData(texturePack.getTexture(), texturePack.getFrames("bg-01", "bg-02", "bg-03", "bg-04"),
+                15, 20);
+        bg = new BackgroundSprite(bgTex, new Rectangle(0, 0, getVirtualWidth(), getVirtualHeight()));
     }
 
     @Override
     public void update(DeltaTime delta) {
         player.update(delta);
+        bg.update(delta);
     }
 
     @Override
     public void draw(DeltaTime delta) {
         spriteBatch.begin(gameCamera.getViewMatrix());
 
+        bg.draw(spriteBatch);
         player.draw(delta);
 
         spriteBatch.end();
@@ -65,7 +78,7 @@ public class SpaceShooterGame extends Game {
         final int width = 480;
         final int height = 640;
         GameSettings settings = new GameSettings(width / 2, height / 2);
-        settings.setWindowResizable(false);
+        settings.setWindowResizable(true);
         settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setDebugMode(true);

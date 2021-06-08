@@ -9,6 +9,17 @@ import java.io.Serializable;
 
 public class Vector2 implements Serializable {
 
+    //region static
+
+    // TODO: create an unmodifiable Vector2 type for the following vars:
+    public static final Vector2 ZERO = zero();
+    public static final Vector2 ONE = one();
+    public static final Vector2 ZERO_ONE = zeroOne();
+    public static final Vector2 ONE_ZERO = oneZero();
+    public static final Vector2 HALF = half();
+
+    //endregion
+
     //region properties
 
     private float x;
