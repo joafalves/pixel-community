@@ -70,8 +70,8 @@ allprojects {
         }
 
         // lombok
-        compileOnly 'org.projectlombok:lombok:1.18.12'
-        annotationProcessor 'org.projectlombok:lombok:1.18.12'
+        compileOnly 'org.projectlombok:lombok:1.18.20'
+        annotationProcessor 'org.projectlombok:lombok:1.18.20'
 
         // other:
         testImplementation group: "junit", name: "junit", version: "4.12"
@@ -87,11 +87,6 @@ allprojects {
             )
         }
     }
-}
-
-javadoc {
-    source = sourceSets.main.allJava
-    classpath = configurations.compile
 }
 
 //def bundleList = rootProject.subprojects.collect { ":" + it.name } // kinda cool but not configurable

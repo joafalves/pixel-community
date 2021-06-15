@@ -40,7 +40,7 @@ public class FontPropertyProcessor implements StylePropertyProcessor {
 
         } else if (declaration.equalsIgnoreCase("font-family")) {
             return FontStyle.builder()
-                    .fontFamily(values.get(0).getValue().replaceAll("\"", "").replaceAll("\'", ""))
+                    .fontFamily(values.get(0).getValue().replaceAll("\"", "").replaceAll("'", ""))
                     .build();
         }
 

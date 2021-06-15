@@ -1,0 +1,16 @@
+.background {
+    left: 5%;
+    top: 5%;
+    width: 90%;
+    height: 90%;
+    background: #222;
+}
+
+.text {
+    left: 10px;
+    top: 10px;
+    width: 250px;
+    height: 200px;
+    font-size: 24px;
+    color: lightgray;
+}
