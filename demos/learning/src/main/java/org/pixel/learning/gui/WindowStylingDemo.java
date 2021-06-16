@@ -31,6 +31,7 @@ public class WindowStylingDemo extends DemoGame {
 
         UIPanel panel = view.createComponent(UIPanel.class);
         panel.setStyleName("background");
+        panel.addStateChangeListener((newState, oldState) -> log.debug("Panel state changed: " + newState));
 
         UILabel label = view.createComponent(UILabel.class);
         label.setText("Hello, World!");

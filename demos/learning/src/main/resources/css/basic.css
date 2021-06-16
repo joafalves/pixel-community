@@ -4,6 +4,13 @@
     width: 90%;
     height: 90%;
     background: #222;
+    border-radius: 10px;
+    box-shadow: 0 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+.background:hover {
+    background: #666;
+    cursor: pointer;
 }
 
 .text {

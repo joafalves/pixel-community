@@ -112,7 +112,7 @@ public abstract class UIBoxComponent extends UIComponent {
                 bounds.getY() + boxShadowStyle.getVerticalOffset() - spread * 0.5f,
                 bounds.getWidth() + spread,
                 bounds.getHeight() + spread,
-                borderStyle.getRadius() * 2.0f, blur,
+                borderStyle.getRadius(), blur,
                 boxShadowStyle.getColor(), Color.TRANSPARENT);
 
         re.roundedRectangle(bounds.getX() + boxShadowStyle.getHorizontalOffset() - spread,

@@ -5,9 +5,16 @@
 
 package org.pixel.gui.component;
 
+import static org.pixel.gui.style.StyleUtils.STYLE_CLASS_SEPARATOR;
+import static org.pixel.gui.style.StyleUtils.STYLE_PATH_SEPARATOR;
+import static org.pixel.gui.style.StyleUtils.getStyleProperty;
+
+import java.util.List;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.gui.common.UIContext;
+import org.pixel.gui.event.UIEventRegistry;
+import org.pixel.gui.event.UIStateChangeListener;
 import org.pixel.gui.model.ComponentState;
 import org.pixel.gui.style.Style;
 import org.pixel.gui.style.StyleFactory;
@@ -16,17 +23,22 @@ import org.pixel.gui.style.StyleUtils;
 import org.pixel.gui.style.model.BoxSizingType;
 import org.pixel.gui.style.model.DisplayType;
 import org.pixel.gui.style.model.DisplayUnit;
-import org.pixel.gui.style.properties.*;
+import org.pixel.gui.style.properties.BorderStyle;
+import org.pixel.gui.style.properties.BoxSizingStyle;
+import org.pixel.gui.style.properties.DisplayStyle;
+import org.pixel.gui.style.properties.MarginStyle;
+import org.pixel.gui.style.properties.OriginStyle;
+import org.pixel.gui.style.properties.PaddingStyle;
+import org.pixel.gui.style.properties.PositionStyle;
+import org.pixel.gui.style.properties.SizeStyle;
 import org.pixel.math.Rectangle;
-
-import java.util.List;
-
-import static org.pixel.gui.style.StyleUtils.*;
 
 public abstract class UIComponent implements Disposable {
 
+    private final String identifier;
+    private final UIEventRegistry<UIStateChangeListener> stateEventRegistry;
+
     private String name;
-    private String identifier;
     private String styleName;
     private String customStyle;
 
@@ -62,6 +74,7 @@ public abstract class UIComponent implements Disposable {
         this.propertiesChanged = true;
         this.bounds = new Rectangle();
         this.state = ComponentState.ACTIVE;
+        this.stateEventRegistry = new UIEventRegistry<>();
     }
 
     /**
@@ -491,11 +504,26 @@ public abstract class UIComponent implements Disposable {
             return;
         }
 
+        ComponentState oldState = this.state;
         this.state = state;
+
         this.updateStyle();
+        this.triggerStateChange(state, oldState);
     }
 
     public ComponentState getState() {
         return state;
+    }
+
+    public void addStateChangeListener(UIStateChangeListener listener) {
+        stateEventRegistry.add(listener);
+    }
+
+    public boolean removeStateChangeListener(UIStateChangeListener listener) {
+        return stateEventRegistry.remove(listener);
+    }
+
+    private void triggerStateChange(ComponentState newState, ComponentState oldState) {
+        stateEventRegistry.forEach(listener -> listener.onStateChange(newState, oldState));
     }
 }
