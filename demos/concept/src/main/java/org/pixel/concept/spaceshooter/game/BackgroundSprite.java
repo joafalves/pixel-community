@@ -16,7 +16,7 @@ public class BackgroundSprite {
     private final Rectangle sourceArea = new Rectangle();
 
     public void update(DeltaTime delta) {
-        sourceArea.set(0, sourceArea.getY() - (delta.getElapsed() * 20f), texture.getWidth(), texture.getHeight());
+        sourceArea.set(0, sourceArea.getY() - (delta.getElapsed() * 50f), texture.getWidth(), texture.getHeight());
     }
 
     public void draw(SpriteBatch spriteBatch) {

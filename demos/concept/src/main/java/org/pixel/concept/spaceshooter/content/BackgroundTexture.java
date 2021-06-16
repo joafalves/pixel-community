@@ -9,6 +9,7 @@ import static org.lwjgl.opengl.GL11C.glGetTexImage;
 import static org.lwjgl.system.libc.LibCStdlib.free;
 
 import java.nio.ByteBuffer;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import org.lwjgl.BufferUtils;
@@ -26,7 +27,7 @@ public class BackgroundTexture extends Texture {
     }
 
     public void setData(Texture baseTexture, List<TextureFrame> frames, int blocksX, int blocksY) {
-        // assuming that all frames have the same size...
+        // assumes that all frames have the same size...
         final float fw = frames.get(0).getSource().getWidth();
         final float fh = frames.get(0).getSource().getHeight();
         final float tw = fw * blocksX;
@@ -39,8 +40,10 @@ public class BackgroundTexture extends Texture {
         glGetTexImage(GL11C.GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, originalData);
         baseTexture.unbind();
 
+        frames.sort(Comparator.comparingInt(o -> o.getAttributes().getInteger("weight", 1)));
+
         for (int i = 0; i < blocksX * blocksY; i++) {
-            TextureFrame frame = frames.get(ThreadLocalRandom.current().nextInt(frames.size()));
+            TextureFrame frame = pickTextureFrame(frames);
             int ex = (int) (baseTexture.getWidth() * 4.0);
             for (int x = (int) frame.getSource().getX(); x < frame.getSource().getX() + frame.getSource().getWidth(); x++) {
                 for (int y = (int) frame.getSource().getY(); y < frame.getSource().getY() + frame.getSource().getHeight(); y++) {
@@ -61,5 +64,26 @@ public class BackgroundTexture extends Texture {
 
         free(originalData);
         free(data);
+    }
+
+    private TextureFrame pickTextureFrame(List<TextureFrame> frames) {
+        // pick selection based on texture frame weights (more weight = more probability of being picked)
+        // assumes that there are more than one frame in the list
+        int totalWeight = 0;
+        for (TextureFrame frame : frames) {
+            totalWeight += frame.getAttributes().getInteger("weight", 1);
+        }
+
+        int weightSum = 0;
+        int rnd = ThreadLocalRandom.current().nextInt(totalWeight);
+        for (TextureFrame frame : frames) {
+            int weight = frame.getAttributes().getInteger("weight", 1);
+            if (rnd < weightSum + weight) {
+                return frame;
+            }
+            weightSum += weight;
+        }
+
+        throw new RuntimeException("Should not happen");
     }
 }

@@ -10,6 +10,9 @@
       "pivot": {
         "x": 0,
         "y": 0
+      },
+      "attributes": {
+        "weight": 50
       }
     },
     "bg-02": {
@@ -22,6 +25,9 @@
       "pivot": {
         "x": 0,
         "y": 0
+      },
+      "attributes": {
+        "weight": 3
       }
     },
     "bg-03": {
@@ -34,6 +40,9 @@
       "pivot": {
         "x": 0,
         "y": 0
+      },
+      "attributes": {
+        "weight": 2
       }
     },
     "bg-04": {
@@ -46,6 +55,9 @@
       "pivot": {
         "x": 0,
         "y": 0
+      },
+      "attributes": {
+        "weight": 6
       }
     },
     "player-ship": {

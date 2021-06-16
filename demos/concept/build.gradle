@@ -3,7 +3,10 @@
  * Copyright (c) 2020
  */
 
-apply plugin: "application"
+plugins {
+    id 'application'
+    id 'edu.sc.seis.launch4j' version '2.5.0'
+}
 
 dependencies {
     api project(":${rootProject.name}-core")
@@ -11,4 +14,13 @@ dependencies {
     api project(":${rootProject.name}-gui")
     api project(":${rootProject.name}-physics");
     api project(":${rootProject.name}-math");
+}
+
+application {
+    mainClass = 'org.pixel.concept.spaceshooter.SpaceShooterGame'
+}
+
+launch4j {
+    mainClassName = 'org.pixel.concept.spaceshooter.SpaceShooterGame'
+    // icon = "${projectDir}/icons/myApp.ico"
 }

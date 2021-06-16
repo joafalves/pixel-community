@@ -5,6 +5,7 @@
 
 package org.pixel.content;
 
+import org.pixel.commons.model.AttributeMap;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 
@@ -15,10 +16,17 @@ public class TextureFrame {
 
     private Rectangle source;
     private Vector2 pivot;
+    private AttributeMap attributes;
 
     public TextureFrame(Rectangle source, Vector2 pivot) {
         this.source = source;
         this.pivot = pivot;
+    }
+
+    public TextureFrame(Rectangle source, Vector2 pivot, AttributeMap attributes) {
+        this.source = source;
+        this.pivot = pivot;
+        this.attributes = attributes;
     }
 
     public Vector2 getPivot() {
@@ -35,5 +43,13 @@ public class TextureFrame {
 
     public void setSource(Rectangle source) {
         this.source = source;
+    }
+
+    public AttributeMap getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(AttributeMap attributes) {
+        this.attributes = attributes;
     }
 }

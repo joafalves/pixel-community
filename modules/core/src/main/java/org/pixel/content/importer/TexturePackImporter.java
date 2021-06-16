@@ -8,6 +8,7 @@ package org.pixel.content.importer;
 import org.json.JSONObject;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.commons.model.AttributeMap;
 import org.pixel.commons.util.FileUtils;
 import org.pixel.commons.util.TextUtils;
 import org.pixel.content.*;
@@ -51,7 +52,17 @@ public class TexturePackImporter implements ContentImporter<TexturePack> {
                 pivot = new Vector2(0, 0);
             }
 
-            frameMap.put(key, new TextureFrame(source, pivot));
+            TextureFrame textureFrame = new TextureFrame(source, pivot);
+            if (frameInfo.has("attributes")) { // does it have attributes?
+                var attributeMap = new AttributeMap();
+                var attributes = frameInfo.getJSONObject("attributes");
+                attributes.keys().forEachRemaining(attrKey -> attributeMap.put(attrKey, attributes.get(attrKey)));
+                if (!attributeMap.isEmpty()) {
+                    textureFrame.setAttributes(attributeMap);
+                }
+            }
+
+            frameMap.put(key, textureFrame);
         });
 
         // when available, attempt to load the associated texture pack meta:
