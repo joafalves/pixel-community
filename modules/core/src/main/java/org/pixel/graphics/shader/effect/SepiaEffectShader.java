@@ -5,13 +5,12 @@
 
 package org.pixel.graphics.shader.effect;
 
-import org.pixel.graphics.shader.Shader;
+import static org.lwjgl.opengl.GL20.glUniform1f;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import static org.lwjgl.opengl.GL20.glUniform1f;
+import org.pixel.graphics.shader.Shader;
 
 public class SepiaEffectShader extends Shader {
 
@@ -22,11 +21,11 @@ public class SepiaEffectShader extends Shader {
     private static final String fragSrc;
 
     static {
-        vertSrc = loadShader("shader/effect/sepia.vert.glsl");
-        fragSrc = loadShader("shader/effect/sepia.frag.glsl");
+        vertSrc = loadShader("engine/shader/effect/sepia.vert.glsl");
+        fragSrc = loadShader("engine/shader/effect/sepia.frag.glsl");
     }
 
-    private float amount;
+    private final float amount;
 
     /**
      * Constructor

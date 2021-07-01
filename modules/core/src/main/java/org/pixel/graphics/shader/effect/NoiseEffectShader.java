@@ -24,8 +24,8 @@ public class NoiseEffectShader extends Shader {
     private static final String fragSrc;
 
     static {
-        vertSrc = loadShader("shader/effect/noise.vert.glsl");
-        fragSrc = loadShader("shader/effect/noise.frag.glsl");
+        vertSrc = loadShader("engine/shader/effect/noise.vert.glsl");
+        fragSrc = loadShader("engine/shader/effect/noise.frag.glsl");
     }
 
     private float amount;

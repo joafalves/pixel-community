@@ -5,19 +5,25 @@
 
 package org.pixel.gui;
 
+import static org.lwjgl.opengl.GL11C.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11C.GL_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11C.glBlendFunc;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.commons.lifecycle.Loadable;
 import org.pixel.commons.lifecycle.Updatable;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.commons.util.IOUtils;
-import org.pixel.commons.DeltaTime;
-import org.pixel.graphics.shader.ShaderManager;
 import org.pixel.core.Game;
 import org.pixel.core.GameWindowEventListener;
 import org.pixel.core.WindowMode;
 import org.pixel.graphics.render.NvgRenderEngine;
 import org.pixel.graphics.render.RenderBuffer;
+import org.pixel.graphics.shader.ShaderManager;
 import org.pixel.gui.common.UIContext;
 import org.pixel.gui.component.UIComponent;
 import org.pixel.gui.style.Style;
@@ -25,15 +31,10 @@ import org.pixel.gui.style.StyleFactory;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Size;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
-
-import static org.lwjgl.opengl.GL11C.*;
-
 public class UIView implements Updatable, Loadable, Disposable, GameWindowEventListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(UIView.class);
-    private static final String DEFAULT_STYLE_FILEPATH = "style/default.css";
+    private static final String DEFAULT_STYLE_FILEPATH = "engine/style/default.css";
     private static final int DEFAULT_FPS = 60;
 
     private final UIContext context;
@@ -107,7 +108,7 @@ public class UIView implements Updatable, Loadable, Disposable, GameWindowEventL
      * Setup packed fonts
      */
     private void setupPackedFonts() {
-        context.getRenderEngine().addFont(IOUtils.loadFile("fonts/roboto-regular.ttf"), "roboto");
+        context.getRenderEngine().addFont(IOUtils.loadFile("engine/fonts/roboto-regular.ttf"), "roboto");
     }
 
     /**

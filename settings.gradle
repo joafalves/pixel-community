@@ -15,5 +15,4 @@ include "demos/learning", "demos/concept"
 
 rootProject.children.each {
     it.name = rootProject.name + "-" + it.name.split("/").last()
-    println it.name
 }

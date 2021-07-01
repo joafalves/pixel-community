@@ -24,8 +24,8 @@ public class BorderEffectShader extends Shader {
     private static final String fragSrc;
 
     static {
-        vertSrc = loadShader("shader/effect/border.vert.glsl");
-        fragSrc = loadShader("shader/effect/border.frag.glsl");
+        vertSrc = loadShader("engine/shader/effect/border.vert.glsl");
+        fragSrc = loadShader("engine/shader/effect/border.frag.glsl");
     }
 
     private float vertical;

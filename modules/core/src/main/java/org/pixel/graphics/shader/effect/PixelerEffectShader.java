@@ -5,13 +5,12 @@
 
 package org.pixel.graphics.shader.effect;
 
-import org.pixel.graphics.shader.Shader;
+import static org.lwjgl.opengl.GL20.glUniform1f;
+import static org.lwjgl.opengl.GL20C.glUniform1i;
 
 import java.util.Arrays;
 import java.util.List;
-
-import static org.lwjgl.opengl.GL20.glUniform1f;
-import static org.lwjgl.opengl.GL20C.glUniform1i;
+import org.pixel.graphics.shader.Shader;
 
 public class PixelerEffectShader extends Shader {
 
@@ -22,8 +21,8 @@ public class PixelerEffectShader extends Shader {
     private static final String fragSrc;
 
     static {
-        vertSrc = loadShader("shader/effect/pixeler.vert.glsl");
-        fragSrc = loadShader("shader/effect/pixeler.frag.glsl");
+        vertSrc = loadShader("engine/shader/effect/pixeler.vert.glsl");
+        fragSrc = loadShader("engine/shader/effect/pixeler.frag.glsl");
     }
 
     private boolean animated;

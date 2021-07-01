@@ -21,8 +21,8 @@ public class TextureShader extends Shader {
     private static final String fragSrc;
 
     static {
-        vertSrc = loadShader("shader/standard/texture.vert.glsl");
-        fragSrc = loadShader("shader/standard/texture.frag.glsl");
+        vertSrc = loadShader("engine/shader/standard/texture.vert.glsl");
+        fragSrc = loadShader("engine/shader/standard/texture.frag.glsl");
     }
 
     //endregion

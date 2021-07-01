@@ -22,8 +22,8 @@ public class OverlayEffectShader extends Shader {
     private static final String fragSrc;
 
     static {
-        vertSrc = loadShader("shader/effect/overlay.vert.glsl");
-        fragSrc = loadShader("shader/effect/overlay.frag.glsl");
+        vertSrc = loadShader("engine/shader/effect/overlay.vert.glsl");
+        fragSrc = loadShader("engine/shader/effect/overlay.frag.glsl");
     }
 
     private Color overlayColor;

@@ -19,8 +19,8 @@ public class RenderBufferShader extends Shader {
     private static final String fragSrc;
 
     static {
-        vertSrc = loadShader("shader/standard/render.buffer.vert.glsl");
-        fragSrc = loadShader("shader/standard/render.buffer.frag.glsl");
+        vertSrc = loadShader("engine/shader/standard/render.buffer.vert.glsl");
+        fragSrc = loadShader("engine/shader/standard/render.buffer.frag.glsl");
     }
 
     /**

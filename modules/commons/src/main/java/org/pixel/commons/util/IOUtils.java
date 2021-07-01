@@ -5,10 +5,9 @@
 
 package org.pixel.commons.util;
 
-import org.lwjgl.system.MemoryStack;
-import org.pixel.commons.logger.Logger;
-import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.commons.model.ImageData;
+import static org.lwjgl.BufferUtils.createByteBuffer;
+import static org.lwjgl.stb.STBImage.stbi_failure_reason;
+import static org.lwjgl.stb.STBImage.stbi_load_from_memory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,33 +21,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import static org.lwjgl.BufferUtils.createByteBuffer;
-import static org.lwjgl.stb.STBImage.stbi_failure_reason;
-import static org.lwjgl.stb.STBImage.stbi_load_from_memory;
+import org.lwjgl.system.MemoryStack;
+import org.pixel.commons.logger.Logger;
+import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.commons.model.ImageData;
 
 public class IOUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(IOUtils.class);
-
-    /**
-     * Load file as string
-     *
-     * @param filepath
-     * @return
-     */
-    public static String loadFileAsString(String filepath) {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        try (InputStream resourceStream = loader.getResourceAsStream(filepath)) {
-            return new BufferedReader(new InputStreamReader(Objects.requireNonNull(resourceStream)))
-                    .lines().collect(Collectors.joining("\n"));
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-
-        return "";
-    }
 
     /**
      * Load image file (stbi)
@@ -119,6 +99,25 @@ public class IOUtils {
             } catch (IOException e) {
                 LOG.error("Exception caught!", e);
             }
+        }
+
+        return null;
+    }
+
+    /**
+     * Load file as string
+     *
+     * @param filepath
+     * @return
+     */
+    public static String loadFileString(String filepath) {
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        try (InputStream resourceStream = loader.getResourceAsStream(filepath)) {
+            return new BufferedReader(new InputStreamReader(Objects.requireNonNull(resourceStream)))
+                    .lines().collect(Collectors.joining(System.lineSeparator()));
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
 
         return null;

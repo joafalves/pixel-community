@@ -21,8 +21,8 @@ public class PixelRenderEngineShader extends Shader {
     private static final String fragSrc;
 
     static {
-        vertSrc = loadShader("shader/standard/pixel.re2.vert.glsl");
-        fragSrc = loadShader("shader/standard/pixel.re2.frag.glsl");
+        vertSrc = loadShader("engine/shader/standard/pixel.re2.vert.glsl");
+        fragSrc = loadShader("engine/shader/standard/pixel.re2.frag.glsl");
     }
 
     //endregion

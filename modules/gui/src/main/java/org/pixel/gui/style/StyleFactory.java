@@ -5,17 +5,39 @@
 
 package org.pixel.gui.style;
 
-import cz.vutbr.web.css.*;
-import org.pixel.commons.logger.Logger;
-import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.commons.util.IOUtils;
-import org.pixel.gui.style.processor.property.*;
+import static org.pixel.gui.style.StyleUtils.STYLE_PATH_SEPARATOR;
 
+import cz.vutbr.web.css.CSSException;
+import cz.vutbr.web.css.CSSFactory;
+import cz.vutbr.web.css.CombinedSelector;
+import cz.vutbr.web.css.Declaration;
+import cz.vutbr.web.css.RuleBlock;
+import cz.vutbr.web.css.RuleSet;
+import cz.vutbr.web.css.StyleSheet;
+import cz.vutbr.web.css.TermFunction;
+import cz.vutbr.web.css.TermOperator;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.pixel.gui.style.StyleUtils.STYLE_PATH_SEPARATOR;
+import org.pixel.commons.logger.Logger;
+import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.commons.util.IOUtils;
+import org.pixel.gui.style.processor.property.BackgroundPropertyProcessor;
+import org.pixel.gui.style.processor.property.BorderPropertyProcessor;
+import org.pixel.gui.style.processor.property.BoxShadowPropertyProcessor;
+import org.pixel.gui.style.processor.property.BoxSizingPropertyProcessor;
+import org.pixel.gui.style.processor.property.ColorPropertyProcessor;
+import org.pixel.gui.style.processor.property.CursorPropertyProcessor;
+import org.pixel.gui.style.processor.property.DisplayPropertyProcessor;
+import org.pixel.gui.style.processor.property.FlexPropertyProcessor;
+import org.pixel.gui.style.processor.property.FontPropertyProcessor;
+import org.pixel.gui.style.processor.property.MarginPropertyProcessor;
+import org.pixel.gui.style.processor.property.OriginPropertyProcessor;
+import org.pixel.gui.style.processor.property.PaddingPropertyProcessor;
+import org.pixel.gui.style.processor.property.PositionPropertyProcessor;
+import org.pixel.gui.style.processor.property.SizePropertyProcessor;
+import org.pixel.gui.style.processor.property.StylePropertyProcessor;
+import org.pixel.gui.style.processor.property.TextPropertyProcessor;
 
 public class StyleFactory {
 
@@ -85,7 +107,7 @@ public class StyleFactory {
      * @return
      */
     public static Style getStyle(String filepath) {
-        String styleSrc = IOUtils.loadFileAsString(filepath);
+        String styleSrc = IOUtils.loadFileString(filepath);
         if (styleSrc == null) {
             LOG.warn("Could not load style from path '%s'", filepath);
             return null;

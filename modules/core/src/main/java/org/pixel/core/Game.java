@@ -109,7 +109,7 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
 
     private static final String DEFAULT_WINDOW_ICON_PATH_64 = "images/app-icon@64.png";
     private static final String DEFAULT_WINDOW_ICON_PATH_32 = "images/app-icon@32.png";
-    private static final Logger LOG = LoggerFactory.getLogger(Game.class);
+    private static final Logger log = LoggerFactory.getLogger(Game.class);
 
     private final List<GameWindowEventListener> gameWindowEventListeners;
 
@@ -276,7 +276,7 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
         });
 
         glfwSetWindowFocusCallback(windowHnd, ((window, focused) -> {
-            LOG.debug("Windows focus changed: %b", focused);
+            log.debug("Windows focus changed: %b", focused);
             windowFocused = focused;
         }));
 
@@ -298,7 +298,7 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
             AL.createCapabilities(alcCapabilities);
 
         } catch (Exception e) {
-            LOG.error("Exception caught!", e);
+            log.error("Exception caught!", e);
         }
 
         // call implementation loading method
@@ -334,7 +334,7 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
         for (int i = 0; i < filenames.length; i++) {
             ImageData imgData = IOUtils.loadImage(filenames[i]);
             if (imgData == null) {
-                LOG.warn("Unable to set window icon, cannot load image from given file path '%s'", filenames[i]);
+                log.warn("Unable to set window icon, cannot load image from given file path '%s'", filenames[i]);
                 return;
             }
 
@@ -401,7 +401,7 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
                     Thread.sleep(100); // TODO: make idle period configurable
 
                 } catch (InterruptedException e) {
-                    LOG.error("Exception caught!", e);
+                    log.error("Exception caught!", e);
                 }
             }
 
@@ -444,13 +444,17 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
             glfwGetWindowSize(windowHnd, pWidth, pHeight);
 
             // Get the resolution of the primary monitor
-            GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            GLFWVidMode videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            if (videoMode == null) {
+                log.warn("Failure to center window (unable to get resolution from the primary monitor)");
+                return;
+            }
 
             // Center the windowHnd
             glfwSetWindowPos(
                     windowHnd,
-                    (vidmode.width() - pWidth.get(0)) / 2,
-                    (vidmode.height() - pHeight.get(0)) / 2
+                    (videoMode.width() - pWidth.get(0)) / 2,
+                    (videoMode.height() - pHeight.get(0)) / 2
             );
 
             // Set Input handlers:
