@@ -691,4 +691,8 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
     public boolean isWindowFocused() {
         return windowFocused;
     }
+
+    public long getWindowHandle() {
+        return windowHnd;
+    }
 }
