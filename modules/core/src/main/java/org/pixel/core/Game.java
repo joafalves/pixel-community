@@ -107,8 +107,8 @@ import org.pixel.math.Size;
 
 public abstract class Game implements Loadable, Updatable, Drawable, Disposable {
 
-    private static final String DEFAULT_WINDOW_ICON_PATH_64 = "images/app-icon@64.png";
-    private static final String DEFAULT_WINDOW_ICON_PATH_32 = "images/app-icon@32.png";
+    private static final String DEFAULT_WINDOW_ICON_PATH_64 = "engine/images/app-icon@64.png";
+    private static final String DEFAULT_WINDOW_ICON_PATH_32 = "engine/images/app-icon@32.png";
     private static final Logger log = LoggerFactory.getLogger(Game.class);
 
     private final List<GameWindowEventListener> gameWindowEventListeners;
