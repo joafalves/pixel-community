@@ -10,7 +10,7 @@ import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.commons.DeltaTime;
 import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
-import org.pixel.core.GameSettings;
+import org.pixel.core.WindowSettings;
 
 public abstract class DemoGame extends PixelWindow {
 
@@ -24,7 +24,7 @@ public abstract class DemoGame extends PixelWindow {
      *
      * @param settings
      */
-    public DemoGame(GameSettings settings) {
+    public DemoGame(WindowSettings settings) {
         super(settings);
 
         gameCamera = new Camera2D(this);

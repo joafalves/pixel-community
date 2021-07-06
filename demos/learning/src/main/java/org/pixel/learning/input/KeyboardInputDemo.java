@@ -10,7 +10,7 @@ import org.pixel.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.core.PixelWindow;
-import org.pixel.core.GameSettings;
+import org.pixel.core.WindowSettings;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
@@ -32,7 +32,7 @@ public class KeyboardInputDemo extends DemoGame {
 
     private KeyboardState lastKeyboardState;
 
-    public KeyboardInputDemo(GameSettings settings) {
+    public KeyboardInputDemo(WindowSettings settings) {
         super(settings);
         setBackgroundColor(Color.BLACK);
     }
@@ -97,7 +97,7 @@ public class KeyboardInputDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        GameSettings settings = new GameSettings(600, 480);
+        WindowSettings settings = new WindowSettings(600, 480);
         settings.setWindowTitle("Input DEMO - use W or S keys to move the camera vertically");
         settings.setWindowResizable(false);
         settings.setMultisampling(2);

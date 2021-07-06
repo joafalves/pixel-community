@@ -3,7 +3,7 @@ package org.pixel.learning.primitive;
 import org.pixel.commons.DeltaTime;
 import org.pixel.core.PixelWindow;
 import org.pixel.learning.common.DemoGame;
-import org.pixel.core.GameSettings;
+import org.pixel.core.WindowSettings;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.NvgRenderEngine;
 import org.pixel.graphics.render.RenderEngine2D;
@@ -18,7 +18,7 @@ public class PrimitivesDemo extends DemoGame {
      *
      * @param settings
      */
-    public PrimitivesDemo(GameSettings settings) {
+    public PrimitivesDemo(WindowSettings settings) {
         super(settings);
     }
 
@@ -62,7 +62,7 @@ public class PrimitivesDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        GameSettings settings = new GameSettings(600, 480);
+        WindowSettings settings = new WindowSettings(600, 480);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);

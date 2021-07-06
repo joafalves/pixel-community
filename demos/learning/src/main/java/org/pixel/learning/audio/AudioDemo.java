@@ -11,7 +11,7 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.core.PixelWindow;
 import org.pixel.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
-import org.pixel.core.GameSettings;
+import org.pixel.core.WindowSettings;
 
 public class AudioDemo extends DemoGame {
 
@@ -21,7 +21,7 @@ public class AudioDemo extends DemoGame {
     private Sound sound;
     private float soundElapsed = SOUND_DURATION;
 
-    public AudioDemo(GameSettings settings) {
+    public AudioDemo(WindowSettings settings) {
         super(settings);
     }
 
@@ -57,7 +57,7 @@ public class AudioDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        GameSettings settings = new GameSettings(600, 480);
+        WindowSettings settings = new WindowSettings(600, 480);
         settings.setWindowTitle("Volume up! Audio is playing :)");
         settings.setWindowResizable(false);
         settings.setMultisampling(2);

@@ -2,7 +2,7 @@ package org.pixel.learning.gui;
 
 import org.pixel.commons.DeltaTime;
 import org.pixel.core.PixelWindow;
-import org.pixel.core.GameSettings;
+import org.pixel.core.WindowSettings;
 import org.pixel.gui.UIScene;
 import org.pixel.gui.UIView;
 import org.pixel.gui.component.UIPanel;
@@ -17,7 +17,7 @@ public class SimpleWindowDemo extends DemoGame {
      *
      * @param settings
      */
-    public SimpleWindowDemo(GameSettings settings) {
+    public SimpleWindowDemo(WindowSettings settings) {
         super(settings);
     }
 
@@ -55,7 +55,7 @@ public class SimpleWindowDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        GameSettings settings = new GameSettings(600, 480);
+        WindowSettings settings = new WindowSettings(600, 480);
         settings.setWindowTitle("Simple Window DEMO");
         settings.setWindowResizable(false);
         settings.setMultisampling(2);

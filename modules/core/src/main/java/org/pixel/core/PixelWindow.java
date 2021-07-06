@@ -111,7 +111,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
     private static final String DEFAULT_WINDOW_ICON_PATH_32 = "engine/images/app-icon@32.png";
     private static final Logger log = LoggerFactory.getLogger(PixelWindow.class);
 
-    private final List<PixelWindowEventListener> windowEventListeners;
+    private final List<WindowEventListener> windowEventListeners;
 
     private final Properties clientProperties;
     private final WindowDimensions windowDimensions;
@@ -122,20 +122,20 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
     private final int[] audioAttributes = {0};
     private final int multisampling;
 
-    private long windowHnd;
+    private WindowMode windowMode;
+    private Color backgroundColor;
+    private Callback debugLocalCallback;
+    private long windowHandle;
     private long audioDevice;
     private long audioContext;
     private boolean initialized;
     private boolean windowFocused;
     private boolean vsyncEnabled;
-    private WindowMode windowMode;
-    private Color backgroundColor;
-    private Callback debugLocalCallback;
 
     /**
      * Constructor
      */
-    public PixelWindow(GameSettings settings) {
+    public PixelWindow(WindowSettings settings) {
         this.windowEventListeners = new ArrayList<>();
         this.initialized = false;
         this.clientProperties = settings.getClientProperties();
@@ -205,9 +205,9 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
 
         // Create the windowHnd
         long monitor = windowMode.equals(WindowMode.FULLSCREEN) ? glfwGetPrimaryMonitor() : NULL;
-        windowHnd = glfwCreateWindow(windowDimensions.getWindowWidth(), windowDimensions.getWindowHeight(),
+        windowHandle = glfwCreateWindow(windowDimensions.getWindowWidth(), windowDimensions.getWindowHeight(),
                 windowTitle, monitor, NULL);
-        if (windowHnd == NULL) {
+        if (windowHandle == NULL) {
             throw new RuntimeException("Failed to create the GLFW windowHnd");
         }
 
@@ -221,7 +221,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
             videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
             // Set to windowed mode and center on the user screen:
             assert videoMode != null;
-            glfwSetWindowMonitor(windowHnd, NULL,
+            glfwSetWindowMonitor(windowHandle, NULL,
                     (videoMode.width() - windowDimensions.getWindowWidth()) / 2,
                     (videoMode.height() - windowDimensions.getWindowHeight()) / 2,
                     windowDimensions.getWindowWidth(), windowDimensions.getWindowHeight(), GLFW_DONT_CARE);
@@ -230,19 +230,19 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
             videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
             // Set to windowed mode and center on the user screen:
             assert videoMode != null;
-            glfwSetWindowMonitor(windowHnd, NULL, (videoMode.width() - windowDimensions.getWindowWidth()) / 2,
+            glfwSetWindowMonitor(windowHandle, NULL, (videoMode.width() - windowDimensions.getWindowWidth()) / 2,
                     (videoMode.height() - windowDimensions.getWindowHeight()) / 2,
                     windowDimensions.getWindowWidth(), windowDimensions.getWindowHeight(), GLFW_DONT_CARE);
         }
 
         // Make the OpenGL context current
-        glfwMakeContextCurrent(windowHnd);
+        glfwMakeContextCurrent(windowHandle);
 
         // V-sync configurations
         glfwSwapInterval(vsyncEnabled ? GLFW_TRUE : GLFW_FALSE);
 
         // Make the windowHnd visible
-        glfwShowWindow(windowHnd);
+        glfwShowWindow(windowHandle);
 
         // This line is critical for LWJGL's interoperation with GLFW's
         // OpenGL context, or any context that is managed externally.
@@ -265,14 +265,14 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
         Configuration.DISABLE_CHECKS.set(!debugMode);
 
         // set resize callback:
-        glfwSetWindowSizeCallback(windowHnd, (window, width, height) -> {
+        glfwSetWindowSizeCallback(windowHandle, (window, width, height) -> {
             windowDimensions.setWindowWidth(width);
             windowDimensions.setWindowHeight(height);
             updateViewport();
             triggerWindowSizeChangeEvent();
         });
 
-        glfwSetWindowFocusCallback(windowHnd, ((window, focused) -> {
+        glfwSetWindowFocusCallback(windowHandle, ((window, focused) -> {
             log.debug("Windows focus changed: %b", focused);
             windowFocused = focused;
         }));
@@ -313,7 +313,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
         try (MemoryStack stack = stackPush()) {
             IntBuffer pWidth = stack.mallocInt(1);
             IntBuffer pHeight = stack.mallocInt(1);
-            glfwGetFramebufferSize(windowHnd, pWidth, pHeight);
+            glfwGetFramebufferSize(windowHandle, pWidth, pHeight);
             glViewport(0, 0, pWidth.get(0), pHeight.get(0));
             windowDimensions.setPixelRatio(pWidth.get(0) / (float) windowDimensions.getWindowWidth());
             windowDimensions.setFrameWidth(pWidth.get(0));
@@ -345,7 +345,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
             buffer.put(i, imageDataArray[i]);
         }
 
-        glfwSetWindowIcon(windowHnd, buffer);
+        glfwSetWindowIcon(windowHandle, buffer);
     }
 
     /**
@@ -362,7 +362,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
         // finalize
         dispose(); // call for graceful termination..
 
-        glfwDestroyWindow(windowHnd);
+        glfwDestroyWindow(windowHandle);
         glfwTerminate();
     }
 
@@ -374,7 +374,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
 
         // Run the rendering loop until the user has attempted to close
         // the windowHnd or has pressed the ESCAPE key.
-        while (!glfwWindowShouldClose(windowHnd)) {
+        while (!glfwWindowShouldClose(windowHandle)) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // clear the screen
 
             // call the game user loop:
@@ -387,7 +387,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
             draw(delta);
 
             // swap the color buffers
-            glfwSwapBuffers(windowHnd);
+            glfwSwapBuffers(windowHandle);
 
             // Poll for windowHnd events. The key callback above will only be
             // invoked during this call.
@@ -440,7 +440,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
      */
     public void close() {
         // set the closing flag so at the start of the next game loop the game closes
-        glfwSetWindowShouldClose(windowHnd, true);
+        glfwSetWindowShouldClose(windowHandle, true);
     }
 
     /**
@@ -453,7 +453,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
             IntBuffer pHeight = stack.mallocInt(1); // int*
 
             // Get the windowHnd size passed to glfwCreateWindow
-            glfwGetWindowSize(windowHnd, pWidth, pHeight);
+            glfwGetWindowSize(windowHandle, pWidth, pHeight);
 
             // Get the resolution of the primary monitor
             GLFWVidMode videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
@@ -464,15 +464,15 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
 
             // Center the windowHnd
             glfwSetWindowPos(
-                    windowHnd,
+                    windowHandle,
                     (videoMode.width() - pWidth.get(0)) / 2,
                     (videoMode.height() - pHeight.get(0)) / 2
             );
 
             // Set Input handlers:
-            glfwSetKeyCallback(windowHnd, new Keyboard.KeyboardInputHandler());
-            glfwSetCursorPosCallback(windowHnd, new Mouse.CursorPositionHandler());
-            glfwSetMouseButtonCallback(windowHnd, new Mouse.MouseButtonHandler());
+            glfwSetKeyCallback(windowHandle, new Keyboard.KeyboardInputHandler());
+            glfwSetCursorPosCallback(windowHandle, new Mouse.CursorPositionHandler());
+            glfwSetMouseButtonCallback(windowHandle, new Mouse.MouseButtonHandler());
             //glfwSetCursor(windowHnd, glfwCreateStandardCursor(GLFW_ARROW_CURSOR));
         }
     }
@@ -587,7 +587,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
             windowDimensions.setWindowHeight(windowDimensions.getVirtualHeight());
         }
 
-        glfwSetWindowMonitor(windowHnd, monitor, 0, 0,
+        glfwSetWindowMonitor(windowHandle, monitor, 0, 0,
                 windowDimensions.getWindowWidth(), windowDimensions.getWindowHeight(), GLFW_DONT_CARE);
 
         if (windowMode.equals(WindowMode.WINDOWED)) {
@@ -632,7 +632,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
                 glfwMode = GLFW_CURSOR_NORMAL;
         }
 
-        glfwSetInputMode(windowHnd, GLFW_CURSOR, glfwMode);
+        glfwSetInputMode(windowHandle, GLFW_CURSOR, glfwMode);
     }
 
     /**
@@ -641,7 +641,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
      * @param title
      */
     public void setWindowTitle(String title) {
-        glfwSetWindowTitle(windowHnd, title);
+        glfwSetWindowTitle(windowHandle, title);
     }
 
     /**
@@ -670,14 +670,14 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
      * @param listener
      * @return
      */
-    public boolean removeWindowEventListener(PixelWindowEventListener listener) {
+    public boolean removeWindowEventListener(WindowEventListener listener) {
         return windowEventListeners.remove(listener);
     }
 
     /**
      * @param listener
      */
-    public void addWindowEventListener(PixelWindowEventListener listener) {
+    public void addWindowEventListener(WindowEventListener listener) {
         this.windowEventListeners.add(listener);
     }
 
@@ -698,6 +698,6 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
     }
 
     public long getWindowHandle() {
-        return windowHnd;
+        return windowHandle;
     }
 }

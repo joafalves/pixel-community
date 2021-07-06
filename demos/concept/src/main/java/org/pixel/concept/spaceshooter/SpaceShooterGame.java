@@ -9,7 +9,7 @@ import org.pixel.content.ContentManager;
 import org.pixel.content.TexturePack;
 import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
-import org.pixel.core.GameSettings;
+import org.pixel.core.WindowSettings;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Rectangle;
@@ -29,7 +29,7 @@ public class SpaceShooterGame extends PixelWindow {
      *
      * @param settings
      */
-    public SpaceShooterGame(GameSettings settings) {
+    public SpaceShooterGame(WindowSettings settings) {
         super(settings);
     }
 
@@ -80,8 +80,8 @@ public class SpaceShooterGame extends PixelWindow {
     public static void main(String[] args) {
         final int width = 480;
         final int height = 640;
-        GameSettings settings = new GameSettings(width / 2, height / 2);
-        settings.setWindowResizable(true);
+        WindowSettings settings = new WindowSettings(width / 2, height / 2);
+        settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setDebugMode(true);

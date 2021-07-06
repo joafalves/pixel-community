@@ -10,7 +10,7 @@ import org.pixel.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.core.PixelWindow;
-import org.pixel.core.GameSettings;
+import org.pixel.core.WindowSettings;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
@@ -25,7 +25,7 @@ public class SingleSpriteDemo extends DemoGame {
     private Vector2 spritePos;
     private Vector2 spriteAnchor;
 
-    public SingleSpriteDemo(GameSettings settings) {
+    public SingleSpriteDemo(WindowSettings settings) {
         super(settings);
         setBackgroundColor(Color.BLACK);
     }
@@ -72,7 +72,7 @@ public class SingleSpriteDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        GameSettings settings = new GameSettings(600, 480);
+        WindowSettings settings = new WindowSettings(600, 480);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);

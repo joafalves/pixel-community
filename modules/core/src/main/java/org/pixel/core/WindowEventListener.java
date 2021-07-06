@@ -5,7 +5,7 @@
 
 package org.pixel.core;
 
-public interface PixelWindowEventListener {
+public interface WindowEventListener {
 
     /**
      * Triggers when the window size changes

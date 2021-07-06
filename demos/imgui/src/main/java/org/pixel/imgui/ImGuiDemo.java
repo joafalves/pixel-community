@@ -5,7 +5,7 @@ import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 import org.pixel.commons.DeltaTime;
 import org.pixel.core.PixelWindow;
-import org.pixel.core.GameSettings;
+import org.pixel.core.WindowSettings;
 
 public class ImGuiDemo extends PixelWindow {
 
@@ -17,7 +17,7 @@ public class ImGuiDemo extends PixelWindow {
      *
      * @param settings
      */
-    public ImGuiDemo(GameSettings settings) {
+    public ImGuiDemo(WindowSettings settings) {
         super(settings);
     }
 
@@ -51,7 +51,7 @@ public class ImGuiDemo extends PixelWindow {
     public static void main(String[] args) {
         final int width = 640;
         final int height = 480;
-        GameSettings settings = new GameSettings(width, height);
+        WindowSettings settings = new WindowSettings(width, height);
         settings.setWindowResizable(true);
         settings.setMultisampling(2);
         settings.setVsync(true);

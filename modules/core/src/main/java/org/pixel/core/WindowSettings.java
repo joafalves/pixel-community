@@ -9,10 +9,14 @@ import org.pixel.graphics.Color;
 
 import java.util.Properties;
 
-public class GameSettings {
+public class WindowSettings {
 
     //region Fields & Properties
 
+    private String windowTitle;
+    private WindowMode windowMode;
+    private Properties clientProperties;
+    private Color backgroundColor;
     private int windowWidth, windowHeight;
     private int virtualWidth, virtualHeight;
     private int multisampling;
@@ -20,10 +24,6 @@ public class GameSettings {
     private boolean vsync;
     private boolean debugMode;
     private boolean idleThrottle;
-    private String windowTitle;
-    private WindowMode windowMode;
-    private Properties clientProperties;
-    private Color backgroundColor;
 
     //endregion
 
@@ -35,8 +35,8 @@ public class GameSettings {
      * @param virtualWidth
      * @param virtualHeight
      */
-    public GameSettings(int virtualWidth, int virtualHeight) {
-        this.windowTitle = "Pixel Game Window";
+    public WindowSettings(int virtualWidth, int virtualHeight) {
+        this.windowTitle = "Pixel Window";
         this.virtualWidth = virtualWidth;
         this.virtualHeight = virtualHeight;
         this.windowWidth = virtualWidth;

@@ -19,7 +19,7 @@ import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.commons.util.IOUtils;
 import org.pixel.core.PixelWindow;
-import org.pixel.core.PixelWindowEventListener;
+import org.pixel.core.WindowEventListener;
 import org.pixel.core.WindowMode;
 import org.pixel.graphics.render.NvgRenderEngine;
 import org.pixel.graphics.render.RenderBuffer;
@@ -31,7 +31,7 @@ import org.pixel.gui.style.StyleFactory;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Size;
 
-public class UIView implements Updatable, Loadable, Disposable, PixelWindowEventListener {
+public class UIView implements Updatable, Loadable, Disposable, WindowEventListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(UIView.class);
     private static final String DEFAULT_STYLE_FILEPATH = "engine/style/default.css";
