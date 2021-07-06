@@ -5,7 +5,7 @@
 
 package org.pixel.core;
 
-public interface GameWindowEventListener {
+public interface PixelWindowEventListener {
 
     /**
      * Triggers when the window size changes
@@ -13,12 +13,12 @@ public interface GameWindowEventListener {
      * @param newWidth
      * @param newHeight
      */
-    void gameWindowSizeChanged(int newWidth, int newHeight);
+    void windowSizeChanged(int newWidth, int newHeight);
 
     /**
-     * Triggers when the game window mode changes
+     * Triggers when the window mode changes
      *
      * @param windowMode
      */
-    void gameWindowModeChanged(WindowMode windowMode);
+    void windowModeChanged(WindowMode windowMode);
 }

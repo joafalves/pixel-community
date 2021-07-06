@@ -1,7 +1,7 @@
 package org.pixel.learning.gui;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.Game;
+import org.pixel.core.PixelWindow;
 import org.pixel.core.GameSettings;
 import org.pixel.gui.UIScene;
 import org.pixel.gui.UIView;
@@ -63,7 +63,7 @@ public class WindowStylingDemo extends DemoGame {
         settings.setVsync(true);
         settings.setDebugMode(true);
 
-        Game game = new WindowStylingDemo(settings);
-        game.start();
+        PixelWindow window = new WindowStylingDemo(settings);
+        window.start();
     }
 }

@@ -1,7 +1,7 @@
 package org.pixel.learning.gui;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.Game;
+import org.pixel.core.PixelWindow;
 import org.pixel.core.GameSettings;
 import org.pixel.gui.UIScene;
 import org.pixel.gui.UIView;
@@ -62,7 +62,7 @@ public class SimpleWindowDemo extends DemoGame {
         settings.setVsync(true);
         settings.setDebugMode(true);
 
-        Game game = new SimpleWindowDemo(settings);
-        game.start();
+        PixelWindow window = new SimpleWindowDemo(settings);
+        window.start();
     }
 }

@@ -23,14 +23,14 @@ Check the :file_folder: demos folder for more examples and development approache
 ##### Drawing a Sprite #####
 
 ```java
-public class SingleSpriteDemo extends Game {
+public class SingleSpriteDemo extends PixelWindow {
 
+    private Camera2D gameCamera;
     private ContentManager content;
     private SpriteBatch spriteBatch;
 
     private Texture spriteTex;
     private Vector2 spritePos;
-    private Vector2 spriteAnchor;
 
     public SingleSpriteDemo(GameSettings settings) {
         super(settings);
@@ -40,6 +40,7 @@ public class SingleSpriteDemo extends Game {
     @Override
     public void load() {
         // game related changes & definitions
+        gameCamera = new Camera2D(this);
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
@@ -50,22 +51,21 @@ public class SingleSpriteDemo extends Game {
         spriteTex = content.load("images/earth-48x48.png", Texture.class);
 
         // related sprite properties
-        spriteAnchor = Vector2.half();
         spritePos = new Vector2(getVirtualWidth() / 2f, getVirtualHeight() / 2f);
     }
 
     @Override
-    public void update(float delta) {
+    public void update(DeltaTime delta) {
         // game update logic goes here
     }
 
     @Override
-    public void draw(float delta) {
+    public void draw(DeltaTime delta) {
         // begin the spritebatch phase:
         spriteBatch.begin(gameCamera.getViewMatrix(), BlendMode.NORMAL_BLEND);
 
         // sprite definition for this drawing phase:
-        spriteBatch.draw(spriteTex, spritePos, Color.WHITE, spriteAnchor, 3f);
+        spriteBatch.draw(spriteTex, spritePos, Color.WHITE, Vector2.HALF, 3f);
 
         // end and draw all sprites stored:
         spriteBatch.end();

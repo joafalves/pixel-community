@@ -4,10 +4,10 @@ import imgui.ImGui;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.Game;
+import org.pixel.core.PixelWindow;
 import org.pixel.core.GameSettings;
 
-public class ImGuiDemo extends Game {
+public class ImGuiDemo extends PixelWindow {
 
     private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
     private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
@@ -59,7 +59,7 @@ public class ImGuiDemo extends Game {
         settings.setWindowWidth(width);
         settings.setWindowHeight(height);
 
-        Game game = new ImGuiDemo(settings);
-        game.start();
+        PixelWindow window = new ImGuiDemo(settings);
+        window.start();
     }
 }

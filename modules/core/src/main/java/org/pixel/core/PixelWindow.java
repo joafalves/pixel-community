@@ -105,13 +105,13 @@ import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.mouse.Mouse;
 import org.pixel.math.Size;
 
-public abstract class Game implements Loadable, Updatable, Drawable, Disposable {
+public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disposable {
 
     private static final String DEFAULT_WINDOW_ICON_PATH_64 = "engine/images/app-icon@64.png";
     private static final String DEFAULT_WINDOW_ICON_PATH_32 = "engine/images/app-icon@32.png";
-    private static final Logger log = LoggerFactory.getLogger(Game.class);
+    private static final Logger log = LoggerFactory.getLogger(PixelWindow.class);
 
-    private final List<GameWindowEventListener> gameWindowEventListeners;
+    private final List<PixelWindowEventListener> windowEventListeners;
 
     private final Properties clientProperties;
     private final WindowDimensions windowDimensions;
@@ -132,13 +132,11 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
     private Color backgroundColor;
     private Callback debugLocalCallback;
 
-    protected Camera2D gameCamera;
-
     /**
      * Constructor
      */
-    public Game(GameSettings settings) {
-        this.gameWindowEventListeners = new ArrayList<>();
+    public PixelWindow(GameSettings settings) {
+        this.windowEventListeners = new ArrayList<>();
         this.initialized = false;
         this.clientProperties = settings.getClientProperties();
         this.windowResizable = settings.isWindowResizable();
@@ -203,7 +201,6 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
         }
 
         // Initial values
-        gameCamera = new Camera2D(0, 0, windowDimensions.getVirtualWidth(), windowDimensions.getVirtualHeight());
         windowFocused = true;
 
         // Create the windowHnd
@@ -360,7 +357,7 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
         }
 
         // start the main loop:
-        gameLoop();
+        renderLoop();
 
         // finalize
         dispose(); // call for graceful termination..
@@ -369,7 +366,7 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
         glfwTerminate();
     }
 
-    private void gameLoop() {
+    private void renderLoop() {
         // pre-variable configurations
         DeltaTime delta = new DeltaTime();
 
@@ -605,16 +602,16 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
      * Trigger window size change event
      */
     private void triggerWindowSizeChangeEvent() {
-        gameWindowEventListeners.forEach(listener ->
-                listener.gameWindowSizeChanged(windowDimensions.getWindowWidth(), windowDimensions.getWindowHeight()));
+        windowEventListeners.forEach(listener ->
+                listener.windowSizeChanged(windowDimensions.getWindowWidth(), windowDimensions.getWindowHeight()));
     }
 
     /**
      * Trigger window size change event
      */
     private void triggerWindowModeChangeEvent() {
-        gameWindowEventListeners.forEach(listener ->
-                listener.gameWindowModeChanged(windowMode));
+        windowEventListeners.forEach(listener ->
+                listener.windowModeChanged(windowMode));
     }
 
     /**
@@ -670,27 +667,18 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
     }
 
     /**
-     * Get default game camera
-     *
-     * @return
-     */
-    public Camera2D getGameCamera() {
-        return gameCamera;
-    }
-
-    /**
      * @param listener
      * @return
      */
-    public boolean removeWindowEventListener(GameWindowEventListener listener) {
-        return gameWindowEventListeners.remove(listener);
+    public boolean removeWindowEventListener(PixelWindowEventListener listener) {
+        return windowEventListeners.remove(listener);
     }
 
     /**
      * @param listener
      */
-    public void addWindowEventListener(GameWindowEventListener listener) {
-        this.gameWindowEventListeners.add(listener);
+    public void addWindowEventListener(PixelWindowEventListener listener) {
+        this.windowEventListeners.add(listener);
     }
 
     public boolean isVsyncEnabled() {

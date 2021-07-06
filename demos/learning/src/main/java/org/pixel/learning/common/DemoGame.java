@@ -8,14 +8,16 @@ package org.pixel.learning.common;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.Game;
+import org.pixel.core.Camera2D;
+import org.pixel.core.PixelWindow;
 import org.pixel.core.GameSettings;
 
-public abstract class DemoGame extends Game {
+public abstract class DemoGame extends PixelWindow {
 
     protected final static Logger log = LoggerFactory.getLogger(DemoGame.class);
 
-    private final FpsCounter fpsCounter;
+    protected final Camera2D gameCamera;
+    protected final FpsCounter fpsCounter;
 
     /**
      * Constructor
@@ -25,6 +27,7 @@ public abstract class DemoGame extends Game {
     public DemoGame(GameSettings settings) {
         super(settings);
 
+        gameCamera = new Camera2D(this);
         fpsCounter = new FpsCounter();
     }
 

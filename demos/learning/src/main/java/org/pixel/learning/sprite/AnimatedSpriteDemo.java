@@ -6,10 +6,10 @@
 package org.pixel.learning.sprite;
 
 import org.pixel.commons.DeltaTime;
+import org.pixel.core.PixelWindow;
 import org.pixel.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
-import org.pixel.core.Game;
 import org.pixel.core.GameSettings;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.BlendMode;
@@ -94,7 +94,7 @@ public class AnimatedSpriteDemo extends DemoGame {
         settings.setVsync(true);
         settings.setDebugMode(true);
 
-        Game game = new AnimatedSpriteDemo(settings);
-        game.start();
+        PixelWindow window = new AnimatedSpriteDemo(settings);
+        window.start();
     }
 }

@@ -8,9 +8,9 @@ package org.pixel.learning.audio;
 import org.pixel.audio.AudioDevice;
 import org.pixel.audio.Sound;
 import org.pixel.commons.DeltaTime;
+import org.pixel.core.PixelWindow;
 import org.pixel.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
-import org.pixel.core.Game;
 import org.pixel.core.GameSettings;
 
 public class AudioDemo extends DemoGame {
@@ -64,7 +64,7 @@ public class AudioDemo extends DemoGame {
         settings.setVsync(true);
         settings.setDebugMode(true);
 
-        Game game = new AudioDemo(settings);
-        game.start();
+        PixelWindow window = new AudioDemo(settings);
+        window.start();
     }
 }

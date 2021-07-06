@@ -7,14 +7,16 @@ import org.pixel.concept.spaceshooter.game.BackgroundSprite;
 import org.pixel.concept.spaceshooter.game.PlayerSprite;
 import org.pixel.content.ContentManager;
 import org.pixel.content.TexturePack;
-import org.pixel.core.Game;
+import org.pixel.core.Camera2D;
+import org.pixel.core.PixelWindow;
 import org.pixel.core.GameSettings;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Rectangle;
 
-public class SpaceShooterGame extends Game {
+public class SpaceShooterGame extends PixelWindow {
 
+    private Camera2D gameCamera;
     private TexturePack texturePack;
     private ContentManager content;
     private SpriteBatch spriteBatch;
@@ -35,6 +37,7 @@ public class SpaceShooterGame extends Game {
     public void load() {
         spriteBatch = new SpriteBatch();
         content = new ContentManager();
+        gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
 
         // content load
@@ -85,7 +88,7 @@ public class SpaceShooterGame extends Game {
         settings.setWindowWidth(width);
         settings.setWindowHeight(height);
 
-        Game game = new SpaceShooterGame(settings);
-        game.start();
+        PixelWindow window = new SpaceShooterGame(settings);
+        window.start();
     }
 }

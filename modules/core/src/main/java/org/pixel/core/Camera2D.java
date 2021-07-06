@@ -28,6 +28,13 @@ public class Camera2D implements Disposable, Serializable {
     //region constructors
 
     /**
+     * @param window
+     */
+    public Camera2D(PixelWindow window) {
+        this(0, 0, window.getVirtualWidth(), window.getVirtualHeight());
+    }
+
+    /**
      * @param x
      * @param y
      * @param width
@@ -98,8 +105,8 @@ public class Camera2D implements Disposable, Serializable {
      * @param screenPosition
      * @return
      */
-    public Vector2 screenToGameCoordinates(Vector2 screenPosition) {
-        return screenToGameCoordinates(screenPosition.getX(), screenPosition.getY());
+    public Vector2 screenToVirtualCoordinates(Vector2 screenPosition) {
+        return screenToVirtualCoordinates(screenPosition.getX(), screenPosition.getY());
     }
 
     /**
@@ -107,7 +114,7 @@ public class Camera2D implements Disposable, Serializable {
      *
      * @return
      */
-    public Vector2 screenToGameCoordinates(float screenX, float screenY) {
+    public Vector2 screenToVirtualCoordinates(float screenX, float screenY) {
         // normalize screen position:
         float nx = 2.0f * screenX / getWidth() - 1.0f;
         float ny = 1.0f - 2.0f * screenY / getHeight();

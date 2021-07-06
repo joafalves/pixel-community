@@ -18,8 +18,8 @@ import org.pixel.commons.lifecycle.Updatable;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.commons.util.IOUtils;
-import org.pixel.core.Game;
-import org.pixel.core.GameWindowEventListener;
+import org.pixel.core.PixelWindow;
+import org.pixel.core.PixelWindowEventListener;
 import org.pixel.core.WindowMode;
 import org.pixel.graphics.render.NvgRenderEngine;
 import org.pixel.graphics.render.RenderBuffer;
@@ -31,7 +31,7 @@ import org.pixel.gui.style.StyleFactory;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Size;
 
-public class UIView implements Updatable, Loadable, Disposable, GameWindowEventListener {
+public class UIView implements Updatable, Loadable, Disposable, PixelWindowEventListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(UIView.class);
     private static final String DEFAULT_STYLE_FILEPATH = "engine/style/default.css";
@@ -39,7 +39,7 @@ public class UIView implements Updatable, Loadable, Disposable, GameWindowEventL
 
     private final UIContext context;
     private final RenderBuffer renderBuffer;
-    private final Game gameWindow;
+    private final PixelWindow window;
     private UIScene scene;
     private int targetFps;
     private float elapsed;
@@ -47,17 +47,17 @@ public class UIView implements Updatable, Loadable, Disposable, GameWindowEventL
     /**
      * Constructor
      */
-    public UIView(Game gameWindow) {
-        this.gameWindow = gameWindow;
-        this.gameWindow.addWindowEventListener(this);
+    public UIView(PixelWindow window) {
+        this.window = window;
+        this.window.addWindowEventListener(this);
         this.targetFps = DEFAULT_FPS;
         this.elapsed = 0.f;
-        this.renderBuffer = new RenderBuffer(new Rectangle(0, 0, gameWindow.getWindowFrameWidth(), gameWindow.getWindowFrameHeight()));
+        this.renderBuffer = new RenderBuffer(new Rectangle(0, 0, window.getWindowFrameWidth(), window.getWindowFrameHeight()));
         this.context = UIContext.builder()
-                .renderEngine(new NvgRenderEngine(gameWindow.getVirtualWidth(), gameWindow.getVirtualHeight()))
-                .windowDimensions(gameWindow.getWindowDimensions())
+                .renderEngine(new NvgRenderEngine(window.getVirtualWidth(), window.getVirtualHeight()))
+                .windowDimensions(window.getWindowDimensions())
                 .build();
-        this.context.getRenderEngine().setPixelRatio(gameWindow.getWindowDimensions().getPixelRatio());
+        this.context.getRenderEngine().setPixelRatio(window.getWindowDimensions().getPixelRatio());
         this.loadStyle(DEFAULT_STYLE_FILEPATH);
     }
 
@@ -161,7 +161,7 @@ public class UIView implements Updatable, Loadable, Disposable, GameWindowEventL
      * @return
      */
     public Size getViewportSize() {
-        return gameWindow.getViewportSize();
+        return window.getViewportSize();
     }
 
     /**
@@ -191,7 +191,7 @@ public class UIView implements Updatable, Loadable, Disposable, GameWindowEventL
      */
     @Override
     public void dispose() {
-        gameWindow.removeWindowEventListener(this);
+        window.removeWindowEventListener(this);
         context.getRenderEngine().dispose();
     }
 
@@ -216,19 +216,19 @@ public class UIView implements Updatable, Loadable, Disposable, GameWindowEventL
      * @param newHeight
      */
     @Override
-    public void gameWindowSizeChanged(int newWidth, int newHeight) {
-        this.context.getRenderEngine().setPixelRatio(gameWindow.getWindowDimensions().getPixelRatio());
-        this.context.getRenderEngine().setViewport(0, 0, gameWindow.getVirtualWidth(), gameWindow.getVirtualHeight());
-        this.renderBuffer.setSourceArea(0, 0, gameWindow.getWindowFrameWidth(), gameWindow.getWindowFrameHeight());
+    public void windowSizeChanged(int newWidth, int newHeight) {
+        this.context.getRenderEngine().setPixelRatio(window.getWindowDimensions().getPixelRatio());
+        this.context.getRenderEngine().setViewport(0, 0, window.getVirtualWidth(), window.getVirtualHeight());
+        this.renderBuffer.setSourceArea(0, 0, window.getWindowFrameWidth(), window.getWindowFrameHeight());
     }
 
     /**
-     * Triggers when the game window mode changes
+     * Triggers when the window mode changes
      *
      * @param windowMode
      */
     @Override
-    public void gameWindowModeChanged(WindowMode windowMode) {
+    public void windowModeChanged(WindowMode windowMode) {
 
     }
 }

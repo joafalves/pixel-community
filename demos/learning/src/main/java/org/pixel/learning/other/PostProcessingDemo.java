@@ -6,7 +6,7 @@
 package org.pixel.learning.other;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.Game;
+import org.pixel.core.PixelWindow;
 import org.pixel.core.GameSettings;
 import org.pixel.graphics.render.ShaderPostProcessor;
 import org.pixel.graphics.shader.effect.SepiaEffectShader;
@@ -49,7 +49,7 @@ public class PostProcessingDemo extends SingleSpriteDemo {
         settings.setVsync(true);
         settings.setDebugMode(true);
 
-        Game game = new PostProcessingDemo(settings);
-        game.start();
+        PixelWindow window = new PostProcessingDemo(settings);
+        window.start();
     }
 }
