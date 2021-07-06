@@ -414,6 +414,21 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
     }
 
     @Override
+    public void load() {
+        // empty by design
+    }
+
+    @Override
+    public void update(DeltaTime delta) {
+        // empty by design
+    }
+
+    @Override
+    public void draw(DeltaTime delta) {
+        // empty by design
+    }
+
+    @Override
     public void dispose() {
         alcCloseDevice(audioDevice);
         alcDestroyContext(audioContext);
@@ -683,7 +698,9 @@ public abstract class Game implements Loadable, Updatable, Drawable, Disposable 
     }
 
     public void setVsyncEnabled(boolean vsyncEnabled) {
-        if (vsyncEnabled == this.vsyncEnabled) return;
+        if (vsyncEnabled == this.vsyncEnabled) {
+            return;
+        }
         this.vsyncEnabled = vsyncEnabled;
         glfwSwapInterval(vsyncEnabled ? GLFW_TRUE : GLFW_FALSE);
     }

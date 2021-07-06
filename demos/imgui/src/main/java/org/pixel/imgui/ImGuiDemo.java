@@ -29,11 +29,6 @@ public class ImGuiDemo extends Game {
     }
 
     @Override
-    public void update(DeltaTime delta) {
-
-    }
-
-    @Override
     public void draw(DeltaTime delta) {
         imGuiGlfw.newFrame();
         ImGui.newFrame();
