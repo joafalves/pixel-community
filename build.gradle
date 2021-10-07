@@ -95,6 +95,8 @@ task bundle(type: Jar, dependsOn: bundleList.collect { it + ":compileJava" }) {
     // bundle jar name
     archivesBaseName = rootProject.name + "-bundle-" + buildTarget
     group = "build"
+    // other settings
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     // bundle manifest
     manifest {
         attributes(
