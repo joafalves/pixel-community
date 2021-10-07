@@ -1,0 +1,13 @@
+/*
+ * This software is available under Apache License
+ * Copyright (c) 2020
+ */
+
+plugins {
+    id "org.jetbrains.kotlin.jvm" version "1.5.31"
+    id "application"
+}
+
+dependencies {
+    api project(":${rootProject.name}-core")
+}
