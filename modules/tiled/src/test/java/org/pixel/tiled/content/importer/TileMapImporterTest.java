@@ -1,6 +1,7 @@
 package org.pixel.tiled.content.importer;
 
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
@@ -34,7 +35,10 @@ public class TileMapImporterTest {
 
         Mockito.doReturn(buffer).when(ctx).getBuffer();
 
-        importer.process(ctx);
+        TileMap tileMap = importer.process(ctx);
+
+        Assertions.assertEquals(tileMap.getHeight(), 25);
+        Assertions.assertEquals(tileMap.getWidth(), 51);
     }
 
     @Test
@@ -46,5 +50,8 @@ public class TileMapImporterTest {
         contentManager.addContentImporter(importer);
 
         TileMap tileMap = contentManager.load(tmxFileName, TileMap.class);
+
+        Assertions.assertEquals(tileMap.getHeight(), 25);
+        Assertions.assertEquals(tileMap.getWidth(), 51);
     }
 }

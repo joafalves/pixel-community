@@ -11,6 +11,7 @@ import org.pixel.content.ContentImporterInfo;
 import org.pixel.content.ImportContext;
 import org.pixel.tiled.content.TileMap;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
@@ -46,10 +47,14 @@ public class TileMapImporter implements ContentImporter<TileMap> {
             return null;
         }
 
+        TileMap tileMap = new TileMap();
         tmxDoc.getDocumentElement().normalize();
 
-        System.out.println(tmxDoc.getDocumentElement().getNodeName());
+        Element mapElement = tmxDoc.getDocumentElement();
 
-        return null;
+        tileMap.setHeight(Integer.parseInt(mapElement.getAttribute("height")));
+        tileMap.setWidth(Integer.parseInt(mapElement.getAttribute("width")));
+
+        return tileMap;
     }
 }
