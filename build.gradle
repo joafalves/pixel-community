@@ -35,6 +35,7 @@ allprojects {
         api group: "org.lwjgl", name: "lwjgl-stb", version: lwjglVersion
         api group: "org.lwjgl", name: "lwjgl-nanovg", version: lwjglVersion
         api group: "org.lwjgl", name: "lwjgl-yoga", version: lwjglVersion
+        implementation 'org.mockito:mockito-core:3.12.4'
 
         // lwjgl-macos
         if (buildTarget == "macos" || buildTarget == "all") {
