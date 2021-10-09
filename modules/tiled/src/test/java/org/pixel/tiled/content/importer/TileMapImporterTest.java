@@ -8,6 +8,7 @@ import org.pixel.commons.util.FileUtils;
 import org.pixel.commons.util.IOUtils;
 import org.pixel.content.ContentManager;
 import org.pixel.content.ImportContext;
+import org.pixel.tiled.content.TileMap;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,5 +35,16 @@ public class TileMapImporterTest {
         Mockito.doReturn(buffer).when(ctx).getBuffer();
 
         importer.process(ctx);
+    }
+
+    @Test
+    public void processCase1Integrated() throws IOException {
+        TileMapImporter importer = new TileMapImporter();
+        String tmxFileName = "untitled.tmx";
+
+        ContentManager contentManager = new ContentManager();
+        contentManager.addContentImporter(importer);
+
+        TileMap tileMap = contentManager.load(tmxFileName, TileMap.class);
     }
 }

@@ -7,6 +7,7 @@ package org.pixel.tiled.content.importer;
 
 import org.pixel.commons.util.TextUtils;
 import org.pixel.content.ContentImporter;
+import org.pixel.content.ContentImporterInfo;
 import org.pixel.content.ImportContext;
 import org.pixel.tiled.content.TileMap;
 import org.w3c.dom.Document;
@@ -21,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+@ContentImporterInfo(type = TileMap.class, extension = ".tmx")
 public class TileMapImporter implements ContentImporter<TileMap> {
     @Override
     public TileMap process(ImportContext ctx) {
