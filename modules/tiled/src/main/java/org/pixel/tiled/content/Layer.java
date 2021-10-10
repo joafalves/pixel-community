@@ -9,7 +9,7 @@ public class Layer {
     private final int height;
     private final double offsetX;
     private final double offsetY;
-    private final int tiles[][];
+    private final long tiles[][];
 
     public Layer(int width, int height, double offsetX, double offsetY){
         this.width = width;
@@ -17,7 +17,7 @@ public class Layer {
         this.offsetX = offsetX;
         this.offsetY = offsetY;
 
-        tiles = new int[height][width];
+        tiles = new long[height][width];
     }
 
     public double getOffsetX() {
@@ -36,11 +36,11 @@ public class Layer {
         return width;
     }
 
-    public int[][] getTiles() {
+    public long[][] getTiles() {
         return tiles;
     }
 
-    public void addTile(int x, int y, int gID) {
+    public void addTile(int x, int y, long gID) {
         tiles[y][x] = gID;
     }
 }

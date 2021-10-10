@@ -17,6 +17,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 @ContentImporterInfo(type = TileMap.class, extension = ".tmx")
 public class TileMapImporter implements ContentImporter<TileMap> {
     private static final Logger LOG = LoggerFactory.getLogger(TileMapImporter.class);
@@ -72,10 +76,18 @@ public class TileMapImporter implements ContentImporter<TileMap> {
                 Layer layer = new Layer(width, height, offsetX, offsetY);
 
                 String data = layerElement.getTextContent();
+                data = data.replace("\n", "");
+
+                List<String> numbers = Arrays.asList(data.trim().split(","));
+
+                for(int y = 0; y < height; y++) {
+                    for(int x = 0; x < width; x++) {
+                        layer.addTile(x, y, Long.parseLong(numbers.get(y*width+x)));
+                    }
+                }
 
                 tileMap.addLayer(layer);
             }
-
         }
     }
 
