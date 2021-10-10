@@ -1,8 +1,11 @@
 package org.pixel.tiled.content.importer;
 
+import org.pixel.commons.logger.Logger;
+import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ContentImporter;
 import org.pixel.content.ContentImporterInfo;
 import org.pixel.content.ImportContext;
+import org.pixel.content.Texture;
 import org.pixel.tiled.content.TileSet;
 import org.pixel.tiled.utils.XMLUtils;
 import org.w3c.dom.Document;
@@ -10,6 +13,8 @@ import org.w3c.dom.Element;
 
 @ContentImporterInfo(type = TileSet.class, extension = ".tsx")
 public class TileSetImporter implements ContentImporter<TileSet> {
+    private static final Logger LOG = LoggerFactory.getLogger(TileSetImporter.class);
+
     @Override
     public TileSet process(ImportContext ctx) {
         XMLUtils utils = new XMLUtils();
@@ -26,7 +31,19 @@ public class TileSetImporter implements ContentImporter<TileSet> {
         int columns = Integer.parseInt(tilesetElement.getAttribute("columns"));
         int tileCount = Integer.parseInt(tilesetElement.getAttribute("tilecount"));
 
-        TileSet tileSet = new TileSet(tileWidth, tileHeight, tileCount, columns);
+        Element image = (Element) tilesetElement.getElementsByTagName("image").item(0);
+
+        String textureFilePath = image.getAttribute("source");
+
+        Texture tileSetImage = ctx.getContentManager().load(textureFilePath, Texture.class);
+
+        if(tileSetImage == null) {
+            LOG.error("Something went wrong processing the Tile Set texture image.");
+
+            return null;
+        }
+
+        TileSet tileSet = new TileSet(tileWidth, tileHeight, tileCount, columns, tileSetImage);
 
         return tileSet;
     }
