@@ -1,22 +1,14 @@
 package org.pixel.tiled.content.importer;
 
-import org.mockito.internal.matchers.Null;
 import org.pixel.content.ContentImporter;
+import org.pixel.content.ContentImporterInfo;
 import org.pixel.content.ImportContext;
-import org.pixel.tiled.content.TileMap;
 import org.pixel.tiled.content.TileSet;
-import org.pixel.tiled.content.utils.XMLUtils;
+import org.pixel.tiled.utils.XMLUtils;
 import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
+import org.w3c.dom.Element;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-
+@ContentImporterInfo(type = TileSet.class, extension = ".tsx")
 public class TileSetImporter implements ContentImporter<TileSet> {
     @Override
     public TileSet process(ImportContext ctx) {
@@ -27,8 +19,15 @@ public class TileSetImporter implements ContentImporter<TileSet> {
             return null;
         }
 
-        //TileSet tileSet = new TileSet();
+        Element tilesetElement = (Element) tsxDoc.getElementsByTagName("tileset").item(0);
 
-        return null;
+        int tileHeight = Integer.parseInt(tilesetElement.getAttribute("tileheight"));
+        int tileWidth = Integer.parseInt(tilesetElement.getAttribute("tilewidth"));
+        int columns = Integer.parseInt(tilesetElement.getAttribute("columns"));
+        int tileCount = Integer.parseInt(tilesetElement.getAttribute("tilecount"));
+
+        TileSet tileSet = new TileSet(tileWidth, tileHeight, tileCount, columns);
+
+        return tileSet;
     }
 }

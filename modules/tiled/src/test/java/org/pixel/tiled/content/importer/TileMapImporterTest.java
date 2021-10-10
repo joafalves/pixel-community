@@ -2,11 +2,7 @@ package org.pixel.tiled.content.importer;
 
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
-import org.pixel.commons.util.FileUtils;
-import org.pixel.commons.util.IOUtils;
 import org.pixel.content.ContentManager;
 import org.pixel.content.ImportContext;
 import org.pixel.tiled.content.TileMap;
@@ -14,9 +10,7 @@ import org.pixel.tiled.content.TileMap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.lwjgl.BufferUtils.createByteBuffer;
 
 public class TileMapImporterTest {
@@ -42,7 +36,7 @@ public class TileMapImporterTest {
     }
 
     @Test
-    public void processCase1Integrated() throws IOException {
+    public void processCase1Integrated() {
         TileMapImporter importer = new TileMapImporter();
         String tmxFileName = "untitled.tmx";
 

@@ -1,7 +1,6 @@
-package org.pixel.tiled.content.utils;
+package org.pixel.tiled.utils;
 
 import org.pixel.content.ImportContext;
-import org.pixel.tiled.content.TileSet;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 

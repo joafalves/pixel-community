@@ -7,12 +7,11 @@ public class TileSet {
     private int tileWidth, tileHeight, tileCount, columns;
     private Texture texture;
 
-    public TileSet(int tileWidth, int tileHeight, int tileCount, int columns, Texture texture) {
+    public TileSet(int tileWidth, int tileHeight, int tileCount, int columns) {
         this.tileCount = tileCount;
         this.tileHeight = tileHeight;
         this.tileWidth = tileWidth;
         this.columns = columns;
-        this.texture = texture;
     }
 
     public int getColumns() {
