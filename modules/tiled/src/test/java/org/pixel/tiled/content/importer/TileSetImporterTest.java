@@ -2,17 +2,13 @@ package org.pixel.tiled.content.importer;
 
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.lwjgl.system.CallbackI;
 import org.mockito.Mockito;
-import org.pixel.content.ContentImporter;
 import org.pixel.content.ContentManager;
 import org.pixel.content.ImportContext;
 import org.pixel.content.Texture;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
-import org.pixel.tiled.content.TileMap;
 import org.pixel.tiled.content.TileSet;
-import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,7 +45,7 @@ public class TileSetImporterTest {
         Assertions.assertSame(tileSet.getTexture(), texture);
     }
 
-    public class MockWindow extends PixelWindow {
+    public static class MockWindow extends PixelWindow {
 
         /**
          * Constructor
@@ -62,7 +58,6 @@ public class TileSetImporterTest {
         }
 
         @Override
-        @Test
         public void load() {
             TileSetImporter importer = new TileSetImporter();
             String tsxFileName = "Tileset.tsx";

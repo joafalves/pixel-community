@@ -43,8 +43,6 @@ public class TileSetImporter implements ContentImporter<TileSet> {
             return null;
         }
 
-        TileSet tileSet = new TileSet(tileWidth, tileHeight, tileCount, columns, tileSetImage);
-
-        return tileSet;
+        return new TileSet(tileWidth, tileHeight, tileCount, columns, tileSetImage);
     }
 }
