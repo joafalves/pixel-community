@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author João Filipe Alves
  */
-public class ContentManager implements Disposable {
+public class ContentManager implements PixelContentManager, Disposable {
 
     private static final Logger log = LoggerFactory.getLogger(ContentManager.class);
 
