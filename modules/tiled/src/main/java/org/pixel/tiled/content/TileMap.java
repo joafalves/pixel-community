@@ -7,12 +7,16 @@ package org.pixel.tiled.content;
 
 import org.pixel.commons.lifecycle.Disposable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TileMap implements Disposable {
     private int width;
     private int height;
+    private List<TileSet> tileSets;
 
     public TileMap() {
-
+        tileSets = new ArrayList<>();
     }
 
     @Override
@@ -34,5 +38,17 @@ public class TileMap implements Disposable {
 
     public void setHeight(int height) {
         this.height = height;
+    }
+
+    public List<TileSet> getTileSets() {
+        return tileSets;
+    }
+
+    public void setTileSets(List<TileSet> tileSets) {
+        this.tileSets = tileSets;
+    }
+
+    public void addTileSet(TileSet tileSet) {
+        tileSets.add(tileSet);
     }
 }
