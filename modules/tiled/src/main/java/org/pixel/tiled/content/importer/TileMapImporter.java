@@ -50,6 +50,9 @@ public class TileMapImporter implements ContentImporter<TileMap> {
                 if(tileSet == null) {
                     LOG.error("Error loading tileset");
                 } else {
+                    int firstGId = Integer.parseInt(tileset.getAttribute("firstgid"));
+
+                    tileSet.setFirstGId(firstGId);
                     tileMap.addTileSet(tileSet);
                 }
             }

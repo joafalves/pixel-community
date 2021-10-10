@@ -7,6 +7,7 @@ public class TileSet {
     private final int tileHeight;
     private final int tileCount;
     private final int columns;
+    private int firstGId;
     private final Texture texture;
 
     public TileSet(int tileWidth, int tileHeight, int tileCount, int columns, Texture texture) {
@@ -15,6 +16,14 @@ public class TileSet {
         this.tileWidth = tileWidth;
         this.columns = columns;
         this.texture = texture;
+    }
+
+    public int getFirstGId() {
+        return firstGId;
+    }
+
+    public void setFirstGId(int firstGId) {
+        this.firstGId = firstGId;
     }
 
     public int getColumns() {

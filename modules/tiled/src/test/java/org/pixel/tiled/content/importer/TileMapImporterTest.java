@@ -76,6 +76,8 @@ public class TileMapImporterTest {
             Assertions.assertEquals(tileMap.getTileSets().get(0).getColumns(), 2);
             Assertions.assertEquals(tileMap.getTileSets().get(0).getTileWidth(), 16);
             Assertions.assertEquals(tileMap.getTileSets().get(0).getTileHeight(), 16);
+            Assertions.assertEquals(tileMap.getTileSets().get(0).getFirstGId(), 1);
+            Assertions.assertEquals(tileMap.getTileSets().get(1).getFirstGId(), 5);
 
             close();
         }
