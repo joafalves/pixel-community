@@ -40,10 +40,16 @@ public class TileMapImporterTest {
 
         TileMap tileMap = importer.process(ctx);
 
-        Assertions.assertEquals(tileMap.getHeight(), 25);
-        Assertions.assertEquals(tileMap.getWidth(), 51);
-        Assertions.assertSame(tileMap.getTileSets().get(0), tileSet1);
-        Assertions.assertSame(tileMap.getTileSets().get(1), tileSet2);
+        Assertions.assertEquals(25, tileMap.getHeight());
+        Assertions.assertEquals(51, tileMap.getWidth());
+        Assertions.assertSame(tileSet1, tileMap.getTileSets().get(0));
+        Assertions.assertSame(tileSet2, tileMap.getTileSets().get(1));
+        Assertions.assertEquals(25, tileMap.getLayers().get(0).getHeight());
+        Assertions.assertEquals(51, tileMap.getLayers().get(0).getWidth());
+        Assertions.assertEquals(0, tileMap.getLayers().get(0).getOffsetX());
+        Assertions.assertEquals(0, tileMap.getLayers().get(0).getOffsetY());
+        Assertions.assertEquals(-1, tileMap.getLayers().get(1).getOffsetX());
+        Assertions.assertEquals(7.5, tileMap.getLayers().get(1).getOffsetY());
     }
 
     public static class MockWindow extends PixelWindow {
@@ -70,14 +76,20 @@ public class TileMapImporterTest {
 
             TileMap tileMap = contentManager.load(tmxFileName, TileMap.class);
 
-            Assertions.assertEquals(tileMap.getHeight(), 25);
-            Assertions.assertEquals(tileMap.getWidth(), 51);
-            Assertions.assertEquals(tileMap.getTileSets().get(0).getTileCount(), 4);
-            Assertions.assertEquals(tileMap.getTileSets().get(0).getColumns(), 2);
-            Assertions.assertEquals(tileMap.getTileSets().get(0).getTileWidth(), 16);
-            Assertions.assertEquals(tileMap.getTileSets().get(0).getTileHeight(), 16);
-            Assertions.assertEquals(tileMap.getTileSets().get(0).getFirstGId(), 1);
-            Assertions.assertEquals(tileMap.getTileSets().get(1).getFirstGId(), 5);
+            Assertions.assertEquals(25, tileMap.getHeight());
+            Assertions.assertEquals(51, tileMap.getWidth());
+            Assertions.assertEquals(4, tileMap.getTileSets().get(0).getTileCount());
+            Assertions.assertEquals(2, tileMap.getTileSets().get(0).getColumns());
+            Assertions.assertEquals(16, tileMap.getTileSets().get(0).getTileWidth());
+            Assertions.assertEquals(16, tileMap.getTileSets().get(0).getTileHeight());
+            Assertions.assertEquals(1, tileMap.getTileSets().get(0).getFirstGId());
+            Assertions.assertEquals(5, tileMap.getTileSets().get(1).getFirstGId());
+            Assertions.assertEquals(25, tileMap.getLayers().get(0).getHeight());
+            Assertions.assertEquals(51, tileMap.getLayers().get(0).getWidth());
+            Assertions.assertEquals(0, tileMap.getLayers().get(0).getOffsetX());
+            Assertions.assertEquals(0, tileMap.getLayers().get(0).getOffsetY());
+            Assertions.assertEquals(-1, tileMap.getLayers().get(1).getOffsetX());
+            Assertions.assertEquals(7.5, tileMap.getLayers().get(1).getOffsetY());
 
             close();
         }

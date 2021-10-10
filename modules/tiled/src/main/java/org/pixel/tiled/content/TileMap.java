@@ -14,9 +14,11 @@ public class TileMap implements Disposable {
     private int width;
     private int height;
     private List<TileSet> tileSets;
+    private List<Layer> layers;
 
     public TileMap() {
         tileSets = new ArrayList<>();
+        layers = new ArrayList<>();
     }
 
     @Override
@@ -50,5 +52,17 @@ public class TileMap implements Disposable {
 
     public void addTileSet(TileSet tileSet) {
         tileSets.add(tileSet);
+    }
+
+    public List<Layer> getLayers() {
+        return layers;
+    }
+
+    public void setLayers(List<Layer> layers) {
+        this.layers = layers;
+    }
+
+    public void addLayer(Layer layer) {
+        this.layers.add(layer);
     }
 }

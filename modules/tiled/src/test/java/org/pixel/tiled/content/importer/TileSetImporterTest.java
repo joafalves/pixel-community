@@ -38,11 +38,11 @@ public class TileSetImporterTest {
 
         TileSet tileSet = importer.process(ctx);
 
-        Assertions.assertEquals(tileSet.getTileHeight(), 16);
-        Assertions.assertEquals(tileSet.getTileWidth(), 16);
-        Assertions.assertEquals(tileSet.getTileCount(), 4);
-        Assertions.assertEquals(tileSet.getColumns(), 2);
-        Assertions.assertSame(tileSet.getTexture(), texture);
+        Assertions.assertEquals(16, tileSet.getTileHeight());
+        Assertions.assertEquals(16, tileSet.getTileWidth());
+        Assertions.assertEquals(4, tileSet.getTileCount());
+        Assertions.assertEquals(2, tileSet.getColumns());
+        Assertions.assertSame(texture, tileSet.getTexture());
     }
 
     public static class MockWindow extends PixelWindow {
@@ -67,12 +67,12 @@ public class TileSetImporterTest {
 
             TileSet tileSet = contentManager.load(tsxFileName, TileSet.class);
 
-            Assertions.assertEquals(tileSet.getTileHeight(), 16);
-            Assertions.assertEquals(tileSet.getTileWidth(), 16);
-            Assertions.assertEquals(tileSet.getTileCount(), 4);
-            Assertions.assertEquals(tileSet.getColumns(), 2);
-            Assertions.assertEquals(tileSet.getTexture().getHeight(), 32);
-            Assertions.assertEquals(tileSet.getTexture().getWidth(), 32);
+            Assertions.assertEquals(16, tileSet.getTileHeight());
+            Assertions.assertEquals(16, tileSet.getTileWidth());
+            Assertions.assertEquals(4, tileSet.getTileCount());
+            Assertions.assertEquals(2, tileSet.getColumns());
+            Assertions.assertEquals(32, tileSet.getTexture().getHeight());
+            Assertions.assertEquals(32, tileSet.getTexture().getWidth());
 
             close();
         }
