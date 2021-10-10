@@ -1,5 +1,6 @@
 package org.pixel.tiled.content.importer;
 
+import org.mockito.internal.matchers.Null;
 import org.pixel.content.ContentImporter;
 import org.pixel.content.ImportContext;
 import org.pixel.tiled.content.TileMap;
@@ -22,8 +23,12 @@ public class TileSetImporter implements ContentImporter<TileSet> {
         XMLUtils utils = new XMLUtils();
         Document tsxDoc = utils.openXMLDocument(ctx);
 
-        TileSet tileSet = new TileSet();
+        if(tsxDoc == null) {
+            return null;
+        }
 
-        return tileSet;
+        //TileSet tileSet = new TileSet();
+
+        return null;
     }
 }

@@ -28,21 +28,20 @@ import java.nio.ByteBuffer;
 
 @ContentImporterInfo(type = TileMap.class, extension = ".tmx")
 public class TileMapImporter implements ContentImporter<TileMap> {
-    PixelContentManager contentManager;
     private static final Logger LOG = LoggerFactory.getLogger(TileMapImporter.class);
 
-    public TileMapImporter(PixelContentManager contentManager) {
-        this.contentManager = contentManager;
-    }
-
     public TileMapImporter() {
-        this.contentManager = new ContentManager();
+
     }
 
     @Override
     public TileMap process(ImportContext ctx) {
         XMLUtils utils = new XMLUtils();
         Document tmxDoc = utils.openXMLDocument(ctx);
+
+        if(tmxDoc == null) {
+            return null;
+        }
 
         Element mapElement = tmxDoc.getDocumentElement();
 
