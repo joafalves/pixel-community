@@ -39,6 +39,7 @@ public class LayerView implements TiledViewer<Layer> {
 
                         // TODO: SOME TILESETS CAN HAVE DIFFERENT TILE WIDTH/HEIGHT COMPARED TO TILE MAP, CHANGE SCALE TO FIT
                         spriteBatch.draw(tileSet.getTexture(), position, source, Color.WHITE, Vector2.HALF, 1f, 0f);
+                        break;
                     }
                 }
             }

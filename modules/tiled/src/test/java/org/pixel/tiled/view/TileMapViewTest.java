@@ -7,8 +7,10 @@ import org.pixel.content.ContentManager;
 import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
+import org.pixel.graphics.Color;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 import org.pixel.tiled.content.TileMap;
 import org.pixel.tiled.content.importer.TileMapImporter;
@@ -39,8 +41,8 @@ public class TileMapViewTest {
 
         @Override
         public void load() {
-            gameCamera.setOrigin(new Vector2(-1.5f, -0.4f));
-            gameCamera.setZoom(2.5f);
+            gameCamera.setOrigin(new Vector2(-1.8f, -0.6f));
+            gameCamera.setZoom(3f);
 
             TileMapImporter importer = new TileMapImporter();
             TileSetImporter tileSetImporter = new TileSetImporter();
