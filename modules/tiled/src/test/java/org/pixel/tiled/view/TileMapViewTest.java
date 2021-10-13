@@ -10,12 +10,16 @@ import org.pixel.core.WindowSettings;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.input.keyboard.Keyboard;
+import org.pixel.input.keyboard.KeyboardKey;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 import org.pixel.tiled.content.TileMap;
 import org.pixel.tiled.content.importer.TileMapImporter;
 import org.pixel.tiled.content.importer.TileMapImporterTest;
 import org.pixel.tiled.content.importer.TileSetImporter;
+
+import java.security.Key;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -56,6 +60,31 @@ public class TileMapViewTest {
             tileMapView = new TileMapView();
             spriteBatch = new SpriteBatch();
 
+        }
+
+        @Override
+        public void update(DeltaTime delta) {
+            super.update(delta);
+            int speed = 50;
+
+            // Keyboard direct state access for org.pixel.input detection:
+            if (Keyboard.isKeyDown(KeyboardKey.UP) || Keyboard.isKeyDown(KeyboardKey.W)) {
+                gameCamera.translate(0,-speed * delta.getElapsed()); // translate camera vertically
+            } else if (Keyboard.isKeyDown(KeyboardKey.DOWN) || Keyboard.isKeyDown(KeyboardKey.S)) {
+                gameCamera.translate(0,speed * delta.getElapsed()); // translate camera vertically
+            }
+
+            if (Keyboard.isKeyDown(KeyboardKey.LEFT)) {
+                gameCamera.translate(-speed * delta.getElapsed(), 0);
+            } else if (Keyboard.isKeyDown(KeyboardKey.RIGHT)) {
+                gameCamera.translate(speed * delta.getElapsed(), 0);
+            }
+
+            if(Keyboard.isKeyDown(KeyboardKey.PERIOD)) {
+                gameCamera.setZoom(gameCamera.getZoom()+0.1f);
+            } else if (Keyboard.isKeyDown(KeyboardKey.MINUS)) {
+                gameCamera.setZoom(gameCamera.getZoom()-0.1f);
+            }
         }
 
         @Override
