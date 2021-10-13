@@ -48,6 +48,6 @@ public class TileSet {
     }
 
     public Rectangle sourceAt(long gID) {
-        return new Rectangle(gID % columns, gID / columns, tileWidth, tileHeight);
+        return new Rectangle((gID % columns) * tileWidth, ((int) gID / columns) * tileHeight, tileWidth, tileHeight);
     }
 }

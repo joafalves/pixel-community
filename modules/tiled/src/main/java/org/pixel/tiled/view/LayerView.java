@@ -19,13 +19,16 @@ public class LayerView implements TiledViewer<Layer> {
 
     @Override
     public void draw(SpriteBatch spriteBatch, Layer layer) {
+        List<TileSet> tileSets = layer.getTileMap().getTileSets();
+
         for(int y = 0; y < layer.getHeight(); y++) {
             for(int x = 0; x < layer.getWidth(); x++) {
                 long gID = layer.getTiles()[y][x];
-                List<TileSet> tileSets = layer.getTileMap().getTileSets();
                 ListIterator<TileSet> itr = tileSets.listIterator(tileSets.size());
 
                 gID &= ~(HORIZONTAL_FLIP_FLAG | VERTICAL_FLIP_FLAG | DIAGONAL_FLIP_FLAG);
+
+                if(gID == 0) continue;
 
                 while(itr.hasPrevious()) {
                     TileSet tileSet = itr.previous();
@@ -34,6 +37,7 @@ public class LayerView implements TiledViewer<Layer> {
                         Rectangle source = tileSet.sourceAt(gID - tileSet.getFirstGId());
                         Vector2 position = new Vector2(x * tileSet.getTileWidth(), y * tileSet.getTileHeight());
 
+                        // TODO: SOME TILESETS CAN HAVE DIFFERENT TILE WIDTH/HEIGHT COMPARED TO TILE MAP, CHANGE SCALE TO FIT
                         spriteBatch.draw(tileSet.getTexture(), position, source, Color.WHITE, Vector2.HALF, 1f, 0f);
                     }
                 }
