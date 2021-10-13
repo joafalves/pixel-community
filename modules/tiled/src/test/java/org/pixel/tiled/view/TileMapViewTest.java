@@ -45,7 +45,8 @@ public class TileMapViewTest {
 
         @Override
         public void load() {
-            gameCamera.setOrigin(new Vector2(-1.8f, -0.6f));
+            gameCamera.setOrigin(new Vector2(0.5f, 0.5f));
+            gameCamera.translate(500, 180);
             gameCamera.setZoom(3f);
 
             TileMapImporter importer = new TileMapImporter();
@@ -80,9 +81,9 @@ public class TileMapViewTest {
                 gameCamera.translate(speed * delta.getElapsed(), 0);
             }
 
-            if(Keyboard.isKeyDown(KeyboardKey.PERIOD)) {
+            if(Keyboard.isKeyDown(KeyboardKey.P)) {
                 gameCamera.setZoom(gameCamera.getZoom()+0.1f);
-            } else if (Keyboard.isKeyDown(KeyboardKey.MINUS)) {
+            } else if (Keyboard.isKeyDown(KeyboardKey.M)) {
                 gameCamera.setZoom(gameCamera.getZoom()-0.1f);
             }
         }
