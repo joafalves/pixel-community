@@ -9,13 +9,15 @@ public class Layer {
     private final int height;
     private final double offsetX;
     private final double offsetY;
-    private final long tiles[][];
+    private final TileMap tileMap;
+    private final long[][] tiles;
 
-    public Layer(int width, int height, double offsetX, double offsetY){
+    public Layer(int width, int height, double offsetX, double offsetY, TileMap tileMap){
         this.width = width;
         this.height = height;
         this.offsetX = offsetX;
         this.offsetY = offsetY;
+        this.tileMap = tileMap;
 
         tiles = new long[height][width];
     }
@@ -34,6 +36,10 @@ public class Layer {
 
     public int getWidth() {
         return width;
+    }
+
+    public TileMap getTileMap() {
+        return tileMap;
     }
 
     public long[][] getTiles() {

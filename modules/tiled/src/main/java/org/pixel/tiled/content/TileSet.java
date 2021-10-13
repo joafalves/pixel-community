@@ -1,6 +1,7 @@
 package org.pixel.tiled.content;
 
 import org.pixel.content.Texture;
+import org.pixel.math.Rectangle;
 
 public class TileSet {
     private final int tileWidth;
@@ -44,5 +45,9 @@ public class TileSet {
 
     public Texture getTexture() {
         return texture;
+    }
+
+    public Rectangle sourceAt(long gID) {
+        return new Rectangle(gID % columns, gID / columns, tileWidth, tileHeight);
     }
 }

@@ -73,7 +73,7 @@ public class TileMapImporter implements ContentImporter<TileMap> {
                     offsetY = 0;
                 }
 
-                Layer layer = new Layer(width, height, offsetX, offsetY);
+                Layer layer = new Layer(width, height, offsetX, offsetY, tileMap);
 
                 String data = layerElement.getTextContent();
                 data = data.replace("\n", "");
