@@ -27,7 +27,6 @@ allprojects {
     // plugins
     apply plugin: "java"
     apply plugin: 'java-library'
-    apply plugin: 'info.solidsoft.pitest'
 
     // project version
     version rootProject.version

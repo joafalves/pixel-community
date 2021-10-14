@@ -1,9 +1,10 @@
 package org.pixel.tiled.content;
 
+import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.content.Texture;
 import org.pixel.math.Rectangle;
 
-public class TileSet {
+public class TileSet implements Disposable {
     private final int tileWidth;
     private final int tileHeight;
     private final int tileCount;
@@ -48,6 +49,18 @@ public class TileSet {
     }
 
     public Rectangle sourceAt(long gID) {
-        return new Rectangle((gID % columns) * tileWidth, ((int) gID / columns) * tileHeight, tileWidth, tileHeight);
+        if(gID >= tileCount) {
+            return new Rectangle(0, 0, 0, 0);
+        }
+
+        float x = ( gID % columns) * tileWidth;
+        float y = ( gID / columns) * tileHeight;
+
+        return new Rectangle(x , y , tileWidth, tileHeight);
+    }
+
+    @Override
+    public void dispose() {
+        texture.dispose();
     }
 }

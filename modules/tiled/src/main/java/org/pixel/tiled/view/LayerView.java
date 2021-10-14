@@ -35,6 +35,7 @@ public class LayerView implements TiledViewer<Layer> {
 
                     if(tileSet.getFirstGId() <= gID) {
                         Rectangle source = tileSet.sourceAt(gID - tileSet.getFirstGId());
+
                         Vector2 position = new Vector2(x * tileSet.getTileWidth(), y * tileSet.getTileHeight());
 
                         // TODO: SOME TILESETS CAN HAVE DIFFERENT TILE WIDTH/HEIGHT COMPARED TO TILE MAP, CHANGE SCALE TO FIT

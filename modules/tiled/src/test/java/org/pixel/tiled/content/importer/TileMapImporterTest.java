@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
 import org.pixel.content.ContentManager;
 import org.pixel.content.ImportContext;
-import org.pixel.core.PixelWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.tiled.content.TileMap;
 import org.pixel.tiled.content.TileSet;
 

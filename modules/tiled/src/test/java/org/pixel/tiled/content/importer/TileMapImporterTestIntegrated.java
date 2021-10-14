@@ -9,7 +9,7 @@ import org.pixel.tiled.content.TileMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TileMapImporterTestIntegrated {
+public class TileMapImporterTestIntegrated {
 
     public static class MockWindow extends PixelWindow {
 
