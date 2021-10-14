@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="2" height="3" tilewidth="12" tileheight="16" infinite="0" nextlayerid="2" nextobjectid="1">
+<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="1" height="2" tilewidth="12" tileheight="16" infinite="0" nextlayerid="3" nextobjectid="1">
  <tileset firstgid="1" source="Tileset.tsx"/>
- <layer id="1" name="Tile Layer 1" width="2" height="3">
+ <layer id="1" name="Tile Layer 1" width="1" height="2">
   <data encoding="csv">
-1,0,
-1,0,
-3,1
+1,
+0
+</data>
+ </layer>
+ <layer id="2" name="Tile Layer 2" width="1" height="2" offsetx="1.5" offsety="-2">
+  <data encoding="csv">
+0,
+2
 </data>
  </layer>
 </map>

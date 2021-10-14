@@ -27,7 +27,9 @@ public class LayerView implements TiledViewer<Layer> {
 
                 gID &= ~(HORIZONTAL_FLIP_FLAG | VERTICAL_FLIP_FLAG | DIAGONAL_FLIP_FLAG);
 
-                if(gID == 0) continue;
+                if(gID == 0) {
+                    continue;
+                }
 
                 while(itr.hasPrevious()) {
                     TileSet tileSet = itr.previous();

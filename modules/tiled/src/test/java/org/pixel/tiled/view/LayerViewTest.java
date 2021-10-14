@@ -1,9 +1,8 @@
 package org.pixel.tiled.view;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.pixel.content.ContentManager;
 import org.pixel.content.ImportContext;
@@ -21,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.lwjgl.BufferUtils.createByteBuffer;
 
 public class LayerViewTest {
@@ -32,7 +30,6 @@ public class LayerViewTest {
 
     @BeforeEach
     void setup() throws IOException {
-        TileMapImporter importer = new TileMapImporter();
         TileSetImporter tileSetImporter = new TileSetImporter();
         texture1 = Mockito.mock(Texture.class);
         texture2 = Mockito.mock(Texture.class);
@@ -129,6 +126,46 @@ public class LayerViewTest {
                 Mockito.eq(0f));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.eq(new Vector2(16, 16)),
                 Mockito.eq(new Rectangle(0, 16, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
+                Mockito.eq(1f),
+                Mockito.eq(0f));
+    }
+
+    @Test
+    void drawCase4() throws IOException {
+        TileMapImporter importer = new TileMapImporter();
+
+        String tmxFileName = "case4.tmx";
+
+        InputStream in = this.getClass().getClassLoader().getResourceAsStream(tmxFileName);
+
+        byte[] bytes = in.readAllBytes();
+        ByteBuffer buffer = createByteBuffer(bytes.length);
+        buffer.put(bytes).flip();
+
+        Mockito.doReturn(buffer).when(ctx).getBuffer();
+
+        TileMap tileMap = importer.process(ctx);
+
+        SpriteBatch spriteBatch = Mockito.mock(SpriteBatch.class);
+        LayerView layerView = new LayerView();
+
+        InOrder inOrder = Mockito.inOrder(spriteBatch);
+
+        layerView.draw(spriteBatch, tileMap.getLayers().get(0));
+
+        inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.eq(new Vector2(0, 0)),
+                Mockito.eq(new Rectangle(0, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
+                Mockito.eq(1f),
+                Mockito.eq(0f));
+        inOrder.verify(spriteBatch, Mockito.times(0)).draw(Mockito.any(Texture.class),Mockito.eq(new Vector2(0, 8)),
+                Mockito.any(Rectangle.class), Mockito.any(Color.class), Mockito.any(Vector2.class), Mockito.anyFloat(), Mockito.anyFloat());
+
+        layerView.draw(spriteBatch, tileMap.getLayers().get(1));
+
+        inOrder.verify(spriteBatch, Mockito.times(0)).draw(Mockito.any(Texture.class),Mockito.eq(new Vector2(0, 0)),
+                Mockito.any(Rectangle.class), Mockito.any(Color.class), Mockito.any(Vector2.class), Mockito.anyFloat(), Mockito.anyFloat());
+        inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.eq(new Vector2(0f + 1.5f, 16f - 2f)),
+                Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
                 Mockito.eq(1f),
                 Mockito.eq(0f));
     }
