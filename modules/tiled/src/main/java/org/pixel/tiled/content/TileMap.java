@@ -13,6 +13,8 @@ import java.util.List;
 public class TileMap implements Disposable {
     private int width;
     private int height;
+    private int tileWidth;
+    private int tileHeight;
     private List<TileSet> tileSets;
     private List<Layer> layers;
 
@@ -66,5 +68,21 @@ public class TileMap implements Disposable {
 
     public void addLayer(Layer layer) {
         this.layers.add(layer);
+    }
+
+    public void setTileHeight(int tileHeight) {
+        this.tileHeight = tileHeight;
+    }
+
+    public void setTileWidth(int tileWidth) {
+        this.tileWidth = tileWidth;
+    }
+
+    public int getTileWidth() {
+        return tileWidth;
+    }
+
+    public int getTileHeight() {
+        return tileHeight;
     }
 }

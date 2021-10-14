@@ -43,6 +43,8 @@ public class TileMapImporterTest {
 
         Assertions.assertEquals(25, tileMap.getHeight());
         Assertions.assertEquals(51, tileMap.getWidth());
+        Assertions.assertEquals(16, tileMap.getTileWidth());
+        Assertions.assertEquals(16, tileMap.getTileHeight());
         Assertions.assertSame(tileSet1, tileMap.getTileSets().get(0));
         Mockito.verify(tileSet1).setFirstGId(1);
         Mockito.verify(tileSet2).setFirstGId(5);
@@ -78,6 +80,9 @@ public class TileMapImporterTest {
         TileMap tileMap = importer.process(ctx);
 
         Layer layer1 = tileMap.getLayers().get(0);
+
+        Assertions.assertEquals(16, tileMap.getTileWidth());
+        Assertions.assertEquals(8, tileMap.getTileHeight());
 
         Assertions.assertEquals(0, layer1.getTiles()[0][0]);
         Assertions.assertEquals(0, layer1.getTiles()[0][1]);
