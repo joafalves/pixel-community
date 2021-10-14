@@ -60,7 +60,6 @@ public class TileMapViewTestIntegrated {
             tileMap = contentManager.load(tmxFileName, TileMap.class);
             tileMapView = new TileMapView();
             spriteBatch = new SpriteBatch();
-
         }
 
         @Override

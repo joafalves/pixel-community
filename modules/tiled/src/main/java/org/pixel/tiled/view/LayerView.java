@@ -35,7 +35,7 @@ public class LayerView implements TiledViewer<Layer> {
                     if(tileSet.getFirstGId() <= gID) {
                         Rectangle source = tileSet.sourceAt(gID - tileSet.getFirstGId());
 
-                        Vector2 position = new Vector2(x * tileSet.getTileWidth(), y * tileSet.getTileHeight());
+                        Vector2 position = new Vector2(x * layer.getTileMap().getTileWidth(), y * layer.getTileMap().getTileHeight());
 
                         spriteBatch.draw(tileSet.getTexture(), position, source, Color.WHITE, Vector2.HALF, 1f, 0f);
                         break;
