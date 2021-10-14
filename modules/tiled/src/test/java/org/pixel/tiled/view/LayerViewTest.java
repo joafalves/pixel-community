@@ -79,6 +79,7 @@ public class LayerViewTest {
 
         layerView.draw(spriteBatch, tileMap.getLayers().get(0));
 
+        // TODO: finish this test when features are implemented
         //inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.eq(new Vector2(0, 8)),
         //        Mockito.eq(new Rectangle(0, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
         //        Mockito.eq(1f),
