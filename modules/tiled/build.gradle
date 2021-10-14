@@ -3,12 +3,14 @@
  * Copyright (c) 2020
  */
 
-plugins {
-    id 'info.solidsoft.pitest' version '1.7.0'
+apply plugin: 'info.solidsoft.pitest'   //'pitest' for plugin versions <1.1.0
+
+pitest {
+    threads = 4
+    targetClasses = ['org.pixel.tiled.*']
+    excludedTestClasses = ['org.pixel.tiled.**.*Integrated']
 }
-
 dependencies {
-
     implementation 'org.junit.jupiter:junit-jupiter:5.7.0'
     api project(":${rootProject.name}-core")
 }

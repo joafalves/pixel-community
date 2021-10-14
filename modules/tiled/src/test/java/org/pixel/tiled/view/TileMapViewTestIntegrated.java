@@ -23,7 +23,7 @@ import java.security.Key;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TileMapViewTest {
+public class TileMapViewTestIntegrated {
     public static class MockWindow extends PixelWindow {
 
         /**

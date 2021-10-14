@@ -3,6 +3,7 @@
  * Copyright (c) 2020
  */
 
+
 version = "0.5.0"
 
 def lwjglVersion = "3.2.3"
@@ -13,10 +14,20 @@ if (buildTarget == null) {
 
 println "Build target: '${buildTarget}'"
 
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.7.0'
+    }
+}
+
 allprojects {
     // plugins
     apply plugin: "java"
     apply plugin: 'java-library'
+    apply plugin: 'info.solidsoft.pitest'
 
     // project version
     version rootProject.version
