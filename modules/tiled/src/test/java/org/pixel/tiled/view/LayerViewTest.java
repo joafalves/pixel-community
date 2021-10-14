@@ -1,6 +1,7 @@
 package org.pixel.tiled.view;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -24,17 +25,20 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.lwjgl.BufferUtils.createByteBuffer;
 
 public class LayerViewTest {
+    Texture texture1, texture2;
+    ImportContext ctx;
+    ContentManager contentManager;
+    TileSet tileSet1, tileSet2;
 
-    @Test
-    public void drawCase2() throws IOException {
+    @BeforeEach
+    void setup() throws IOException {
         TileMapImporter importer = new TileMapImporter();
         TileSetImporter tileSetImporter = new TileSetImporter();
-        Texture texture1 = Mockito.mock(Texture.class);
-        Texture texture2 = Mockito.mock(Texture.class);
+        texture1 = Mockito.mock(Texture.class);
+        texture2 = Mockito.mock(Texture.class);
 
-        String tmxFileName = "case2.tmx";
-        ImportContext ctx = Mockito.mock(ImportContext.class);
-        ContentManager contentManager = Mockito.mock(ContentManager.class);
+        ctx = Mockito.mock(ImportContext.class);
+        contentManager = Mockito.mock(ContentManager.class);
 
         Mockito.when(contentManager.load(Mockito.eq("Tileset.png"), Mockito.eq(Texture.class))).thenReturn(texture1);
         Mockito.when(contentManager.load(Mockito.eq("Tilese2t.png"), Mockito.eq(Texture.class))).thenReturn(texture2);
@@ -48,7 +52,7 @@ public class LayerViewTest {
 
         Mockito.doReturn(buffer).when(ctx).getBuffer();
 
-        TileSet tileSet1 = tileSetImporter.process(ctx);
+        tileSet1 = tileSetImporter.process(ctx);
 
         in = this.getClass().getClassLoader().getResourceAsStream("tes3.tsx");
 
@@ -58,18 +62,26 @@ public class LayerViewTest {
 
         Mockito.doReturn(buffer).when(ctx).getBuffer();
 
-        TileSet tileSet2 = tileSetImporter.process(ctx);
+        tileSet2 = tileSetImporter.process(ctx);
 
-        in = this.getClass().getClassLoader().getResourceAsStream(tmxFileName);
-
-        bytes = in.readAllBytes();
-        buffer = createByteBuffer(bytes.length);
-        buffer.put(bytes).flip();
-
-        Mockito.doReturn(buffer).when(ctx).getBuffer();
         Mockito.when(contentManager.load(Mockito.matches("Tileset.tsx"), Mockito.eq(TileSet.class))).thenReturn(tileSet1);
         Mockito.when(contentManager.load(Mockito.matches("tes3.tsx"), Mockito.eq(TileSet.class))).thenReturn(tileSet2);
         Mockito.when(ctx.getContentManager()).thenReturn(contentManager);
+    }
+
+    @Test
+    public void drawCase2() throws IOException {
+        TileMapImporter importer = new TileMapImporter();
+
+        String tmxFileName = "case2.tmx";
+
+        InputStream in = this.getClass().getClassLoader().getResourceAsStream(tmxFileName);
+
+        byte[] bytes = in.readAllBytes();
+        ByteBuffer buffer = createByteBuffer(bytes.length);
+        buffer.put(bytes).flip();
+
+        Mockito.doReturn(buffer).when(ctx).getBuffer();
 
         TileMap tileMap = importer.process(ctx);
 

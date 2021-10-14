@@ -14,15 +14,6 @@ if (buildTarget == null) {
 
 println "Build target: '${buildTarget}'"
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.7.0'
-    }
-}
-
 allprojects {
     // plugins
     apply plugin: "java"

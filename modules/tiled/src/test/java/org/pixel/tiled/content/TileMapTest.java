@@ -1,7 +1,7 @@
 package org.pixel.tiled.content;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;

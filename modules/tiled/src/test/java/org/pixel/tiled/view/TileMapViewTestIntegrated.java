@@ -1,6 +1,6 @@
 package org.pixel.tiled.view;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;

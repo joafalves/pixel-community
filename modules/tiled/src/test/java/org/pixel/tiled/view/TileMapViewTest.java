@@ -1,6 +1,6 @@
 package org.pixel.tiled.view;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.InOrder;
 import org.mockito.Mock;
