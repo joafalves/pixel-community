@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="2" height="4" tilewidth="64" tileheight="64" infinite="0" nextlayerid="2" nextobjectid="1">
+ <tileset firstgid="1" source="Tileset.tsx"/>
+ <tileset firstgid="5" source="test.tsx"/>
+ <layer id="1" name="Tile Layer 1" width="2" height="4">
+  <data encoding="csv">
+5,2147483653,
+1073741829,3221225477,
+2684354565,536870917,
+1610612741,3758096389
+</data>
+ </layer>
+</map>

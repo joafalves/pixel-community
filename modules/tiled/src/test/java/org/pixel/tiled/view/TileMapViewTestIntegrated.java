@@ -38,12 +38,12 @@ public class TileMapViewTestIntegrated {
         @Override
         public void load() {
             gameCamera.setOrigin(new Vector2(0.5f, 0.5f));
-            gameCamera.translate(500, 180);
-            gameCamera.setZoom(3f);
+            //gameCamera.translate(500, 180);
+            gameCamera.setZoom(2f);
 
             TileMapImporter importer = new TileMapImporter();
             TileSetImporter tileSetImporter = new TileSetImporter();
-            String tmxFileName = "untitled.tmx";
+            String tmxFileName = "rotation2.tmx";
 
             ContentManager contentManager = new ContentManager();
             contentManager.addContentImporter(importer);
