@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="2" height="3" tilewidth="8" tileheight="16" infinite="0" nextlayerid="3" nextobjectid="1">
+ <tileset firstgid="1" source="Tileset.tsx"/>
+ <tileset firstgid="5" source="tes3.tsx"/>
+ <layer id="1" name="Tile Layer 1" width="2" height="3">
+  <data encoding="csv">
+3,0,
+7,0,
+7,0
+</data>
+ </layer>
+ <layer id="2" name="gree" width="2" height="3">
+  <data encoding="csv">
+2,1,
+0,2,
+1,2
+</data>
+ </layer>
+</map>

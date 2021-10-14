@@ -23,7 +23,9 @@ public class TileMap implements Disposable {
 
     @Override
     public void dispose() {
-
+        for(TileSet tileSet : tileSets) {
+            tileSet.dispose();
+        }
     }
 
     public int getWidth() {

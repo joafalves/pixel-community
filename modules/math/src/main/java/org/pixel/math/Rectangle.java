@@ -8,6 +8,7 @@ package org.pixel.math;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author João Filipe Alves
@@ -301,6 +302,18 @@ public class Rectangle implements Serializable {
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Rectangle)) return false;
+        Rectangle rectangle = (Rectangle) o;
+        return Float.compare(rectangle.x, x) == 0 && Float.compare(rectangle.y, y) == 0 && Float.compare(rectangle.width, width) == 0 && Float.compare(rectangle.height, height) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y, width, height);
+    }
 
     //endregion
 }

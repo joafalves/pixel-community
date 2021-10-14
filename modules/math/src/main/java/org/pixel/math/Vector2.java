@@ -6,6 +6,7 @@
 package org.pixel.math;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class Vector2 implements Serializable {
 
@@ -457,4 +458,17 @@ public class Vector2 implements Serializable {
     }
 
     //endregion
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Vector2)) return false;
+        Vector2 vector2 = (Vector2) o;
+        return Float.compare(vector2.x, x) == 0 && Float.compare(vector2.y, y) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
+    }
 }
