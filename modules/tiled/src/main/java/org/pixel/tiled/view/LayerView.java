@@ -16,7 +16,6 @@ public class LayerView implements TiledViewer<Layer> {
     private static final long VERTICAL_FLIP_FLAG = 0x40000000;
     private static final long DIAGONAL_FLIP_FLAG = 0x20000000;
 
-
     @Override
     public void draw(SpriteBatch spriteBatch, Layer layer) {
         List<TileSet> tileSets = layer.getTileMap().getTileSets();
@@ -38,7 +37,6 @@ public class LayerView implements TiledViewer<Layer> {
 
                         Vector2 position = new Vector2(x * tileSet.getTileWidth(), y * tileSet.getTileHeight());
 
-                        // TODO: SOME TILESETS CAN HAVE DIFFERENT TILE WIDTH/HEIGHT COMPARED TO TILE MAP, CHANGE SCALE TO FIT
                         spriteBatch.draw(tileSet.getTexture(), position, source, Color.WHITE, Vector2.HALF, 1f, 0f);
                         break;
                     }
