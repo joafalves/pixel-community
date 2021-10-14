@@ -1,13 +1,11 @@
 package org.pixel.tiled.content.importer;
 
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.pixel.content.ContentManager;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.tiled.content.TileMap;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class TileMapImporterTestIntegrated {
 

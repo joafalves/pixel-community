@@ -1,13 +1,11 @@
 package org.pixel.tiled.content.importer;
 
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.pixel.content.ContentManager;
 import org.pixel.content.ImportContext;
 import org.pixel.content.Texture;
-import org.pixel.core.PixelWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.tiled.content.TileSet;
 
 import java.io.IOException;
@@ -51,7 +49,6 @@ public class TileSetImporterTest {
         String tsxFileName = "Tileset.tsx";
         ImportContext ctx = Mockito.mock(ImportContext.class);
         ContentManager contentManager = Mockito.mock(ContentManager.class);
-        Texture texture = Mockito.mock(Texture.class);
 
         Mockito.when(contentManager.load(Mockito.anyString(), Mockito.eq(Texture.class))).thenReturn(null);
 
@@ -66,6 +63,6 @@ public class TileSetImporterTest {
 
         TileSet tileSet = importer.process(ctx);
 
-        Assertions.assertEquals(null, tileSet);
+        Assertions.assertNull(tileSet);
     }
 }

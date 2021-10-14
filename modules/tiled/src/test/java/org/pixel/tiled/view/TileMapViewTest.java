@@ -1,19 +1,15 @@
 package org.pixel.tiled.view;
 
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.tiled.content.Layer;
 import org.pixel.tiled.content.TileMap;
-import org.pixel.tiled.content.TileSet;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class TileMapViewTest {
     @Test

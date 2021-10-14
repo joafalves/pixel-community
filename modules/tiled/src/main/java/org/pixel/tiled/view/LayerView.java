@@ -27,7 +27,9 @@ public class LayerView implements TiledViewer<Layer> {
 
                 gID &= ~(HORIZONTAL_FLIP_FLAG | VERTICAL_FLIP_FLAG | DIAGONAL_FLIP_FLAG);
 
-                if(gID == 0) continue;
+                if(gID == 0) {
+                    continue;
+                }
 
                 while(itr.hasPrevious()) {
                     TileSet tileSet = itr.previous();
@@ -35,7 +37,8 @@ public class LayerView implements TiledViewer<Layer> {
                     if(tileSet.getFirstGId() <= gID) {
                         Rectangle source = tileSet.sourceAt(gID - tileSet.getFirstGId());
 
-                        Vector2 position = new Vector2(x * layer.getTileMap().getTileWidth(), y * layer.getTileMap().getTileHeight());
+                        Vector2 position = new Vector2(x * layer.getTileMap().getTileWidth() + (float)layer.getOffsetX(),
+                                y * layer.getTileMap().getTileHeight() + (float)layer.getOffsetY());
 
                         spriteBatch.draw(tileSet.getTexture(), position, source, Color.WHITE, Vector2.HALF, 1f, 0f);
                         break;

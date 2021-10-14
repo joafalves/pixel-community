@@ -1,27 +1,19 @@
 package org.pixel.tiled.view;
 
-import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
 import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
-import org.pixel.graphics.Color;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
-import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 import org.pixel.tiled.content.TileMap;
 import org.pixel.tiled.content.importer.TileMapImporter;
-import org.pixel.tiled.content.importer.TileMapImporterTest;
 import org.pixel.tiled.content.importer.TileSetImporter;
-
-import java.security.Key;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class TileMapViewTestIntegrated {
     public static class MockWindow extends PixelWindow {

@@ -1,12 +1,10 @@
 package org.pixel.tiled.content.importer;
 
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.mockito.Mock;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.pixel.content.ContentManager;
 import org.pixel.content.ImportContext;
-import org.pixel.content.Texture;
 import org.pixel.tiled.content.Layer;
 import org.pixel.tiled.content.TileMap;
 import org.pixel.tiled.content.TileSet;
@@ -119,6 +117,6 @@ public class TileMapImporterTest {
 
         TileMap tileSet = importer.process(ctx);
 
-        Assertions.assertEquals(null, tileSet);
+        Assertions.assertNull(tileSet);
     }
 }

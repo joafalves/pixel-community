@@ -3,7 +3,6 @@
  * Copyright (c) 2020
  */
 
-
 version = "0.5.0"
 
 def lwjglVersion = "3.2.3"
@@ -13,15 +12,6 @@ if (buildTarget == null) {
 }
 
 println "Build target: '${buildTarget}'"
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.7.0'
-    }
-}
 
 allprojects {
     // plugins
@@ -45,7 +35,6 @@ allprojects {
         api group: "org.lwjgl", name: "lwjgl-stb", version: lwjglVersion
         api group: "org.lwjgl", name: "lwjgl-nanovg", version: lwjglVersion
         api group: "org.lwjgl", name: "lwjgl-yoga", version: lwjglVersion
-        implementation 'org.mockito:mockito-core:3.12.4'
 
         // lwjgl-macos
         if (buildTarget == "macos" || buildTarget == "all") {
