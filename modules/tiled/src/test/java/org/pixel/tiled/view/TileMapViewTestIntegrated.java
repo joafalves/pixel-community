@@ -1,8 +1,10 @@
 package org.pixel.tiled.view;
 
 import org.junit.jupiter.api.Test;
+import org.lwjgl.opengl.GL12;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
+import org.pixel.content.importer.settings.TextureImporterSettings;
 import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
@@ -14,6 +16,8 @@ import org.pixel.math.Vector2;
 import org.pixel.tiled.content.TileMap;
 import org.pixel.tiled.content.importer.TileMapImporter;
 import org.pixel.tiled.content.importer.TileSetImporter;
+
+import static org.lwjgl.opengl.GL11.GL_NEAREST;
 
 public class TileMapViewTestIntegrated {
     public static class MockWindow extends PixelWindow {
@@ -39,17 +43,19 @@ public class TileMapViewTestIntegrated {
         public void load() {
             gameCamera.setOrigin(new Vector2(0.5f, 0.5f));
             //gameCamera.translate(500, 180);
-            gameCamera.setZoom(2f);
+            gameCamera.setZoom(3f);
 
             TileMapImporter importer = new TileMapImporter();
             TileSetImporter tileSetImporter = new TileSetImporter();
-            String tmxFileName = "rotation2.tmx";
+            String tmxFileName = "rotations.tmx";
 
             ContentManager contentManager = new ContentManager();
             contentManager.addContentImporter(importer);
             contentManager.addContentImporter(tileSetImporter);
 
-            tileMap = contentManager.load(tmxFileName, TileMap.class);
+            TextureImporterSettings settings = new TextureImporterSettings(GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST);
+
+            tileMap = contentManager.load(tmxFileName, TileMap.class, settings);
             tileMapView = new TileMapView();
             spriteBatch = new SpriteBatch();
         }

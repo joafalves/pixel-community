@@ -35,7 +35,7 @@ public class TileSetImporter implements ContentImporter<TileSet> {
 
         String textureFilePath = image.getAttribute("source");
 
-        Texture tileSetImage = ctx.getContentManager().load(textureFilePath, Texture.class);
+        Texture tileSetImage = ctx.getContentManager().load(textureFilePath, Texture.class, ctx.getSettings());
 
         if(tileSetImage == null) {
             LOG.error("Something went wrong processing the Tile Set texture image.");

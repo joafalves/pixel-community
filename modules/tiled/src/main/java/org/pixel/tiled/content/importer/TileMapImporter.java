@@ -7,7 +7,9 @@ package org.pixel.tiled.content.importer;
 
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.content.*;
+import org.pixel.content.ContentImporter;
+import org.pixel.content.ContentImporterInfo;
+import org.pixel.content.ImportContext;
 import org.pixel.tiled.content.Layer;
 import org.pixel.tiled.content.TileMap;
 import org.pixel.tiled.content.TileSet;
@@ -17,7 +19,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,7 +36,7 @@ public class TileMapImporter implements ContentImporter<TileMap> {
                 Element tileset = (Element) tilesetNode;
                 String tilesetSource = tileset.getAttribute("source");
 
-                TileSet tileSet = ctx.getContentManager().load(tilesetSource, TileSet.class);
+                TileSet tileSet = ctx.getContentManager().load(tilesetSource, TileSet.class, ctx.getSettings());
 
                 if(tileSet == null) {
                     LOG.error("Error loading tileset");
