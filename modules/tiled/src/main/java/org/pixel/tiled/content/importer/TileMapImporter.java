@@ -109,6 +109,7 @@ public class TileMapImporter implements ContentImporter<TileMap> {
         tileMap.setWidth(Integer.parseInt(mapElement.getAttribute("width")));
         tileMap.setTileHeight(Integer.parseInt(mapElement.getAttribute("tileheight")));
         tileMap.setTileWidth(Integer.parseInt(mapElement.getAttribute("tilewidth")));
+        tileMap.setRenderOrder(mapElement.getAttribute("renderorder"));
 
         importTilesets(tileMap, tmxDoc, ctx);
         importLayers(tileMap, tmxDoc, ctx);

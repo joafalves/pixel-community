@@ -47,7 +47,7 @@ public class TileMapViewTestIntegrated {
 
             TileMapImporter importer = new TileMapImporter();
             TileSetImporter tileSetImporter = new TileSetImporter();
-            String tmxFileName = "rotations.tmx";
+            String tmxFileName = "case3.tmx";
 
             ContentManager contentManager = new ContentManager();
             contentManager.addContentImporter(importer);
