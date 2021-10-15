@@ -5,13 +5,17 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.pixel.content.ContentManager;
 import org.pixel.content.ImportContext;
+import org.pixel.content.importer.settings.TextureImporterSettings;
 import org.pixel.tiled.content.Layer;
 import org.pixel.tiled.content.TileMap;
 import org.pixel.tiled.content.TileSet;
+import org.w3c.dom.Document;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.lwjgl.BufferUtils.createByteBuffer;
 
@@ -106,8 +110,13 @@ public class TileMapImporterTest {
         String tmxFileName = "case3.tmx";
         ImportContext ctx = Mockito.mock(ImportContext.class);
         ContentManager contentManager = Mockito.mock(ContentManager.class);
-        TileSet tileSet1 = Mockito.mock(TileSet.class);
-        TileSet tileSet2 = Mockito.mock(TileSet.class);
+        List<TileMapProcessor> processors = new ArrayList<>();
+        TileMapProcessor tileMapProcessor = Mockito.mock(TileMapProcessor.class);
+        processors.add(tileMapProcessor);
+        TextureImporterSettings textureImporterSettings = Mockito.mock(TextureImporterSettings.class);
+        TileMapImporterSettings tileMapImporterSettings = Mockito.mock(TileMapImporterSettings.class);
+        Mockito.when(tileMapImporterSettings.getTextureImporterSettings()).thenReturn(textureImporterSettings);
+        Mockito.when(tileMapImporterSettings.getProcessors()).thenReturn(processors);
 
         InputStream in = this.getClass().getClassLoader().getResourceAsStream(tmxFileName);
 
@@ -116,13 +125,19 @@ public class TileMapImporterTest {
         buffer.put(bytes).flip();
 
         Mockito.doReturn(buffer).when(ctx).getBuffer();
-        Mockito.when(contentManager.load(Mockito.matches("Tileset.tsx"), Mockito.eq(TileSet.class))).thenReturn(tileSet1);
-        Mockito.when(contentManager.load(Mockito.matches("tes3.tsx"), Mockito.eq(TileSet.class))).thenReturn(tileSet2);
         Mockito.when(ctx.getContentManager()).thenReturn(contentManager);
+        Mockito.when(ctx.getSettings()).thenReturn(textureImporterSettings);
 
         TileMap tileMap = importer.process(ctx);
 
         Assertions.assertEquals("left-down", tileMap.getRenderOrder());
+        Mockito.verify(tileMapProcessor, Mockito.times(0)).process(Mockito.same(tileMap), Mockito.any(Document.class), Mockito.same(ctx));
+        Mockito.verify(ctx).setSettings(Mockito.any(TileMapImporterSettings.class));
+
+        Mockito.when(ctx.getSettings()).thenReturn(tileMapImporterSettings);
+
+        tileMap = importer.process(ctx);
+        Mockito.verify(tileMapProcessor).process(Mockito.same(tileMap), Mockito.any(Document.class), Mockito.same(ctx));
     }
 
     @Test

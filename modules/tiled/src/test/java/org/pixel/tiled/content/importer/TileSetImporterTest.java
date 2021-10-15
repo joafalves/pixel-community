@@ -6,6 +6,7 @@ import org.mockito.Mockito;
 import org.pixel.content.ContentManager;
 import org.pixel.content.ImportContext;
 import org.pixel.content.Texture;
+import org.pixel.content.importer.settings.TextureImporterSettings;
 import org.pixel.tiled.content.TileSet;
 
 import java.io.IOException;
@@ -64,5 +65,41 @@ public class TileSetImporterTest {
         TileSet tileSet = importer.process(ctx);
 
         Assertions.assertNull(tileSet);
+    }
+
+    @Test
+    public void importerSettings() throws IOException {
+        TileSetImporter importer = new TileSetImporter();
+        String tsxFileName = "Tileset.tsx";
+        ImportContext ctx = Mockito.mock(ImportContext.class);
+        ContentManager contentManager = Mockito.mock(ContentManager.class);
+        Texture texture = Mockito.mock(Texture.class);
+        TileMapImporterSettings settings = Mockito.mock(TileMapImporterSettings.class);
+        TextureImporterSettings textureImporterSettings = Mockito.mock(TextureImporterSettings.class);
+
+        Mockito.when(settings.getTextureImporterSettings()).thenReturn(textureImporterSettings);
+
+        Mockito.when(contentManager.load(Mockito.anyString(), Mockito.eq(Texture.class), Mockito.any())).thenReturn(texture);
+
+        InputStream in = this.getClass().getClassLoader().getResourceAsStream(tsxFileName);
+
+        assert in != null;
+        byte[] bytes = in.readAllBytes();
+        ByteBuffer buffer = createByteBuffer(bytes.length);
+        buffer.put(bytes).flip();
+
+        Mockito.doReturn(buffer).when(ctx).getBuffer();
+        Mockito.when(ctx.getContentManager()).thenReturn(contentManager);
+        //Mockito.when(ctx.getSettings()).thenReturn(settings);
+
+        TileSet tileSet = importer.process(ctx);
+
+        Mockito.verify(contentManager).load(Mockito.eq("Tileset.png"), Mockito.eq(Texture.class), Mockito.eq(null));
+
+        Mockito.when(ctx.getSettings()).thenReturn(settings);
+
+        tileSet = importer.process(ctx);
+
+        Mockito.verify(contentManager).load(Mockito.eq("Tileset.png"), Mockito.eq(Texture.class), Mockito.same(textureImporterSettings));
     }
 }

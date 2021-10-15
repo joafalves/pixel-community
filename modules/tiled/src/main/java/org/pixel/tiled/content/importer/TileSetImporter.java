@@ -6,6 +6,7 @@ import org.pixel.content.ContentImporter;
 import org.pixel.content.ContentImporterInfo;
 import org.pixel.content.ImportContext;
 import org.pixel.content.Texture;
+import org.pixel.content.importer.settings.ContentImporterSettings;
 import org.pixel.tiled.content.TileSet;
 import org.pixel.tiled.utils.XMLUtils;
 import org.w3c.dom.Document;
@@ -35,7 +36,15 @@ public class TileSetImporter implements ContentImporter<TileSet> {
 
         String textureFilePath = image.getAttribute("source");
 
-        Texture tileSetImage = ctx.getContentManager().load(textureFilePath, Texture.class, ctx.getSettings());
+        ContentImporterSettings settings;
+
+        if(ctx.getSettings() instanceof TileMapImporterSettings) {
+            settings = ((TileMapImporterSettings) ctx.getSettings()).getTextureImporterSettings();
+        } else {
+            settings = ctx.getSettings();
+        }
+
+        Texture tileSetImage = ctx.getContentManager().load(textureFilePath, Texture.class, settings);
 
         if(tileSetImage == null) {
             LOG.error("Something went wrong processing the Tile Set texture image.");
