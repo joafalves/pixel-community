@@ -17,6 +17,7 @@ public class TileMap implements Disposable {
     private int tileHeight;
     private List<TileSet> tileSets;
     private List<Layer> layers;
+    private String renderOrder;
 
     public TileMap() {
         tileSets = new ArrayList<>();
@@ -84,5 +85,13 @@ public class TileMap implements Disposable {
 
     public int getTileHeight() {
         return tileHeight;
+    }
+
+    public void setRenderOrder(String renderOrder) {
+        this.renderOrder = renderOrder;
+    }
+
+    public String getRenderOrder() {
+        return renderOrder;
     }
 }

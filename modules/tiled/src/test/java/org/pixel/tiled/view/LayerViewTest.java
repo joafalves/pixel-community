@@ -37,8 +37,8 @@ public class LayerViewTest {
         ctx = Mockito.mock(ImportContext.class);
         contentManager = Mockito.mock(ContentManager.class);
 
-        Mockito.when(contentManager.load(Mockito.eq("Tileset.png"), Mockito.eq(Texture.class))).thenReturn(texture1);
-        Mockito.when(contentManager.load(Mockito.eq("Tilese2t.png"), Mockito.eq(Texture.class))).thenReturn(texture2);
+        Mockito.when(contentManager.load(Mockito.eq("Tileset.png"), Mockito.eq(Texture.class), Mockito.any())).thenReturn(texture1);
+        Mockito.when(contentManager.load(Mockito.eq("Tilese2t.png"), Mockito.eq(Texture.class), Mockito.any())).thenReturn(texture2);
         Mockito.when(ctx.getContentManager()).thenReturn(contentManager);
 
         InputStream in = this.getClass().getClassLoader().getResourceAsStream("Tileset.tsx");
@@ -61,8 +61,8 @@ public class LayerViewTest {
 
         tileSet2 = tileSetImporter.process(ctx);
 
-        Mockito.when(contentManager.load(Mockito.matches("Tileset.tsx"), Mockito.eq(TileSet.class))).thenReturn(tileSet1);
-        Mockito.when(contentManager.load(Mockito.matches("tes3.tsx"), Mockito.eq(TileSet.class))).thenReturn(tileSet2);
+        Mockito.when(contentManager.load(Mockito.matches("Tileset.tsx"), Mockito.eq(TileSet.class), Mockito.any())).thenReturn(tileSet1);
+        Mockito.when(contentManager.load(Mockito.matches("tes3.tsx"), Mockito.eq(TileSet.class), Mockito.any())).thenReturn(tileSet2);
         Mockito.when(ctx.getContentManager()).thenReturn(contentManager);
     }
 

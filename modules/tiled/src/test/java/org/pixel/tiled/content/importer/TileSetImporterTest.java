@@ -23,7 +23,7 @@ public class TileSetImporterTest {
         ContentManager contentManager = Mockito.mock(ContentManager.class);
         Texture texture = Mockito.mock(Texture.class);
 
-        Mockito.when(contentManager.load(Mockito.anyString(), Mockito.eq(Texture.class))).thenReturn(texture);
+        Mockito.when(contentManager.load(Mockito.anyString(), Mockito.eq(Texture.class), Mockito.any())).thenReturn(texture);
 
         InputStream in = this.getClass().getClassLoader().getResourceAsStream(tsxFileName);
 

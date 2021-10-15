@@ -33,8 +33,8 @@ public class TileMapImporterTest {
         buffer.put(bytes).flip();
 
         Mockito.doReturn(buffer).when(ctx).getBuffer();
-        Mockito.when(contentManager.load(Mockito.matches("Tileset.tsx"), Mockito.eq(TileSet.class))).thenReturn(tileSet1);
-        Mockito.when(contentManager.load(Mockito.matches("tes3.tsx"), Mockito.eq(TileSet.class))).thenReturn(tileSet2);
+        Mockito.when(contentManager.load(Mockito.matches("Tileset.tsx"), Mockito.eq(TileSet.class), Mockito.any())).thenReturn(tileSet1);
+        Mockito.when(contentManager.load(Mockito.matches("tes3.tsx"), Mockito.eq(TileSet.class), Mockito.any())).thenReturn(tileSet2);
         Mockito.when(ctx.getContentManager()).thenReturn(contentManager);
 
         TileMap tileMap = importer.process(ctx);
@@ -53,6 +53,7 @@ public class TileMapImporterTest {
         Assertions.assertEquals(0, tileMap.getLayers().get(0).getOffsetY());
         Assertions.assertEquals(-1, tileMap.getLayers().get(1).getOffsetX());
         Assertions.assertEquals(7.5, tileMap.getLayers().get(1).getOffsetY());
+        Assertions.assertEquals("right-down", tileMap.getRenderOrder());
     }
 
     @Test
@@ -97,6 +98,31 @@ public class TileMapImporterTest {
         Assertions.assertEquals(6, layer2.getTiles()[1][1]);
         Assertions.assertEquals(6, layer2.getTiles()[2][0]);
         Assertions.assertEquals(7, layer2.getTiles()[2][1]);
+    }
+
+    @Test
+    public void processCase3() throws IOException {
+        TileMapImporter importer = new TileMapImporter();
+        String tmxFileName = "case3.tmx";
+        ImportContext ctx = Mockito.mock(ImportContext.class);
+        ContentManager contentManager = Mockito.mock(ContentManager.class);
+        TileSet tileSet1 = Mockito.mock(TileSet.class);
+        TileSet tileSet2 = Mockito.mock(TileSet.class);
+
+        InputStream in = this.getClass().getClassLoader().getResourceAsStream(tmxFileName);
+
+        byte[] bytes = in.readAllBytes();
+        ByteBuffer buffer = createByteBuffer(bytes.length);
+        buffer.put(bytes).flip();
+
+        Mockito.doReturn(buffer).when(ctx).getBuffer();
+        Mockito.when(contentManager.load(Mockito.matches("Tileset.tsx"), Mockito.eq(TileSet.class))).thenReturn(tileSet1);
+        Mockito.when(contentManager.load(Mockito.matches("tes3.tsx"), Mockito.eq(TileSet.class))).thenReturn(tileSet2);
+        Mockito.when(ctx.getContentManager()).thenReturn(contentManager);
+
+        TileMap tileMap = importer.process(ctx);
+
+        Assertions.assertEquals("left-down", tileMap.getRenderOrder());
     }
 
     @Test
