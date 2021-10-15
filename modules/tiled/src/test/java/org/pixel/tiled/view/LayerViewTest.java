@@ -223,9 +223,9 @@ public class LayerViewTest {
                 Mockito.eq(0f));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.eq(new Vector2(0, 32)),
                 Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(1f),
-                Mockito.eq(1f),
-                Mockito.eq((float) -Math.PI / 2));
+                Mockito.eq(-1f),
+                Mockito.eq(-1f),
+                Mockito.eq((float) Math.PI / 2));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.eq(new Vector2(16, 32)),
                 Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
                 Mockito.eq(1f),
@@ -238,8 +238,8 @@ public class LayerViewTest {
                 Mockito.eq((float) Math.PI / 2));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.eq(new Vector2(16, 48)),
                 Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(-1f),
                 Mockito.eq(1f),
-                Mockito.eq((float) -Math.PI / 2));
+                Mockito.eq(-1f),
+                Mockito.eq((float) Math.PI / 2));
     }
 }
