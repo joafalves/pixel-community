@@ -21,7 +21,7 @@ public class TileSetImporter implements ContentImporter<TileSet> {
         XMLUtils utils = new XMLUtils();
         Document tsxDoc = utils.openXMLDocument(ctx);
 
-        if(tsxDoc == null) {
+        if (tsxDoc == null) {
             return null;
         }
 
@@ -38,7 +38,7 @@ public class TileSetImporter implements ContentImporter<TileSet> {
 
         ContentImporterSettings settings;
 
-        if(ctx.getSettings() instanceof TileMapImporterSettings) {
+        if (ctx.getSettings() instanceof TileMapImporterSettings) {
             settings = ((TileMapImporterSettings) ctx.getSettings()).getTextureImporterSettings();
         } else {
             settings = ctx.getSettings();
@@ -46,7 +46,7 @@ public class TileSetImporter implements ContentImporter<TileSet> {
 
         Texture tileSetImage = ctx.getContentManager().load(textureFilePath, Texture.class, settings);
 
-        if(tileSetImage == null) {
+        if (tileSetImage == null) {
             LOG.error("Something went wrong processing the Tile Set texture image.");
 
             return null;

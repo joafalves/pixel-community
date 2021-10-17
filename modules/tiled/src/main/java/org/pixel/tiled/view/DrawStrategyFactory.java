@@ -4,7 +4,7 @@ import org.pixel.tiled.content.TileMap;
 
 import java.util.HashMap;
 
-public class DrawStrategyFactory{
+public class DrawStrategyFactory {
     private final static HashMap<String, DrawStrategy> renderOrderToStrategy = new HashMap<>();
     static {
         renderOrderToStrategy.put("right-down", new RightDownStrategy());
@@ -13,7 +13,7 @@ public class DrawStrategyFactory{
         renderOrderToStrategy.put("left-up", new LeftUpStrategy());
     }
 
-    public DrawStrategy createDrawStrategy(TileMap tileMap) {
+    public DrawStrategy getDrawStrategy(TileMap tileMap) {
         return renderOrderToStrategy.getOrDefault(tileMap.getRenderOrder(), new RightDownStrategy());
     }
 }

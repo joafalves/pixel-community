@@ -8,6 +8,15 @@ import org.pixel.core.WindowSettings;
 import org.pixel.tiled.content.TileSet;
 
 public class TileSetImporterTestIntegrated {
+    @Test
+    public void processCase1Integrated() {
+        WindowSettings settings = new WindowSettings(1, 1);
+        settings.setDebugMode(true);
+
+        PixelWindow pixelWindow = new MockWindow(settings);
+        pixelWindow.start();
+    }
+
     public static class MockWindow extends PixelWindow {
 
         /**
@@ -39,14 +48,5 @@ public class TileSetImporterTestIntegrated {
 
             close();
         }
-    }
-
-    @Test
-    public void processCase1Integrated() {
-        WindowSettings settings = new WindowSettings(1, 1);
-        settings.setDebugMode(true);
-
-        PixelWindow pixelWindow = new MockWindow(settings);
-        pixelWindow.start();
     }
 }

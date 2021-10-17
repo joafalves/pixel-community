@@ -10,6 +10,7 @@ import org.pixel.content.ContentImporterInfo;
 import org.pixel.content.ImportContext;
 import org.pixel.tiled.content.TileMap;
 import org.pixel.tiled.utils.XMLUtils;
+import org.pixel.tiled.view.DrawStrategyFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -20,7 +21,7 @@ public class TileMapImporter implements ContentImporter<TileMap> {
         XMLUtils utils = new XMLUtils();
         Document tmxDoc = utils.openXMLDocument(ctx);
 
-        if(tmxDoc == null) {
+        if (tmxDoc == null) {
             return null;
         }
 
@@ -34,6 +35,10 @@ public class TileMapImporter implements ContentImporter<TileMap> {
         tileMap.setTileWidth(Integer.parseInt(mapElement.getAttribute("tilewidth")));
         tileMap.setRenderOrder(mapElement.getAttribute("renderorder"));
 
+        DrawStrategyFactory drawStrategyFactory = new DrawStrategyFactory();
+
+        tileMap.setDrawStrategy(drawStrategyFactory.getDrawStrategy(tileMap));
+
         TileMapImporterSettings importerSettings;
 
         if (ctx.getSettings() instanceof TileMapImporterSettings) {
@@ -44,7 +49,7 @@ public class TileMapImporter implements ContentImporter<TileMap> {
             ctx.setSettings(importerSettings);
         }
 
-        for(TileMapProcessor processor : importerSettings.getProcessors()) {
+        for (TileMapProcessor processor : importerSettings.getProcessors()) {
             processor.process(tileMap, tmxDoc, ctx);
         }
 

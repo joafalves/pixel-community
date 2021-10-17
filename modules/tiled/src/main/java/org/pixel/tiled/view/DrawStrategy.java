@@ -15,16 +15,6 @@ public abstract class DrawStrategy {
     private static final long VERTICAL_FLIP_FLAG = 0x40000000;
     private static final long DIAGONAL_FLIP_FLAG = 0x20000000;
 
-    private static class Transform {
-        private float scaleX, scaleY;
-        private float rotation;
-
-        private Transform() {
-            scaleX = scaleY = 1f;
-            rotation = 0f;
-        }
-    }
-
     private Transform getTileTransform(long gID) {
         boolean horizontalFlip = (gID & HORIZONTAL_FLIP_FLAG) > 0;
         boolean verticalFlip = (gID & VERTICAL_FLIP_FLAG) > 0;
@@ -34,23 +24,13 @@ public abstract class DrawStrategy {
         // diagonal flip in tiled is done before the other flips, since scaling is done before rotation
         // that isn't
         // possible these are some workarounds
-        if(diagonalFlip) {
+        if (diagonalFlip) {
             transform.rotation = (float) Math.PI / 2;
-            transform.scaleX = -1f;
-
-            if(horizontalFlip) {
-                transform.scaleY = -1f;
-            }
-            if(verticalFlip) {
-                transform.scaleX = 1f;
-            }
+            transform.scaleX = verticalFlip ? 1f : -1f;
+            transform.scaleY = horizontalFlip ? -1f : 1f;
         } else {
-            if(horizontalFlip) {
-                transform.scaleX = -1f;
-            }
-            if(verticalFlip) {
-                transform.scaleY = -1f;
-            }
+            transform.scaleX = horizontalFlip ? -1f : 1f;
+            transform.scaleY = verticalFlip ? -1f : 1f;
         }
 
         return transform;
@@ -64,18 +44,18 @@ public abstract class DrawStrategy {
 
         gID &= ~(HORIZONTAL_FLIP_FLAG | VERTICAL_FLIP_FLAG | DIAGONAL_FLIP_FLAG);
 
-        if(gID == 0) {
+        if (gID == 0) {
             return;
         }
 
-        while(itr.hasPrevious()) {
+        while (itr.hasPrevious()) {
             TileSet tileSet = itr.previous();
 
-            if(tileSet.getFirstGId() <= gID) {
+            if (tileSet.getFirstGId() <= gID) {
                 Rectangle source = tileSet.sourceAt(gID - tileSet.getFirstGId());
 
-                Vector2 position = new Vector2(x * layer.getTileMap().getTileWidth() + (float)layer.getOffsetX(),
-                        y * layer.getTileMap().getTileHeight() + (float)layer.getOffsetY());
+                Vector2 position = new Vector2(x * layer.getTileMap().getTileWidth() + (float) layer.getOffsetX(),
+                        y * layer.getTileMap().getTileHeight() + (float) layer.getOffsetY());
 
                 Transform transform = getTileTransform(originalGID);
 
@@ -88,4 +68,14 @@ public abstract class DrawStrategy {
     }
 
     public abstract void draw(SpriteBatch spriteBatch, Layer layer);
+
+    private static class Transform {
+        private float scaleX, scaleY;
+        private float rotation;
+
+        private Transform() {
+            scaleX = scaleY = 1f;
+            rotation = 0f;
+        }
+    }
 }

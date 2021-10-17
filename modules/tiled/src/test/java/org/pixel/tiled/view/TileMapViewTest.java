@@ -26,19 +26,19 @@ public class TileMapViewTest {
         Layer layer1 = Mockito.mock(Layer.class);
         Layer layer2 = Mockito.mock(Layer.class);
         SpriteBatch spriteBatch = Mockito.mock(SpriteBatch.class);
-        TiledViewer<Layer> layerTiledViewer = (TiledViewer<Layer>) Mockito.mock(TiledViewer.class);
+        TiledView<Layer> layerTiledView = (TiledView<Layer>) Mockito.mock(TiledView.class);
 
         layerList.add(layer1);
         layerList.add(layer2);
 
         tileMap.setLayers(layerList);
 
-        TileMapView tileMapView = new TileMapView(layerTiledViewer);
+        TileMapView tileMapView = new TileMapView(layerTiledView);
         tileMapView.draw(spriteBatch, tileMap);
 
-        InOrder inOrder = Mockito.inOrder(layerTiledViewer);
+        InOrder inOrder = Mockito.inOrder(layerTiledView);
 
-        inOrder.verify(layerTiledViewer).draw(spriteBatch, layer1);
-        inOrder.verify(layerTiledViewer).draw(spriteBatch, layer2);
+        inOrder.verify(layerTiledView).draw(spriteBatch, layer1);
+        inOrder.verify(layerTiledView).draw(spriteBatch, layer2);
     }
 }

@@ -18,8 +18,18 @@ import org.pixel.tiled.content.importer.TileMapImporterSettings;
 import org.pixel.tiled.content.importer.TileSetImporter;
 
 public class TileMapViewTestIntegrated {
+    @Test
+    public void processCase1Integrated() {
+        WindowSettings settings = new WindowSettings(600, 600);
+        settings.setDebugMode(true);
+
+        PixelWindow pixelWindow = new MockWindow(settings);
+        pixelWindow.start();
+    }
+
     public static class MockWindow extends PixelWindow {
 
+        protected final Camera2D gameCamera;
         /**
          * Constructor
          *
@@ -29,7 +39,6 @@ public class TileMapViewTestIntegrated {
         TileMap tileMap;
         TileMapView tileMapView;
         SpriteBatch spriteBatch;
-        protected final Camera2D gameCamera;
 
         public MockWindow(WindowSettings settings) {
             super(settings);
@@ -45,7 +54,7 @@ public class TileMapViewTestIntegrated {
 
             TileMapImporter importer = new TileMapImporter();
             TileSetImporter tileSetImporter = new TileSetImporter();
-            String tmxFileName = "case3.tmx";
+            String tmxFileName = "rotation2.tmx";
 
             ContentManager contentManager = new ContentManager();
             contentManager.addContentImporter(importer);
@@ -65,9 +74,9 @@ public class TileMapViewTestIntegrated {
 
             // Keyboard direct state access for org.pixel.input detection:
             if (Keyboard.isKeyDown(KeyboardKey.UP) || Keyboard.isKeyDown(KeyboardKey.W)) {
-                gameCamera.translate(0,-speed * delta.getElapsed()); // translate camera vertically
+                gameCamera.translate(0, -speed * delta.getElapsed()); // translate camera vertically
             } else if (Keyboard.isKeyDown(KeyboardKey.DOWN) || Keyboard.isKeyDown(KeyboardKey.S)) {
-                gameCamera.translate(0,speed * delta.getElapsed()); // translate camera vertically
+                gameCamera.translate(0, speed * delta.getElapsed()); // translate camera vertically
             }
 
             if (Keyboard.isKeyDown(KeyboardKey.LEFT)) {
@@ -76,10 +85,10 @@ public class TileMapViewTestIntegrated {
                 gameCamera.translate(speed * delta.getElapsed(), 0);
             }
 
-            if(Keyboard.isKeyDown(KeyboardKey.P)) {
-                gameCamera.setZoom(gameCamera.getZoom()+0.1f);
+            if (Keyboard.isKeyDown(KeyboardKey.P)) {
+                gameCamera.setZoom(gameCamera.getZoom() + 0.1f);
             } else if (Keyboard.isKeyDown(KeyboardKey.M)) {
-                gameCamera.setZoom(gameCamera.getZoom()-0.1f);
+                gameCamera.setZoom(gameCamera.getZoom() - 0.1f);
             }
         }
 
@@ -91,14 +100,5 @@ public class TileMapViewTestIntegrated {
 
             spriteBatch.end();
         }
-    }
-
-    @Test
-    public void processCase1Integrated() {
-        WindowSettings settings = new WindowSettings(600, 600);
-        settings.setDebugMode(true);
-
-        PixelWindow pixelWindow = new MockWindow(settings);
-        pixelWindow.start();
     }
 }

@@ -6,6 +6,7 @@
 package org.pixel.tiled.content;
 
 import org.pixel.commons.lifecycle.Disposable;
+import org.pixel.tiled.view.DrawStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,7 @@ public class TileMap implements Disposable {
     private List<TileSet> tileSets;
     private List<Layer> layers;
     private String renderOrder;
+    private DrawStrategy drawStrategy; // This isn't very SOLID-like but it could improve performance
 
     public TileMap() {
         tileSets = new ArrayList<>();
@@ -26,7 +28,7 @@ public class TileMap implements Disposable {
 
     @Override
     public void dispose() {
-        for(TileSet tileSet : tileSets) {
+        for (TileSet tileSet : tileSets) {
             tileSet.dispose();
         }
     }
@@ -71,27 +73,35 @@ public class TileMap implements Disposable {
         this.layers.add(layer);
     }
 
-    public void setTileHeight(int tileHeight) {
-        this.tileHeight = tileHeight;
+    public int getTileWidth() {
+        return tileWidth;
     }
 
     public void setTileWidth(int tileWidth) {
         this.tileWidth = tileWidth;
     }
 
-    public int getTileWidth() {
-        return tileWidth;
-    }
-
     public int getTileHeight() {
         return tileHeight;
+    }
+
+    public void setTileHeight(int tileHeight) {
+        this.tileHeight = tileHeight;
+    }
+
+    public String getRenderOrder() {
+        return renderOrder;
     }
 
     public void setRenderOrder(String renderOrder) {
         this.renderOrder = renderOrder;
     }
 
-    public String getRenderOrder() {
-        return renderOrder;
+    public DrawStrategy getDrawStrategy() {
+        return drawStrategy;
+    }
+
+    public void setDrawStrategy(DrawStrategy drawStrategy) {
+        this.drawStrategy = drawStrategy;
     }
 }

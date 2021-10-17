@@ -14,18 +14,18 @@ class DrawStrategyFactoryTest {
         TileMap tileMap = Mockito.mock(TileMap.class);
 
         Mockito.when(tileMap.getRenderOrder()).thenReturn("right-down");
-        Assertions.assertSame(RightDownStrategy.class, drawStrategyFactory.createDrawStrategy(tileMap).getClass());
+        Assertions.assertSame(RightDownStrategy.class, drawStrategyFactory.getDrawStrategy(tileMap).getClass());
 
         Mockito.when(tileMap.getRenderOrder()).thenReturn("right-up");
-        Assertions.assertSame(RightUpStrategy.class, drawStrategyFactory.createDrawStrategy(tileMap).getClass());
+        Assertions.assertSame(RightUpStrategy.class, drawStrategyFactory.getDrawStrategy(tileMap).getClass());
 
         Mockito.when(tileMap.getRenderOrder()).thenReturn("left-down");
-        Assertions.assertSame(LeftDownStrategy.class, drawStrategyFactory.createDrawStrategy(tileMap).getClass());
+        Assertions.assertSame(LeftDownStrategy.class, drawStrategyFactory.getDrawStrategy(tileMap).getClass());
 
         Mockito.when(tileMap.getRenderOrder()).thenReturn("left-up");
-        Assertions.assertSame(LeftUpStrategy.class, drawStrategyFactory.createDrawStrategy(tileMap).getClass());
+        Assertions.assertSame(LeftUpStrategy.class, drawStrategyFactory.getDrawStrategy(tileMap).getClass());
 
         Mockito.when(tileMap.getRenderOrder()).thenReturn("");
-        Assertions.assertSame(RightDownStrategy.class, drawStrategyFactory.createDrawStrategy(tileMap).getClass());
+        Assertions.assertSame(RightDownStrategy.class, drawStrategyFactory.getDrawStrategy(tileMap).getClass());
     }
 }

@@ -1,9 +1,5 @@
 package org.pixel.tiled.content;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 public class Layer {
     private final int width;
     private final int height;
@@ -12,7 +8,7 @@ public class Layer {
     private final TileMap tileMap;
     private final long[][] tiles;
 
-    public Layer(int width, int height, double offsetX, double offsetY, TileMap tileMap){
+    public Layer(int width, int height, double offsetX, double offsetY, TileMap tileMap) {
         this.width = width;
         this.height = height;
         this.offsetX = offsetX;

@@ -9,8 +9,8 @@ public class TileSet implements Disposable {
     private final int tileHeight;
     private final int tileCount;
     private final int columns;
-    private int firstGId;
     private final Texture texture;
+    private int firstGId;
 
     public TileSet(int tileWidth, int tileHeight, int tileCount, int columns, Texture texture) {
         this.tileCount = tileCount;
@@ -49,14 +49,14 @@ public class TileSet implements Disposable {
     }
 
     public Rectangle sourceAt(long gID) {
-        if(gID >= tileCount) {
+        if (gID >= tileCount) {
             return new Rectangle(0, 0, 0, 0);
         }
 
-        float x = ( gID % columns) * tileWidth;
-        float y = ( gID / columns) * tileHeight;
+        float x = (gID % columns) * tileWidth;
+        float y = (gID / columns) * tileHeight;
 
-        return new Rectangle(x , y , tileWidth, tileHeight);
+        return new Rectangle(x, y, tileWidth, tileHeight);
     }
 
     @Override
