@@ -58,6 +58,10 @@ public class TileMapImporterTest {
         Assertions.assertEquals(-1, tileMap.getLayers().get(1).getOffsetX());
         Assertions.assertEquals(7.5, tileMap.getLayers().get(1).getOffsetY());
         Assertions.assertEquals("right-down", tileMap.getRenderOrder());
+        Assertions.assertTrue(tileMap.getCustomProperties().containsKey("This"));
+        Assertions.assertTrue(tileMap.getCustomProperties().containsKey("is property"));
+        Assertions.assertEquals("0", tileMap.getCustomProperties().get("This"));
+        Assertions.assertEquals("false", tileMap.getCustomProperties().get("is property"));
     }
 
     @Test
@@ -102,6 +106,12 @@ public class TileMapImporterTest {
         Assertions.assertEquals(6, layer2.getTiles()[1][1]);
         Assertions.assertEquals(6, layer2.getTiles()[2][0]);
         Assertions.assertEquals(7, layer2.getTiles()[2][1]);
+
+        Assertions.assertTrue(layer2.getCustomProperties().containsKey("1"));
+        Assertions.assertTrue(layer2.getCustomProperties().containsKey("2"));
+
+        Assertions.assertEquals("1.2", layer2.getCustomProperties().get("1"));
+        Assertions.assertEquals("property\nlines", layer2.getCustomProperties().get("2"));
     }
 
     @Test

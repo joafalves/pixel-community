@@ -7,6 +7,7 @@ public class Layer {
     private final double offsetY;
     private final TileMap tileMap;
     private final long[][] tiles;
+    private TiledCustomProperties customProperties;
 
     public Layer(int width, int height, double offsetX, double offsetY, TileMap tileMap) {
         this.width = width;
@@ -16,6 +17,14 @@ public class Layer {
         this.tileMap = tileMap;
 
         tiles = new long[height][width];
+    }
+
+    public TiledCustomProperties getCustomProperties() {
+        return customProperties;
+    }
+
+    public void setCustomProperties(TiledCustomProperties customProperties) {
+        this.customProperties = customProperties;
     }
 
     public double getOffsetX() {

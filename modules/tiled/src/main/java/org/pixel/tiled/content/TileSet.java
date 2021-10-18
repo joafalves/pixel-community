@@ -11,6 +11,7 @@ public class TileSet implements Disposable {
     private final int columns;
     private final Texture texture;
     private int firstGId;
+    private TiledCustomProperties customProperties;
 
     public TileSet(int tileWidth, int tileHeight, int tileCount, int columns, Texture texture) {
         this.tileCount = tileCount;
@@ -18,6 +19,14 @@ public class TileSet implements Disposable {
         this.tileWidth = tileWidth;
         this.columns = columns;
         this.texture = texture;
+    }
+
+    public TiledCustomProperties getCustomProperties() {
+        return customProperties;
+    }
+
+    public void setCustomProperties(TiledCustomProperties customProperties) {
+        this.customProperties = customProperties;
     }
 
     public int getFirstGId() {

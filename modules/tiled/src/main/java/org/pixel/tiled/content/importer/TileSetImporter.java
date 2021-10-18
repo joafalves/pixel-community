@@ -8,6 +8,7 @@ import org.pixel.content.ImportContext;
 import org.pixel.content.Texture;
 import org.pixel.content.importer.settings.ContentImporterSettings;
 import org.pixel.tiled.content.TileSet;
+import org.pixel.tiled.content.TiledCustomProperties;
 import org.pixel.tiled.utils.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -52,6 +53,11 @@ public class TileSetImporter implements ContentImporter<TileSet> {
             return null;
         }
 
-        return new TileSet(tileWidth, tileHeight, tileCount, columns, tileSetImage);
+        TiledCustomProperties customProperties = new CustomPropertiesCollector().collect(tilesetElement);
+
+        TileSet tileSet = new TileSet(tileWidth, tileHeight, tileCount, columns, tileSetImage);
+        tileSet.setCustomProperties(customProperties);
+
+        return tileSet;
     }
 }

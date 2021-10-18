@@ -21,15 +21,15 @@ public class TileSetProcessor implements TileMapProcessor {
             Node tilesetNode = tilesets.item(i);
 
             if (tilesetNode.getNodeType() == Node.ELEMENT_NODE) {
-                Element tileset = (Element) tilesetNode;
-                String tilesetSource = tileset.getAttribute("source");
+                Element tilesetElement = (Element) tilesetNode;
+                String tilesetSource = tilesetElement.getAttribute("source");
 
                 TileSet tileSet = ctx.getContentManager().load(tilesetSource, TileSet.class, ctx.getSettings());
 
                 if (tileSet == null) {
                     LOG.error("Error loading tileset");
                 } else {
-                    int firstGId = Integer.parseInt(tileset.getAttribute("firstgid"));
+                    int firstGId = Integer.parseInt(tilesetElement.getAttribute("firstgid"));
 
                     tileSet.setFirstGId(firstGId);
                     tileMap.addTileSet(tileSet);
