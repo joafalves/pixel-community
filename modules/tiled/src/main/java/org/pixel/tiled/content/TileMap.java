@@ -21,10 +21,19 @@ public class TileMap implements Disposable {
     private String renderOrder;
     private DrawStrategy drawStrategy; // This isn't very SOLID-like but it could improve performance
     private TiledCustomProperties customProperties;
+    private List<TiledObjectGroup> objectGroups;
 
     public TileMap() {
         tileSets = new ArrayList<>();
         layers = new ArrayList<>();
+    }
+
+    public List<TiledObjectGroup> getObjectGroups() {
+        return objectGroups;
+    }
+
+    public void setObjectGroups(List<TiledObjectGroup> objectGroups) {
+        this.objectGroups = objectGroups;
     }
 
     @Override
