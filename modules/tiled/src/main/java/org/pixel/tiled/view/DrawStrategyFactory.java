@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 public class DrawStrategyFactory {
     private final static HashMap<String, DrawStrategy> renderOrderToStrategy = new HashMap<>();
+
     static {
         renderOrderToStrategy.put("right-down", new RightDownStrategy());
         renderOrderToStrategy.put("right-up", new RightUpStrategy());

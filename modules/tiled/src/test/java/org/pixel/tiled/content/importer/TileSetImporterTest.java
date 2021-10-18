@@ -42,6 +42,10 @@ public class TileSetImporterTest {
         Assertions.assertEquals(4, tileSet.getTileCount());
         Assertions.assertEquals(2, tileSet.getColumns());
         Assertions.assertSame(texture, tileSet.getTexture());
+        Assertions.assertTrue(tileSet.getCustomProperties().containsKey("1"));
+        Assertions.assertTrue(tileSet.getCustomProperties().containsKey("2"));
+        Assertions.assertEquals("true", tileSet.getCustomProperties().get("2"));
+        Assertions.assertEquals("hello", tileSet.getCustomProperties().get("1"));
     }
 
     @Test

@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.pixel.tiled.content.TileMap;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class DrawStrategyFactoryTest {
     @Test
     public void createStrategy() {

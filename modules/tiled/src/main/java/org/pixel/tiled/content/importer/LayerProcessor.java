@@ -3,6 +3,7 @@ package org.pixel.tiled.content.importer;
 import org.pixel.content.ImportContext;
 import org.pixel.tiled.content.Layer;
 import org.pixel.tiled.content.TileMap;
+import org.pixel.tiled.content.TiledCustomProperties;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -39,16 +40,28 @@ public class LayerProcessor implements TileMapProcessor {
 
                 Layer layer = new Layer(width, height, offsetX, offsetY, tileMap);
 
-                String data = layerElement.getTextContent();
-                data = data.replace("\n", "");
+                Node dataNode = layerElement.getElementsByTagName("data").item(0);
 
-                List<String> numbers = Arrays.asList(data.trim().split(","));
+                if (dataNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element dataElement = (Element) dataNode;
 
-                for (int y = 0; y < height; y++) {
-                    for (int x = 0; x < width; x++) {
-                        layer.addTile(x, y, Long.parseLong(numbers.get(y * width + x)));
+                    String data = dataElement.getTextContent();
+
+                    data = data.replace("\n", "");
+
+                    List<String> numbers = Arrays.asList(data.trim().split(","));
+
+                    for (int y = 0; y < height; y++) {
+                        for (int x = 0; x < width; x++) {
+                            layer.addTile(x, y, Long.parseLong(numbers.get(y * width + x)));
+                        }
                     }
                 }
+
+                CustomPropertiesCollector collector = new CustomPropertiesCollector();
+
+                TiledCustomProperties customProperties = collector.collect(layerElement);
+                layer.setCustomProperties(customProperties);
 
                 tileMap.addLayer(layer);
             }

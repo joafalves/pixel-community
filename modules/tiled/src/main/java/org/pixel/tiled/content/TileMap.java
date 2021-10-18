@@ -20,6 +20,7 @@ public class TileMap implements Disposable {
     private List<Layer> layers;
     private String renderOrder;
     private DrawStrategy drawStrategy; // This isn't very SOLID-like but it could improve performance
+    private TiledCustomProperties customProperties;
 
     public TileMap() {
         tileSets = new ArrayList<>();
@@ -103,5 +104,13 @@ public class TileMap implements Disposable {
 
     public void setDrawStrategy(DrawStrategy drawStrategy) {
         this.drawStrategy = drawStrategy;
+    }
+
+    public TiledCustomProperties getCustomProperties() {
+        return customProperties;
+    }
+
+    public void setCustomProperties(TiledCustomProperties customProperties) {
+        this.customProperties = customProperties;
     }
 }

@@ -39,6 +39,8 @@ public class TileMapImporter implements ContentImporter<TileMap> {
 
         tileMap.setDrawStrategy(drawStrategyFactory.getDrawStrategy(tileMap));
 
+        tileMap.setCustomProperties(new CustomPropertiesCollector().collect(mapElement));
+
         TileMapImporterSettings importerSettings;
 
         if (ctx.getSettings() instanceof TileMapImporterSettings) {
