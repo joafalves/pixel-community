@@ -9,6 +9,15 @@ import org.pixel.tiled.content.TileMap;
 
 public class TileMapImporterTestIntegrated {
 
+    @Test
+    public void processCase1Integrated() {
+        WindowSettings settings = new WindowSettings(1, 1);
+        settings.setDebugMode(true);
+
+        PixelWindow pixelWindow = new MockWindow(settings);
+        pixelWindow.start();
+    }
+
     public static class MockWindow extends PixelWindow {
 
         /**
@@ -50,14 +59,5 @@ public class TileMapImporterTestIntegrated {
 
             close();
         }
-    }
-
-    @Test
-    public void processCase1Integrated() {
-        WindowSettings settings = new WindowSettings(1, 1);
-        settings.setDebugMode(true);
-
-        PixelWindow pixelWindow = new MockWindow(settings);
-        pixelWindow.start();
     }
 }

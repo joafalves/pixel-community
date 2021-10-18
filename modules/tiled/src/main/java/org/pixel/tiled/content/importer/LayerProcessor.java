@@ -11,15 +11,15 @@ import org.w3c.dom.NodeList;
 import java.util.Arrays;
 import java.util.List;
 
-public class LayerProcessor implements TileMapProcessor{
+public class LayerProcessor implements TileMapProcessor {
     @Override
     public void process(TileMap tileMap, Document tmxDoc, ImportContext ctx) {
         NodeList layers = tmxDoc.getElementsByTagName("layer");
 
-        for(int i = 0; i < layers.getLength(); i++) {
+        for (int i = 0; i < layers.getLength(); i++) {
             Node layerNode = layers.item(i);
 
-            if(layerNode.getNodeType() == Node.ELEMENT_NODE) {
+            if (layerNode.getNodeType() == Node.ELEMENT_NODE) {
                 Element layerElement = (Element) layerNode;
 
                 int width = Integer.parseInt(layerElement.getAttribute("width"));
@@ -44,9 +44,9 @@ public class LayerProcessor implements TileMapProcessor{
 
                 List<String> numbers = Arrays.asList(data.trim().split(","));
 
-                for(int y = 0; y < height; y++) {
-                    for(int x = 0; x < width; x++) {
-                        layer.addTile(x, y, Long.parseLong(numbers.get(y*width+x)));
+                for (int y = 0; y < height; y++) {
+                    for (int x = 0; x < width; x++) {
+                        layer.addTile(x, y, Long.parseLong(numbers.get(y * width + x)));
                     }
                 }
 

@@ -14,6 +14,7 @@ import org.pixel.core.WindowSettings;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
 
 public class SingleSpriteDemo extends DemoGame {
@@ -40,7 +41,7 @@ public class SingleSpriteDemo extends DemoGame {
         spriteBatch = new SpriteBatch();
 
         // load texture into memory
-        spriteTex = content.load("images/earth-48x48.png", Texture.class);
+        spriteTex = content.load("images/teste.png", Texture.class);
 
         // related org.pixel.learning.sprite properties
         spriteAnchor = Vector2.half();
@@ -58,7 +59,7 @@ public class SingleSpriteDemo extends DemoGame {
         spriteBatch.begin(gameCamera.getViewMatrix(), BlendMode.NORMAL_BLEND);
 
         // org.pixel.learning.sprite definition for this drawing phase:
-        spriteBatch.draw(spriteTex, spritePos, Color.WHITE, spriteAnchor, 3f);
+        spriteBatch.draw(spriteTex, spritePos, Color.WHITE, spriteAnchor, 1, -1, MathHelper.PI / 4.0f);
 
         // end and draw all sprites stored:
         spriteBatch.end();
