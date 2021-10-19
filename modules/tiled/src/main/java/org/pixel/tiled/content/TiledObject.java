@@ -7,7 +7,6 @@ public class TiledObject {
     private float width;
     private float height;
     private float rotation;
-    private long gID;
     private TiledCustomProperties customProperties;
 
     public TiledCustomProperties getCustomProperties() {
@@ -34,24 +33,16 @@ public class TiledObject {
         this.position = position;
     }
 
-    public float getgID() {
-        return gID;
-    }
-
-    public void setgID(long gID) {
-        this.gID = gID;
-    }
-
     public float getHeight() {
         return height;
     }
 
-    public float getWidth() {
-        return width;
-    }
-
     public void setHeight(float height) {
         this.height = height;
+    }
+
+    public float getWidth() {
+        return width;
     }
 
     public void setWidth(float width) {

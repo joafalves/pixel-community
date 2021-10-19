@@ -1,11 +1,9 @@
 package org.pixel.tiled.content.importer;
 
+import org.pixel.commons.Pair;
 import org.pixel.content.ImportContext;
 import org.pixel.math.Vector2;
-import org.pixel.tiled.content.TileMap;
-import org.pixel.tiled.content.TiledCustomProperties;
-import org.pixel.tiled.content.TiledObject;
-import org.pixel.tiled.content.TiledObjectGroup;
+import org.pixel.tiled.content.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -13,7 +11,6 @@ import org.w3c.dom.NodeList;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
 
 public class ObjectGroupProcessor implements TileMapProcessor {
     @Override
@@ -21,21 +18,27 @@ public class ObjectGroupProcessor implements TileMapProcessor {
         NodeList objectGroupList = document.getElementsByTagName("objectgroup");
         CustomPropertiesCollector collector = new CustomPropertiesCollector();
         List<TiledObjectGroup> result = new ArrayList<>();
+        ObjectOrderStrategyFactory factory = new ObjectOrderStrategyFactory();
 
         for (int i = 0; i < objectGroupList.getLength(); i++) {
             Element objectGroupElement = (Element) objectGroupList.item(i);
             TiledCustomProperties customProperties = collector.collect(objectGroupElement);
-            LinkedHashMap<Integer, TiledObject> objectMap = new LinkedHashMap<>();
+            List<Pair<Integer, TiledObject>> objects = new ArrayList<>();
             TiledObjectGroup objectGroup = new TiledObjectGroup();
 
-            objectGroup.setDrawOrder(objectGroupElement.getAttribute("draworder"));
+            String objectOrder = objectGroupElement.getAttribute("draworder");
 
-            if (Objects.equals(objectGroup.getDrawOrder(), "")) {
-                objectGroup.setDrawOrder("topdown");
+            try {
+                objectGroup.setOffsetX(Float.parseFloat(objectGroupElement.getAttribute("offsetx")));
+            } catch (NumberFormatException e) {
+                objectGroup.setOffsetX(0);
             }
 
-            objectGroup.setOffsetX(Float.parseFloat(objectGroupElement.getAttribute("offsetx")));
-            objectGroup.setOffsetY(Float.parseFloat(objectGroupElement.getAttribute("offsety")));
+            try {
+                objectGroup.setOffsetY(Float.parseFloat(objectGroupElement.getAttribute("offsety")));
+            } catch (NumberFormatException e) {
+                objectGroup.setOffsetY(0);
+            }
             objectGroup.setCustomProperties(customProperties);
 
             NodeList objectList = objectGroupElement.getElementsByTagName("object");
@@ -43,12 +46,19 @@ public class ObjectGroupProcessor implements TileMapProcessor {
             for (int j = 0; j < objectList.getLength(); j++) {
                 Element objectElement = (Element) objectList.item(j);
                 customProperties = collector.collect(objectElement);
-                TiledObject object = new TiledObject();
+                TiledObject object;
+
+                long gID;
 
                 try {
-                    object.setgID(Long.parseLong(objectElement.getAttribute("gid")));
+                    gID = Long.parseLong(objectElement.getAttribute("gid"));
+
+                    TiledTileObject tile = new TiledTileObject();
+
+                    tile.setgID(gID);
+                    object = tile;
                 } catch (NumberFormatException e) {
-                    object.setgID(0);
+                    object = new TiledObject();
                 }
 
                 try {
@@ -90,8 +100,11 @@ public class ObjectGroupProcessor implements TileMapProcessor {
                 object.setHeight(height);
                 object.setCustomProperties(customProperties);
 
-                objectMap.put(Integer.parseInt(objectElement.getAttribute("id")), object);
+                Pair<Integer, TiledObject> pair = new Pair<>(Integer.parseInt(objectElement.getAttribute("id")), object);
+                objects.add(pair);
             }
+
+            LinkedHashMap<Integer, TiledObject> objectMap = factory.getObjectOrderStrategy(objectOrder).getMap(objects);
 
             objectGroup.setObjects(objectMap);
             result.add(objectGroup);

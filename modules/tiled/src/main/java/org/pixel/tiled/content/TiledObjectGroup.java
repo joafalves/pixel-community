@@ -6,7 +6,6 @@ public class TiledObjectGroup {
     private LinkedHashMap<Integer, TiledObject> objects;
     private double offsetX;
     private double offsetY;
-    private String drawOrder;
     private TiledCustomProperties customProperties;
 
     public TiledCustomProperties getCustomProperties() {
@@ -31,14 +30,6 @@ public class TiledObjectGroup {
 
     public void setOffsetY(double offsetY) {
         this.offsetY = offsetY;
-    }
-
-    public String getDrawOrder() {
-        return drawOrder;
-    }
-
-    public void setDrawOrder(String drawOrder) {
-        this.drawOrder = drawOrder;
     }
 
     public LinkedHashMap<Integer, TiledObject> getObjects() {
