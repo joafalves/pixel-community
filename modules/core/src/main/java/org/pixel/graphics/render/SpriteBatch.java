@@ -342,8 +342,8 @@ public class SpriteBatch extends DrawBatch {
         spriteData.textureHeight = texture.getHeight();
         spriteData.x = position.getX();
         spriteData.y = position.getY();
-        spriteData.width = texture.getWidth() * (source != null ? source.getWidth() / texture.getWidth() * scaleX : scaleX);
-        spriteData.height = texture.getHeight() * (source != null ? source.getHeight() / texture.getHeight() * scaleY : scaleY);
+        spriteData.width = texture.getWidth() * (source != null ? Math.abs(source.getWidth()) / texture.getWidth() * scaleX : scaleX);
+        spriteData.height = texture.getHeight() * (source != null ? Math.abs(source.getHeight()) / texture.getHeight() * scaleY : scaleY);
         spriteData.anchor = anchor;
         spriteData.color = color;
         spriteData.source = source;

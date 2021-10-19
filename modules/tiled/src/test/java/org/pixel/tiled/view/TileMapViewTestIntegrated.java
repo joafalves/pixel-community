@@ -7,7 +7,9 @@ import org.pixel.content.importer.settings.ContentImporterSettings;
 import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
+import org.pixel.graphics.Color;
 import org.pixel.graphics.render.BlendMode;
+import org.pixel.graphics.render.NvgRenderEngine;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
@@ -39,6 +41,8 @@ public class TileMapViewTestIntegrated {
         TileMap tileMap;
         TileMapView tileMapView;
         SpriteBatch spriteBatch;
+        NvgRenderEngine nvg;
+        Color fillColor;
 
         public MockWindow(WindowSettings settings) {
             super(settings);
@@ -48,13 +52,15 @@ public class TileMapViewTestIntegrated {
 
         @Override
         public void load() {
+            nvg = new NvgRenderEngine(getViewportWidth(), getViewportHeight());
+            fillColor = Color.BLACK;
             gameCamera.setOrigin(new Vector2(0.5f, 0.5f));
-            //gameCamera.translate(500, 180);
+            gameCamera.translate(500, 180);
             gameCamera.setZoom(3f);
 
             TileMapImporter importer = new TileMapImporter();
             TileSetImporter tileSetImporter = new TileSetImporter();
-            String tmxFileName = "rotation2.tmx";
+            String tmxFileName = "untitled.tmx";
 
             ContentManager contentManager = new ContentManager();
             contentManager.addContentImporter(importer);

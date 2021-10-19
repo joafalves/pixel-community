@@ -1,13 +1,20 @@
 package org.pixel.tiled.content;
 
+import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Vector2;
+import org.pixel.tiled.view.TiledObjectGroupView;
 
 public class TiledObject {
+    private final TileMap tileMap;
     private Vector2 position;
     private float width;
     private float height;
     private float rotation;
     private TiledCustomProperties customProperties;
+
+    public TiledObject(TileMap tileMap) {
+        this.tileMap = tileMap;
+    }
 
     public TiledCustomProperties getCustomProperties() {
         return customProperties;
@@ -15,6 +22,10 @@ public class TiledObject {
 
     public void setCustomProperties(TiledCustomProperties customProperties) {
         this.customProperties = customProperties;
+    }
+
+    public TileMap getTileMap() {
+        return tileMap;
     }
 
     public float getRotation() {
@@ -47,5 +58,8 @@ public class TiledObject {
 
     public void setWidth(float width) {
         this.width = width;
+    }
+
+    public void draw(SpriteBatch spriteBatch, TiledObjectGroup group, TiledObjectGroupView view) {
     }
 }

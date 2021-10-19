@@ -72,8 +72,8 @@
    <property name="1" value="1"/>
   </properties>
   <object id="1" gid="1" x="518.917" y="272.167" width="40.3333" height="26" rotation="2"/>
-  <object id="5" gid="1073741826" x="406.583" y="134.75" width="35" height="60.3333" rotation="4"/>
-  <object id="10" gid="7" x="375.083" y="201.75" width="50" height="66"/>
+  <object id="5" gid="1073741826" x="406.583" y="134.75" width="35" height="60.3333" rotation="2"/>
+  <object id="10" gid="2147483655" x="375.083" y="201.75" width="50" height="66"/>
   <object id="11" x="423.615" y="155.833" width="91.4375" height="19">
    <text wrap="1">Hello World</text>
   </object>

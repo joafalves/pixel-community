@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.pixel.content.ImportContext;
+import org.pixel.math.MathHelper;
 import org.pixel.tiled.content.TileMap;
 import org.pixel.tiled.content.TiledObject;
 import org.pixel.tiled.content.TiledObjectGroup;
@@ -53,7 +54,7 @@ class ObjectGroupProcessorTest {
         Assertions.assertEquals(272.167, captor.getValue().get(0).getObjects().get(1).getPosition().getY(), 0.001);
         Assertions.assertEquals(40.3333, captor.getValue().get(0).getObjects().get(1).getWidth(), 0.001);
         Assertions.assertEquals(26, captor.getValue().get(0).getObjects().get(1).getHeight());
-        Assertions.assertEquals(2, captor.getValue().get(0).getObjects().get(1).getRotation());
+        Assertions.assertEquals(MathHelper.degToRad(2), captor.getValue().get(0).getObjects().get(1).getRotation());
 
         Assertions.assertEquals(0, captor.getValue().get(0).getObjects().get(10).getRotation());
 

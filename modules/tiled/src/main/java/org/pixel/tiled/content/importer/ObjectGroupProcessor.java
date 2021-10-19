@@ -2,6 +2,7 @@ package org.pixel.tiled.content.importer;
 
 import org.pixel.commons.Pair;
 import org.pixel.content.ImportContext;
+import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
 import org.pixel.tiled.content.*;
 import org.w3c.dom.Document;
@@ -53,16 +54,16 @@ public class ObjectGroupProcessor implements TileMapProcessor {
                 try {
                     gID = Long.parseLong(objectElement.getAttribute("gid"));
 
-                    TiledTileObject tile = new TiledTileObject();
+                    TiledTileObject tile = new TiledTileObject(tileMap);
 
                     tile.setgID(gID);
                     object = tile;
                 } catch (NumberFormatException e) {
-                    object = new TiledObject();
+                    object = new TiledObject(tileMap);
                 }
 
                 try {
-                    object.setRotation(Float.parseFloat(objectElement.getAttribute("rotation")));
+                    object.setRotation(MathHelper.degToRad(Float.parseFloat(objectElement.getAttribute("rotation"))));
                 } catch (NumberFormatException e) {
                     object.setRotation(0f);
                 }

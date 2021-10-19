@@ -6,7 +6,10 @@ import org.mockito.Mockito;
 import org.pixel.commons.Pair;
 import org.pixel.tiled.content.TiledObject;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 class IndexObjectOrderStrategyTest {
     @Test
