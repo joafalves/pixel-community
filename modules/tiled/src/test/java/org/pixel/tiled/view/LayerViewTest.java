@@ -202,30 +202,30 @@ public class LayerViewTest {
 
         layerView.draw(spriteBatch, tileMap.getLayers().get(0));
 
-        inOrder.verify(spriteBatch).draw(Mockito.same(texture1),Mockito.any(),
+        inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
                 Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
+                Mockito.eq(1f),
+                Mockito.eq(1f),
+                Mockito.eq(0f));
+        inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
+                Mockito.eq(new Rectangle(16, 16, 16, -16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
                 Mockito.eq(1f),
                 Mockito.eq(1f),
                 Mockito.eq(0f));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
-                Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
+                Mockito.eq(new Rectangle(32, 0, -16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
                 Mockito.eq(1f),
-                Mockito.eq(-1f),
-                Mockito.eq(0f));
-        inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
-                Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(-1f),
                 Mockito.eq(1f),
                 Mockito.eq(0f));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
-                Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(-1f),
-                Mockito.eq(-1f),
+                Mockito.eq(new Rectangle(32, 16, -16, -16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
+                Mockito.eq(1f),
+                Mockito.eq(1f),
                 Mockito.eq(0f));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
-                Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(-1f),
-                Mockito.eq(-1f),
+                Mockito.eq(new Rectangle(32, 16, -16, -16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
+                Mockito.eq(1f),
+                Mockito.eq(1f),
                 Mockito.eq((float) Math.PI / 2));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
                 Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
@@ -233,14 +233,14 @@ public class LayerViewTest {
                 Mockito.eq(1f),
                 Mockito.eq((float) Math.PI / 2));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
-                Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(-1f),
+                Mockito.eq(new Rectangle(32, 0, -16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
+                Mockito.eq(1f),
                 Mockito.eq(1f),
                 Mockito.eq((float) Math.PI / 2));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
-                Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
+                Mockito.eq(new Rectangle(16, 16, 16, -16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
                 Mockito.eq(1f),
-                Mockito.eq(-1f),
+                Mockito.eq(1f),
                 Mockito.eq((float) Math.PI / 2));
 
         Assertions.assertEquals(new Vector2(0 + 8, 0 + 8), positions.get(0));

@@ -57,19 +57,6 @@ public class TileSet implements Disposable {
         return texture;
     }
 
-    public Rectangle sourceAt(long gID) {
-        gID = gID - firstGId;
-
-        if (gID >= tileCount) {
-            return new Rectangle(0, 0, 0, 0);
-        }
-
-        float x = (gID % columns) * tileWidth;
-        float y = (gID / columns) * tileHeight;
-
-        return new Rectangle(x, y, tileWidth, tileHeight);
-    }
-
     public Rectangle sourceAt(long gID, boolean horizontalFlip, boolean verticalFlip) {
         gID = gID - firstGId;
 

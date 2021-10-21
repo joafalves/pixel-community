@@ -97,7 +97,7 @@ class TiledObjectGroupViewTest {
 
         inOrder.verifyNoMoreInteractions();
 
-        Assertions.assertEquals( new Vector2(0 + 0.4f, 2 + 0.5f), positions.get(0));
-        Assertions.assertEquals( new Vector2(3 + 0.4f, 4 + 0.5f), positions.get(1));
+        Assertions.assertEquals(new Vector2(0 + 0.4f, 2 + 0.5f), positions.get(0));
+        Assertions.assertEquals(new Vector2(3 + 0.4f, 4 + 0.5f), positions.get(1));
     }
 }
