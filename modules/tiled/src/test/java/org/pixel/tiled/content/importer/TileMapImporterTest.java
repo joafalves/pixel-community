@@ -6,7 +6,7 @@ import org.mockito.Mockito;
 import org.pixel.content.ContentManager;
 import org.pixel.content.ImportContext;
 import org.pixel.content.importer.settings.TextureImporterSettings;
-import org.pixel.tiled.content.Layer;
+import org.pixel.tiled.content.TileLayer;
 import org.pixel.tiled.content.TileMap;
 import org.pixel.tiled.content.TileSet;
 import org.w3c.dom.Document;
@@ -51,8 +51,8 @@ public class TileMapImporterTest {
         Mockito.verify(tileSet1).setFirstGId(1);
         Mockito.verify(tileSet2).setFirstGId(5);
         Assertions.assertSame(tileSet2, tileMap.getTileSets().get(1));
-        Assertions.assertEquals(25, tileMap.getLayers().get(0).getHeight());
-        Assertions.assertEquals(51, tileMap.getLayers().get(0).getWidth());
+        Assertions.assertEquals(25, ((TileLayer) tileMap.getLayers().get(0)).getHeight());
+        Assertions.assertEquals(51, ((TileLayer) tileMap.getLayers().get(0)).getWidth());
         Assertions.assertEquals(0, tileMap.getLayers().get(0).getOffsetX());
         Assertions.assertEquals(0, tileMap.getLayers().get(0).getOffsetY());
         Assertions.assertEquals(-1, tileMap.getLayers().get(1).getOffsetX());
@@ -86,7 +86,7 @@ public class TileMapImporterTest {
 
         TileMap tileMap = importer.process(ctx);
 
-        Layer layer1 = tileMap.getLayers().get(0);
+        TileLayer layer1 = (TileLayer) tileMap.getLayers().get(0);
 
         Assertions.assertEquals(16, tileMap.getTileWidth());
         Assertions.assertEquals(8, tileMap.getTileHeight());
@@ -98,7 +98,7 @@ public class TileMapImporterTest {
         Assertions.assertEquals(0, layer1.getTiles()[2][0]);
         Assertions.assertEquals(0, layer1.getTiles()[2][1]);
 
-        Layer layer2 = tileMap.getLayers().get(1);
+        TileLayer layer2 = (TileLayer) tileMap.getLayers().get(1);
 
         Assertions.assertEquals(7, layer2.getTiles()[0][0]);
         Assertions.assertEquals(0, layer2.getTiles()[0][1]);

@@ -4,7 +4,7 @@ import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
-import org.pixel.tiled.content.Layer;
+import org.pixel.tiled.content.TileLayer;
 import org.pixel.tiled.content.TileSet;
 
 import java.util.List;
@@ -32,7 +32,7 @@ public abstract class DrawStrategy {
         }
     }
 
-    protected void drawTile(SpriteBatch spriteBatch, Layer layer, int x, int y) {
+    protected void drawTile(SpriteBatch spriteBatch, TileLayer layer, int x, int y) {
         List<TileSet> tileSets = layer.getTileMap().getTileSets();
         long gID = layer.getTiles()[y][x];
         long originalGID = gID;
@@ -61,7 +61,7 @@ public abstract class DrawStrategy {
         }
     }
 
-    public abstract void draw(SpriteBatch spriteBatch, Layer layer);
+    public abstract void draw(SpriteBatch spriteBatch, TileLayer layer);
 
     private static class Transform {
         private Rectangle rectangle = null;

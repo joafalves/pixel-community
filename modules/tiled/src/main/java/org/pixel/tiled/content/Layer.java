@@ -1,22 +1,20 @@
 package org.pixel.tiled.content;
 
-public class Layer {
-    private final int width;
-    private final int height;
-    private final double offsetX;
-    private final double offsetY;
-    private final TileMap tileMap;
-    private final long[][] tiles;
+import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.tiled.view.TileMapView;
+
+public abstract class Layer {
+    protected final TileMap tileMap;
+    private double offsetX;
+    private double offsetY;
     private TiledCustomProperties customProperties;
 
-    public Layer(int width, int height, double offsetX, double offsetY, TileMap tileMap) {
-        this.width = width;
-        this.height = height;
-        this.offsetX = offsetX;
-        this.offsetY = offsetY;
+    public Layer(TileMap tileMap) {
         this.tileMap = tileMap;
+    }
 
-        tiles = new long[height][width];
+    public TileMap getTileMap() {
+        return tileMap;
     }
 
     public TiledCustomProperties getCustomProperties() {
@@ -31,27 +29,17 @@ public class Layer {
         return offsetX;
     }
 
+    public void setOffsetX(double offsetX) {
+        this.offsetX = offsetX;
+    }
+
     public double getOffsetY() {
         return offsetY;
     }
 
-    public int getHeight() {
-        return height;
+    public void setOffsetY(double offsetY) {
+        this.offsetY = offsetY;
     }
 
-    public int getWidth() {
-        return width;
-    }
-
-    public TileMap getTileMap() {
-        return tileMap;
-    }
-
-    public long[][] getTiles() {
-        return tiles;
-    }
-
-    public void addTile(int x, int y, long gID) {
-        tiles[y][x] = gID;
-    }
+    public abstract void draw(SpriteBatch spriteBatch, TileMapView view);
 }

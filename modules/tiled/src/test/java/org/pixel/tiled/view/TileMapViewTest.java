@@ -6,6 +6,7 @@ import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.tiled.content.Layer;
+import org.pixel.tiled.content.TileLayer;
 import org.pixel.tiled.content.TileMap;
 import org.pixel.tiled.content.TiledObjectGroup;
 
@@ -17,40 +18,66 @@ public class TileMapViewTest {
     public void emptyConstructor() {
         TileMapView tileMapView = new TileMapView();
 
-        Assertions.assertEquals(LayerView.class, tileMapView.layerView.getClass());
+        Assertions.assertEquals(TileLayerView.class, tileMapView.layerView.getClass());
     }
 
     @Test
     public void draw() {
         TileMap tileMap = new TileMap();
         List<Layer> layerList = new ArrayList<>();
-        Layer layer1 = Mockito.mock(Layer.class);
-        Layer layer2 = Mockito.mock(Layer.class);
+        TileLayer layer1 = Mockito.mock(TileLayer.class);
+        TileLayer layer2 = Mockito.mock(TileLayer.class);
         TiledObjectGroup group = Mockito.mock(TiledObjectGroup.class);
         TiledObjectGroup group2 = Mockito.mock(TiledObjectGroup.class);
         SpriteBatch spriteBatch = Mockito.mock(SpriteBatch.class);
-        TiledView<Layer> layerTiledView = (TiledView<Layer>) Mockito.mock(TiledView.class);
+        TiledView<TileLayer> layerTiledView = (TiledView<TileLayer>) Mockito.mock(TiledView.class);
         TiledView<TiledObjectGroup> objectGroupTiledView = (TiledView<TiledObjectGroup>) Mockito.mock(TiledView.class);
 
         layerList.add(layer1);
+        layerList.add(group2);
         layerList.add(layer2);
-
-        List<TiledObjectGroup> map = new ArrayList<>();
-
-        map.add(group);
-        map.add(group2);
+        layerList.add(group);
 
         tileMap.setLayers(layerList);
-        tileMap.setObjectGroups(map);
 
         TileMapView tileMapView = new TileMapView(layerTiledView, objectGroupTiledView);
         tileMapView.draw(spriteBatch, tileMap);
 
-        InOrder inOrder = Mockito.inOrder(layerTiledView, objectGroupTiledView);
+        InOrder inOrder = Mockito.inOrder(layer1, layer2, group, group2);
 
-        inOrder.verify(layerTiledView).draw(spriteBatch, layer1);
-        inOrder.verify(layerTiledView).draw(spriteBatch, layer2);
-        inOrder.verify(objectGroupTiledView).draw(spriteBatch, group);
-        inOrder.verify(objectGroupTiledView).draw(spriteBatch, group2);
+        inOrder.verify(layer1).draw(spriteBatch, tileMapView);
+        inOrder.verify(group2).draw(spriteBatch, tileMapView);
+        inOrder.verify(layer2).draw(spriteBatch, tileMapView);
+        inOrder.verify(group).draw(spriteBatch, tileMapView);
+    }
+
+    @Test
+    public void drawTileLayer() {
+        TiledView<TileLayer> layerTiledView = (TiledView<TileLayer>) Mockito.mock(TiledView.class);
+        TiledView<TiledObjectGroup> objectGroupTiledView = (TiledView<TiledObjectGroup>) Mockito.mock(TiledView.class);
+
+        TileMapView mapView = new TileMapView(layerTiledView, objectGroupTiledView);
+        SpriteBatch spriteBatch = Mockito.mock(SpriteBatch.class);
+        TileLayer tileLayer = Mockito.mock(TileLayer.class);
+
+
+        mapView.draw(spriteBatch, tileLayer);
+
+        Mockito.verify(layerTiledView).draw(spriteBatch, tileLayer);
+    }
+
+    @Test
+    public void drawObjectGroupLayer() {
+        TiledView<TileLayer> layerTiledView = (TiledView<TileLayer>) Mockito.mock(TiledView.class);
+        TiledView<TiledObjectGroup> objectGroupTiledView = (TiledView<TiledObjectGroup>) Mockito.mock(TiledView.class);
+
+        TileMapView mapView = new TileMapView(layerTiledView, objectGroupTiledView);
+        SpriteBatch spriteBatch = Mockito.mock(SpriteBatch.class);
+        TiledObjectGroup group = Mockito.mock(TiledObjectGroup.class);
+
+
+        mapView.draw(spriteBatch, group);
+
+        Mockito.verify(objectGroupTiledView).draw(spriteBatch, group);
     }
 }

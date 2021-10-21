@@ -1,35 +1,20 @@
 package org.pixel.tiled.content;
 
+import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.tiled.view.TileMapView;
+
 import java.util.LinkedHashMap;
 
-public class TiledObjectGroup {
+public class TiledObjectGroup extends Layer {
     private LinkedHashMap<Integer, TiledObject> objects;
-    private double offsetX;
-    private double offsetY;
-    private TiledCustomProperties customProperties;
 
-    public TiledCustomProperties getCustomProperties() {
-        return customProperties;
+    public TiledObjectGroup(TileMap tileMap) {
+        super(tileMap);
     }
 
-    public void setCustomProperties(TiledCustomProperties customProperties) {
-        this.customProperties = customProperties;
-    }
-
-    public double getOffsetX() {
-        return offsetX;
-    }
-
-    public void setOffsetX(double offsetX) {
-        this.offsetX = offsetX;
-    }
-
-    public double getOffsetY() {
-        return offsetY;
-    }
-
-    public void setOffsetY(double offsetY) {
-        this.offsetY = offsetY;
+    @Override
+    public void draw(SpriteBatch spriteBatch, TileMapView view) {
+        view.draw(spriteBatch, this);
     }
 
     public LinkedHashMap<Integer, TiledObject> getObjects() {
