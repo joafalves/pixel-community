@@ -13,26 +13,24 @@ import java.util.ListIterator;
 import static org.pixel.tiled.content.TiledConstants.*;
 
 public abstract class DrawStrategy {
+    private static final Transform transform = new Transform();
+    private static final Vector2 position = new Vector2();
 
-    private Transform getTileTransform(long gID) {
+    private void getTileTransform(long gID) {
         boolean horizontalFlip = (gID & HORIZONTAL_FLIP_FLAG.getBits()) != 0;
         boolean verticalFlip = (gID & VERTICAL_FLIP_FLAG.getBits()) != 0;
         boolean diagonalFlip = (gID & DIAGONAL_FLIP_FLAG.getBits()) != 0;
-        Transform transform = new Transform();
 
-        // diagonal flip in tiled is done before the other flips, since scaling is done before rotation
-        // that isn't
-        // possible these are some workarounds
+        transform.rotation = 0f;
+
         if (diagonalFlip) {
-            transform.setRotation((float) Math.PI / 2);
-            transform.setScaleX(verticalFlip ? 1f : -1f);
-            transform.setScaleY(horizontalFlip ? -1f : 1f);
+            transform.rotation = (float) Math.PI / 2;
+            transform.scaleX = verticalFlip ? 1f : -1f;
+            transform.scaleY = horizontalFlip ? -1f : 1f;
         } else {
-            transform.setScaleX(horizontalFlip ? -1f : 1f);
-            transform.setScaleY(verticalFlip ? -1f : 1f);
+            transform.scaleX = horizontalFlip ? -1f : 1f;
+            transform.scaleY = verticalFlip ? -1f : 1f;
         }
-
-        return transform;
     }
 
     protected void drawTile(SpriteBatch spriteBatch, Layer layer, int x, int y) {
@@ -53,13 +51,13 @@ public abstract class DrawStrategy {
             if (tileSet.getFirstGId() <= gID) {
                 Rectangle source = tileSet.sourceAt(gID);
 
-                Vector2 position = new Vector2(x * layer.getTileMap().getTileWidth() + (float) layer.getOffsetX() + 0.5f * tileSet.getTileWidth(),
-                        y * layer.getTileMap().getTileHeight() + (float) layer.getOffsetY() + 0.5f * tileSet.getTileHeight());
+                position.setX(x * layer.getTileMap().getTileWidth() + (float) layer.getOffsetX() + 0.5f * tileSet.getTileWidth());
+                position.setY(y * layer.getTileMap().getTileHeight() + (float) layer.getOffsetY() + 0.5f * tileSet.getTileHeight());
 
-                Transform transform = getTileTransform(originalGID);
+                getTileTransform(originalGID);
 
                 spriteBatch.draw(tileSet.getTexture(), position, source, Color.WHITE, Vector2.HALF,
-                        transform.getScaleX(), transform.getScaleY(), transform.getRotation());
+                        transform.scaleX, transform.scaleY, transform.rotation);
 
                 break;
             }
@@ -68,4 +66,14 @@ public abstract class DrawStrategy {
 
     public abstract void draw(SpriteBatch spriteBatch, Layer layer);
 
+    private static class Transform {
+        private float scaleX;
+        private float scaleY;
+        private float rotation;
+
+        Transform() {
+            this.scaleX = this.scaleY = 1f;
+            this.rotation = 0f;
+        }
+    }
 }

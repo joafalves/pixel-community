@@ -1,5 +1,6 @@
 package org.pixel.tiled.view;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
@@ -54,6 +55,8 @@ class TiledObjectGroupViewTest {
         Mockito.when(group.getOffsetX()).thenReturn(0.4);
         Mockito.when(group.getOffsetY()).thenReturn(0.5);
 
+        List<Vector2> positions = new ArrayList<>();
+
         Answer answer = invocation -> {
             SpriteBatch spriteBatch1 = invocation.getArgument(0);
             TiledObjectGroup group1 = invocation.getArgument(1);
@@ -64,23 +67,37 @@ class TiledObjectGroupViewTest {
             return invocation.getMock();
         };
 
+        Answer getPosition = invocation -> {
+            Vector2 position = invocation.getArgument(1);
+
+            positions.add(new Vector2(position.getX(), position.getY()));
+
+            return invocation.getMock();
+        };
+
         Mockito.doAnswer(answer).when(object1).draw(Mockito.any(), Mockito.any(), Mockito.any());
         Mockito.doAnswer(answer).when(object2).draw(Mockito.any(), Mockito.any(), Mockito.any());
-
+        Mockito.doAnswer(getPosition).when(spriteBatch).draw(Mockito.any(Texture.class),
+                Mockito.any(Vector2.class), Mockito.any(Rectangle.class),
+                Mockito.any(Color.class), Mockito.any(Vector2.class),
+                Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat());
 
         groupView.draw(spriteBatch, group);
 
         InOrder inOrder = Mockito.inOrder(spriteBatch);
 
         inOrder.verify(spriteBatch).draw(Mockito.same(texture),
-                Mockito.eq(new Vector2(0 + 0.4f, 2 + 0.5f)), Mockito.eq(new Rectangle(2f, 3f, -2f, -3f)),
+                Mockito.any(), Mockito.eq(new Rectangle(2f, 3f, -2f, -3f)),
                 Mockito.same(Color.WHITE), Mockito.same(Vector2.ZERO_ONE),
                 Mockito.eq(1f / 2f), Mockito.eq(1f), Mockito.eq(-5f));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture),
-                Mockito.eq(new Vector2(3 + 0.4f, 4 + 0.5f)), Mockito.eq(new Rectangle(0f, 3f, 2f, 3f)),
+                Mockito.any(), Mockito.eq(new Rectangle(0f, 3f, 2f, 3f)),
                 Mockito.same(Color.WHITE), Mockito.same(Vector2.ZERO_ONE),
                 Mockito.eq(1f), Mockito.eq(1f), Mockito.eq(-0f));
 
         inOrder.verifyNoMoreInteractions();
+
+        Assertions.assertEquals( new Vector2(0 + 0.4f, 2 + 0.5f), positions.get(0));
+        Assertions.assertEquals( new Vector2(3 + 0.4f, 4 + 0.5f), positions.get(1));
     }
 }

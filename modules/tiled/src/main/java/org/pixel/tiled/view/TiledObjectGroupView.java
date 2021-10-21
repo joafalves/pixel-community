@@ -16,6 +16,8 @@ import static org.pixel.tiled.content.TiledConstants.HORIZONTAL_FLIP_FLAG;
 import static org.pixel.tiled.content.TiledConstants.VERTICAL_FLIP_FLAG;
 
 public class TiledObjectGroupView implements TiledView<TiledObjectGroup> {
+    private static final Vector2 position = new Vector2();
+
     public void draw(SpriteBatch spriteBatch, TiledTileObject tile, TiledObjectGroup group) {
         List<TileSet> tileSets = tile.getTileMap().getTileSets();
         long gID = tile.getgID();
@@ -32,10 +34,8 @@ public class TiledObjectGroupView implements TiledView<TiledObjectGroup> {
             if (tileSet.getFirstGId() <= gID) {
                 Rectangle source = tileSet.sourceAt(gID, horizontalFlip, verticalFlip);
 
-                Vector2 position = new Vector2(
-                        tile.getPosition().getX() + (float) group.getOffsetX(),
-                        tile.getPosition().getY() + (float) group.getOffsetY()
-                );
+                position.setY(tile.getPosition().getY() + (float) group.getOffsetY());
+                position.setX(tile.getPosition().getX() + (float) group.getOffsetX());
 
                 spriteBatch.draw(
                         tileSet.getTexture(), position, source, Color.WHITE, Vector2.ZERO_ONE,
