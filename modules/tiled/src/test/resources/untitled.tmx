@@ -68,42 +68,20 @@
   </layer>
  </group>
  <objectgroup id="3" name="Stuff" offsetx="7.08333" offsety="2.04167">
-  <object id="1" gid="1" x="352.417" y="204.167" width="40.3333" height="26" rotation="2"/>
-  <object id="2" gid="1" x="430.5" y="172" width="16" height="16"/>
-  <object id="3" gid="1" x="524.25" y="204.75" width="16" height="16"/>
-  <object id="4" gid="2" x="539" y="186" width="16" height="16"/>
-  <object id="5" gid="1073741826" x="326.583" y="259.25" width="35" height="60.3333" rotation="4"/>
-  <object id="6" gid="2" x="396.5" y="203.5" width="16" height="16"/>
-  <object id="7" x="549.25" y="124.5">
-   <polygon points="0,0 3,27.25 29,21.5"/>
-  </object>
-  <object id="8" x="570.25" y="221" width="8" height="16.5">
-   <ellipse/>
-  </object>
-  <object id="9" x="515.25" y="249.5" width="77.75" height="38.5">
-   <ellipse/>
-  </object>
-  <object id="10" gid="7" x="370.583" y="274.25" width="50" height="66"/>
-  <object id="11" x="435.615" y="103.833" width="91.4375" height="19">
+  <properties>
+   <property name="1" value="1"/>
+  </properties>
+  <object id="1" gid="1" x="518.917" y="272.167" width="40.3333" height="26" rotation="2"/>
+  <object id="5" gid="1073741826" x="406.583" y="134.75" width="35" height="60.3333" rotation="2"/>
+  <object id="10" gid="2147483655" x="375.083" y="201.75" width="50" height="66"/>
+  <object id="11" x="423.615" y="155.833" width="91.4375" height="19">
    <text wrap="1">Hello World</text>
   </object>
-  <object id="12" x="517.615" y="157.167" width="91.4375" height="19">
-   <text wrap="1">Hello World</text>
-  </object>
-  <object id="13" x="331.615" y="152.5" width="91.4375" height="19">
-   <text wrap="1">Hello World</text>
-  </object>
-  <object id="16" gid="2" x="442" y="220.333" width="16" height="16"/>
   <object id="18" gid="2" x="491.542" y="152.167" width="16" height="16" rotation="5">
    <properties>
-    <property name="hey this is something">asdf
-
-hey
-</property>
+    <property name="1" value="1"/>
    </properties>
   </object>
-  <object id="15" gid="2" x="433" y="214" width="16" height="16"/>
-  <object id="19" gid="2" x="530" y="86" width="16" height="16"/>
   <object id="17" gid="2" x="478" y="151.333" width="16" height="16"/>
   <object id="20" gid="2" x="465.542" y="156.458" width="16" height="16" rotation="5"/>
  </objectgroup>

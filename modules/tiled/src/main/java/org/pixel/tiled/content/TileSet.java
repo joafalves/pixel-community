@@ -58,6 +58,8 @@ public class TileSet implements Disposable {
     }
 
     public Rectangle sourceAt(long gID) {
+        gID = gID - firstGId;
+
         if (gID >= tileCount) {
             return new Rectangle(0, 0, 0, 0);
         }
@@ -66,6 +68,30 @@ public class TileSet implements Disposable {
         float y = (gID / columns) * tileHeight;
 
         return new Rectangle(x, y, tileWidth, tileHeight);
+    }
+
+    public Rectangle sourceAt(long gID, boolean horizontalFlip, boolean verticalFlip) {
+        gID = gID - firstGId;
+
+        if (gID >= tileCount) {
+            return new Rectangle(0, 0, 0, 0);
+        }
+
+        float x = (gID % columns) * tileWidth;
+        float y = (gID / columns) * tileHeight;
+        float width = tileWidth, height = tileHeight;
+
+        if (horizontalFlip) {
+            x += tileWidth;
+            width = -tileWidth;
+        }
+
+        if (verticalFlip) {
+            y += tileHeight;
+            height = -tileHeight;
+        }
+
+        return new Rectangle(x, y, width, height);
     }
 
     @Override
