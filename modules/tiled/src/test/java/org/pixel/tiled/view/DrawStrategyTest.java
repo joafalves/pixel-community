@@ -5,16 +5,16 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.pixel.graphics.render.SpriteBatch;
-import org.pixel.tiled.content.Layer;
+import org.pixel.tiled.content.TileLayer;
 
 class DrawStrategyTest {
-    Layer layer;
+    TileLayer layer;
     SpriteBatch spriteBatch;
     long[][] tiles = new long[2][2];
 
     @BeforeEach
     void setup() {
-        layer = Mockito.mock(Layer.class);
+        layer = Mockito.mock(TileLayer.class);
         spriteBatch = Mockito.mock(SpriteBatch.class);
 
         Mockito.when(layer.getWidth()).thenReturn(2);

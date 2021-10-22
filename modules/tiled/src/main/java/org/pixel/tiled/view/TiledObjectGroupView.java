@@ -19,7 +19,7 @@ public class TiledObjectGroupView implements TiledView<TiledObjectGroup> {
     private static final Vector2 position = new Vector2();
 
     public void draw(SpriteBatch spriteBatch, TiledTileObject tile, TiledObjectGroup group) {
-        List<TileSet> tileSets = tile.getTileMap().getTileSets();
+        List<TileSet> tileSets = group.getTileMap().getTileSets();
         long gID = tile.getgID();
         ListIterator<TileSet> itr = tileSets.listIterator(tileSets.size());
 

@@ -6,10 +6,6 @@ import org.pixel.tiled.view.TiledObjectGroupView;
 public class TiledTileObject extends TiledObject {
     private long gID;
 
-    public TiledTileObject(TileMap tileMap) {
-        super(tileMap);
-    }
-
     public long getgID() {
         return gID;
     }

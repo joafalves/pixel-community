@@ -26,7 +26,6 @@ public class TileMapImporterSettings implements ContentImporterSettings {
 
         processors.add(new TileSetProcessor());
         processors.add(new LayerProcessor());
-        processors.add(new ObjectGroupProcessor());
     }
 
     public TileMapImporterSettings(TextureImporterSettings settings, List<TileMapProcessor> processors) {

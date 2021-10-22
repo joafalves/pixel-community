@@ -60,7 +60,7 @@ public class TileMapViewTestIntegrated {
 
             TileMapImporter importer = new TileMapImporter();
             TileSetImporter tileSetImporter = new TileSetImporter();
-            String tmxFileName = "rotation2.tmx";
+            String tmxFileName = "grouptopdown.tmx";
 
             ContentManager contentManager = new ContentManager();
             contentManager.addContentImporter(importer);

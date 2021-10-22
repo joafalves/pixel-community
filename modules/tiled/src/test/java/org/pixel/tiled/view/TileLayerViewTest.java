@@ -13,6 +13,7 @@ import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
+import org.pixel.tiled.content.TileLayer;
 import org.pixel.tiled.content.TileMap;
 import org.pixel.tiled.content.TileSet;
 import org.pixel.tiled.content.importer.TileMapImporter;
@@ -26,7 +27,7 @@ import java.util.List;
 
 import static org.lwjgl.BufferUtils.createByteBuffer;
 
-public class LayerViewTest {
+public class TileLayerViewTest {
     Texture texture1, texture2;
     ImportContext ctx;
     ContentManager contentManager;
@@ -102,11 +103,11 @@ public class LayerViewTest {
 
         TileMap tileMap = importer.process(ctx);
 
-        LayerView layerView = new LayerView();
+        TileLayerView layerView = new TileLayerView();
 
         InOrder inOrder = Mockito.inOrder(spriteBatch);
 
-        layerView.draw(spriteBatch, tileMap.getLayers().get(0));
+        layerView.draw(spriteBatch, (TileLayer) tileMap.getLayers().get(0));
 
         inOrder.verify(spriteBatch, Mockito.times(2)).draw(Mockito.same(texture2), Mockito.any(),
                 Mockito.eq(new Rectangle(0, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
@@ -114,7 +115,7 @@ public class LayerViewTest {
                 Mockito.eq(1f),
                 Mockito.eq(0f));
 
-        layerView.draw(spriteBatch, tileMap.getLayers().get(1));
+        layerView.draw(spriteBatch, (TileLayer) tileMap.getLayers().get(1));
 
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
                 Mockito.eq(new Rectangle(0, 16, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
@@ -156,11 +157,11 @@ public class LayerViewTest {
 
         TileMap tileMap = importer.process(ctx);
 
-        LayerView layerView = new LayerView();
+        TileLayerView layerView = new TileLayerView();
 
         InOrder inOrder = Mockito.inOrder(spriteBatch);
 
-        layerView.draw(spriteBatch, tileMap.getLayers().get(0));
+        layerView.draw(spriteBatch, (TileLayer) tileMap.getLayers().get(0));
 
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
                 Mockito.eq(new Rectangle(0, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
@@ -168,7 +169,7 @@ public class LayerViewTest {
                 Mockito.eq(1f),
                 Mockito.eq(0f));
 
-        layerView.draw(spriteBatch, tileMap.getLayers().get(1));
+        layerView.draw(spriteBatch, (TileLayer) tileMap.getLayers().get(1));
 
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
                 Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
@@ -196,11 +197,11 @@ public class LayerViewTest {
 
         TileMap tileMap = importer.process(ctx);
 
-        LayerView layerView = new LayerView();
+        TileLayerView layerView = new TileLayerView();
 
         InOrder inOrder = Mockito.inOrder(spriteBatch);
 
-        layerView.draw(spriteBatch, tileMap.getLayers().get(0));
+        layerView.draw(spriteBatch, (TileLayer) tileMap.getLayers().get(0));
 
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
                 Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
@@ -227,7 +228,7 @@ public class LayerViewTest {
                 Mockito.eq(1f),
                 Mockito.eq(1f),
                 Mockito.eq((float) Math.PI / 2));
-        inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
+        inOrder.verify(spriteBatch).draw(Mockito.same(texture2), Mockito.any(),
                 Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
                 Mockito.eq(1f),
                 Mockito.eq(1f),
@@ -237,7 +238,7 @@ public class LayerViewTest {
                 Mockito.eq(1f),
                 Mockito.eq(1f),
                 Mockito.eq((float) Math.PI / 2));
-        inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
+        inOrder.verify(spriteBatch).draw(Mockito.same(texture2), Mockito.any(),
                 Mockito.eq(new Rectangle(16, 16, 16, -16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
                 Mockito.eq(1f),
                 Mockito.eq(1f),
