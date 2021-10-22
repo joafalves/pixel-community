@@ -8,6 +8,7 @@ public class LayerCollectorFactory {
     static {
         nameToStrategy.put("layer", new TileLayerCollector());
         nameToStrategy.put("objectgroup", new ObjectGroupCollector());
+        nameToStrategy.put("group", new LayerGroupCollector());
     }
 
     public LayerCollector getLayerCollector(String layerName) {

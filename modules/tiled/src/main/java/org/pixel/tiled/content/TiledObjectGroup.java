@@ -12,6 +12,10 @@ public class TiledObjectGroup extends Layer {
         super(tileMap);
     }
 
+    public TiledObjectGroup(Layer other) {
+        super(other);
+    }
+
     @Override
     public void draw(SpriteBatch spriteBatch, TileMapView view) {
         view.draw(spriteBatch, this);

@@ -11,35 +11,21 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-public class ObjectGroupCollector implements LayerCollector {
-    public void process(TileMap tileMap, Element objectGroupElement) {
+public class ObjectGroupCollector extends LayerCollector {
+    public Layer process(TileMap tileMap, Element objectGroupElement) {
         CustomPropertiesCollector collector = new CustomPropertiesCollector();
         ObjectOrderStrategyFactory factory = new ObjectOrderStrategyFactory();
 
-        TiledCustomProperties customProperties = collector.collect(objectGroupElement);
         List<Pair<Integer, TiledObject>> objects = new ArrayList<>();
-        TiledObjectGroup objectGroup = new TiledObjectGroup(tileMap);
+        TiledObjectGroup objectGroup = new TiledObjectGroup(collectLayerData(tileMap, objectGroupElement));
 
         String objectOrder = objectGroupElement.getAttribute("draworder");
-
-        try {
-            objectGroup.setOffsetX(Float.parseFloat(objectGroupElement.getAttribute("offsetx")));
-        } catch (NumberFormatException e) {
-            objectGroup.setOffsetX(0);
-        }
-
-        try {
-            objectGroup.setOffsetY(Float.parseFloat(objectGroupElement.getAttribute("offsety")));
-        } catch (NumberFormatException e) {
-            objectGroup.setOffsetY(0);
-        }
-        objectGroup.setCustomProperties(customProperties);
 
         NodeList objectList = objectGroupElement.getElementsByTagName("object");
 
         for (int j = 0; j < objectList.getLength(); j++) {
             Element objectElement = (Element) objectList.item(j);
-            customProperties = collector.collect(objectElement);
+            TiledCustomProperties customProperties = collector.collect(objectElement);
             TiledObject object;
 
             long gID;
@@ -101,6 +87,7 @@ public class ObjectGroupCollector implements LayerCollector {
         LinkedHashMap<Integer, TiledObject> objectMap = factory.getObjectOrderStrategy(objectOrder).getMap(objects);
 
         objectGroup.setObjects(objectMap);
-        tileMap.addLayer(objectGroup);
+
+        return objectGroup;
     }
 }
