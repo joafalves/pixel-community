@@ -55,12 +55,12 @@ public class TileMapViewTestIntegrated {
             nvg = new NvgRenderEngine(getViewportWidth(), getViewportHeight());
             fillColor = Color.BLACK;
             gameCamera.setOrigin(new Vector2(0.5f, 0.5f));
-            //gameCamera.translate(500, 180);
+            gameCamera.translate(500, 180);
             gameCamera.setZoom(3f);
 
             TileMapImporter importer = new TileMapImporter();
             TileSetImporter tileSetImporter = new TileSetImporter();
-            String tmxFileName = "grouptopdown.tmx";
+            String tmxFileName = "untitled.tmx";
 
             ContentManager contentManager = new ContentManager();
             contentManager.addContentImporter(importer);

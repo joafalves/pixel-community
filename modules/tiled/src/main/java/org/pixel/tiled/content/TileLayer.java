@@ -16,6 +16,15 @@ public class TileLayer extends Layer {
         tiles = new long[height][width];
     }
 
+    public TileLayer(Layer other, int width, int height) {
+        super(other);
+        this.width = width;
+        this.height = height;
+
+        tiles = new long[height][width];
+
+    }
+
     public int getHeight() {
         return height;
     }

@@ -51,12 +51,10 @@ public class TileMapImporterTest {
         Mockito.verify(tileSet1).setFirstGId(1);
         Mockito.verify(tileSet2).setFirstGId(5);
         Assertions.assertSame(tileSet2, tileMap.getTileSets().get(1));
-        Assertions.assertEquals(25, ((TileLayer) tileMap.getLayers().get(0)).getHeight());
-        Assertions.assertEquals(51, ((TileLayer) tileMap.getLayers().get(0)).getWidth());
         Assertions.assertEquals(0, tileMap.getLayers().get(0).getOffsetX());
         Assertions.assertEquals(0, tileMap.getLayers().get(0).getOffsetY());
-        Assertions.assertEquals(-1, tileMap.getLayers().get(1).getOffsetX());
-        Assertions.assertEquals(7.5, tileMap.getLayers().get(1).getOffsetY());
+        Assertions.assertEquals(7.08, tileMap.getLayers().get(1).getOffsetX(), 0.01);
+        Assertions.assertEquals(2.04, tileMap.getLayers().get(1).getOffsetY(), 0.01);
         Assertions.assertEquals("right-down", tileMap.getRenderOrder());
         Assertions.assertTrue(tileMap.getCustomProperties().containsKey("This"));
         Assertions.assertTrue(tileMap.getCustomProperties().containsKey("is property"));

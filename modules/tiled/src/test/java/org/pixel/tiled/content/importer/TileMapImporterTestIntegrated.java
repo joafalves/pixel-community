@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.pixel.content.ContentManager;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
-import org.pixel.tiled.content.TileLayer;
 import org.pixel.tiled.content.TileMap;
 
 public class TileMapImporterTestIntegrated {
@@ -51,12 +50,10 @@ public class TileMapImporterTestIntegrated {
             Assertions.assertEquals(16, tileMap.getTileSets().get(0).getTileHeight());
             Assertions.assertEquals(1, tileMap.getTileSets().get(0).getFirstGId());
             Assertions.assertEquals(5, tileMap.getTileSets().get(1).getFirstGId());
-            Assertions.assertEquals(25, ((TileLayer) tileMap.getLayers().get(0)).getHeight());
-            Assertions.assertEquals(51, ((TileLayer) tileMap.getLayers().get(0)).getWidth());
             Assertions.assertEquals(0, tileMap.getLayers().get(0).getOffsetX());
             Assertions.assertEquals(0, tileMap.getLayers().get(0).getOffsetY());
-            Assertions.assertEquals(-1, tileMap.getLayers().get(1).getOffsetX());
-            Assertions.assertEquals(7.5, tileMap.getLayers().get(1).getOffsetY());
+            Assertions.assertEquals(7.08, tileMap.getLayers().get(1).getOffsetX(), 0.01);
+            Assertions.assertEquals(2.04, tileMap.getLayers().get(1).getOffsetY(), 0.01);
 
             close();
         }

@@ -13,6 +13,8 @@ public class CustomPropertiesCollector {
 
         TiledCustomProperties customProperties = new TiledCustomProperties();
 
+        if(properties == null) return customProperties;
+
         if (properties.getLength() != 0 && properties.item(0).getNodeType() == Node.ELEMENT_NODE) {
             NodeList propertyList = ((Element) properties.item(0)).getElementsByTagName("property");
 

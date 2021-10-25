@@ -13,6 +13,13 @@ public abstract class Layer {
         this.tileMap = tileMap;
     }
 
+    public Layer(Layer other) {
+        this.tileMap = other.tileMap;
+        this.offsetX = other.offsetX;
+        this.offsetY = other.offsetY;
+        this.customProperties = other.customProperties;
+    }
+
     public TileMap getTileMap() {
         return tileMap;
     }
