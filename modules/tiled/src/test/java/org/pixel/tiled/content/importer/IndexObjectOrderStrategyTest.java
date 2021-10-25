@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.pixel.commons.Pair;
-import org.pixel.tiled.content.TiledObject;
+import org.pixel.tiled.content.DrawableTiledObject;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -16,15 +16,15 @@ class IndexObjectOrderStrategyTest {
     public void getMap() {
         IndexObjectOrderStrategy strategy = new IndexObjectOrderStrategy();
 
-        List<Pair<Integer, TiledObject>> objects = new ArrayList<>();
+        List<Pair<Integer, DrawableTiledObject>> objects = new ArrayList<>();
 
-        objects.add(new Pair<>(1, Mockito.mock(TiledObject.class)));
-        objects.add(new Pair<>(2, Mockito.mock(TiledObject.class)));
-        objects.add(new Pair<>(3, Mockito.mock(TiledObject.class)));
+        objects.add(new Pair<>(1, Mockito.mock(DrawableTiledObject.class)));
+        objects.add(new Pair<>(2, Mockito.mock(DrawableTiledObject.class)));
+        objects.add(new Pair<>(3, Mockito.mock(DrawableTiledObject.class)));
 
-        LinkedHashMap<Integer, TiledObject> map = strategy.getMap(objects);
+        LinkedHashMap<Integer, DrawableTiledObject> map = strategy.getMap(objects);
         Iterator<Integer> keySetIt = map.keySet().iterator();
-        Iterator<TiledObject> valuesIt = map.values().iterator();
+        Iterator<DrawableTiledObject> valuesIt = map.values().iterator();
 
         Assertions.assertTrue(map.containsKey(1));
         Assertions.assertTrue(map.containsKey(2));

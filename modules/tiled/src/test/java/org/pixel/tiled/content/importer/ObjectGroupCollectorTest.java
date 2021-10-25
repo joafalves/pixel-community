@@ -4,10 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.pixel.math.MathHelper;
-import org.pixel.tiled.content.TileMap;
-import org.pixel.tiled.content.TiledObject;
-import org.pixel.tiled.content.TiledObjectGroup;
-import org.pixel.tiled.content.TiledTileObject;
+import org.pixel.tiled.content.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -84,7 +81,7 @@ class ObjectGroupCollectorTest {
 
         Assertions.assertTrue(group.getObjects().containsKey(1));
         Iterator<Integer> keySetIt = group.getObjects().keySet().iterator();
-        Iterator<TiledObject> valuesIt = group.getObjects().values().iterator();
+        Iterator<DrawableTiledObject> valuesIt = group.getObjects().values().iterator();
         Assertions.assertEquals(1, keySetIt.next());
         Assertions.assertEquals(2, keySetIt.next());
     }
@@ -113,7 +110,7 @@ class ObjectGroupCollectorTest {
 
         Assertions.assertTrue(group.getObjects().containsKey(1));
         Iterator<Integer> keySetIt = group.getObjects().keySet().iterator();
-        Iterator<TiledObject> valuesIt = group.getObjects().values().iterator();
+        Iterator<DrawableTiledObject> valuesIt = group.getObjects().values().iterator();
         Assertions.assertEquals(2, keySetIt.next());
         Assertions.assertEquals(1, keySetIt.next());
     }

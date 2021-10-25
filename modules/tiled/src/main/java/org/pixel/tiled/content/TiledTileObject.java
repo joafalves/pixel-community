@@ -3,7 +3,7 @@ package org.pixel.tiled.content;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.tiled.view.TiledObjectGroupView;
 
-public class TiledTileObject extends TiledObject {
+public class TiledTileObject extends DrawableTiledObject {
     private long gID;
 
     public long getgID() {

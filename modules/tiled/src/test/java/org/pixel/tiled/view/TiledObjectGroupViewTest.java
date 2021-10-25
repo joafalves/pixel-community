@@ -24,7 +24,7 @@ class TiledObjectGroupViewTest {
         TiledObjectGroup group = Mockito.mock(TiledObjectGroup.class);
         TiledTileObject object1 = Mockito.mock(TiledTileObject.class);
         TiledTileObject object2 = Mockito.mock(TiledTileObject.class);
-        LinkedHashMap<Integer, TiledObject> map = new LinkedHashMap<>();
+        LinkedHashMap<Integer, DrawableTiledObject> map = new LinkedHashMap<>();
         Texture texture = Mockito.mock(Texture.class);
         TileSet tileSet = new TileSet(2, 3, 2, 1, texture);
         TileMap tileMap = new TileMap();

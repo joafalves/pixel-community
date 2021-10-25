@@ -4,6 +4,9 @@ import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.content.Texture;
 import org.pixel.math.Rectangle;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TileSet implements Disposable {
     private final int tileWidth;
     private final int tileHeight;
@@ -12,6 +15,7 @@ public class TileSet implements Disposable {
     private final Texture texture;
     private int firstGId;
     private TiledCustomProperties customProperties;
+    private final List<TiledTile> tiles;
 
     public TileSet(int tileWidth, int tileHeight, int tileCount, int columns, Texture texture) {
         this.tileCount = tileCount;
@@ -19,6 +23,19 @@ public class TileSet implements Disposable {
         this.tileWidth = tileWidth;
         this.columns = columns;
         this.texture = texture;
+        this.tiles = new ArrayList<>(tileCount);
+
+        for(int i = 0; i < tileCount; i++) {
+            tiles.add(null);
+        }
+    }
+
+    public List<TiledTile> getTiles() {
+        return tiles;
+    }
+
+    public void setTile(int index, TiledTile tile) {
+        tiles.set(index, tile);
     }
 
     public TiledCustomProperties getCustomProperties() {

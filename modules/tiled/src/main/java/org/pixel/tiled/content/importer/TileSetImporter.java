@@ -9,9 +9,11 @@ import org.pixel.content.Texture;
 import org.pixel.content.importer.settings.ContentImporterSettings;
 import org.pixel.tiled.content.TileSet;
 import org.pixel.tiled.content.TiledCustomProperties;
+import org.pixel.tiled.content.TiledTile;
 import org.pixel.tiled.utils.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 @ContentImporterInfo(type = TileSet.class, extension = ".tsx")
 public class TileSetImporter implements ContentImporter<TileSet> {
@@ -57,6 +59,19 @@ public class TileSetImporter implements ContentImporter<TileSet> {
 
         TileSet tileSet = new TileSet(tileWidth, tileHeight, tileCount, columns, tileSetImage);
         tileSet.setCustomProperties(customProperties);
+
+        NodeList tiles = tilesetElement.getElementsByTagName("tile");
+
+        for(int i = 0; i < tiles.getLength(); i++) {
+            Element tileElement = (Element) tiles.item(i);
+
+            TiledTile tile = new TiledTile();
+
+            //NodeList
+
+            int index = Integer.parseInt(tileElement.getAttribute("id"));
+            tileSet.setTile(index, tile);
+        }
 
         return tileSet;
     }

@@ -8,7 +8,7 @@ import org.pixel.tiled.view.TiledObjectGroupView;
 class TiledObjectTest {
     @Test
     void draw() {
-        TiledObject tiledObject = new TiledObject();
+        DrawableTiledObject tiledObject = new DrawableTiledObject();
         TiledObjectGroup group = Mockito.mock(TiledObjectGroup.class);
         SpriteBatch spriteBatch = Mockito.mock(SpriteBatch.class);
         TiledObjectGroupView view = Mockito.mock(TiledObjectGroupView.class);

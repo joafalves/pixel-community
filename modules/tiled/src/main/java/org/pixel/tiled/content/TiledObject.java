@@ -1,8 +1,6 @@
 package org.pixel.tiled.content;
 
-import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Vector2;
-import org.pixel.tiled.view.TiledObjectGroupView;
 
 public class TiledObject {
     private Vector2 position;
@@ -49,8 +47,5 @@ public class TiledObject {
 
     public void setWidth(float width) {
         this.width = width;
-    }
-
-    public void draw(SpriteBatch spriteBatch, TiledObjectGroup group, TiledObjectGroupView view) {
     }
 }
