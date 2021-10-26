@@ -48,7 +48,7 @@ public class TiledObjectGroupView implements TiledView<TiledObjectGroup> {
 
     @Override
     public void draw(SpriteBatch spriteBatch, TiledObjectGroup element) {
-        for (DrawableTiledObject object : element.getObjects().values()) {
+        for (TiledObject object : element.getObjects().values()) {
             object.draw(spriteBatch, element, this);
         }
     }

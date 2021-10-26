@@ -67,7 +67,11 @@ public class TileSetImporter implements ContentImporter<TileSet> {
 
             TiledTile tile = new TiledTile();
 
-            //NodeList
+            NodeList groups = tileElement.getElementsByTagName("objectgroup");
+
+            if(groups.getLength() == 0) {
+                continue;
+            }
 
             int index = Integer.parseInt(tileElement.getAttribute("id"));
             tileSet.setTile(index, tile);

@@ -6,7 +6,7 @@ import org.pixel.tiled.view.TileMapView;
 import java.util.LinkedHashMap;
 
 public class TiledObjectGroup extends Layer {
-    private LinkedHashMap<Integer, DrawableTiledObject> objects;
+    private LinkedHashMap<Integer, TiledObject> objects;
 
     public TiledObjectGroup(TileMap tileMap) {
         super(tileMap);
@@ -21,11 +21,11 @@ public class TiledObjectGroup extends Layer {
         view.draw(spriteBatch, this);
     }
 
-    public LinkedHashMap<Integer, DrawableTiledObject> getObjects() {
+    public LinkedHashMap<Integer, TiledObject> getObjects() {
         return objects;
     }
 
-    public void setObjects(LinkedHashMap<Integer, DrawableTiledObject> objects) {
+    public void setObjects(LinkedHashMap<Integer, TiledObject> objects) {
         this.objects = objects;
     }
 }

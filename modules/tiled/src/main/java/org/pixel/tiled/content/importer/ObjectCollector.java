@@ -3,18 +3,17 @@ package org.pixel.tiled.content.importer;
 import org.pixel.commons.Pair;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
-import org.pixel.tiled.content.DrawableTiledObject;
 import org.pixel.tiled.content.TiledCustomProperties;
 import org.pixel.tiled.content.TiledObject;
 import org.pixel.tiled.content.TiledTileObject;
 import org.w3c.dom.Element;
 
 public class ObjectCollector {
-    public Pair<Integer, DrawableTiledObject> collect(Element objectElement) {
+    public Pair<Integer, TiledObject> collect(Element objectElement) {
         CustomPropertiesCollector collector = new CustomPropertiesCollector();
 
         TiledCustomProperties customProperties = collector.collect(objectElement);
-        DrawableTiledObject object;
+        TiledObject object;
 
         long gID;
 
@@ -26,7 +25,7 @@ public class ObjectCollector {
             tile.setgID(gID);
             object = tile;
         } catch (NumberFormatException e) {
-            object = new DrawableTiledObject();
+            object = new TiledObject();
         }
 
         try {
@@ -68,7 +67,7 @@ public class ObjectCollector {
         object.setHeight(height);
         object.setCustomProperties(customProperties);
 
-        Pair<Integer, DrawableTiledObject> pair = new Pair<>(Integer.parseInt(objectElement.getAttribute("id")), object);
+        Pair<Integer, TiledObject> pair = new Pair<>(Integer.parseInt(objectElement.getAttribute("id")), object);
 
         return pair;
     }

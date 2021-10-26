@@ -23,7 +23,7 @@ public class ObjectGroupCollector extends LayerCollector {
     public Layer process(TileMap tileMap, Element objectGroupElement) {
         ObjectOrderStrategyFactory factory = new ObjectOrderStrategyFactory();
 
-        List<Pair<Integer, DrawableTiledObject>> objects = new ArrayList<>();
+        List<Pair<Integer, TiledObject>> objects = new ArrayList<>();
         TiledObjectGroup objectGroup = new TiledObjectGroup(collectLayerData(tileMap, objectGroupElement));
 
         String objectOrder = objectGroupElement.getAttribute("draworder");
@@ -36,7 +36,7 @@ public class ObjectGroupCollector extends LayerCollector {
             objects.add(objectCollector.collect(objectElement));
         }
 
-        LinkedHashMap<Integer, DrawableTiledObject> objectMap = factory.getObjectOrderStrategy(objectOrder).getMap(objects);
+        LinkedHashMap<Integer, TiledObject> objectMap = factory.getObjectOrderStrategy(objectOrder).getMap(objects);
 
         objectGroup.setObjects(objectMap);
 

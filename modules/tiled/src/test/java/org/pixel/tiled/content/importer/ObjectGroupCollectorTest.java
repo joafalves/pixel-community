@@ -81,7 +81,7 @@ class ObjectGroupCollectorTest {
 
         Assertions.assertTrue(group.getObjects().containsKey(1));
         Iterator<Integer> keySetIt = group.getObjects().keySet().iterator();
-        Iterator<DrawableTiledObject> valuesIt = group.getObjects().values().iterator();
+        Iterator<TiledObject> valuesIt = group.getObjects().values().iterator();
         Assertions.assertEquals(1, keySetIt.next());
         Assertions.assertEquals(2, keySetIt.next());
     }
@@ -110,7 +110,7 @@ class ObjectGroupCollectorTest {
 
         Assertions.assertTrue(group.getObjects().containsKey(1));
         Iterator<Integer> keySetIt = group.getObjects().keySet().iterator();
-        Iterator<DrawableTiledObject> valuesIt = group.getObjects().values().iterator();
+        Iterator<TiledObject> valuesIt = group.getObjects().values().iterator();
         Assertions.assertEquals(2, keySetIt.next());
         Assertions.assertEquals(1, keySetIt.next());
     }
