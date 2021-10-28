@@ -26,7 +26,7 @@ public class LayerGroup extends Layer {
     public void setLayers(List<Layer> layers) {
         this.layers = layers;
 
-        for( Layer layer : layers) {
+        for (Layer layer : layers) {
             layer.setOffsetX(layer.getOffsetX() + this.getOffsetX());
             layer.setOffsetY(layer.getOffsetY() + this.getOffsetY());
         }
@@ -34,7 +34,7 @@ public class LayerGroup extends Layer {
 
     @Override
     public void draw(SpriteBatch spriteBatch, TileMapView view) {
-        for(Layer layer : layers) {
+        for (Layer layer : layers) {
             layer.draw(spriteBatch, view);
         }
     }

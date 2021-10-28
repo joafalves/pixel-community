@@ -6,8 +6,6 @@ import org.pixel.tiled.view.TiledObjectGroupView;
 
 public class TiledObject {
     private Vector2 position;
-    private float width;
-    private float height;
     private float rotation;
     private TiledCustomProperties customProperties;
 
@@ -35,22 +33,7 @@ public class TiledObject {
         this.position = position;
     }
 
-    public float getHeight() {
-        return height;
-    }
-
-    public void setHeight(float height) {
-        this.height = height;
-    }
-
-    public float getWidth() {
-        return width;
-    }
-
-    public void setWidth(float width) {
-        this.width = width;
-    }
-
     public void draw(SpriteBatch spriteBatch, TiledObjectGroup group, TiledObjectGroupView view) {
+
     }
 }

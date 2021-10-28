@@ -39,8 +39,8 @@ public class TiledObjectGroupView implements TiledView<TiledObjectGroup> {
 
                 spriteBatch.draw(
                         tileSet.getTexture(), position, source, Color.WHITE, Vector2.ZERO_ONE,
-                        tile.getWidth() / tileSet.getTileWidth(),
-                        tile.getHeight() / tileSet.getTileHeight(),
+                        (float) tile.getWidth() / tileSet.getTileWidth(),
+                        (float) tile.getHeight() / tileSet.getTileHeight(),
                         -(tile.getRotation())
                 );
 

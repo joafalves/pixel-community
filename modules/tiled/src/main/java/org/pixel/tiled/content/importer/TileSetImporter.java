@@ -1,5 +1,6 @@
 package org.pixel.tiled.content.importer;
 
+import org.pixel.commons.Pair;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ContentImporter;
@@ -9,13 +10,30 @@ import org.pixel.content.Texture;
 import org.pixel.content.importer.settings.ContentImporterSettings;
 import org.pixel.tiled.content.TileSet;
 import org.pixel.tiled.content.TiledCustomProperties;
+import org.pixel.tiled.content.TiledObject;
+import org.pixel.tiled.content.TiledTile;
 import org.pixel.tiled.utils.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+import java.util.HashMap;
 
 @ContentImporterInfo(type = TileSet.class, extension = ".tsx")
 public class TileSetImporter implements ContentImporter<TileSet> {
     private static final Logger LOG = LoggerFactory.getLogger(TileSetImporter.class);
+    private final ObjectCollector collector;
+    private final CustomPropertiesCollector propertiesCollector;
+
+    public TileSetImporter() {
+        collector = new ObjectCollector();
+        propertiesCollector = new CustomPropertiesCollector();
+    }
+
+    public TileSetImporter(ObjectCollector collector, CustomPropertiesCollector propertiesCollector) {
+        this.collector = collector;
+        this.propertiesCollector = propertiesCollector;
+    }
 
     @Override
     public TileSet process(ImportContext ctx) {
@@ -57,6 +75,36 @@ public class TileSetImporter implements ContentImporter<TileSet> {
 
         TileSet tileSet = new TileSet(tileWidth, tileHeight, tileCount, columns, tileSetImage);
         tileSet.setCustomProperties(customProperties);
+
+        NodeList tiles = tilesetElement.getElementsByTagName("tile");
+
+        for (int i = 0; i < tiles.getLength(); i++) {
+            Element tileElement = (Element) tiles.item(i);
+
+            TiledTile tile = new TiledTile();
+
+            NodeList groups = tileElement.getElementsByTagName("objectgroup");
+
+            if (groups.getLength() > 0) {
+                NodeList objects = ((Element) groups.item(0)).getElementsByTagName("object");
+                HashMap<Integer, TiledObject> map = new HashMap<>();
+
+
+                for (int j = 0; j < objects.getLength(); j++) {
+                    Element object = (Element) objects.item(j);
+
+                    Pair<Integer, TiledObject> pair = collector.collect(object);
+
+                    map.put(pair.getA(), pair.getB());
+                }
+
+                tile.setColliders(map);
+            }
+
+            int index = Integer.parseInt(tileElement.getAttribute("id"));
+            tile.setProperties(propertiesCollector.collect(tileElement));
+            tileSet.setTile(index, tile);
+        }
 
         return tileSet;
     }

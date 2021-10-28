@@ -29,5 +29,10 @@ test {
     useJUnitPlatform()
 }
 
+task unitTest( type: Test ) {
+    exclude 'org/pixel/tiled/**/*Integrated*'
+    useJUnitPlatform()
+}
+
 
 

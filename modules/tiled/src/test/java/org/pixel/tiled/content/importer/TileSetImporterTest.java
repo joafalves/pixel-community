@@ -7,7 +7,7 @@ import org.pixel.content.ContentManager;
 import org.pixel.content.ImportContext;
 import org.pixel.content.Texture;
 import org.pixel.content.importer.settings.TextureImporterSettings;
-import org.pixel.tiled.content.TileSet;
+import org.pixel.tiled.content.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,6 +46,52 @@ public class TileSetImporterTest {
         Assertions.assertTrue(tileSet.getCustomProperties().containsKey("2"));
         Assertions.assertEquals("true", tileSet.getCustomProperties().get("2"));
         Assertions.assertEquals("hello", tileSet.getCustomProperties().get("1"));
+        Assertions.assertEquals("property1", tileSet.getTiles().get(0).getProperties().get("1"));
+        Assertions.assertEquals(0, tileSet.getTiles().get(1).getProperties().size());
+
+        Assertions.assertTrue(tileSet.getTiles().get(1).getColliders().get(10) instanceof TiledRectangle);
+
+        TiledRectangle rect12 = (TiledRectangle) tileSet.getTiles().get(1).getColliders().get(10);
+
+        Assertions.assertEquals(2, rect12.getPosition().getX());
+        Assertions.assertEquals(0, rect12.getPosition().getY());
+        Assertions.assertEquals(15, rect12.getHeight());
+        Assertions.assertEquals(13, rect12.getWidth());
+
+        Assertions.assertTrue(tileSet.getTiles().get(1).getColliders().get(6) instanceof TiledEllipse);
+
+        TiledEllipse ellipse6 = (TiledEllipse) tileSet.getTiles().get(1).getColliders().get(6);
+
+        Assertions.assertEquals(2, ellipse6.getPosition().getX());
+        Assertions.assertEquals(1.125, ellipse6.getPosition().getY());
+        Assertions.assertEquals(4.5625, ellipse6.getHeight());
+        Assertions.assertEquals(5.5625, ellipse6.getWidth());
+
+        Assertions.assertTrue(tileSet.getTiles().get(1).getColliders().get(11) instanceof TiledPoint);
+
+        TiledPoint point11 = (TiledPoint) tileSet.getTiles().get(1).getColliders().get(11);
+
+        Assertions.assertEquals(3.66512, point11.getPosition().getX(), 0.01);
+        Assertions.assertEquals(8.37742, point11.getPosition().getY(), 0.01);
+
+        Assertions.assertTrue(tileSet.getTiles().get(1).getColliders().get(9) instanceof TiledPolygon);
+
+        TiledPolygon polygon9 = (TiledPolygon) tileSet.getTiles().get(1).getColliders().get(9);
+
+        Assertions.assertEquals(9.92275, polygon9.getPosition().getX(), 0.01);
+        Assertions.assertEquals(0.4375, polygon9.getPosition().getY(), 0.01);
+        Assertions.assertEquals(5, polygon9.getVertices().size());
+        Assertions.assertEquals(0, polygon9.getVertices().get(0).getX(), 0.01);
+        Assertions.assertEquals(0, polygon9.getVertices().get(0).getY(), 0.01);
+        Assertions.assertEquals(-4.29775, polygon9.getVertices().get(1).getX(), 0.01);
+        Assertions.assertEquals(4.03208, polygon9.getVertices().get(1).getY(), 0.01);
+        Assertions.assertEquals(-2.38764, polygon9.getVertices().get(2).getX(), 0.01);
+        Assertions.assertEquals(11.1007, polygon9.getVertices().get(2).getY(), 0.01);
+        Assertions.assertEquals(1.81461, polygon9.getVertices().get(3).getX(), 0.01);
+        Assertions.assertEquals(11.25, polygon9.getVertices().get(3).getY(), 0.01);
+        Assertions.assertEquals(4.20225, polygon9.getVertices().get(4).getX(), 0.01);
+        Assertions.assertEquals(3.78319, polygon9.getVertices().get(4).getY(), 0.01);
+
     }
 
     @Test
