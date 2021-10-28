@@ -4,7 +4,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.pixel.math.MathHelper;
-import org.pixel.tiled.content.*;
+import org.pixel.tiled.content.TileMap;
+import org.pixel.tiled.content.TiledObject;
+import org.pixel.tiled.content.TiledObjectGroup;
+import org.pixel.tiled.content.TiledTileObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -22,7 +25,7 @@ class ObjectGroupCollectorTest {
     void process() throws ParserConfigurationException, IOException, SAXException {
         ObjectGroupCollector processor = new ObjectGroupCollector();
         TileMap tileMap = Mockito.mock(TileMap.class);
-        
+
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
@@ -46,8 +49,8 @@ class ObjectGroupCollectorTest {
         Assertions.assertEquals(1, ((TiledTileObject) group.getObjects().get(1)).getgID());
         Assertions.assertEquals(518.917, group.getObjects().get(1).getPosition().getX(), 0.001);
         Assertions.assertEquals(272.167, group.getObjects().get(1).getPosition().getY(), 0.001);
-        Assertions.assertEquals(40.3333, group.getObjects().get(1).getWidth(), 0.001);
-        Assertions.assertEquals(26, group.getObjects().get(1).getHeight());
+        Assertions.assertEquals(40.3333, ((TiledTileObject) group.getObjects().get(1)).getWidth(), 0.001);
+        Assertions.assertEquals(26, ((TiledTileObject) group.getObjects().get(1)).getHeight());
         Assertions.assertEquals(MathHelper.degToRad(2), group.getObjects().get(1).getRotation());
 
         Assertions.assertEquals(0, group.getObjects().get(10).getRotation());

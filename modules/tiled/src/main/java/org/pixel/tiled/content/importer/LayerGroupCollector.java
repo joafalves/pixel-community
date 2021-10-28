@@ -8,7 +8,7 @@ import org.w3c.dom.Element;
 public class LayerGroupCollector extends LayerCollector {
     LayerProcessor processor;
 
-    public LayerGroupCollector () {
+    public LayerGroupCollector() {
         this.processor = new LayerProcessor();
     }
 

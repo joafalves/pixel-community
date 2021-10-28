@@ -5,6 +5,11 @@
   <property name="2" type="bool" value="true"/>
  </properties>
  <image source="Tileset.png" width="32" height="32"/>
+ <tile id="0">
+  <properties>
+   <property name="1" value="property1"/>
+  </properties>
+ </tile>
  <tile id="1" type="Tree" probability="1.001">
   <objectgroup draworder="index" id="2">
    <object id="1" x="6.9375" y="6.0625" width="7.75" height="8.75"/>
@@ -16,6 +21,9 @@
     <polygon points="0,0 -4.29775,4.03208 -2.38764,11.1007 1.81461,11.25 4.20225,3.78319"/>
    </object>
    <object id="10" x="2" y="0" width="13" height="15"/>
+   <object id="11" x="3.66512" y="8.37742">
+    <point/>
+   </object>
   </objectgroup>
  </tile>
  <wangsets>

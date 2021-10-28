@@ -1,7 +1,10 @@
 package org.pixel.tiled.content.importer;
 
 import org.pixel.commons.Pair;
-import org.pixel.tiled.content.*;
+import org.pixel.tiled.content.Layer;
+import org.pixel.tiled.content.TileMap;
+import org.pixel.tiled.content.TiledObject;
+import org.pixel.tiled.content.TiledObjectGroup;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 

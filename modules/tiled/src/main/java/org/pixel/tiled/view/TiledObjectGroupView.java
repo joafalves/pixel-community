@@ -4,7 +4,10 @@ import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
-import org.pixel.tiled.content.*;
+import org.pixel.tiled.content.TileSet;
+import org.pixel.tiled.content.TiledObject;
+import org.pixel.tiled.content.TiledObjectGroup;
+import org.pixel.tiled.content.TiledTileObject;
 
 import java.util.List;
 import java.util.ListIterator;
@@ -36,8 +39,8 @@ public class TiledObjectGroupView implements TiledView<TiledObjectGroup> {
 
                 spriteBatch.draw(
                         tileSet.getTexture(), position, source, Color.WHITE, Vector2.ZERO_ONE,
-                        tile.getWidth() / tileSet.getTileWidth(),
-                        tile.getHeight() / tileSet.getTileHeight(),
+                        (float) tile.getWidth() / tileSet.getTileWidth(),
+                        (float) tile.getHeight() / tileSet.getTileHeight(),
                         -(tile.getRotation())
                 );
 

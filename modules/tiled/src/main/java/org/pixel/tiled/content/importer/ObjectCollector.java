@@ -3,10 +3,14 @@ package org.pixel.tiled.content.importer;
 import org.pixel.commons.Pair;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
-import org.pixel.tiled.content.TiledCustomProperties;
-import org.pixel.tiled.content.TiledObject;
-import org.pixel.tiled.content.TiledTileObject;
+import org.pixel.tiled.content.*;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 public class ObjectCollector {
     public Pair<Integer, TiledObject> collect(Element objectElement) {
@@ -17,15 +21,66 @@ public class ObjectCollector {
 
         long gID;
 
+        double width, height;
+
         try {
+            width = Float.parseFloat(objectElement.getAttribute("width"));
+        } catch (NumberFormatException e) {
+            width = 0;
+        }
+
+        try {
+            height = Float.parseFloat(objectElement.getAttribute("height"));
+        } catch (NumberFormatException e) {
+            height = 0;
+        }
+
+        NodeList list;
+
+        if(!Objects.equals(objectElement.getAttribute("gid"), "")) {
             gID = Long.parseLong(objectElement.getAttribute("gid"));
 
             TiledTileObject tile = new TiledTileObject();
 
             tile.setgID(gID);
+
+            tile.setWidth(width);
+            tile.setHeight(height);
+
             object = tile;
-        } catch (NumberFormatException e) {
-            object = new TiledObject();
+        } else if (objectElement.getElementsByTagName("ellipse").getLength() > 0) {
+            TiledEllipse ellipse = new TiledEllipse();
+
+            ellipse.setHeight(height);
+            ellipse.setWidth(width);
+
+            object = ellipse;
+        } else if (objectElement.getElementsByTagName("point").getLength() > 0) {
+            object = new TiledPoint();
+        } else if ((list = objectElement.getElementsByTagName("polygon")).getLength() > 0) {
+            Element polygonElement = (Element) list.item(0);
+
+            List<String> points = Arrays.asList(polygonElement.getAttribute("points").trim().split(" "));
+            List<Vector2> vertices = new ArrayList<>();
+
+            points.forEach(s -> {
+                List<String> values = Arrays.asList(s.split(","));
+
+                vertices.add(new Vector2(Float.parseFloat(values.get(0)), Float.parseFloat(values.get(1))));
+            });
+
+            TiledPolygon polygon = new TiledPolygon();
+
+            polygon.setVertices(vertices);
+
+            object = polygon;
+        } else {
+            TiledRectangle rectangle = new TiledRectangle();
+
+            rectangle.setHeight(height);
+            rectangle.setWidth(width);
+
+            object = rectangle;
         }
 
         try {
@@ -49,26 +104,8 @@ public class ObjectCollector {
         }
         object.setPosition(new Vector2(x, y));
 
-        float width, height;
-
-        try {
-            width = Float.parseFloat(objectElement.getAttribute("width"));
-        } catch (NumberFormatException e) {
-            width = 0;
-        }
-
-        try {
-            height = Float.parseFloat(objectElement.getAttribute("height"));
-        } catch (NumberFormatException e) {
-            height = 0;
-        }
-
-        object.setWidth(width);
-        object.setHeight(height);
         object.setCustomProperties(customProperties);
 
-        Pair<Integer, TiledObject> pair = new Pair<>(Integer.parseInt(objectElement.getAttribute("id")), object);
-
-        return pair;
+        return new Pair<>(Integer.parseInt(objectElement.getAttribute("id")), object);
     }
 }

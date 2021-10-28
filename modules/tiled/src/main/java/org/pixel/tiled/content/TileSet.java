@@ -13,9 +13,9 @@ public class TileSet implements Disposable {
     private final int tileCount;
     private final int columns;
     private final Texture texture;
+    private final List<TiledTile> tiles;
     private int firstGId;
     private TiledCustomProperties customProperties;
-    private final List<TiledTile> tiles;
 
     public TileSet(int tileWidth, int tileHeight, int tileCount, int columns, Texture texture) {
         this.tileCount = tileCount;
@@ -25,7 +25,7 @@ public class TileSet implements Disposable {
         this.texture = texture;
         this.tiles = new ArrayList<>(tileCount);
 
-        for(int i = 0; i < tileCount; i++) {
+        for (int i = 0; i < tileCount; i++) {
             tiles.add(null);
         }
     }
