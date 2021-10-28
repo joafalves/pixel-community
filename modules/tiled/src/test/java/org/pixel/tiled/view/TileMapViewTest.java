@@ -41,7 +41,7 @@ public class TileMapViewTest {
         tileMap.setLayers(layerList);
 
         TileMapView tileMapView = new TileMapView(layerTiledView, objectGroupTiledView);
-        tileMapView.draw(spriteBatch, tileMap);
+        tileMapView.draw(spriteBatch, tileMap, 10);
 
         InOrder inOrder = Mockito.inOrder(layer1, layer2, group, group2);
 
@@ -49,6 +49,12 @@ public class TileMapViewTest {
         inOrder.verify(group2).draw(spriteBatch, tileMapView);
         inOrder.verify(layer2).draw(spriteBatch, tileMapView);
         inOrder.verify(group).draw(spriteBatch, tileMapView);
+
+        Assertions.assertEquals(10L, tileMapView.frame);
+
+        tileMapView.draw(spriteBatch, tileMap, 3);
+
+        Assertions.assertEquals(13L, tileMapView.frame);
     }
 
     @Test
@@ -63,7 +69,7 @@ public class TileMapViewTest {
 
         mapView.draw(spriteBatch, tileLayer);
 
-        Mockito.verify(layerTiledView).draw(spriteBatch, tileLayer);
+        Mockito.verify(layerTiledView).draw(spriteBatch, tileLayer, 0);
     }
 
     @Test
@@ -75,9 +81,8 @@ public class TileMapViewTest {
         SpriteBatch spriteBatch = Mockito.mock(SpriteBatch.class);
         TiledObjectGroup group = Mockito.mock(TiledObjectGroup.class);
 
-
         mapView.draw(spriteBatch, group);
 
-        Mockito.verify(objectGroupTiledView).draw(spriteBatch, group);
+        Mockito.verify(objectGroupTiledView).draw(spriteBatch, group, 0);
     }
 }

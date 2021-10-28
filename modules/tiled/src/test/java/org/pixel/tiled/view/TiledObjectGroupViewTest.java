@@ -81,7 +81,7 @@ class TiledObjectGroupViewTest {
                 Mockito.any(Color.class), Mockito.any(Vector2.class),
                 Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat());
 
-        groupView.draw(spriteBatch, group);
+        groupView.draw(spriteBatch, group, 0);
 
         InOrder inOrder = Mockito.inOrder(spriteBatch);
 

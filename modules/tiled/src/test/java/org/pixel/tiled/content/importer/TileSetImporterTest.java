@@ -91,7 +91,47 @@ public class TileSetImporterTest {
         Assertions.assertEquals(11.25, polygon9.getVertices().get(3).getY(), 0.01);
         Assertions.assertEquals(4.20225, polygon9.getVertices().get(4).getX(), 0.01);
         Assertions.assertEquals(3.78319, polygon9.getVertices().get(4).getY(), 0.01);
+    }
 
+    @Test
+    public void processCase2Isolated() throws IOException {
+        TileSetImporter importer = new TileSetImporter();
+        String tsxFileName = "AnimTileset.tsx";
+        ImportContext ctx = Mockito.mock(ImportContext.class);
+        ContentManager contentManager = Mockito.mock(ContentManager.class);
+        Texture texture = Mockito.mock(Texture.class);
+
+        Mockito.when(contentManager.load(Mockito.anyString(), Mockito.eq(Texture.class), Mockito.any())).thenReturn(texture);
+
+        InputStream in = this.getClass().getClassLoader().getResourceAsStream(tsxFileName);
+
+        assert in != null;
+        byte[] bytes = in.readAllBytes();
+        ByteBuffer buffer = createByteBuffer(bytes.length);
+        buffer.put(bytes).flip();
+
+        Mockito.doReturn(buffer).when(ctx).getBuffer();
+        Mockito.when(ctx.getContentManager()).thenReturn(contentManager);
+
+        TileSet tileSet = importer.process(ctx);
+
+        Assertions.assertEquals(16, tileSet.getTileHeight());
+        Assertions.assertEquals(16, tileSet.getTileWidth());
+        Assertions.assertEquals(6, tileSet.getTileCount());
+        Assertions.assertEquals(2, tileSet.getColumns());
+
+        Assertions.assertNotNull(tileSet.getTiles().get(4).getAnimation());
+        Assertions.assertEquals(500, tileSet.getTiles().get(4).getAnimation().getFrameList().get(0).getDuration());
+        Assertions.assertEquals(4, tileSet.getTiles().get(4).getAnimation().getFrameList().get(0).getLocalId());
+
+        Assertions.assertEquals(500, tileSet.getTiles().get(4).getAnimation().getFrameList().get(1).getDuration());
+        Assertions.assertEquals(3, tileSet.getTiles().get(4).getAnimation().getFrameList().get(1).getLocalId());
+
+        Assertions.assertEquals(500, tileSet.getTiles().get(4).getAnimation().getFrameList().get(2).getDuration());
+        Assertions.assertEquals(5, tileSet.getTiles().get(4).getAnimation().getFrameList().get(2).getLocalId());
+
+        Assertions.assertEquals(500, tileSet.getTiles().get(4).getAnimation().getFrameList().get(3).getDuration());
+        Assertions.assertEquals(3, tileSet.getTiles().get(4).getAnimation().getFrameList().get(3).getLocalId());
     }
 
     @Test

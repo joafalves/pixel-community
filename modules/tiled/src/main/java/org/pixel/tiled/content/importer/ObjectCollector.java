@@ -37,7 +37,7 @@ public class ObjectCollector {
 
         NodeList list;
 
-        if(!Objects.equals(objectElement.getAttribute("gid"), "")) {
+        if (!Objects.equals(objectElement.getAttribute("gid"), "")) {
             gID = Long.parseLong(objectElement.getAttribute("gid"));
 
             TiledTileObject tile = new TiledTileObject();
