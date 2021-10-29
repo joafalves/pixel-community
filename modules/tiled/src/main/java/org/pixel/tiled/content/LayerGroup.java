@@ -1,6 +1,5 @@
 package org.pixel.tiled.content;
 
-import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.tiled.view.TileMapView;
 
 import java.util.ArrayList;
@@ -33,9 +32,9 @@ public class LayerGroup extends Layer {
     }
 
     @Override
-    public void draw(SpriteBatch spriteBatch, TileMapView view) {
+    public void draw(TileMapView view) {
         for (Layer layer : layers) {
-            layer.draw(spriteBatch, view);
+            layer.draw(view);
         }
     }
 }

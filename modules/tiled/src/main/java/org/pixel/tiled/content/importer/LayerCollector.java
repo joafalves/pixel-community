@@ -1,6 +1,5 @@
 package org.pixel.tiled.content.importer;
 
-import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.tiled.content.Layer;
 import org.pixel.tiled.content.TileMap;
 import org.pixel.tiled.content.TiledCustomProperties;
@@ -14,7 +13,7 @@ public abstract class LayerCollector {
         CustomPropertiesCollector collector = new CustomPropertiesCollector();
         Layer layer = new Layer(tileMap) {
             @Override
-            public void draw(SpriteBatch spriteBatch, TileMapView view) {
+            public void draw(TileMapView view) {
 
             }
         };

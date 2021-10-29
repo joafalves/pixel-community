@@ -1,6 +1,5 @@
 package org.pixel.tiled.content;
 
-import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.tiled.view.TileMapView;
 
 public abstract class Layer {
@@ -48,5 +47,5 @@ public abstract class Layer {
         this.offsetY = offsetY;
     }
 
-    public abstract void draw(SpriteBatch spriteBatch, TileMapView view);
+    public abstract void draw(TileMapView view);
 }

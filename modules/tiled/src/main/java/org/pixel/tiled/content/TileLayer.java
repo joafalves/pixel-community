@@ -1,6 +1,5 @@
 package org.pixel.tiled.content;
 
-import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.tiled.view.TileMapView;
 
 public class TileLayer extends Layer {
@@ -42,7 +41,7 @@ public class TileLayer extends Layer {
     }
 
     @Override
-    public void draw(SpriteBatch spriteBatch, TileMapView view) {
-        view.draw(spriteBatch, this);
+    public void draw(TileMapView view) {
+        view.draw(this);
     }
 }

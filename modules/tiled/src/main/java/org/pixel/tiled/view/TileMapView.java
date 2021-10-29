@@ -11,9 +11,9 @@ public class TileMapView implements TiledView<TileMap> {
     TiledView<TileLayer> layerView;
     TiledView<TiledObjectGroup> groupView;
 
-    public TileMapView() {
-        layerView = new TileLayerView();
-        groupView = new TiledObjectGroupView();
+    public TileMapView(SpriteBatch spriteBatch) {
+        layerView = new TileLayerView(spriteBatch);
+        groupView = new TiledObjectGroupView(spriteBatch);
 
         frame = 0;
     }
@@ -25,20 +25,20 @@ public class TileMapView implements TiledView<TileMap> {
         frame = 0;
     }
 
-    public void draw(SpriteBatch spriteBatch, TileLayer layer) {
-        layerView.draw(spriteBatch, layer, frame);
+    public void draw(TileLayer layer) {
+        layerView.draw(layer, frame);
     }
 
-    public void draw(SpriteBatch spriteBatch, TiledObjectGroup layer) {
-        groupView.draw(spriteBatch, layer, frame);
+    public void draw(TiledObjectGroup layer) {
+        groupView.draw(layer, frame);
     }
 
     @Override
-    public void draw(SpriteBatch spriteBatch, TileMap tileMap, long frame) {
+    public void draw(TileMap tileMap, long frame) {
         this.frame += frame;
 
         for (Layer layer : tileMap.getLayers()) {
-            layer.draw(spriteBatch, this);
+            layer.draw(this);
         }
     }
 }

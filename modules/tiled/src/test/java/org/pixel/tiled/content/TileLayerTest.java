@@ -13,8 +13,8 @@ class TileLayerTest {
         SpriteBatch spriteBatch = Mockito.mock(SpriteBatch.class);
         TileMapView view = Mockito.mock(TileMapView.class);
 
-        tileLayer.draw(spriteBatch, view);
+        tileLayer.draw(view);
 
-        Mockito.verify(view).draw(Mockito.same(spriteBatch), Mockito.same(tileLayer));
+        Mockito.verify(view).draw(Mockito.same(tileLayer));
     }
 }

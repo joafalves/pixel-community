@@ -16,7 +16,8 @@ import java.util.List;
 public class TileMapViewTest {
     @Test
     public void emptyConstructor() {
-        TileMapView tileMapView = new TileMapView();
+        SpriteBatch spriteBatch = Mockito.mock(SpriteBatch.class);
+        TileMapView tileMapView = new TileMapView(spriteBatch);
 
         Assertions.assertEquals(TileLayerView.class, tileMapView.layerView.getClass());
     }
@@ -41,18 +42,18 @@ public class TileMapViewTest {
         tileMap.setLayers(layerList);
 
         TileMapView tileMapView = new TileMapView(layerTiledView, objectGroupTiledView);
-        tileMapView.draw(spriteBatch, tileMap, 10);
+        tileMapView.draw(tileMap, 10);
 
         InOrder inOrder = Mockito.inOrder(layer1, layer2, group, group2);
 
-        inOrder.verify(layer1).draw(spriteBatch, tileMapView);
-        inOrder.verify(group2).draw(spriteBatch, tileMapView);
-        inOrder.verify(layer2).draw(spriteBatch, tileMapView);
-        inOrder.verify(group).draw(spriteBatch, tileMapView);
+        inOrder.verify(layer1).draw(tileMapView);
+        inOrder.verify(group2).draw(tileMapView);
+        inOrder.verify(layer2).draw(tileMapView);
+        inOrder.verify(group).draw(tileMapView);
 
         Assertions.assertEquals(10L, tileMapView.frame);
 
-        tileMapView.draw(spriteBatch, tileMap, 3);
+        tileMapView.draw(tileMap, 3);
 
         Assertions.assertEquals(13L, tileMapView.frame);
     }
@@ -67,9 +68,9 @@ public class TileMapViewTest {
         TileLayer tileLayer = Mockito.mock(TileLayer.class);
 
 
-        mapView.draw(spriteBatch, tileLayer);
+        mapView.draw(tileLayer);
 
-        Mockito.verify(layerTiledView).draw(spriteBatch, tileLayer, 0);
+        Mockito.verify(layerTiledView).draw(tileLayer, 0);
     }
 
     @Test
@@ -81,8 +82,8 @@ public class TileMapViewTest {
         SpriteBatch spriteBatch = Mockito.mock(SpriteBatch.class);
         TiledObjectGroup group = Mockito.mock(TiledObjectGroup.class);
 
-        mapView.draw(spriteBatch, group);
+        mapView.draw(group);
 
-        Mockito.verify(objectGroupTiledView).draw(spriteBatch, group, 0);
+        Mockito.verify(objectGroupTiledView).draw(group, 0);
     }
 }
