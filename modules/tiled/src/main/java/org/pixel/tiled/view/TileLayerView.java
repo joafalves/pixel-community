@@ -5,7 +5,7 @@ import org.pixel.tiled.content.TileLayer;
 
 public class TileLayerView implements TiledView<TileLayer> {
     @Override
-    public void draw(SpriteBatch spriteBatch, TileLayer layer) {
-        layer.getTileMap().getDrawStrategy().draw(spriteBatch, layer);
+    public void draw(SpriteBatch spriteBatch, TileLayer layer, long frame) {
+        layer.getTileMap().getDrawStrategy().draw(spriteBatch, layer, frame);
     }
 }

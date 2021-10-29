@@ -74,12 +74,39 @@ public class TileSet implements Disposable {
         return texture;
     }
 
-    public Rectangle sourceAt(long gID, boolean horizontalFlip, boolean verticalFlip) {
+    private long getIDFromAnim(long gID, long frame) {
+        TiledTile tile = tiles.get((int) gID);
+        if (tile != null) {
+            TiledAnimation animation = tile.getAnimation();
+
+            if (animation != null) {
+                long currentFrame = frame % animation.getTotalFrameCount();
+                currentFrame = Math.abs(currentFrame);
+                long frameSum = 0;
+
+                for (TiledFrame animFrame : animation.getFrameList()) {
+                    frameSum += animFrame.getDuration();
+
+                    if (frameSum > currentFrame) {
+                        gID = animFrame.getLocalId();
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        return gID;
+    }
+
+    public Rectangle sourceAt(long gID, boolean horizontalFlip, boolean verticalFlip, long frame) {
         gID = gID - firstGId;
 
         if (gID >= tileCount) {
             return new Rectangle(0, 0, 0, 0);
         }
+
+        gID = getIDFromAnim(gID, frame);
 
         float x = (gID % columns) * tileWidth;
         float y = (gID / columns) * tileHeight;

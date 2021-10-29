@@ -8,16 +8,15 @@ import org.pixel.content.ContentImporterInfo;
 import org.pixel.content.ImportContext;
 import org.pixel.content.Texture;
 import org.pixel.content.importer.settings.ContentImporterSettings;
-import org.pixel.tiled.content.TileSet;
-import org.pixel.tiled.content.TiledCustomProperties;
-import org.pixel.tiled.content.TiledObject;
-import org.pixel.tiled.content.TiledTile;
+import org.pixel.tiled.content.*;
 import org.pixel.tiled.utils.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 @ContentImporterInfo(type = TileSet.class, extension = ".tsx")
 public class TileSetImporter implements ContentImporter<TileSet> {
@@ -100,6 +99,31 @@ public class TileSetImporter implements ContentImporter<TileSet> {
 
                 tile.setColliders(map);
             }
+
+            NodeList animationList = tileElement.getElementsByTagName("animation");
+            TiledAnimation animation = null;
+
+            if (animationList.getLength() > 0) {
+                Element animationElement = (Element) animationList.item(0);
+                NodeList frameList = animationElement.getElementsByTagName("frame");
+                animation = new TiledAnimation();
+                List<TiledFrame> frames = new ArrayList<>();
+
+                for (int j = 0; j < frameList.getLength(); j++) {
+                    Element frameElement = (Element) frameList.item(j);
+
+                    TiledFrame frame = new TiledFrame();
+
+                    frame.setDuration(Integer.parseInt(frameElement.getAttribute("duration")));
+                    frame.setLocalId(Integer.parseInt(frameElement.getAttribute("tileid")));
+
+                    frames.add(frame);
+                }
+
+                animation.setFrameList(frames);
+            }
+
+            tile.setAnimation(animation);
 
             int index = Integer.parseInt(tileElement.getAttribute("id"));
             tile.setProperties(propertiesCollector.collect(tileElement));

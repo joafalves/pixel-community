@@ -5,10 +5,10 @@ import org.pixel.tiled.content.TileLayer;
 
 public class RightUpStrategy extends DrawStrategy {
     @Override
-    public void draw(SpriteBatch spriteBatch, TileLayer layer) {
+    public void draw(SpriteBatch spriteBatch, TileLayer layer, long frame) {
         for (int y = layer.getHeight() - 1; y >= 0; y--) {
             for (int x = 0; x < layer.getWidth(); x++) {
-                drawTile(spriteBatch, layer, x, y);
+                drawTile(spriteBatch, layer, x, y, frame);
             }
         }
     }

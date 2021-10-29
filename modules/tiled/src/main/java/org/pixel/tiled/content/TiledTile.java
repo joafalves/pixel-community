@@ -5,6 +5,15 @@ import java.util.HashMap;
 public class TiledTile {
     private TiledCustomProperties properties;
     private HashMap<Integer, TiledObject> colliders;
+    private TiledAnimation animation;
+
+    public TiledAnimation getAnimation() {
+        return animation;
+    }
+
+    public void setAnimation(TiledAnimation animation) {
+        this.animation = animation;
+    }
 
     public TiledCustomProperties getProperties() {
         return properties;
