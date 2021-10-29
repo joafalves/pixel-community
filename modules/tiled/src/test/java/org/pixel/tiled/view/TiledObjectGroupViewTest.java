@@ -19,8 +19,8 @@ import java.util.List;
 class TiledObjectGroupViewTest {
     @Test
     public void draw() {
-        TiledObjectGroupView groupView = new TiledObjectGroupView();
         SpriteBatch spriteBatch = Mockito.mock(SpriteBatch.class);
+        TiledObjectGroupView groupView = new TiledObjectGroupView(spriteBatch);
         TiledObjectGroup group = Mockito.mock(TiledObjectGroup.class);
         TiledTileObject object1 = Mockito.mock(TiledTileObject.class);
         TiledTileObject object2 = Mockito.mock(TiledTileObject.class);
@@ -57,11 +57,10 @@ class TiledObjectGroupViewTest {
         List<Vector2> positions = new ArrayList<>();
 
         Answer answer = invocation -> {
-            SpriteBatch spriteBatch1 = invocation.getArgument(0);
-            TiledObjectGroup group1 = invocation.getArgument(1);
-            TiledObjectGroupView groupView1 = invocation.getArgument(2);
+            TiledObjectGroup group1 = invocation.getArgument(0);
+            TiledObjectGroupView groupView1 = invocation.getArgument(1);
 
-            groupView1.draw(spriteBatch1, (TiledTileObject) invocation.getMock(), group1);
+            groupView1.draw((TiledTileObject) invocation.getMock(), group1);
 
             return invocation.getMock();
         };
@@ -74,14 +73,14 @@ class TiledObjectGroupViewTest {
             return invocation.getMock();
         };
 
-        Mockito.doAnswer(answer).when(object1).draw(Mockito.any(), Mockito.any(), Mockito.any());
-        Mockito.doAnswer(answer).when(object2).draw(Mockito.any(), Mockito.any(), Mockito.any());
+        Mockito.doAnswer(answer).when(object1).draw(Mockito.any(), Mockito.any());
+        Mockito.doAnswer(answer).when(object2).draw(Mockito.any(), Mockito.any());
         Mockito.doAnswer(getPosition).when(spriteBatch).draw(Mockito.any(Texture.class),
                 Mockito.any(Vector2.class), Mockito.any(Rectangle.class),
                 Mockito.any(Color.class), Mockito.any(Vector2.class),
                 Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat());
 
-        groupView.draw(spriteBatch, group, 0);
+        groupView.draw(group, 0);
 
         InOrder inOrder = Mockito.inOrder(spriteBatch);
 

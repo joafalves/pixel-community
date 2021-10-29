@@ -18,8 +18,13 @@ import static org.pixel.tiled.content.TiledConstants.VERTICAL_FLIP_FLAG;
 public class TiledObjectGroupView implements TiledView<TiledObjectGroup> {
     private static final Vector2 position = new Vector2();
     private long frame;
+    private final SpriteBatch spriteBatch;
 
-    public void draw(SpriteBatch spriteBatch, TiledTileObject tile, TiledObjectGroup group) {
+    public TiledObjectGroupView(SpriteBatch spriteBatch) {
+        this.spriteBatch = spriteBatch;
+    }
+
+    public void draw(TiledTileObject tile, TiledObjectGroup group) {
         List<TileSet> tileSets = group.getTileMap().getTileSets();
         long gID = tile.getgID();
         ListIterator<TileSet> itr = tileSets.listIterator(tileSets.size());
@@ -51,11 +56,11 @@ public class TiledObjectGroupView implements TiledView<TiledObjectGroup> {
     }
 
     @Override
-    public void draw(SpriteBatch spriteBatch, TiledObjectGroup element, long frame) {
+    public void draw(TiledObjectGroup element, long frame) {
         this.frame = frame;
 
         for (TiledObject object : element.getObjects().values()) {
-            object.draw(spriteBatch, element, this);
+            object.draw(element, this);
         }
     }
 }

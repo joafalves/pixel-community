@@ -13,7 +13,7 @@ class TiledObjectTest {
         SpriteBatch spriteBatch = Mockito.mock(SpriteBatch.class);
         TiledObjectGroupView view = Mockito.mock(TiledObjectGroupView.class);
 
-        tiledObject.draw(spriteBatch, group, view);
+        tiledObject.draw(group, view);
 
         Mockito.verifyNoInteractions(view);
     }
