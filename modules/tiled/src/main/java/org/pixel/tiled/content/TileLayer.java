@@ -1,7 +1,6 @@
 package org.pixel.tiled.content;
 
-import org.pixel.graphics.render.SpriteBatch;
-import org.pixel.tiled.view.TileMapView;
+import org.pixel.tiled.view.GenericTileMapView;
 
 public class TileLayer extends Layer {
     private final int width;
@@ -42,7 +41,7 @@ public class TileLayer extends Layer {
     }
 
     @Override
-    public void draw(SpriteBatch spriteBatch, TileMapView view) {
-        view.draw(spriteBatch, this);
+    public void draw(GenericTileMapView view) {
+        view.draw(this);
     }
 }

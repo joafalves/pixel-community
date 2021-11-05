@@ -1,8 +1,7 @@
 package org.pixel.tiled.content;
 
-import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Vector2;
-import org.pixel.tiled.view.TiledObjectGroupView;
+import org.pixel.tiled.view.GenericObjectLayerView;
 
 public class TiledObject {
     private Vector2 position;
@@ -33,7 +32,7 @@ public class TiledObject {
         this.position = position;
     }
 
-    public void draw(SpriteBatch spriteBatch, TiledObjectGroup group, TiledObjectGroupView view) {
+    public void draw(TiledObjectGroup group, GenericObjectLayerView view) {
 
     }
 }

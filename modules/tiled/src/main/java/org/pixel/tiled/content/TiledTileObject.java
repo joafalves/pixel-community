@@ -1,7 +1,6 @@
 package org.pixel.tiled.content;
 
-import org.pixel.graphics.render.SpriteBatch;
-import org.pixel.tiled.view.TiledObjectGroupView;
+import org.pixel.tiled.view.GenericObjectLayerView;
 
 public class TiledTileObject extends TiledObject {
     private long gID;
@@ -33,7 +32,7 @@ public class TiledTileObject extends TiledObject {
     }
 
     @Override
-    public void draw(SpriteBatch spriteBatch, TiledObjectGroup group, TiledObjectGroupView view) {
-        view.draw(spriteBatch, this, group);
+    public void draw(TiledObjectGroup group, GenericObjectLayerView view) {
+        view.draw(this, group);
     }
 }

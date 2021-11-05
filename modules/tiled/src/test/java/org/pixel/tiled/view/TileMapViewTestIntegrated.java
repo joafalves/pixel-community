@@ -69,8 +69,8 @@ public class TileMapViewTestIntegrated {
             ContentImporterSettings tileMapImporterSettings = new TileMapImporterSettings();
 
             tileMap = contentManager.load(tmxFileName, TileMap.class, tileMapImporterSettings);
-            tileMapView = new TileMapView();
             spriteBatch = new SpriteBatch();
+            tileMapView = new TileMapView(spriteBatch, gameCamera);
         }
 
         @Override
@@ -102,7 +102,7 @@ public class TileMapViewTestIntegrated {
         public void draw(DeltaTime delta) {
             spriteBatch.begin(gameCamera.getViewMatrix(), BlendMode.NORMAL_BLEND);
 
-            tileMapView.draw(spriteBatch, tileMap, delta.getElapsedMs());
+            tileMapView.draw(tileMap, delta.getElapsedMs());
 
             spriteBatch.end();
         }

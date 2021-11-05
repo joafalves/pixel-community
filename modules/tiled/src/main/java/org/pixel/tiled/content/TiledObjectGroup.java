@@ -1,7 +1,6 @@
 package org.pixel.tiled.content;
 
-import org.pixel.graphics.render.SpriteBatch;
-import org.pixel.tiled.view.TileMapView;
+import org.pixel.tiled.view.GenericTileMapView;
 
 import java.util.LinkedHashMap;
 
@@ -17,8 +16,8 @@ public class TiledObjectGroup extends Layer {
     }
 
     @Override
-    public void draw(SpriteBatch spriteBatch, TileMapView view) {
-        view.draw(spriteBatch, this);
+    public void draw(GenericTileMapView view) {
+        view.draw(this);
     }
 
     public LinkedHashMap<Integer, TiledObject> getObjects() {

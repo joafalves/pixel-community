@@ -13,8 +13,8 @@ import java.util.ListIterator;
 import static org.pixel.tiled.content.TiledConstants.*;
 
 public abstract class DrawStrategy {
-    private static final Transform transform = new Transform();
-    private static final Vector2 position = new Vector2();
+    private final Transform transform = new Transform();
+    private final Vector2 position = new Vector2();
 
     private void getTileTransform(long gID, TileSet tileSet, long frame) {
         boolean horizontalFlip = (gID & HORIZONTAL_FLIP_FLAG.getBits()) != 0;
