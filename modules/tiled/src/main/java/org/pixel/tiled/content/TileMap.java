@@ -7,6 +7,7 @@ package org.pixel.tiled.content;
 
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.tiled.view.DrawStrategy;
+import org.pixel.tiled.view.RightDownStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ public class TileMap implements Disposable {
     public TileMap() {
         tileSets = new ArrayList<>();
         layers = new ArrayList<>();
+        drawStrategy = new RightDownStrategy();
     }
 
     @Override

@@ -17,7 +17,14 @@ public class TileMapView implements GenericTileMapView {
     Boundary boundary;
 
     public TileMapView(SpriteBatch spriteBatch, Camera2D camera2D) {
-        this(new TileLayerView(spriteBatch), new TiledObjectGroupView(spriteBatch), camera2D);
+        this.boundary = new Boundary(0, 0, 0, 0);
+
+
+        this.layerView = new TileLayerView(spriteBatch, boundary);
+        this.groupView = new TiledObjectGroupView(spriteBatch, boundary);
+
+        frame = 0;
+        this.camera2D = camera2D;
     }
 
     public TileMapView(TiledView<TileLayer> layerView, TiledView<TiledObjectGroup> groupView, Camera2D camera2D) {
@@ -26,7 +33,7 @@ public class TileMapView implements GenericTileMapView {
 
         frame = 0;
         this.camera2D = camera2D;
-        boundary = new Boundary(0, 0, 0, 0);
+        this.boundary = new Boundary(0, 0, 0, 0);
     }
 
     public void draw(TileLayer layer) {
