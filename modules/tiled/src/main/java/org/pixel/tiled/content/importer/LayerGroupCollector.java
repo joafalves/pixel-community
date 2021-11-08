@@ -1,5 +1,6 @@
 package org.pixel.tiled.content.importer;
 
+import org.pixel.content.ImportContext;
 import org.pixel.tiled.content.Layer;
 import org.pixel.tiled.content.LayerGroup;
 import org.pixel.tiled.content.TileMap;
@@ -17,10 +18,10 @@ public class LayerGroupCollector extends LayerCollector {
     }
 
     @Override
-    Layer process(TileMap tileMap, Element tileLayerElement) {
+    Layer collect(TileMap tileMap, Element tileLayerElement, ImportContext ctx) {
         LayerGroup group = new LayerGroup(collectLayerData(tileMap, tileLayerElement));
 
-        group.setLayers(processor.processChildren(tileMap, tileLayerElement));
+        group.setLayers(processor.processChildren(tileMap, tileLayerElement, ctx));
 
         return group;
     }

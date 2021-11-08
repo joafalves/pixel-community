@@ -1,5 +1,6 @@
 package org.pixel.tiled.content.importer;
 
+import org.pixel.content.ImportContext;
 import org.pixel.tiled.content.Layer;
 import org.pixel.tiled.content.TileLayer;
 import org.pixel.tiled.content.TileMap;
@@ -11,7 +12,7 @@ import java.util.List;
 
 public class TileLayerCollector extends LayerCollector {
     @Override
-    public Layer process(TileMap tileMap, Element tileLayerElement) {
+    public Layer collect(TileMap tileMap, Element tileLayerElement, ImportContext ctx) {
         int width = Integer.parseInt(tileLayerElement.getAttribute("width"));
         int height = Integer.parseInt(tileLayerElement.getAttribute("height"));
 

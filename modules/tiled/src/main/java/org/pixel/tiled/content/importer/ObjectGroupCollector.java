@@ -1,6 +1,7 @@
 package org.pixel.tiled.content.importer;
 
 import org.pixel.commons.Pair;
+import org.pixel.content.ImportContext;
 import org.pixel.tiled.content.Layer;
 import org.pixel.tiled.content.TileMap;
 import org.pixel.tiled.content.TiledObject;
@@ -23,7 +24,7 @@ public class ObjectGroupCollector extends LayerCollector {
         this.objectCollector = objectCollector;
     }
 
-    public Layer process(TileMap tileMap, Element objectGroupElement) {
+    public Layer collect(TileMap tileMap, Element objectGroupElement, ImportContext ctx) {
         ObjectOrderStrategyFactory factory = new ObjectOrderStrategyFactory();
 
         List<Pair<Integer, TiledObject>> objects = new ArrayList<>();

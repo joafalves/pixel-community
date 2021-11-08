@@ -3,6 +3,7 @@ package org.pixel.tiled.content.importer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.pixel.content.ImportContext;
 import org.pixel.tiled.content.LayerGroup;
 import org.pixel.tiled.content.TileLayer;
 import org.pixel.tiled.content.TileMap;
@@ -34,7 +35,7 @@ class LayerGroupCollectorTest {
 
         NodeList list = document.getElementsByTagName("group");
 
-        LayerGroup group = (LayerGroup) processor.process(tileMap, (Element) list.item(0));
+        LayerGroup group = (LayerGroup) processor.collect(tileMap, (Element) list.item(0), Mockito.mock(ImportContext.class));
 
         Assertions.assertEquals(5, group.getOffsetX());
         Assertions.assertEquals(3, group.getOffsetY());

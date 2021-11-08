@@ -22,7 +22,7 @@ public class LayerProcessor implements TileMapProcessor {
         this.factory = factory;
     }
 
-    public List<Layer> processChildren(TileMap tileMap, Element element) {
+    public List<Layer> processChildren(TileMap tileMap, Element element, ImportContext ctx) {
         NodeList mapChildren = element.getChildNodes();
         List<Layer> layers = new ArrayList<>();
 
@@ -34,7 +34,7 @@ public class LayerProcessor implements TileMapProcessor {
 
                 LayerCollector collector = factory.getLayerCollector(child.getNodeName());
 
-                Layer layer = collector.process(tileMap, childElement);
+                Layer layer = collector.collect(tileMap, childElement, ctx);
 
                 if (layer != null) {
                     layers.add(layer);
@@ -49,6 +49,6 @@ public class LayerProcessor implements TileMapProcessor {
     public void process(TileMap tileMap, Document document, ImportContext ctx) {
         Element mapElement = document.getDocumentElement();
 
-        tileMap.setLayers(processChildren(tileMap, mapElement));
+        tileMap.setLayers(processChildren(tileMap, mapElement, ctx));
     }
 }

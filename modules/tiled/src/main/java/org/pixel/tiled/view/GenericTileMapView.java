@@ -2,6 +2,7 @@ package org.pixel.tiled.view;
 
 import org.pixel.tiled.content.TileLayer;
 import org.pixel.tiled.content.TileMap;
+import org.pixel.tiled.content.TiledImageLayer;
 import org.pixel.tiled.content.TiledObjectGroup;
 
 public interface GenericTileMapView extends TiledView<TileMap> {
@@ -10,6 +11,10 @@ public interface GenericTileMapView extends TiledView<TileMap> {
     }
 
     default void draw(TiledObjectGroup layer) {
+
+    }
+
+    default void draw(TiledImageLayer layer) {
 
     }
 }

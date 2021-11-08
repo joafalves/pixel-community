@@ -3,6 +3,7 @@ package org.pixel.tiled.content.importer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.pixel.content.ImportContext;
 import org.pixel.math.MathHelper;
 import org.pixel.tiled.content.TileMap;
 import org.pixel.tiled.content.TiledObject;
@@ -36,7 +37,7 @@ class ObjectGroupCollectorTest {
 
         NodeList list = document.getElementsByTagName("objectgroup");
 
-        TiledObjectGroup group = (TiledObjectGroup) processor.process(tileMap, (Element) list.item(0));
+        TiledObjectGroup group = (TiledObjectGroup) processor.collect(tileMap, (Element) list.item(0), Mockito.mock(ImportContext.class));
 
         Assertions.assertEquals("1", group.getCustomProperties().get("1"));
         Assertions.assertEquals(7.08333, group.getOffsetX(), 0.001);
@@ -75,7 +76,7 @@ class ObjectGroupCollectorTest {
 
         NodeList list = document.getElementsByTagName("objectgroup");
 
-        TiledObjectGroup group = (TiledObjectGroup) processor.process(tileMap, (Element) list.item(0));
+        TiledObjectGroup group = (TiledObjectGroup) processor.collect(tileMap, (Element) list.item(0), Mockito.mock(ImportContext.class));
 
         Assertions.assertEquals(0, group.getOffsetX(), 0.001);
         Assertions.assertEquals(0, group.getOffsetY(), 0.001);
@@ -104,7 +105,7 @@ class ObjectGroupCollectorTest {
 
         NodeList list = document.getElementsByTagName("objectgroup");
 
-        TiledObjectGroup group = (TiledObjectGroup) processor.process(tileMap, (Element) list.item(0));
+        TiledObjectGroup group = (TiledObjectGroup) processor.collect(tileMap, (Element) list.item(0), Mockito.mock(ImportContext.class));
 
         Assertions.assertEquals(0, group.getOffsetX(), 0.001);
         Assertions.assertEquals(0, group.getOffsetY(), 0.001);
