@@ -38,7 +38,7 @@ public class TileMapViewTest {
         TiledView<TileLayer> layerTiledView = (TiledView<TileLayer>) Mockito.mock(TiledView.class);
         TiledView<TiledObjectGroup> objectGroupTiledView = (TiledView<TiledObjectGroup>) Mockito.mock(TiledView.class);
 
-        Mockito.when(camera2D.screenToVirtualCoordinates(Mockito.anyFloat(), Mockito.anyFloat())).thenReturn(new Vector2(0,0));
+        Mockito.when(camera2D.screenToVirtualCoordinates(Mockito.anyFloat(), Mockito.anyFloat())).thenReturn(new Vector2(0, 0));
 
         layerList.add(layer1);
         layerList.add(group2);

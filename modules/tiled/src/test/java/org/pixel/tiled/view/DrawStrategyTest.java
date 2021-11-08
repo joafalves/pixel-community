@@ -36,8 +36,8 @@ class DrawStrategyTest {
 
         inOrder.verify(rightDownStrategy).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(0), Mockito.eq(0), Mockito.eq(0L));
         inOrder.verify(rightDownStrategy).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(1), Mockito.eq(0), Mockito.eq(0L));
-        inOrder.verify(rightDownStrategy).drawTile(Mockito.same(spriteBatch),Mockito.same(boundary), Mockito.same(layer), Mockito.eq(0), Mockito.eq(1), Mockito.eq(0L));
-        inOrder.verify(rightDownStrategy).drawTile(Mockito.same(spriteBatch),Mockito.same(boundary), Mockito.same(layer), Mockito.eq(1), Mockito.eq(1), Mockito.eq(0L));
+        inOrder.verify(rightDownStrategy).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(0), Mockito.eq(1), Mockito.eq(0L));
+        inOrder.verify(rightDownStrategy).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(1), Mockito.eq(1), Mockito.eq(0L));
         inOrder.verifyNoMoreInteractions();
     }
 
@@ -50,11 +50,11 @@ class DrawStrategyTest {
 
         strategy.draw(spriteBatch, boundary, layer, 0);
 
-        inOrder.verify(strategy, Mockito.times(0)).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary),Mockito.same(layer), Mockito.eq(3), Mockito.eq(0), Mockito.eq(0L));
-        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch),Mockito.same(boundary), Mockito.same(layer), Mockito.eq(1), Mockito.eq(0), Mockito.eq(0L));
-        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch),Mockito.same(boundary), Mockito.same(layer), Mockito.eq(0), Mockito.eq(0), Mockito.eq(0L));
-        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch),Mockito.same(boundary), Mockito.same(layer), Mockito.eq(1), Mockito.eq(1), Mockito.eq(0L));
-        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch),Mockito.same(boundary), Mockito.same(layer), Mockito.eq(0), Mockito.eq(1), Mockito.eq(0L));
+        inOrder.verify(strategy, Mockito.times(0)).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(3), Mockito.eq(0), Mockito.eq(0L));
+        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(1), Mockito.eq(0), Mockito.eq(0L));
+        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(0), Mockito.eq(0), Mockito.eq(0L));
+        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(1), Mockito.eq(1), Mockito.eq(0L));
+        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(0), Mockito.eq(1), Mockito.eq(0L));
         inOrder.verifyNoMoreInteractions();
     }
 
@@ -67,30 +67,30 @@ class DrawStrategyTest {
 
         strategy.draw(spriteBatch, boundary, layer, 0);
 
-        inOrder.verify(strategy, Mockito.times(0)).drawTile(Mockito.same(spriteBatch),Mockito.same(boundary), Mockito.same(layer), Mockito.eq(3), Mockito.eq(3), Mockito.eq(0L));
-        inOrder.verify(strategy, Mockito.times(0)).drawTile(Mockito.same(spriteBatch),Mockito.same(boundary), Mockito.same(layer), Mockito.eq(3), Mockito.eq(0), Mockito.eq(0L));
-        inOrder.verify(strategy, Mockito.times(0)).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary),Mockito.same(layer), Mockito.eq(0), Mockito.eq(3), Mockito.eq(0L));
-        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch),Mockito.same(boundary), Mockito.same(layer), Mockito.eq(1), Mockito.eq(1), Mockito.eq(0L));
-        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch),Mockito.same(boundary), Mockito.same(layer), Mockito.eq(0), Mockito.eq(1), Mockito.eq(0L));
-        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary),Mockito.same(layer), Mockito.eq(1), Mockito.eq(0), Mockito.eq(0L));
-        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch),Mockito.same(boundary), Mockito.same(layer), Mockito.eq(0), Mockito.eq(0), Mockito.eq(0L));
+        inOrder.verify(strategy, Mockito.times(0)).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(3), Mockito.eq(3), Mockito.eq(0L));
+        inOrder.verify(strategy, Mockito.times(0)).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(3), Mockito.eq(0), Mockito.eq(0L));
+        inOrder.verify(strategy, Mockito.times(0)).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(0), Mockito.eq(3), Mockito.eq(0L));
+        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(1), Mockito.eq(1), Mockito.eq(0L));
+        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(0), Mockito.eq(1), Mockito.eq(0L));
+        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(1), Mockito.eq(0), Mockito.eq(0L));
+        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(0), Mockito.eq(0), Mockito.eq(0L));
         inOrder.verifyNoMoreInteractions();
     }
 
     @Test
     void rightUpStrategy() {
         RightUpStrategy strategy = Mockito.spy(new RightUpStrategy());
-        Mockito.doNothing().when(strategy).drawTile(Mockito.any(), Mockito.any(),Mockito.any(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyLong());
+        Mockito.doNothing().when(strategy).drawTile(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyLong());
 
         InOrder inOrder = Mockito.inOrder(strategy);
 
         strategy.draw(spriteBatch, boundary, layer, 0);
 
-        inOrder.verify(strategy, Mockito.times(0)).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary),Mockito.same(layer), Mockito.eq(0), Mockito.eq(3), Mockito.eq(0L));
-        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary),Mockito.same(layer), Mockito.eq(0), Mockito.eq(1), Mockito.eq(0L));
-        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch),Mockito.same(boundary), Mockito.same(layer), Mockito.eq(1), Mockito.eq(1), Mockito.eq(0L));
-        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch),Mockito.same(boundary), Mockito.same(layer), Mockito.eq(0), Mockito.eq(0), Mockito.eq(0L));
-        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch),Mockito.same(boundary), Mockito.same(layer), Mockito.eq(1), Mockito.eq(0), Mockito.eq(0L));
+        inOrder.verify(strategy, Mockito.times(0)).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(0), Mockito.eq(3), Mockito.eq(0L));
+        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(0), Mockito.eq(1), Mockito.eq(0L));
+        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(1), Mockito.eq(1), Mockito.eq(0L));
+        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(0), Mockito.eq(0), Mockito.eq(0L));
+        inOrder.verify(strategy).drawTile(Mockito.same(spriteBatch), Mockito.same(boundary), Mockito.same(layer), Mockito.eq(1), Mockito.eq(0), Mockito.eq(0L));
         inOrder.verifyNoMoreInteractions();
     }
 }

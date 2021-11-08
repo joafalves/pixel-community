@@ -19,14 +19,14 @@ import static org.pixel.tiled.content.TiledConstants.VERTICAL_FLIP_FLAG;
 public class TiledObjectGroupView implements GenericObjectLayerView {
     private final Vector2 position = new Vector2();
     private final SpriteBatch spriteBatch;
-    private long frame;
     private final Boundary boundary;
     private final Boundary tileBoundary;
+    private long frame;
 
     public TiledObjectGroupView(SpriteBatch spriteBatch, Boundary boundary) {
         this.spriteBatch = spriteBatch;
         this.boundary = boundary;
-        this.tileBoundary = new Boundary(0,0,0,0);
+        this.tileBoundary = new Boundary(0, 0, 0, 0);
     }
 
     public void draw(TiledTileObject tile, TiledObjectGroup group) {
@@ -48,9 +48,9 @@ public class TiledObjectGroupView implements GenericObjectLayerView {
                 position.setY(tile.getPosition().getY() + (float) group.getOffsetY());
                 position.setX(tile.getPosition().getX() + (float) group.getOffsetX());
 
-                tileBoundary.set(position.getX(), position.getY(), (float)tile.getWidth(),(float) tile.getHeight());
+                tileBoundary.set(position.getX(), position.getY(), (float) tile.getWidth(), (float) tile.getHeight());
 
-                if(!boundary.overlapsWith(tileBoundary)) {
+                if (!boundary.overlapsWith(tileBoundary)) {
                     continue;
                 }
 

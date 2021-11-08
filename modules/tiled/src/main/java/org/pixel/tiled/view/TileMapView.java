@@ -18,8 +18,6 @@ public class TileMapView implements GenericTileMapView {
 
     public TileMapView(SpriteBatch spriteBatch, Camera2D camera2D) {
         this.boundary = new Boundary(0, 0, 0, 0);
-
-
         this.layerView = new TileLayerView(spriteBatch, boundary);
         this.groupView = new TiledObjectGroupView(spriteBatch, boundary);
 

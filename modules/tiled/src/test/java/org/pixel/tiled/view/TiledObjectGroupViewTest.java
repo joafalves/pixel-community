@@ -40,6 +40,7 @@ class TiledObjectGroupViewTest {
         group = Mockito.mock(TiledObjectGroup.class);
         object1 = Mockito.mock(TiledTileObject.class);
         object2 = Mockito.mock(TiledTileObject.class);
+
         LinkedHashMap<Integer, TiledObject> map = new LinkedHashMap<>();
         tileMap = new TileMap();
         List<TileSet> tileSetList = new ArrayList<>();
@@ -93,12 +94,12 @@ class TiledObjectGroupViewTest {
                 Mockito.any(Vector2.class), Mockito.any(Rectangle.class),
                 Mockito.any(Color.class), Mockito.any(Vector2.class),
                 Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat());
-
     }
 
     @Test
     public void draw() {
         TiledObjectGroupView groupView = new TiledObjectGroupView(spriteBatch, boundary);
+
         groupView.draw(group, 0);
 
         InOrder inOrder = Mockito.inOrder(spriteBatch);
@@ -120,7 +121,7 @@ class TiledObjectGroupViewTest {
 
     @Test
     void drawOutside() {
-        Boundary boundary1 = new Boundary(0+0.4f,2+0.5f,1,3);
+        Boundary boundary1 = new Boundary(0 + 0.4f, 2 + 0.5f, 1, 3);
         Mockito.when(boundary.overlapsWith(Mockito.argThat(argument ->
                 argument.getBottomLeft().equals(boundary1.getBottomLeft()) &&
                         argument.getBottomRight().equals(boundary1.getBottomRight()) &&
@@ -132,7 +133,7 @@ class TiledObjectGroupViewTest {
 
         InOrder inOrder = Mockito.inOrder(spriteBatch);
 
-        objectGroupView.draw( group,0);
+        objectGroupView.draw(group, 0);
 
         inOrder.verify(spriteBatch, Mockito.times(0)).draw(Mockito.same(texture),
                 Mockito.any(), Mockito.eq(new Rectangle(2f, 3f, -2f, -3f)),

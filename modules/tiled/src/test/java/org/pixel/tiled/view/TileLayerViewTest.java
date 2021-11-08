@@ -262,23 +262,23 @@ public class TileLayerViewTest {
     @Test
     void drawOutside() {
         TileMap tileMap = new TileMap();
-        TileSet tileSet = new TileSet(16,16,4,2, texture1);
+        TileSet tileSet = new TileSet(16, 16, 4, 2, texture1);
         tileSet.setFirstGId(1);
         tileMap.addTileSet(tileSet);
         tileMap.setTileWidth(16);
         tileMap.setTileHeight(16);
         TileLayer layer = new TileLayer(20, 20, tileMap);
-        layer.addTile(0,0,1);
-        layer.addTile(1,0,2);
+        layer.addTile(0, 0, 1);
+        layer.addTile(1, 0, 2);
         tileMap.addLayer(layer);
 
-        Boundary boundary1 = new Boundary(0,0,16,16);
+        Boundary boundary1 = new Boundary(0, 0, 16, 16);
 
         Mockito.when(boundary.overlapsWith(Mockito.argThat(argument ->
                 argument.getBottomLeft().equals(boundary1.getBottomLeft()) &&
-                argument.getBottomRight().equals(boundary1.getBottomRight()) &&
-                argument.getTopLeft().equals(boundary1.getTopLeft()) &&
-                argument.getTopRight().equals(boundary1.getTopRight())
+                        argument.getBottomRight().equals(boundary1.getBottomRight()) &&
+                        argument.getTopLeft().equals(boundary1.getTopLeft()) &&
+                        argument.getTopRight().equals(boundary1.getTopRight())
         ))).thenReturn(false);
 
         TileLayerView layerView = new TileLayerView(spriteBatch, boundary);
@@ -299,6 +299,6 @@ public class TileLayerViewTest {
                 Mockito.eq(1f),
                 Mockito.eq(0f));
 
-        Assertions.assertEquals(new Vector2(16+8,0+8), positions.get(0));
+        Assertions.assertEquals(new Vector2(16 + 8, 0 + 8), positions.get(0));
     }
 }
