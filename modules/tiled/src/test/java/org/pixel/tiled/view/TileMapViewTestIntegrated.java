@@ -70,7 +70,7 @@ public class TileMapViewTestIntegrated {
 
             tileMap = contentManager.load(tmxFileName, TileMap.class, tileMapImporterSettings);
             spriteBatch = new SpriteBatch();
-            tileMapView = new TileMapView(spriteBatch);
+            tileMapView = new TileMapView(spriteBatch, gameCamera);
         }
 
         @Override

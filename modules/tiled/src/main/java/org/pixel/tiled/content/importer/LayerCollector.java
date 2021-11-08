@@ -3,7 +3,7 @@ package org.pixel.tiled.content.importer;
 import org.pixel.tiled.content.Layer;
 import org.pixel.tiled.content.TileMap;
 import org.pixel.tiled.content.TiledCustomProperties;
-import org.pixel.tiled.view.TileMapView;
+import org.pixel.tiled.view.GenericTileMapView;
 import org.w3c.dom.Element;
 
 public abstract class LayerCollector {
@@ -13,7 +13,7 @@ public abstract class LayerCollector {
         CustomPropertiesCollector collector = new CustomPropertiesCollector();
         Layer layer = new Layer(tileMap) {
             @Override
-            public void draw(TileMapView view) {
+            public void draw(GenericTileMapView view) {
 
             }
         };

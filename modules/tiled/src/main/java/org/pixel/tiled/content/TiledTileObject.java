@@ -1,6 +1,6 @@
 package org.pixel.tiled.content;
 
-import org.pixel.tiled.view.TiledObjectGroupView;
+import org.pixel.tiled.view.GenericObjectLayerView;
 
 public class TiledTileObject extends TiledObject {
     private long gID;
@@ -32,7 +32,7 @@ public class TiledTileObject extends TiledObject {
     }
 
     @Override
-    public void draw(TiledObjectGroup group, TiledObjectGroupView view) {
+    public void draw(TiledObjectGroup group, GenericObjectLayerView view) {
         view.draw(this, group);
     }
 }

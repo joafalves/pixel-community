@@ -1,6 +1,6 @@
 package org.pixel.tiled.content;
 
-import org.pixel.tiled.view.TileMapView;
+import org.pixel.tiled.view.GenericTileMapView;
 
 public class TileLayer extends Layer {
     private final int width;
@@ -41,7 +41,7 @@ public class TileLayer extends Layer {
     }
 
     @Override
-    public void draw(TileMapView view) {
+    public void draw(GenericTileMapView view) {
         view.draw(this);
     }
 }

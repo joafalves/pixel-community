@@ -2,6 +2,7 @@ package org.pixel.tiled.view;
 
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.math.Boundary;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 import org.pixel.tiled.content.TileSet;
@@ -15,13 +16,17 @@ import java.util.ListIterator;
 import static org.pixel.tiled.content.TiledConstants.HORIZONTAL_FLIP_FLAG;
 import static org.pixel.tiled.content.TiledConstants.VERTICAL_FLIP_FLAG;
 
-public class TiledObjectGroupView implements TiledView<TiledObjectGroup> {
-    private static final Vector2 position = new Vector2();
-    private long frame;
+public class TiledObjectGroupView implements GenericObjectLayerView {
+    private final Vector2 position = new Vector2();
     private final SpriteBatch spriteBatch;
+    private final Boundary boundary;
+    private final Boundary tileBoundary;
+    private long frame;
 
-    public TiledObjectGroupView(SpriteBatch spriteBatch) {
+    public TiledObjectGroupView(SpriteBatch spriteBatch, Boundary boundary) {
         this.spriteBatch = spriteBatch;
+        this.boundary = boundary;
+        this.tileBoundary = new Boundary(0, 0, 0, 0);
     }
 
     public void draw(TiledTileObject tile, TiledObjectGroup group) {
@@ -42,6 +47,12 @@ public class TiledObjectGroupView implements TiledView<TiledObjectGroup> {
 
                 position.setY(tile.getPosition().getY() + (float) group.getOffsetY());
                 position.setX(tile.getPosition().getX() + (float) group.getOffsetX());
+
+                tileBoundary.set(position.getX(), position.getY(), (float) tile.getWidth(), (float) tile.getHeight());
+
+                if (!boundary.overlapsWith(tileBoundary)) {
+                    continue;
+                }
 
                 spriteBatch.draw(
                         tileSet.getTexture(), position, source, Color.WHITE, Vector2.ZERO_ONE,

@@ -1,6 +1,6 @@
 package org.pixel.tiled.content;
 
-import org.pixel.tiled.view.TileMapView;
+import org.pixel.tiled.view.GenericTileMapView;
 
 import java.util.LinkedHashMap;
 
@@ -16,7 +16,7 @@ public class TiledObjectGroup extends Layer {
     }
 
     @Override
-    public void draw(TileMapView view) {
+    public void draw(GenericTileMapView view) {
         view.draw(this);
     }
 

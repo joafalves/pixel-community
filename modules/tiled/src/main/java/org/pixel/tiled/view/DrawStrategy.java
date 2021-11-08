@@ -2,6 +2,7 @@ package org.pixel.tiled.view;
 
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.math.Boundary;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 import org.pixel.tiled.content.TileLayer;
@@ -13,8 +14,9 @@ import java.util.ListIterator;
 import static org.pixel.tiled.content.TiledConstants.*;
 
 public abstract class DrawStrategy {
-    private static final Transform transform = new Transform();
-    private static final Vector2 position = new Vector2();
+    private final Transform transform = new Transform();
+    private final Vector2 position = new Vector2();
+    private final Boundary tileBoundary = new Boundary(0, 0, 0, 0);
 
     private void getTileTransform(long gID, TileSet tileSet, long frame) {
         boolean horizontalFlip = (gID & HORIZONTAL_FLIP_FLAG.getBits()) != 0;
@@ -32,7 +34,7 @@ public abstract class DrawStrategy {
         }
     }
 
-    protected void drawTile(SpriteBatch spriteBatch, TileLayer layer, int x, int y, long frame) {
+    protected void drawTile(SpriteBatch spriteBatch, Boundary boundary, TileLayer layer, int x, int y, long frame) {
         List<TileSet> tileSets = layer.getTileMap().getTileSets();
         long gID = layer.getTiles()[y][x];
         long originalGID = gID;
@@ -51,6 +53,16 @@ public abstract class DrawStrategy {
                 position.setX(x * layer.getTileMap().getTileWidth() + (float) layer.getOffsetX() + 0.5f * tileSet.getTileWidth());
                 position.setY(y * layer.getTileMap().getTileHeight() + (float) layer.getOffsetY() + 0.5f * tileSet.getTileHeight());
 
+                tileBoundary.set(
+                        position.getX() - 0.5f * tileSet.getTileWidth(),
+                        position.getY() - 0.5f * tileSet.getTileHeight(),
+                        tileSet.getTileWidth(), tileSet.getTileHeight()
+                );
+
+                if (!boundary.overlapsWith(tileBoundary)) {
+                    continue;
+                }
+
                 getTileTransform(originalGID, tileSet, frame);
 
                 spriteBatch.draw(tileSet.getTexture(), position, transform.rectangle, Color.WHITE, Vector2.HALF,
@@ -61,7 +73,7 @@ public abstract class DrawStrategy {
         }
     }
 
-    public abstract void draw(SpriteBatch spriteBatch, TileLayer layer, long frame);
+    public abstract void draw(SpriteBatch spriteBatch, Boundary boundary, TileLayer layer, long frame);
 
     private static class Transform {
         private Rectangle rectangle = null;

@@ -11,6 +11,7 @@ import org.pixel.content.ImportContext;
 import org.pixel.content.Texture;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.math.Boundary;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 import org.pixel.tiled.content.TileLayer;
@@ -34,6 +35,7 @@ public class TileLayerViewTest {
     TileSet tileSet1, tileSet2;
     List<Vector2> positions;
     SpriteBatch spriteBatch;
+    Boundary boundary;
 
     @BeforeEach
     void setup() throws IOException {
@@ -42,6 +44,9 @@ public class TileLayerViewTest {
         texture2 = Mockito.mock(Texture.class);
         positions = new ArrayList<>();
         spriteBatch = Mockito.mock(SpriteBatch.class);
+        boundary = Mockito.mock(Boundary.class);
+
+        Mockito.when(boundary.overlapsWith(Mockito.any(Boundary.class))).thenReturn(true);
 
         Answer getPosition = invocation -> {
             Vector2 position = invocation.getArgument(1);
@@ -103,7 +108,7 @@ public class TileLayerViewTest {
 
         TileMap tileMap = importer.process(ctx);
 
-        TileLayerView layerView = new TileLayerView(spriteBatch);
+        TileLayerView layerView = new TileLayerView(spriteBatch, boundary);
 
         InOrder inOrder = Mockito.inOrder(spriteBatch);
 
@@ -157,7 +162,7 @@ public class TileLayerViewTest {
 
         TileMap tileMap = importer.process(ctx);
 
-        TileLayerView layerView = new TileLayerView(spriteBatch);
+        TileLayerView layerView = new TileLayerView(spriteBatch, boundary);
 
         InOrder inOrder = Mockito.inOrder(spriteBatch);
 
@@ -197,7 +202,7 @@ public class TileLayerViewTest {
 
         TileMap tileMap = importer.process(ctx);
 
-        TileLayerView layerView = new TileLayerView(spriteBatch);
+        TileLayerView layerView = new TileLayerView(spriteBatch, boundary);
 
         InOrder inOrder = Mockito.inOrder(spriteBatch);
 
@@ -252,5 +257,48 @@ public class TileLayerViewTest {
         Assertions.assertEquals(new Vector2(16 + 8, 32 + 8), positions.get(5));
         Assertions.assertEquals(new Vector2(0 + 8, 48 + 8), positions.get(6));
         Assertions.assertEquals(new Vector2(16 + 8, 48 + 8), positions.get(7));
+    }
+
+    @Test
+    void drawOutside() {
+        TileMap tileMap = new TileMap();
+        TileSet tileSet = new TileSet(16, 16, 4, 2, texture1);
+        tileSet.setFirstGId(1);
+        tileMap.addTileSet(tileSet);
+        tileMap.setTileWidth(16);
+        tileMap.setTileHeight(16);
+        TileLayer layer = new TileLayer(20, 20, tileMap);
+        layer.addTile(0, 0, 1);
+        layer.addTile(1, 0, 2);
+        tileMap.addLayer(layer);
+
+        Boundary boundary1 = new Boundary(0, 0, 16, 16);
+
+        Mockito.when(boundary.overlapsWith(Mockito.argThat(argument ->
+                argument.getBottomLeft().equals(boundary1.getBottomLeft()) &&
+                        argument.getBottomRight().equals(boundary1.getBottomRight()) &&
+                        argument.getTopLeft().equals(boundary1.getTopLeft()) &&
+                        argument.getTopRight().equals(boundary1.getTopRight())
+        ))).thenReturn(false);
+
+        TileLayerView layerView = new TileLayerView(spriteBatch, boundary);
+
+        InOrder inOrder = Mockito.inOrder(spriteBatch);
+
+        layerView.draw((TileLayer) tileMap.getLayers().get(0), 0);
+
+        inOrder.verify(spriteBatch, Mockito.times(0)).draw(Mockito.same(texture1), Mockito.any(),
+                Mockito.eq(new Rectangle(0, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
+                Mockito.eq(1f),
+                Mockito.eq(1f),
+                Mockito.eq(0f));
+
+        inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
+                Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
+                Mockito.eq(1f),
+                Mockito.eq(1f),
+                Mockito.eq(0f));
+
+        Assertions.assertEquals(new Vector2(16 + 8, 0 + 8), positions.get(0));
     }
 }
