@@ -9,6 +9,7 @@ public class LayerCollectorFactory {
         nameToStrategy.put("layer", new TileLayerCollector());
         nameToStrategy.put("objectgroup", new ObjectGroupCollector());
         nameToStrategy.put("group", new LayerGroupCollector());
+        nameToStrategy.put("imagelayer", new ImageLayerCollector());
     }
 
     public LayerCollector getLayerCollector(String layerName) {

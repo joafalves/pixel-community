@@ -1,5 +1,6 @@
 package org.pixel.tiled.content.importer;
 
+import org.pixel.content.ImportContext;
 import org.pixel.tiled.content.Layer;
 import org.pixel.tiled.content.TileMap;
 import org.pixel.tiled.content.TiledCustomProperties;
@@ -7,7 +8,7 @@ import org.pixel.tiled.view.GenericTileMapView;
 import org.w3c.dom.Element;
 
 public abstract class LayerCollector {
-    abstract Layer process(TileMap tileMap, Element tileLayerElement);
+    abstract Layer collect(TileMap tileMap, Element tileLayerElement, ImportContext ctx);
 
     Layer collectLayerData(TileMap tileMap, Element tileLayerElement) {
         CustomPropertiesCollector collector = new CustomPropertiesCollector();
