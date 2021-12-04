@@ -2,16 +2,28 @@
  * This software is available under Apache License
  * Copyright (c) 2020
  */
+import org.gradle.internal.os.OperatingSystem
 
-version = "0.5.0"
+// Pixel Version:
+version = "0.5.1"
 
-def lwjglVersion = "3.2.3"
+// Lwjgl Version & Build Target(s)
+def lwjglVersion = "3.3.0"
 def buildTarget = System.getenv("BUILD_TARGET")
-if (buildTarget == null) {
-    buildTarget = "all"
+def buildTargetList = []
+if (buildTarget == "all") {
+    // Use this build mode for testing only! Ideally there should be 1 build per architecture type
+    buildTargetList.addAll([
+            "natives-windows", "natives-windows-x86", "natives-windows-arm64",
+            "natives-macos", "natives-macos-arm64",
+            "natives-linux", "natives-linux-arm64", "natives-linux-arm32"])
+} else if (buildTarget != null) {
+    // applies the build target based on the BUILD_TARGET environment variable:
+    buildTargetList.add(buildTarget)
+} else {
+    // no manual build type assigned, apply the classifier based on the current Operating System:
+    buildTargetList.add(getCurrentClassifier())
 }
-
-println "Build target: '${buildTarget}'"
 
 allprojects {
     // plugins
@@ -36,48 +48,23 @@ allprojects {
         api group: "org.lwjgl", name: "lwjgl-nanovg", version: lwjglVersion
         api group: "org.lwjgl", name: "lwjgl-yoga", version: lwjglVersion
 
-        // lwjgl-macos
-        if (buildTarget == "macos" || buildTarget == "all") {
-            api group: "org.lwjgl", name: "lwjgl", version: lwjglVersion, classifier: "natives-macos"
-            api group: "org.lwjgl", name: "lwjgl-opengl", version: lwjglVersion, classifier: "natives-macos"
-            api group: "org.lwjgl", name: "lwjgl-openal", version: lwjglVersion, classifier: "natives-macos"
-            api group: "org.lwjgl", name: "lwjgl-glfw", version: lwjglVersion, classifier: "natives-macos"
-            api group: "org.lwjgl", name: "lwjgl-stb", version: lwjglVersion, classifier: "natives-macos"
-            api group: "org.lwjgl", name: "lwjgl-nanovg", version: lwjglVersion, classifier: "natives-macos"
-            api group: "org.lwjgl", name: "lwjgl-yoga", version: lwjglVersion, classifier: "natives-macos"
-        }
-
-        // lwjgl-windows
-        if (buildTarget == "windows" || buildTarget == "all") {
-            api group: "org.lwjgl", name: "lwjgl", version: lwjglVersion, classifier: "natives-windows"
-            api group: "org.lwjgl", name: "lwjgl-opengl", version: lwjglVersion, classifier: "natives-windows"
-            api group: "org.lwjgl", name: "lwjgl-openal", version: lwjglVersion, classifier: "natives-windows"
-            api group: "org.lwjgl", name: "lwjgl-glfw", version: lwjglVersion, classifier: "natives-windows"
-            api group: "org.lwjgl", name: "lwjgl-stb", version: lwjglVersion, classifier: "natives-windows"
-            api group: "org.lwjgl", name: "lwjgl-nanovg", version: lwjglVersion, classifier: "natives-windows"
-            api group: "org.lwjgl", name: "lwjgl-yoga", version: lwjglVersion, classifier: "natives-windows"
-        }
-
-        // lwjgl-linux
-        if (buildTarget == "linux" || buildTarget == "all") {
-            api group: "org.lwjgl", name: "lwjgl", version: lwjglVersion, classifier: "natives-linux"
-            api group: "org.lwjgl", name: "lwjgl-opengl", version: lwjglVersion, classifier: "natives-linux"
-            api group: "org.lwjgl", name: "lwjgl-openal", version: lwjglVersion, classifier: "natives-linux"
-            api group: "org.lwjgl", name: "lwjgl-glfw", version: lwjglVersion, classifier: "natives-linux"
-            api group: "org.lwjgl", name: "lwjgl-stb", version: lwjglVersion, classifier: "natives-linux"
-            api group: "org.lwjgl", name: "lwjgl-nanovg", version: lwjglVersion, classifier: "natives-linux"
-            api group: "org.lwjgl", name: "lwjgl-yoga", version: lwjglVersion, classifier: "natives-linux"
-        }
+        buildTargetList.forEach(classifier -> {
+            runtimeOnly group: "org.lwjgl", name: "lwjgl", version: lwjglVersion, classifier: "$classifier"
+            runtimeOnly group: "org.lwjgl", name: "lwjgl-opengl", version: lwjglVersion, classifier: "$classifier"
+            runtimeOnly group: "org.lwjgl", name: "lwjgl-openal", version: lwjglVersion, classifier: "$classifier"
+            runtimeOnly group: "org.lwjgl", name: "lwjgl-glfw", version: lwjglVersion, classifier: "$classifier"
+            runtimeOnly group: "org.lwjgl", name: "lwjgl-stb", version: lwjglVersion, classifier: "$classifier"
+            runtimeOnly group: "org.lwjgl", name: "lwjgl-nanovg", version: lwjglVersion, classifier: "$classifier"
+            runtimeOnly group: "org.lwjgl", name: "lwjgl-yoga", version: lwjglVersion, classifier: "$classifier"
+        })
 
         // lombok
-        compileOnly 'org.projectlombok:lombok:1.18.20'
-        annotationProcessor 'org.projectlombok:lombok:1.18.20'
+        compileOnly 'org.projectlombok:lombok:1.18.22'
+        annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
         // test:
         testImplementation group: "junit", name: "junit", version: "4.12"
     }
-
-    // test.onlyIf { Boolean.getBoolean("build.runTests") }
 
     jar {
         manifest {
@@ -113,5 +100,24 @@ task bundle(type: Jar, dependsOn: bundleList.collect { it + ":compileJava" }) {
         bundleList.collect {
             project(it).configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
         }
+    }
+}
+
+static def getCurrentClassifier() {
+    switch (OperatingSystem.current()) {
+        case OperatingSystem.LINUX:
+            def osArch = System.getProperty("os.arch")
+            return osArch.startsWith("arm") || osArch.startsWith("aarch64")
+                    ? "natives-linux-${osArch.contains("64") || osArch.startsWith("armv8") ? "arm64" : "arm32"}"
+                    : "natives-linux"
+
+        case OperatingSystem.MAC_OS:
+            return System.getProperty("os.arch").startsWith("aarch64") ? "natives-macos-arm64" : "natives-macos"
+
+        case OperatingSystem.WINDOWS:
+            def osArch = System.getProperty("os.arch")
+            return osArch.contains("64")
+                    ? "natives-windows${osArch.startsWith("aarch64") ? "-arm64" : ""}"
+                    : "natives-windows-x86"
     }
 }
