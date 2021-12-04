@@ -23,7 +23,7 @@ public enum MouseButton {
     MIDDLE(GLFW_MOUSE_BUTTON_MIDDLE),
     RIGHT(GLFW_MOUSE_BUTTON_RIGHT);
 
-    private int value;
+    private final int value;
 
     /**
      * Constructor

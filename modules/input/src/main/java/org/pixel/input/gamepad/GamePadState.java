@@ -10,9 +10,9 @@ import java.nio.FloatBuffer;
 
 public class GamePadState {
 
-    private String name;
-    private ByteBuffer buttonState;
-    private FloatBuffer axeState;
+    private final String name;
+    private final ByteBuffer buttonState;
+    private final FloatBuffer axeState;
 
     /**
      * Constructor
@@ -47,5 +47,12 @@ public class GamePadState {
      */
     public float getAxeValue(GamePadAxe axe) {
         return axeState.get(axe.getValue());
+    }
+
+    /**
+     * @return
+     */
+    public String getName() {
+        return name;
     }
 }

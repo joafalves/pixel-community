@@ -25,7 +25,7 @@ public enum GamePadIndex {
     P15(GLFW.GLFW_JOYSTICK_15),
     P16(GLFW.GLFW_JOYSTICK_16);
 
-    private int value;
+    private final int value;
 
     /**
      * Constructor

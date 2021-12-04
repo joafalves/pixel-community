@@ -142,7 +142,7 @@ public enum KeyboardKey {
 
     MENU(GLFW_KEY_MENU);
 
-    private int value;
+    private final int value;
 
     /**
      * Constructor

@@ -13,7 +13,7 @@ public class KeyboardState {
 
     //region properties
 
-    private HashMap<Integer, Integer> keys;
+    private final HashMap<Integer, Integer> keys;
 
     //endregion
 

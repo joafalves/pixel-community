@@ -11,7 +11,7 @@ public class MouseState {
 
     //region properties
 
-    private HashMap<Integer, Integer> buttons;
+    private final HashMap<Integer, Integer> buttons;
 
     //endregion
 

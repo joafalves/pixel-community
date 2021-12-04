@@ -15,7 +15,7 @@ public enum GamePadAxe {
     TRIGGER_LEFT(GLFW_GAMEPAD_AXIS_LEFT_TRIGGER),
     TRIGGER_RIGHT(GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER);
 
-    private int value;
+    private final int value;
 
     /**
      * Constructor
