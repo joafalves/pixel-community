@@ -1,6 +1,8 @@
 package org.pixel.concept.spaceshooter;
 
 import org.pixel.commons.DeltaTime;
+import org.pixel.concept.spaceshooter.component.PlayerBoundaryComponent;
+import org.pixel.concept.spaceshooter.component.PlayerConstantVelocityComponent;
 import org.pixel.concept.spaceshooter.component.PlayerInputComponent;
 import org.pixel.concept.spaceshooter.content.BackgroundTexture;
 import org.pixel.concept.spaceshooter.game.BackgroundSprite;
@@ -11,13 +13,14 @@ import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.math.Boundary;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Rectangle;
+import org.pixel.math.Vector2;
 
 public class SpaceShooterGame extends PixelWindow {
 
     private Camera2D gameCamera;
-    private TexturePack texturePack;
     private ContentManager content;
     private SpriteBatch spriteBatch;
 
@@ -41,13 +44,18 @@ public class SpaceShooterGame extends PixelWindow {
         gameCamera.setOrigin(0);
 
         // content load
-        texturePack = content.load("spaceshooter/spritemap.json", TexturePack.class);
+        var texturePack = content.load("spaceshooter/spritemap.json", TexturePack.class);
 
         // instances
         player = new PlayerSprite(spriteBatch, texturePack, texturePack.getFrame("player-ship"));
         player.getTransform().setPosition(getVirtualWidth() / 2.f, getVirtualHeight() / 2.f);
         player.getTransform().setRotation(MathHelper.PIo2);
         player.addComponent(new PlayerInputComponent());
+        player.addComponent(new PlayerConstantVelocityComponent(new Vector2(0, 40.f)));
+        player.addComponent(
+                new PlayerBoundaryComponent(
+                        new Boundary(gameCamera.getPositionX(), gameCamera.getPositionY(),
+                                gameCamera.getWidth(), gameCamera.getHeight())));
 
         BackgroundTexture bgTex = new BackgroundTexture();
         bgTex.setData(texturePack.getTexture(), texturePack.getFrames("bg-01", "bg-02", "bg-03", "bg-04"),

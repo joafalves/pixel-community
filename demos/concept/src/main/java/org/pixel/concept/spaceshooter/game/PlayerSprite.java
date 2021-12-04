@@ -12,6 +12,8 @@ import org.pixel.graphics.render.SpriteBatch;
 
 public class PlayerSprite extends Sprite {
 
+    public static final String IS_MOVING_FORWARD_ATTR = "isMovingForward";
+
     public PlayerSprite(SpriteBatch spriteBatch, TexturePack texturePack, TextureFrame textureFrame) {
         super(spriteBatch, texturePack, textureFrame);
     }

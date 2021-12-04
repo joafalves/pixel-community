@@ -61,7 +61,15 @@ public class AttributeMap extends HashMap<String, Object> {
         return get(key, Number.class, null);
     }
 
-    public Number getLong(String key, Number defaultValue) {
+    public Number getNumber(String key, Number defaultValue) {
         return get(key, Number.class, defaultValue);
+    }
+
+    public Boolean getBoolean(String key) {
+        return get(key, Boolean.class, null);
+    }
+
+    public Boolean getBoolean(String key, Boolean defaultValue) {
+        return get(key, Boolean.class, defaultValue);
     }
 }

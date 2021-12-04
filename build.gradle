@@ -77,7 +77,7 @@ allprojects {
 }
 
 //def bundleList = rootProject.subprojects.collect { ":" + it.name } // kinda cool but not configurable
-def bundleList = [":pixel-commons", ":pixel-core", ":pixel-gui", ":pixel-input", ":pixel-math"]
+def bundleList = [":pixel-commons", ":pixel-core", ":pixel-input", ":pixel-math"]
 task bundle(type: Jar, dependsOn: bundleList.collect { it + ":compileJava" }) {
     // bundle jar name
     archivesBaseName = rootProject.name + "-bundle-" + buildTarget

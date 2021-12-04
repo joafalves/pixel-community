@@ -3,6 +3,7 @@ package org.pixel.imgui;
 import imgui.ImGui;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
+import imgui.type.ImString;
 import org.pixel.commons.DeltaTime;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
@@ -33,7 +34,10 @@ public class ImGuiDemo extends PixelWindow {
         imGuiGlfw.newFrame();
         ImGui.newFrame();
 
+        ImString value = new ImString();
+
         ImGui.text("Hello, World!");
+        ImGui.inputText("Some Value", value);
 
         ImGui.render();
         imGuiGl3.renderDrawData(ImGui.getDrawData());

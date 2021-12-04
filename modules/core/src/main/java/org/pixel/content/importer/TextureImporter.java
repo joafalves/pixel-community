@@ -5,6 +5,15 @@
 
 package org.pixel.content.importer;
 
+import static org.lwjgl.opengl.GL11C.GL_NEAREST;
+import static org.lwjgl.opengl.GL11C.GL_REPEAT;
+import static org.lwjgl.opengl.GL11C.glGenTextures;
+import static org.lwjgl.stb.STBImage.stbi_failure_reason;
+import static org.lwjgl.stb.STBImage.stbi_load_from_memory;
+import static org.lwjgl.system.libc.LibCStdlib.free;
+
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
@@ -13,14 +22,6 @@ import org.pixel.content.ContentImporterInfo;
 import org.pixel.content.ImportContext;
 import org.pixel.content.Texture;
 import org.pixel.content.importer.settings.TextureImporterSettings;
-
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.stb.STBImage.stbi_failure_reason;
-import static org.lwjgl.stb.STBImage.stbi_load_from_memory;
-import static org.lwjgl.system.libc.LibCStdlib.free;
 
 /**
  * @author João Filipe Alves
@@ -44,8 +45,8 @@ public class TextureImporter implements ContentImporter<Texture> {
                 throw new RuntimeException("Failed to process texture file: " + stbi_failure_reason());
             }
 
-            int wrapS = GL_CLAMP;
-            int wrapT = GL_CLAMP;
+            int wrapS = GL_REPEAT;
+            int wrapT = GL_REPEAT;
             int minFilter = GL_NEAREST;
             int magFilter = GL_NEAREST;
 

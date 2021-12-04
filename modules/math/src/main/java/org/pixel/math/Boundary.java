@@ -52,7 +52,7 @@ public class Boundary implements Serializable {
      * @param bottomRightY
      */
     public Boundary(float topLeftX, float topLeftY, float topRightX, float topRightY,
-                    float bottomLeftX, float bottomLeftY, float bottomRightX, float bottomRightY) {
+            float bottomLeftX, float bottomLeftY, float bottomRightX, float bottomRightY) {
         this.topLeft = new Vector2(topLeftX, topLeftY);
         this.topRight = new Vector2(topRightX, topRightY);
         this.bottomLeft = new Vector2(bottomLeftX, bottomLeftY);
