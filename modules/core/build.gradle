@@ -8,6 +8,6 @@ dependencies {
     api project(":${rootProject.name}-input")
     api project(":${rootProject.name}-math")
 
-    api "org.json:json:20190722"
+    api "org.json:json:20210307"
 }
 
