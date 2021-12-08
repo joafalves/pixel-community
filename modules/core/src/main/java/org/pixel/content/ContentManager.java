@@ -114,9 +114,7 @@ public class ContentManager implements Disposable {
             return null;
         }
 
-        ImportContext ctx = new ImportContext(this, resourceData, filepath);
-        ctx.setSettings(settings);
-
+        ImportContext ctx = new ImportContext(this, resourceData, filepath, settings);
         T asset = fileImporter.process(ctx);
         if (asset != null) {
             assetCache.put(assetRef, asset);

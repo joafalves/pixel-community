@@ -5,8 +5,6 @@
 
 package org.pixel.graphics;
 
-import org.pixel.math.MathHelper;
-
 public class Color {
 
     //region <static>
@@ -173,24 +171,18 @@ public class Color {
 
     //region <public static methods>
 
-    public static Color random() {
+    public static Color random(float alpha) {
         Color color = new Color();
         color.r = (float) Math.random();
         color.g = (float) Math.random();
         color.b = (float) Math.random();
-        color.a = 1.0f;
+        color.a = alpha;
 
         return color;
     }
 
-    public static Color randomOne() {
-        Color color = new Color();
-        color.r = MathHelper.random(0, 2);
-        color.g = MathHelper.random(0, 2);
-        color.b = MathHelper.random(0, 2);
-        color.a = 1.0f;
-
-        return color;
+    public static Color random() {
+        return random(1.f);
     }
 
     public static void rgba8888(Color color, int rgba8888) {

@@ -32,13 +32,29 @@ public abstract class RenderEngine2D extends StatefulRenderEngine {
     }
 
     /**
+     * Translates the current coordinate system by the given amount.
+     *
      * @param x
      * @param y
      */
     public abstract void translate(float x, float y);
 
     /**
+     * Rotates the current coordinate system by the given angle.
      *
+     * @param angle
+     */
+    public abstract void rotate(float angle);
+
+    /**
+     * Scale the current coordinate system by the given amount.
+     *
+     * @param x
+     * @param y
+     */
+    public abstract void scale(float x, float y);
+
+    /**
      */
     public abstract void beginPath();
 
@@ -81,7 +97,8 @@ public abstract class RenderEngine2D extends StatefulRenderEngine {
      * @param endColor
      */
     public void linearGradient(Vector2 startPosition, Vector2 endPosition, Color startColor, Color endColor) {
-        linearGradient(startPosition.getX(), startPosition.getY(), endPosition.getX(), endPosition.getY(), startColor, endColor);
+        linearGradient(startPosition.getX(), startPosition.getY(), endPosition.getX(), endPosition.getY(), startColor,
+                endColor);
     }
 
     /**
@@ -102,7 +119,8 @@ public abstract class RenderEngine2D extends StatefulRenderEngine {
      * @param endColor
      */
     public void boxGradient(Rectangle bounds, float radius, float feather, Color startColor, Color endColor) {
-        boxGradient(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight(), radius, feather, startColor, endColor);
+        boxGradient(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight(), radius, feather, startColor,
+                endColor);
     }
 
     /**
@@ -116,7 +134,7 @@ public abstract class RenderEngine2D extends StatefulRenderEngine {
      * @param endColor
      */
     public abstract void boxGradient(float x, float y, float width, float height, float radius, float feather,
-                                     Color startColor, Color endColor);
+            Color startColor, Color endColor);
 
     /**
      * @param color
@@ -165,8 +183,8 @@ public abstract class RenderEngine2D extends StatefulRenderEngine {
      * @param position
      */
     public void bezierCurveTo(Vector2 controlPosition1, Vector2 controlPosition2, Vector2 position) {
-        bezierCurveTo(controlPosition1.getX(), controlPosition1.getY(), controlPosition2.getX(), controlPosition2.getY(),
-                position.getX(), position.getY());
+        bezierCurveTo(controlPosition1.getX(), controlPosition1.getY(), controlPosition2.getX(),
+                controlPosition2.getY(), position.getX(), position.getY());
     }
 
     /**
@@ -178,7 +196,6 @@ public abstract class RenderEngine2D extends StatefulRenderEngine {
      * @param y
      */
     public abstract void bezierCurveTo(float cp1x, float cp1y, float cp2x, float cp2y, float x, float y);
-
 
     /**
      * @param controlPoint
@@ -214,7 +231,7 @@ public abstract class RenderEngine2D extends StatefulRenderEngine {
     /**
      *
      */
-    public abstract void closePath();
+    public abstract void endPath();
 
     /**
      *

@@ -8,7 +8,7 @@ package org.pixel.physics.handler;
 import org.pixel.physics.CollisionGroup;
 import org.pixel.math.Vector2;
 import org.pixel.physics.Body;
-import org.pixel.physics.shape.Circle;
+import org.pixel.physics.shape.CircleShape;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +18,8 @@ public class CircleCollisionHandler implements CollisionHandler {
     @Override
     public boolean canHandle(CollisionGroup group) {
         // are the shape of both bodies a circle?
-        return group.getA().getShape() instanceof Circle &&
-                group.getB().getShape() instanceof Circle;
+        return group.getA().getShape() instanceof CircleShape &&
+                group.getB().getShape() instanceof CircleShape;
     }
 
     @Override
@@ -27,8 +27,8 @@ public class CircleCollisionHandler implements CollisionHandler {
         // extract both bodies and circle shapes
         Body bodyA = group.getA();
         Body bodyB = group.getB();
-        Circle shapeA = (Circle) group.getA().getShape();
-        Circle shapeB = (Circle) group.getB().getShape();
+        CircleShape shapeA = (CircleShape) group.getA().getShape();
+        CircleShape shapeB = (CircleShape) group.getB().getShape();
 
         // calculate the translational vector (normal -> b.pos - a.pos)
         Vector2 normal = Vector2.subtract(bodyB.getPosition(), bodyA.getPosition());
@@ -48,23 +48,20 @@ public class CircleCollisionHandler implements CollisionHandler {
         List<Vector2> contactPoints = new ArrayList<>();
         float distance = (float) StrictMath.sqrt(lenSquared);
 
-        // are they exactly overlapping?
-        if (distance == .0f) {
-            // yes, this is easy!
-            group.setPenetration(shapeA.getRadius()); // any of them would do
+        if (distance == .0f) {  // are they exactly overlapping?
             group.setNormal(new Vector2(1.0f, 0.0f));
+            group.setPenetration(shapeA.getRadius()); // any of them would do
             contactPoints.add(bodyA.getPosition());
 
         } else {
-            // this will be the scenario to run 99.99% of the times
-            group.setPenetration(radius - distance);
-
             normal.divide(distance, distance);
             group.setNormal(normal);
+            group.setPenetration(radius - distance);
 
             Vector2 contactPoint = new Vector2(normal);
             contactPoint.multiply(shapeA.getRadius(), shapeA.getRadius());
             contactPoint.add(bodyA.getPosition());
+
             contactPoints.add(contactPoint);
         }
 

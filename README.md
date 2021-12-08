@@ -85,9 +85,9 @@ The framework functionality is divided into multiple modules which can be import
         ├── commons                 # Common utility classes
         ├── content                 # Resource modules
         ├── core                    # Main module, contains principal classes
-        ├── gui                     # Graphical interface module
+        ├── gui                     # Graphical interface module (WIP)
         ├── input                   # Input module
-        ├── physics                 # Physics module
+        ├── physics                 # Physics module (WIP)
         └── math                    # Math module
     .resources/
         └── images                  # Project resource images
@@ -114,8 +114,8 @@ The framework functionality is divided into multiple modules which can be import
    
 ### Setup Requirements ###
 
-1. Java 8+ (tested up to version 15)
-2. Gradle 4.x+
+1. Java 11+ (tested up to version 17)
+2. Gradle 6.x+
 
 ### FAQ ###
 

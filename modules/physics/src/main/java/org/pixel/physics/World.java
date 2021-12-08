@@ -15,9 +15,10 @@ import java.util.List;
 
 public class World implements Updatable, Clearable {
 
-    private CollisionManager collisionManager;
-    private Vector2 gravity;
-    private List<Body> bodyList;
+    private final CollisionManager collisionManager;
+    private final Vector2 gravity;
+    private final List<Body> bodyList;
+
     private List<CollisionGroup> stepCollisions;
     private int iterations;
 

@@ -17,6 +17,7 @@ public class Body implements Serializable, Cloneable {
     private Vector2 position;
     private Vector2 velocity;
     private Vector2 force;
+    private Object attachment;
     private float mass;
     private float angularVelocity;
     private float torque;
@@ -169,5 +170,13 @@ public class Body implements Serializable, Cloneable {
 
     public void setType(BodyType type) {
         this.type = type;
+    }
+
+    public Object getAttachment() {
+        return attachment;
+    }
+
+    public void setAttachment(Object attachment) {
+        this.attachment = attachment;
     }
 }

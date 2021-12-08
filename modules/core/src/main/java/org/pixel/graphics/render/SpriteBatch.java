@@ -5,21 +5,6 @@
 
 package org.pixel.graphics.render;
 
-import org.lwjgl.system.MemoryUtil;
-import org.pixel.graphics.Color;
-import org.pixel.graphics.shader.ShaderManager;
-import org.pixel.graphics.shader.VertexArrayObject;
-import org.pixel.graphics.shader.VertexBufferObject;
-import org.pixel.graphics.shader.standard.TextureShader;
-import org.pixel.content.Font;
-import org.pixel.content.FontGlyph;
-import org.pixel.content.Texture;
-import org.pixel.math.Matrix4;
-import org.pixel.math.Rectangle;
-import org.pixel.math.Vector2;
-
-import java.nio.FloatBuffer;
-
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL13C.GL_DST_COLOR;
 import static org.lwjgl.opengl.GL13C.GL_FLOAT;
@@ -35,7 +20,23 @@ import static org.lwjgl.opengl.GL13C.glBlendFunc;
 import static org.lwjgl.opengl.GL13C.glDrawArrays;
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL20.glUniformMatrix4fv;
+import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
+
+import java.nio.FloatBuffer;
+import org.lwjgl.system.MemoryUtil;
+import org.pixel.content.Font;
+import org.pixel.content.FontGlyph;
+import org.pixel.content.Texture;
+import org.pixel.graphics.Color;
+import org.pixel.graphics.shader.ShaderManager;
+import org.pixel.graphics.shader.VertexArrayObject;
+import org.pixel.graphics.shader.VertexBufferObject;
+import org.pixel.graphics.shader.standard.TextureShader;
+import org.pixel.math.Matrix4;
+import org.pixel.math.Rectangle;
+import org.pixel.math.Vector2;
 
 public class SpriteBatch extends DrawBatch {
 
@@ -356,7 +357,7 @@ public class SpriteBatch extends DrawBatch {
      * @param displayArea
      */
     public void draw(Texture texture, Rectangle displayArea) {
-        this.draw(texture, displayArea, Color.WHITE, Vector2.zero(), 0.f);
+        this.draw(texture, displayArea, Color.WHITE, Vector2.ZERO, 0.f);
     }
 
     /**
@@ -365,7 +366,7 @@ public class SpriteBatch extends DrawBatch {
      * @param color
      */
     public void draw(Texture texture, Rectangle displayArea, Color color) {
-        this.draw(texture, displayArea, color, Vector2.zero(), 0.f);
+        this.draw(texture, displayArea, color, Vector2.ZERO, 0.f);
     }
 
     /**
@@ -481,11 +482,9 @@ public class SpriteBatch extends DrawBatch {
 
         if (blendMode == BlendMode.ADDITIVE) {
             glBlendFunc(GL_ONE, GL_ONE);
-
         } else if (blendMode == BlendMode.MULTIPLY) {
             glBlendFunc(GL_DST_COLOR, GL_ZERO);
-
-        } else if (blendMode == BlendMode.INTERPOLATE) {
+        } else {
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         }
 

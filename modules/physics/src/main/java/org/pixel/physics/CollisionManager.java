@@ -18,8 +18,8 @@ public class CollisionManager {
 
     private static final float PENETRATION_ALLOWED = 0.05f;
 
-    private List<CollisionGroup> collisions;
-    private List<CollisionHandler> collisionHandlers;
+    private final List<CollisionGroup> collisions;
+    private final List<CollisionHandler> collisionHandlers;
 
     /**
      * Constructor
@@ -48,7 +48,7 @@ public class CollisionManager {
                 Body b = bodyList.get(j);
 
                 if (a.getMass() == 0 && b.getMass() == 0) {
-                    continue; // nothing else to do..
+                    continue; // nothing else to do...
                 }
 
                 CollisionGroup group = new CollisionGroup(a, b);
@@ -172,22 +172,21 @@ public class CollisionManager {
 
             // TODO: check tiny fraction impulses (and ignore)
 
-            // coulumb's law:
-            Vector2 tngImpulse = t;
+            // Coulomb's law (tangent impulse):
             if (StrictMath.abs(tng) < sc * group.getStaticFriction()) {
-                tngImpulse.multiply(tng, tng);
+                t.multiply(tng, tng);
 
             } else {
-                tngImpulse.multiply(sc, sc);
-                tngImpulse.multiply(-group.getDynamicFriction(), -group.getDynamicFriction());
+                t.multiply(sc, sc);
+                t.multiply(-group.getDynamicFriction(), -group.getDynamicFriction());
             }
 
             if (a.getType() == BodyType.DYNAMIC) {
-                a.applyImpulse(new Vector2(-tngImpulse.getX(), -tngImpulse.getY()), ra);
+                a.applyImpulse(new Vector2(-t.getX(), -t.getY()), ra);
             }
 
             if (b.getType() == BodyType.DYNAMIC) {
-                b.applyImpulse(tngImpulse, rb);
+                b.applyImpulse(t, rb);
             }
         }
     }

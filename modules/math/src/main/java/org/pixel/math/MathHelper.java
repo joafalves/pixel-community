@@ -138,7 +138,8 @@ public class MathHelper {
     }
 
     /**
-     * Checks for polygon collision (vertices are required to be ordered either clockwise or counter-clockwise)
+     * Checks for polygon collision (vertices are required to be ordered either clockwise or counter-clockwise).
+     * This approach is based on the SAT (Separating Axis Theorem).
      *
      * @param polygonVerticesA
      * @param polygonVerticesB

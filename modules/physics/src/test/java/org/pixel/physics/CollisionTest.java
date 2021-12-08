@@ -8,7 +8,7 @@ package org.pixel.physics;
 import org.junit.Assert;
 import org.junit.Test;
 import org.pixel.math.Vector2;
-import org.pixel.physics.shape.Circle;
+import org.pixel.physics.shape.CircleShape;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,9 +18,9 @@ public class CollisionTest {
     @Test
     public void circleCollision() {
         Body a = new Body(new Vector2());
-        a.setShape(new Circle(10.f));
+        a.setShape(new CircleShape(10.f));
         Body b = new Body(new Vector2(8));
-        b.setShape(new Circle(10.f));
+        b.setShape(new CircleShape(10.f));
 
         ArrayList<Body> bodyList = new ArrayList<>();
         bodyList.add(a);

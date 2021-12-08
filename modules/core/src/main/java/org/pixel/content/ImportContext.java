@@ -17,7 +17,7 @@ public class ImportContext {
     private final ContentManager contentManager;
     private final ByteBuffer buffer;
     private final String filepath;
-    private ContentImporterSettings settings;
+    private final ContentImporterSettings settings;
 
     /**
      * Constructor
@@ -25,11 +25,14 @@ public class ImportContext {
      * @param contentManager
      * @param buffer
      * @param filepath
+     * @param settings
      */
-    public ImportContext(ContentManager contentManager, ByteBuffer buffer, String filepath) {
+    public ImportContext(ContentManager contentManager, ByteBuffer buffer, String filepath,
+            ContentImporterSettings settings) {
         this.contentManager = contentManager;
         this.buffer = buffer;
         this.filepath = filepath;
+        this.settings = settings;
     }
 
     public ContentManager getContentManager() {
@@ -46,9 +49,5 @@ public class ImportContext {
 
     public ContentImporterSettings getSettings() {
         return settings;
-    }
-
-    public void setSettings(ContentImporterSettings settings) {
-        this.settings = settings;
     }
 }
