@@ -138,8 +138,32 @@ public class MathHelper {
     }
 
     /**
-     * Checks for polygon collision (vertices are required to be ordered either clockwise or counter-clockwise).
-     * This approach is based on the SAT (Separating Axis Theorem).
+     * Linear interpolation between two points
+     *
+     * @param a point A
+     * @param b point B
+     * @param t amount of interpolation
+     * @return
+     */
+    public static byte linearInterpolation(byte a, byte b, float t) {
+        return (byte) (a + (b - a) * t);
+    }
+
+    /**
+     * Linear interpolation between two points
+     *
+     * @param a point A
+     * @param b point B
+     * @param t amount of interpolation
+     * @return
+     */
+    public static float linearInterpolation(float a, float b, float t) {
+        return a + (b - a) * t;
+    }
+
+    /**
+     * Checks for polygon collision (vertices are required to be ordered either clockwise or counter-clockwise). This
+     * approach is based on the SAT (Separating Axis Theorem).
      *
      * @param polygonVerticesA
      * @param polygonVerticesB
@@ -193,6 +217,73 @@ public class MathHelper {
         }
 
         return true;
+    }
+
+    /**
+     * Checks for line intersection against a polygon. Returns the intersection point(s) if any.
+     * @param line
+     * @param polygon
+     * @return
+     */
+    public static List<Vector2> intersect(Line line, Polygon polygon) {
+        List<Vector2> intersections = null;
+        List<Vector2> vertices = polygon.getVertices();
+        for (int i = 0; i < polygon.getVertices().size() - 1; i++) {
+            Vector2 result = intersect(line.getX1(), line.getY1(), line.getX2(), line.getY2(),
+                    vertices.get(i).getX(), vertices.get(i).getY(), vertices.get(i + 1).getX(), vertices.get(i + 1).getY());
+            if (result != null) {
+                if (intersections == null) { // only create list if necessary
+                    intersections = new ArrayList<>();
+                }
+
+                if (!intersections.contains(result)) {
+                    intersections.add(result);
+                }
+            }
+        }
+
+        return intersections;
+    }
+
+    /**
+     * Checks for line intersection and returns a point of intersection if found.
+     *
+     * @param a
+     * @param b
+     * @return
+     */
+    public static Vector2 intersect(Line a, Line b) {
+        if (a == null || b == null || a.equals(b)) {
+            return null;
+        }
+
+        return intersect(a.getX1(), a.getY1(), a.getX2(), a.getY2(), b.getX1(), b.getY1(), b.getX2(), b.getY2());
+    }
+
+    /**
+     * Checks for line intersection and returns a point of intersection if found.
+     *
+     * @param p1x1
+     * @param p1y1
+     * @param p1x2
+     * @param p1y2
+     * @param p2x1
+     * @param p2y1
+     * @param p2x2
+     * @param p2y2
+     * @return
+     */
+    public static Vector2 intersect(float p1x1, float p1y1, float p1x2, float p1y2,
+            float p2x1, float p2y1, float p2x2, float p2y2) {
+        float d = (p1x1 - p1x2) * (p2y1 - p2y2) - (p1y1 - p1y2) * (p2x1 - p2x2);
+        if (d == 0) {
+            return null;
+        }
+
+        float xi = ((p2x1 - p2x2) * (p1x1 * p1y2 - p1y1 * p1x2) - (p1x1 - p1x2) * (p2x1 * p2y2 - p2y1 * p2x2)) / d;
+        float yi = ((p2y1 - p2y2) * (p1x1 * p1y2 - p1y1 * p1x2) - (p1y1 - p1y2) * (p2x1 * p2y2 - p2y1 * p2x2)) / d;
+
+        return new Vector2(xi, yi);
     }
 
     //endregion

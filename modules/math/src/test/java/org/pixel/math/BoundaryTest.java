@@ -5,8 +5,8 @@
 
 package org.pixel.math;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class BoundaryTest {
 
@@ -17,9 +17,9 @@ public class BoundaryTest {
         b = new Boundary(new Vector2(5, 5), new Vector2(20, 5), new Vector2(5, 20), new Vector2(20, 20));
         c = new Boundary(new Vector2(15, 15), new Vector2(20, 15), new Vector2(15, 20), new Vector2(20, 20));
 
-        Assert.assertTrue(a.overlapsWith(b));
-        Assert.assertFalse(a.overlapsWith(c));
-        Assert.assertTrue(b.overlapsWith(c));
+        Assertions.assertTrue(a.overlapsWith(b));
+        Assertions.assertFalse(a.overlapsWith(c));
+        Assertions.assertTrue(b.overlapsWith(c));
     }
 
 }

@@ -17,6 +17,10 @@ public class Vector2 implements Serializable {
     public static final Vector2 ZERO_ONE = zeroOne();
     public static final Vector2 ONE_ZERO = oneZero();
     public static final Vector2 HALF = half();
+    public static final Vector2 UP = zeroOne();
+    public static final Vector2 RIGHT = oneZero();
+    public static final Vector2 LEFT = new Vector2(-1, 0);
+    public static final Vector2 DOWN = new Vector2(0, -1);
 
     //endregion
 
@@ -144,7 +148,9 @@ public class Vector2 implements Serializable {
      * Normalizes the vector2
      */
     public void normalize() {
-        if (this.length() == 0) return;
+        if (this.length() == 0) {
+            return;
+        }
         float value = 1.f / this.length();
         this.setX(this.getX() * value);
         this.setY(this.getY() * value);
@@ -323,7 +329,16 @@ public class Vector2 implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("%s: [x: %f, y: %f]", Vector2.class.getName(), getX(), getY());
+        return String.format("%s: [x: %f, y: %f]", this.getClass().getSimpleName(), getX(), getY());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Vector2) {
+            return ((Vector2) obj).getX() == this.getX()
+                    && ((Vector2) obj).getY() == this.getY();
+        }
+        return false;
     }
 
     //endregion

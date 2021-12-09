@@ -9,6 +9,14 @@ import java.io.Serializable;
 
 public class Vector3 implements Serializable {
 
+    //region static
+
+    public static final Vector3 ZERO = new Vector3(0, 0, 0);
+    public static final Vector3 ONE = new Vector3(1, 1, 1);
+    public static final Vector3 HALF = new Vector3(0.5f, 0.5f, 0.5f);
+
+    //endregion
+
     //region properties
 
     private float x;
@@ -281,7 +289,17 @@ public class Vector3 implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("%s: [x: %f, y: %f, z: %f]", Vector3.class.getName(), getX(), getY(), getZ());
+        return String.format("%s: [x: %f, y: %f, z: %f]", this.getClass().getSimpleName(), getX(), getY(), getZ());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Vector3) {
+            return ((Vector3) obj).getX() == this.getX()
+                    && ((Vector3) obj).getY() == this.getY()
+                    && ((Vector3) obj).getZ() == this.getZ();
+        }
+        return false;
     }
 
     //endregion

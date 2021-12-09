@@ -5,9 +5,8 @@
 
 package org.pixel.math;
 
-import org.junit.Test;
-
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.Test;
 
 public class PerformanceTest {
 

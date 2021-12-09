@@ -63,7 +63,12 @@ allprojects {
         annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
         // test:
-        testImplementation group: "junit", name: "junit", version: "4.12"
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    }
+
+    test {
+        useJUnitPlatform()
     }
 
     jar {

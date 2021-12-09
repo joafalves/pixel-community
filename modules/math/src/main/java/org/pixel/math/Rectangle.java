@@ -301,6 +301,20 @@ public class Rectangle implements Serializable {
         }
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s: [x: %f, y: %f, w: %f, h: %f]",
+               this.getClass().getSimpleName(), getX(), getY(), getWidth(), getHeight());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Rectangle) {
+            return ((Rectangle) obj).getX() == getX() && ((Rectangle) obj).getY() == getY()
+                    && ((Rectangle) obj).getWidth() == getWidth() && ((Rectangle) obj).getHeight() == getHeight();
+        }
+        return false;
+    }
 
     //endregion
 }

@@ -270,5 +270,22 @@ public class Boundary implements Serializable {
         return MathHelper.overlap(a.getVertices(), b.getVertices());
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Boundary) {
+            return ((Boundary) obj).topLeft.equals(this.topLeft)
+                    && ((Boundary) obj).topRight.equals(this.topRight)
+                    && ((Boundary) obj).bottomLeft.equals(this.bottomLeft)
+                    && ((Boundary) obj).bottomRight.equals(this.bottomRight);
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s: [topLeft: '%s', topRight: '%s', bottomLeft: '%s', bottomRight: '%s']",
+                this.getClass().getSimpleName(), this.topLeft, this.topRight, this.bottomLeft, this.bottomRight);
+    }
+
     //endregion
 }

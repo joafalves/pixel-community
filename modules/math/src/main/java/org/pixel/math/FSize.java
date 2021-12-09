@@ -7,8 +7,8 @@ package org.pixel.math;
 
 public class FSize {
 
-    private Float width;
-    private Float height;
+    private float width;
+    private float height;
 
     /**
      * Constructor
@@ -24,40 +24,53 @@ public class FSize {
      * @param width
      * @param height
      */
-    public FSize(Float width, Float height) {
+    public FSize(float width, float height) {
         this.width = width;
         this.height = height;
     }
 
-    public void addWidth(Float value) {
-        this.width = width == null ? value : width + value;
+    public void addWidth(float value) {
+        this.width = width + value;
     }
 
-    public void subtractWidth(Float value) {
-        this.width = width == null ? -value : width - value;
+    public void subtractWidth(float value) {
+        this.width = width - value;
     }
 
-    public void addHeight(Float value) {
-        this.height = height == null ? value : height + value;
+    public void addHeight(float value) {
+        this.height = height + value;
     }
 
-    public void subtractHeight(Float value) {
-        this.height = height == null ? -value : height - value;
+    public void subtractHeight(float value) {
+        this.height = height - value;
     }
 
-    public Float getHeight() {
+    public float getHeight() {
         return height;
     }
 
-    public void setHeight(Float height) {
+    public void setHeight(float height) {
         this.height = height;
     }
 
-    public Float getWidth() {
+    public float getWidth() {
         return width;
     }
 
-    public void setWidth(Float width) {
+    public void setWidth(float width) {
         this.width = width;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof FSize) {
+            return ((FSize) obj).getWidth() == this.getWidth() && ((FSize) obj).getHeight() == this.getHeight();
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s: [w: %f, h: %f]", this.getClass().getSimpleName(), getWidth(), getHeight());
     }
 }

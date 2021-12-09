@@ -56,6 +56,20 @@ public class Polygon implements Serializable {
         return overlap(this, other);
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s: [vertices: %d]", this.getClass().getSimpleName(), vertices.size());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Polygon) {
+            return ((Polygon) obj).vertices.equals(vertices);
+        }
+        return false;
+    }
+
+
     //endregion
 
     //region public static methods

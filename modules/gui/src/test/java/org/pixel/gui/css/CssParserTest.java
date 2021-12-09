@@ -6,10 +6,6 @@
 package org.pixel.gui.css;
 
 import cz.vutbr.web.css.CSSException;
-import org.junit.Test;
-import org.pixel.gui.style.StyleFactory;
-import org.pixel.gui.style.StyleProperty;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +13,9 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Test;
+import org.pixel.gui.style.StyleFactory;
+import org.pixel.gui.style.StyleProperty;
 
 public class CssParserTest {
 

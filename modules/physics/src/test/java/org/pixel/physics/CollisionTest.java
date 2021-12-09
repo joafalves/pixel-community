@@ -5,13 +5,12 @@
 
 package org.pixel.physics;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.pixel.math.Vector2;
-import org.pixel.physics.shape.CircleShape;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.pixel.math.Vector2;
+import org.pixel.physics.shape.CircleShape;
 
 public class CollisionTest {
 
@@ -29,7 +28,7 @@ public class CollisionTest {
         CollisionManager manager = new CollisionManager();
         List<CollisionGroup> collisions = manager.detectCollisions(bodyList);
 
-        Assert.assertTrue(collisions.size() > 0);
+        Assertions.assertTrue(collisions.size() > 0);
     }
 
 }
