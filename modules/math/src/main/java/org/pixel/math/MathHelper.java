@@ -162,6 +162,33 @@ public class MathHelper {
     }
 
     /**
+     * Rotates a point around a given origin
+     *
+     * @param point
+     * @param origin
+     * @param angle
+     * @return
+     */
+    public static Vector2 rotatePoint(Vector2 point, Vector2 origin, float angle) {
+        return rotatePoint(point.getX(), point.getY(), origin.getX(), origin.getY(), angle);
+    }
+
+    /**
+     * Rotates a point around a given origin
+     *
+     * @param x     point x
+     * @param y     point y
+     * @param ox    central point x
+     * @param oy    central point y
+     * @param angle angle in radians
+     * @return
+     */
+    public static Vector2 rotatePoint(float x, float y, float ox, float oy, float angle) {
+        return new Vector2(ox + (x - ox) * cos(angle) - (y - oy) * sin(angle),
+                oy + (y - oy) * cos(angle) + (x - ox) * sin(angle));
+    }
+
+    /**
      * Checks for polygon collision (vertices are required to be ordered either clockwise or counter-clockwise). This
      * approach is based on the SAT (Separating Axis Theorem).
      *
@@ -221,6 +248,7 @@ public class MathHelper {
 
     /**
      * Checks for line intersection against a polygon. Returns the intersection point(s) if any.
+     *
      * @param line
      * @param polygon
      * @return
@@ -230,7 +258,8 @@ public class MathHelper {
         List<Vector2> vertices = polygon.getVertices();
         for (int i = 0; i < polygon.getVertices().size() - 1; i++) {
             Vector2 result = intersect(line.getX1(), line.getY1(), line.getX2(), line.getY2(),
-                    vertices.get(i).getX(), vertices.get(i).getY(), vertices.get(i + 1).getX(), vertices.get(i + 1).getY());
+                    vertices.get(i).getX(), vertices.get(i).getY(), vertices.get(i + 1).getX(),
+                    vertices.get(i + 1).getY());
             if (result != null) {
                 if (intersections == null) { // only create list if necessary
                     intersections = new ArrayList<>();
