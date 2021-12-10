@@ -176,16 +176,40 @@ public class MathHelper {
     /**
      * Rotates a point around a given origin
      *
-     * @param x     point x
-     * @param y     point y
-     * @param ox    central point x
-     * @param oy    central point y
-     * @param angle angle in radians
+     * @param x       point x
+     * @param y       point y
+     * @param originX origin point x
+     * @param originY origin point y
+     * @param angle   angle in radians
      * @return
      */
-    public static Vector2 rotatePoint(float x, float y, float ox, float oy, float angle) {
-        return new Vector2(ox + (x - ox) * cos(angle) - (y - oy) * sin(angle),
-                oy + (y - oy) * cos(angle) + (x - ox) * sin(angle));
+    public static Vector2 rotatePoint(float x, float y, float originX, float originY, float angle) {
+        return new Vector2(originX + (x - originX) * cos(angle) - (y - originY) * sin(angle),
+                originY + (y - originY) * cos(angle) + (x - originX) * sin(angle));
+    }
+
+    /**
+     * Calculates the forward direction for a given target based on the current origin
+     *
+     * @param origin
+     * @param target
+     * @return
+     */
+    public static float direction(Vector2 origin, Vector2 target) {
+        return direction(origin.getX(), origin.getY(), target.getX(), target.getY());
+    }
+
+    /**
+     * Calculates the resulting direction for a given target based on the current origin
+     *
+     * @param originX
+     * @param originY
+     * @param targetX
+     * @param targetY
+     * @return
+     */
+    public static float direction(float originX, float originY, float targetX, float targetY) {
+        return (float) Math.atan2(targetY - originY, targetX - originX);
     }
 
     /**

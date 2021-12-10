@@ -32,6 +32,14 @@ public class Size {
         return width;
     }
 
+    public int getHalfWidth() {
+        return width / 2;
+    }
+
+    public int getHalfHeight() {
+        return height / 2;
+    }
+
     public void setWidth(int width) {
         this.width = width;
     }

@@ -124,6 +124,9 @@ public class Camera2D implements Disposable, Serializable {
         return Vector2.transformMatrix4(new Vector2(nx, ny), invertMatrix);
     }
 
+    /**
+     * @return
+     */
     public Vector2 getPosition() {
         return this.position;
     }

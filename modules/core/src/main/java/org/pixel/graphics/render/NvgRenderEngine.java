@@ -44,6 +44,7 @@ import static org.lwjgl.nanovg.NanoVG.nvgStrokeWidth;
 import static org.lwjgl.nanovg.NanoVG.nvgTextAlign;
 import static org.lwjgl.nanovg.NanoVG.nvgTextBox;
 import static org.lwjgl.nanovg.NanoVG.nvgTextBoxBounds;
+import static org.lwjgl.nanovg.NanoVG.nvgTransform;
 import static org.lwjgl.nanovg.NanoVG.nvgTranslate;
 import static org.lwjgl.nanovg.NanoVGGL3.NVG_ANTIALIAS;
 import static org.lwjgl.nanovg.NanoVGGL3.NVG_STENCIL_STROKES;
@@ -62,6 +63,7 @@ import org.pixel.commons.model.VerticalAlignment;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.shader.ShaderManager;
 import org.pixel.math.FSize;
+import org.pixel.math.Matrix4;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 
@@ -123,6 +125,13 @@ public class NvgRenderEngine extends RenderEngine2D {
     }
 
     @Override
+    public void transform(Matrix4 viewMatrix) {
+        float[][] matrixValues = viewMatrix.toUnsafeArray();
+        nvgTransform(ctx, matrixValues[0][0], matrixValues[1][0], matrixValues[0][1], matrixValues[1][1],
+                matrixValues[0][2], matrixValues[1][2]);
+    }
+
+    @Override
     public void translate(float x, float y) {
         nvgTranslate(ctx, x, y);
     }
@@ -158,8 +167,10 @@ public class NvgRenderEngine extends RenderEngine2D {
     }
 
     @Override
-    public void boxGradient(float x, float y, float width, float height, float radius, float feather, Color startColor, Color endColor) {
-        nvgBoxGradient(ctx, x, y, width, height, radius, feather, set(startColor, nvgColor1), set(endColor, nvgColor2), nvgPaint1);
+    public void boxGradient(float x, float y, float width, float height, float radius, float feather, Color startColor,
+            Color endColor) {
+        nvgBoxGradient(ctx, x, y, width, height, radius, feather, set(startColor, nvgColor1), set(endColor, nvgColor2),
+                nvgPaint1);
     }
 
     @Override

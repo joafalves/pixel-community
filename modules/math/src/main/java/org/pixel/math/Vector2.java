@@ -94,6 +94,14 @@ public class Vector2 implements Serializable {
     }
 
     /**
+     * @param xy
+     */
+    public void add(float xy) {
+        this.setX(this.getX() + xy);
+        this.setY(this.getY() + xy);
+    }
+
+    /**
      * @param vec2
      */
     public void subtract(Vector2 vec2) {
@@ -108,6 +116,15 @@ public class Vector2 implements Serializable {
     public void subtract(float x, float y) {
         this.setX(this.getX() - x);
         this.setY(this.getY() - y);
+    }
+
+
+    /**
+     * @param xy
+     */
+    public void subtract(float xy) {
+        this.setX(this.getX() - xy);
+        this.setY(this.getY() - xy);
     }
 
     /**
@@ -128,6 +145,14 @@ public class Vector2 implements Serializable {
     }
 
     /**
+     * @param xy
+     */
+    public void multiply(float xy) {
+        this.x *= xy;
+        this.y *= xy;
+    }
+
+    /**
      * @param vec2
      */
     public void divide(Vector2 vec2) {
@@ -145,11 +170,33 @@ public class Vector2 implements Serializable {
     }
 
     /**
+     * @param xy
+     */
+    public void divide(float xy) {
+        this.x /= xy;
+        this.y /= xy;
+    }
+
+    /**
+     * Move  vector towards the target vector by the given amount
+     *
+     * @param target
+     * @param amount - the amount to move towards the target
+     */
+    public void moveTo(Vector2 target, float amount) {
+        float distance = distanceTo(target);
+        float directionX = (target.getX() - this.getX()) / distance;
+        float directionY = (target.getY() - this.getY()) / distance;
+        this.setX(this.getX() + directionX * amount);
+        this.setY(this.getY() + directionY * amount);
+    }
+
+    /**
      * Normalizes the vector2
      */
     public void normalize() {
         if (this.length() == 0) {
-            return;
+            throw new RuntimeException("The length of the vector is 0");
         }
         float value = 1.f / this.length();
         this.setX(this.getX() * value);
@@ -402,7 +449,18 @@ public class Vector2 implements Serializable {
      * @return
      */
     public static float dot(Vector2 a, Vector2 b) {
-        return a.x * b.x + a.y * b.y;
+        return dot(a.x, a.y, b.x, b.y);
+    }
+
+    /**
+     * @param ax
+     * @param ay
+     * @param bx
+     * @param by
+     * @return
+     */
+    public static float dot(float ax, float ay, float bx, float by) {
+        return ax * bx + ay * by;
     }
 
     /**

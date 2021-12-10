@@ -10,6 +10,7 @@ import org.pixel.commons.model.Solidity;
 import org.pixel.commons.model.VerticalAlignment;
 import org.pixel.graphics.Color;
 import org.pixel.math.FSize;
+import org.pixel.math.Matrix4;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 
@@ -23,6 +24,11 @@ public abstract class RenderEngine2D extends StatefulRenderEngine {
     public RenderEngine2D(Rectangle viewportDimensions) {
         super(viewportDimensions);
     }
+
+    /**
+     * @param viewMatrix
+     */
+    public abstract void transform(Matrix4 viewMatrix);
 
     /**
      * @param position
@@ -55,6 +61,7 @@ public abstract class RenderEngine2D extends StatefulRenderEngine {
     public abstract void scale(float x, float y);
 
     /**
+     *
      */
     public abstract void beginPath();
 
