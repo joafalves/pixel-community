@@ -189,7 +189,7 @@ public class MathHelper {
     }
 
     /**
-     * Calculates the forward direction for a given target based on the current origin
+     * Calculates the resulting direction for a given target based on the current origin
      *
      * @param origin
      * @param target
