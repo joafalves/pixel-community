@@ -11,8 +11,7 @@ import org.junit.jupiter.api.Test;
 public class HashUtilsTest {
 
     @Test
-    public void uidTest() {
-        Assertions.assertNotNull(HashUtils.generateUID());
+    public void uniqueIdGenerationTest() {
         Assertions.assertNotNull(HashUtils.generateUID());
     }
 }

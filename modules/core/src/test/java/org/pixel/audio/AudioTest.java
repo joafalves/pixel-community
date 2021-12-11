@@ -12,6 +12,7 @@ import static org.lwjgl.openal.ALC10.alcMakeContextCurrent;
 import static org.lwjgl.openal.ALC10.alcOpenDevice;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALC;
@@ -24,6 +25,7 @@ import org.lwjgl.openal.ALCapabilities;
 public class AudioTest {
 
     @Test
+    @Disabled
     public void deviceTest() {
         String defaultDeviceName = alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER);
         Assertions.assertNotNull(defaultDeviceName);
