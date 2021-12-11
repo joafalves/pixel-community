@@ -5,7 +5,7 @@
 import org.gradle.internal.os.OperatingSystem
 
 // Pixel Version:
-version = "0.5.1"
+version = "0.5.2"
 
 // Lwjgl Version & Build Target(s)
 def lwjglVersion = "3.3.0"
