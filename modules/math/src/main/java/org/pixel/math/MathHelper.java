@@ -29,6 +29,14 @@ public class MathHelper {
      * @param value
      * @return
      */
+    public static float tan(float value) {
+        return (float) Math.tan(value);
+    }
+
+    /**
+     * @param value
+     * @return
+     */
     public static float sin(float value) {
         return (float) Math.sin(value);
     }
@@ -39,6 +47,23 @@ public class MathHelper {
      */
     public static float cos(float value) {
         return (float) Math.cos(value);
+    }
+
+    /**
+     * @param value
+     * @return
+     */
+    public static float acos(float value) {
+        return (float) Math.acos(value);
+    }
+
+    /**
+     * @param y
+     * @param x
+     * @return
+     */
+    public static float atan2(float y, float x) {
+        return (float) Math.atan2(y, x);
     }
 
     /**
@@ -61,6 +86,24 @@ public class MathHelper {
      */
     public static float random(float min, float max) {
         return min + ThreadLocalRandom.current().nextFloat() * (max - min);
+    }
+
+    /**
+     * @param a
+     * @param b
+     * @return
+     */
+    public static float max(float a, float b) {
+        return Math.max(a, b);
+    }
+
+    /**
+     * @param a
+     * @param b
+     * @return
+     */
+    public static float min(float a, float b) {
+        return Math.min(a, b);
     }
 
     /**
@@ -125,7 +168,7 @@ public class MathHelper {
      * @param degree
      * @return
      */
-    public static float degToRad(float degree) {
+    public static float toRadians(float degree) {
         return degree * 0.0174532925f;
     }
 
@@ -133,7 +176,7 @@ public class MathHelper {
      * @param radian
      * @return
      */
-    public static float radToDeg(float radian) {
+    public static float toDegrees(float radian) {
         return radian * 57.295779513f;
     }
 
