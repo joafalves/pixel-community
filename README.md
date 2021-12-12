@@ -1,4 +1,4 @@
-![Pixel - Java Game Framework]()
+![Pixel - Java Game Framework](/resources/images/logo-read-me.png)
 
 ![](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20MacOS-lightgrey) ![](https://img.shields.io/badge/java-%3E%3D%208-green)
 
