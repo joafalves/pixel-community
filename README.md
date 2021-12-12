@@ -6,7 +6,7 @@
 
 ### What is this repository for? ###
 
-This repository contains the Pixel Java Framework and associated modules and dependencies. 
+This repository contains the Pixel Java Framework and associated modules/dependencies. 
 **At the moment this software is in Development Stage and not ready for production use. Feel free to experiment and help this project grow.** 
 
 ### Description ###
