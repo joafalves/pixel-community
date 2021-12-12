@@ -5,14 +5,32 @@
 
 package org.pixel.math;
 
-public class Size {
+import java.io.Serializable;
+
+public class Size implements Serializable {
 
     private int width;
     private int height;
 
+    /**
+     * Constructor
+     *
+     * @param width
+     * @param height
+     */
     public Size(int width, int height) {
         this.width = width;
         this.height = height;
+    }
+
+    /**
+     * Constructor
+     *
+     * @param other
+     */
+    public Size(Size other) {
+        this.width = other.width;
+        this.height = other.height;
     }
 
     public void set(int width, int height) {

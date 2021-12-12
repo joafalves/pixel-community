@@ -5,7 +5,9 @@
 
 package org.pixel.math;
 
-public class FSize {
+import java.io.Serializable;
+
+public class FSize implements Serializable {
 
     private float width;
     private float height;
@@ -27,6 +29,16 @@ public class FSize {
     public FSize(float width, float height) {
         this.width = width;
         this.height = height;
+    }
+
+    /**
+     * Constructor
+     *
+     * @param other
+     */
+    public FSize(float other) {
+        this.width = other;
+        this.height = other;
     }
 
     public void addWidth(float value) {

@@ -91,6 +91,19 @@ public class Boundary implements Serializable {
         this.vectorCache = null;
     }
 
+    /**
+     * Constructor
+     *
+     * @param other
+     */
+    public Boundary(Boundary other) {
+        this.topLeft = new Vector2(other.topLeft);
+        this.topRight = new Vector2(other.topRight);
+        this.bottomLeft = new Vector2(other.bottomLeft);
+        this.bottomRight = new Vector2(other.bottomRight);
+        this.vectorCache = null;
+    }
+
     //endregion
 
     //region public methods

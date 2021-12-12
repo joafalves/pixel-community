@@ -42,6 +42,18 @@ public class Polygon implements Serializable {
         this.vertices = vertices;
     }
 
+    /**
+     * Constructor
+     *
+     * @param other
+     */
+    public Polygon(Polygon other) {
+        this.vertices = new ArrayList<>();
+        for (Vector2 v : other.vertices) {
+            this.vertices.add(new Vector2(v));
+        }
+    }
+
     //endregion
 
     //region public methods
@@ -68,7 +80,6 @@ public class Polygon implements Serializable {
         }
         return false;
     }
-
 
     //endregion
 

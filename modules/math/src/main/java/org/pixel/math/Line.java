@@ -1,15 +1,24 @@
 package org.pixel.math;
 
+import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class Line {
+public class Line implements Serializable {
 
     private float x1, y1;
     private float x2, y2;
 
+    /**
+     * Constructor
+     *
+     * @param x1
+     * @param y1
+     * @param x2
+     * @param y2
+     */
     public Line(float x1, float y1, float x2, float y2) {
         this.x1 = x1;
         this.y1 = y1;
@@ -17,8 +26,26 @@ public class Line {
         this.y2 = y2;
     }
 
+    /**
+     * Constructor
+     *
+     * @param point1
+     * @param point2
+     */
     public Line(Vector2 point1, Vector2 point2) {
         this(point1.getX(), point1.getY(), point2.getX(), point2.getY());
+    }
+
+    /**
+     * Constructor
+     *
+     * @param other
+     */
+    public Line(Line other) {
+        this.x1 = other.x1;
+        this.y1 = other.y1;
+        this.x2 = other.x2;
+        this.y2 = other.y2;
     }
 
     public void set(float x1, float y1, float x2, float y2) {

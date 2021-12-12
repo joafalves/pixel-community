@@ -27,6 +27,16 @@ public class Circle implements Serializable {
         this.radius = radius;
     }
 
+    /**
+     * Constructor
+     *
+     * @param other
+     */
+    public Circle(Circle other) {
+        this.position = new Vector2(other.getPosition());
+        this.radius = other.getRadius();
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Circle) {
