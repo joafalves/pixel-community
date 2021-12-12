@@ -14,7 +14,7 @@ This repository contains the Pixel Java Framework and associated modules and dep
 The Pixel Framework aims to provide a high performance and lightweight OpenGL (lwjgl-glfw) 2D game development workflow. 
 Directly inspired in existing frameworks such as XNA, this framework it's not strictly imposing and enables personal development workflows.
 
-:book: For practical details on how to use this framework, please check our [wiki page]()  (under construction) 
+:book: For practical details on how to use this framework, please check our [wiki page](https://github.com/joafalves/pixel-community/wiki)  (under construction) 
 
 ### Examples ##
 
