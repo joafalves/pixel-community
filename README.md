@@ -109,13 +109,13 @@ The framework functionality is divided into multiple modules which can be import
 ### Third-party libs ###
 
     lwjgl 3.x       (runtime)
-    org.json 2018+  (runtime)
-    junit 4.x       (test)
+    org.json 2021+  (runtime)
+    junit 5.x       (test)
    
 ### Setup Requirements ###
 
-1. Java 11+ (tested up to version 17)
-2. Gradle 6.x+
+1. Java 11+ (up-to version 17)
+2. Gradle 7.x+
 
 ### FAQ ###
 
