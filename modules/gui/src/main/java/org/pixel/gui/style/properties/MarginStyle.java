@@ -39,8 +39,6 @@ public class MarginStyle extends StyleProperty {
 
     /**
      * Get style with default values
-     *
-     * @return
      */
     @Override
     public void setUnassignedProperties() {

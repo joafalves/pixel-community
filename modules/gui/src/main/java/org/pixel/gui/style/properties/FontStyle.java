@@ -35,8 +35,6 @@ public class FontStyle extends StyleProperty {
 
     /**
      * Set missing property values
-     *
-     * @return
      */
     @Override
     public void setUnassignedProperties() {

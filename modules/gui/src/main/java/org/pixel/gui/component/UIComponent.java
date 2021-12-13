@@ -169,8 +169,6 @@ public abstract class UIComponent implements Disposable {
 
     /**
      * Get the computed bounds (parent back-tracing)
-     *
-     * @return
      */
     public void updateBounds() {
         float parentWidth = getParentWidth();

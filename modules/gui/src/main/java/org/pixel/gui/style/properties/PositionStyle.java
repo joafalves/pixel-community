@@ -40,8 +40,6 @@ public class PositionStyle extends StyleProperty {
 
     /**
      * Get style with default values
-     *
-     * @return
      */
     @Override
     public void setUnassignedProperties() {

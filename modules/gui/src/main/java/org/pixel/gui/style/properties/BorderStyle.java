@@ -41,8 +41,6 @@ public class BorderStyle extends StyleProperty {
 
     /**
      * Set missing property values
-     *
-     * @return
      */
     @Override
     public void setUnassignedProperties() {

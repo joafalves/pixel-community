@@ -16,8 +16,6 @@ public abstract class StyleProperty implements Cloneable {
 
     /**
      * Get style with default values
-     *
-     * @return
      */
     public abstract void setUnassignedProperties();
 

@@ -34,8 +34,6 @@ public class BoxSizingStyle extends StyleProperty {
 
     /**
      * Set missing property values
-     *
-     * @return
      */
     @Override
     public void setUnassignedProperties() {

@@ -37,8 +37,6 @@ public class BoxGradientBackgroundStyle extends BackgroundStyle {
 
     /**
      * Set missing property values
-     *
-     * @return
      */
     @Override
     public void setUnassignedProperties() {

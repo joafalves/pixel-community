@@ -4,7 +4,3 @@
  */
 
 project.ext.mavenPublish = true
-
-dependencies {
-    api project(":${rootProject.name}-math")
-}

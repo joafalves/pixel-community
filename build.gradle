@@ -22,13 +22,16 @@ if (buildTarget == "all") {
     buildTargetList.add(buildTarget)
 } else {
     // no manual build type assigned, apply the classifier based on the current Operating System:
-    buildTargetList.add(getCurrentClassifier())
+    buildTarget = getCurrentClassifier()
+    buildTargetList.add(buildTarget)
 }
 
 allprojects {
     // plugins
-    apply plugin: "java"
+    apply plugin: 'java'
     apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
 
     // project version
     version rootProject.version
@@ -79,6 +82,87 @@ allprojects {
             )
         }
     }
+
+    task sourceJar(type: Jar) {
+        classifier "sources"
+        from sourceSets.main.allJava
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier "javadoc"
+        from javadoc.destinationDir
+    }
+
+    artifacts {
+        archives jar
+        archives sourceJar
+        archives javadocJar
+    }
+
+    signing {
+        sign(publishing.publications) // sign everything to be published
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                groupId 'io.github.joafalves'
+                artifactId project.name + "-" + simplifyBuildTargetName(buildTarget)
+                version rootProject.version
+                from components.java
+
+                artifact(sourceJar) {
+                    classifier = 'sources'
+                }
+
+                artifact(javadocJar) {
+                    classifier = 'javadoc'
+                }
+
+                pom {
+                    name = 'Pixel 2D Game Framework'
+                    description = 'Java 2D Game Framework inspired on the popular XNA framework.'
+                    url = 'https://github.com/joafalves/pixel-community'
+                    licenses {
+                        license {
+                            name = 'The Apache License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'jfalves'
+                            name = 'João Alves'
+                            email = 'joao.cpp.sca@gmail.com'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:git://github.com/joafalves/pixel-community.git'
+                        developerConnection = 'scm:git:ssh://github.com/joafalves/pixel-community.git'
+                        url = 'https://github.com/joafalves/pixel-community'
+                    }
+                }
+            }
+        }
+        repositories {
+            if (property("sonatypeUsername") != null) {
+                maven {
+                    url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2"
+                    credentials {
+                        username sonatypeUsername
+                        password sonatypePassword
+                    }
+                }
+            }
+        }
+    }
+
+    tasks.withType(AbstractPublishToMaven).configureEach {
+        {
+            // only publish modules with 'mavenPublish' set to 'true'
+            it.enabled = (project.ext.has("mavenPublish") && project.ext.get("mavenPublish"))
+        }
+    }
 }
 
 //def bundleList = rootProject.subprojects.collect { ":" + it.name } // kinda cool but not configurable
@@ -106,6 +190,10 @@ task bundle(type: Jar, dependsOn: bundleList.collect { it + ":compileJava" }) {
             project(it).configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
         }
     }
+}
+
+static def simplifyBuildTargetName(target) {
+    return target.substring('-natives'.length());
 }
 
 static def getCurrentClassifier() {

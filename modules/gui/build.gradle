@@ -3,6 +3,8 @@
  * Copyright (c) 2020
  */
 
+project.ext.mavenPublish = true
+
 dependencies {
     implementation project(":${rootProject.name}-commons")
     implementation project(":${rootProject.name}-core")
