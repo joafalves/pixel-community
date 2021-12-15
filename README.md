@@ -81,9 +81,10 @@ The framework functionality is divided into multiple modules which can be import
 
     .build/                         # Bundle .jar files (run 'bundle' gradle task)
     .demos/                         # Feature showroom and learning examples
+    .extensions/                    # Extensions for the framework
+        └── ext-log4j2              # Log4j2 extension
     .modules/
         ├── commons                 # Common utility classes
-        ├── content                 # Resource modules
         ├── core                    # Main module, contains principal classes
         ├── gui                     # Graphical interface module (WIP)
         ├── input                   # Input module
