@@ -17,10 +17,10 @@ public class Circle implements Serializable {
     private float radius;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param position
-     * @param radius
+     * @param position The position of the circle.
+     * @param radius   The radius of the circle.
      */
     public Circle(Vector2 position, float radius) {
         this.position = position;
@@ -28,9 +28,9 @@ public class Circle implements Serializable {
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param other
+     * @param other The other circle.
      */
     public Circle(Circle other) {
         this.position = new Vector2(other.getPosition());

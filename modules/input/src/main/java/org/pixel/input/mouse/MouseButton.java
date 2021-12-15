@@ -26,18 +26,18 @@ public enum MouseButton {
     private final int value;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param value
+     * @param value Mouse button value.
      */
     MouseButton(int value) {
         this.value = value;
     }
 
     /**
-     * Get mouse button value
+     * Get mouse button value.
      *
-     * @return
+     * @return Mouse button value.
      */
     public int getValue() {
         return this.value;

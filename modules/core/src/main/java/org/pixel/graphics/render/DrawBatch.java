@@ -13,14 +13,14 @@ public abstract class DrawBatch implements Disposable {
     //region public methods
 
     /**
-     * Begin drawing phase
+     * Begin drawing phase.
      *
-     * @param viewMatrix
+     * @param viewMatrix The view matrix.
      */
     public abstract void begin(Matrix4 viewMatrix);
 
     /**
-     * End drawing phase
+     * End drawing phase.
      */
     public abstract void end();
 

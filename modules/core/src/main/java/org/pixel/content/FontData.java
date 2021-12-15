@@ -11,10 +11,20 @@ public class FontData {
 
     private final ByteBuffer source;
 
+    /**
+     * Constructor.
+     *
+     * @param source Source data.
+     */
     public FontData(ByteBuffer source) {
         this.source = source;
     }
 
+    /**
+     * Get the source data.
+     *
+     * @return Source data.
+     */
     public ByteBuffer getSource() {
         return source;
     }

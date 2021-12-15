@@ -5,9 +5,13 @@
 
 package org.pixel.content;
 
-/**
- * @author João Filipe Alves
- */
 public interface ContentImporter<T> {
+
+    /**
+     * Imports and transforms the content from the given path to the given type.
+     *
+     * @param ctx The context of the content.
+     * @return The transformed content.
+     */
     T process(ImportContext ctx);
 }

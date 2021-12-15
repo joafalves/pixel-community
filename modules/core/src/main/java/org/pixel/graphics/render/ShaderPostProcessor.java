@@ -5,6 +5,49 @@
 
 package org.pixel.graphics.render;
 
+import static org.lwjgl.opengl.GL11.GL_CLAMP;
+import static org.lwjgl.opengl.GL15C.glDeleteBuffers;
+import static org.lwjgl.opengl.GL30C.GL_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL30C.GL_COLOR_ATTACHMENT0;
+import static org.lwjgl.opengl.GL30C.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL30C.GL_DRAW_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30C.GL_FLOAT;
+import static org.lwjgl.opengl.GL30C.GL_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30C.GL_FRAMEBUFFER_COMPLETE;
+import static org.lwjgl.opengl.GL30C.GL_NEAREST;
+import static org.lwjgl.opengl.GL30C.GL_READ_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30C.GL_RENDERBUFFER;
+import static org.lwjgl.opengl.GL30C.GL_RGB;
+import static org.lwjgl.opengl.GL30C.GL_STATIC_DRAW;
+import static org.lwjgl.opengl.GL30C.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL30C.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL30C.GL_TRIANGLES;
+import static org.lwjgl.opengl.GL30C.glActiveTexture;
+import static org.lwjgl.opengl.GL30C.glBindBuffer;
+import static org.lwjgl.opengl.GL30C.glBindFramebuffer;
+import static org.lwjgl.opengl.GL30C.glBindRenderbuffer;
+import static org.lwjgl.opengl.GL30C.glBindVertexArray;
+import static org.lwjgl.opengl.GL30C.glBlitFramebuffer;
+import static org.lwjgl.opengl.GL30C.glBufferData;
+import static org.lwjgl.opengl.GL30C.glCheckFramebufferStatus;
+import static org.lwjgl.opengl.GL30C.glClear;
+import static org.lwjgl.opengl.GL30C.glClearColor;
+import static org.lwjgl.opengl.GL30C.glDeleteFramebuffers;
+import static org.lwjgl.opengl.GL30C.glDeleteRenderbuffers;
+import static org.lwjgl.opengl.GL30C.glDeleteVertexArrays;
+import static org.lwjgl.opengl.GL30C.glDrawArrays;
+import static org.lwjgl.opengl.GL30C.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL30C.glFramebufferRenderbuffer;
+import static org.lwjgl.opengl.GL30C.glFramebufferTexture2D;
+import static org.lwjgl.opengl.GL30C.glGenBuffers;
+import static org.lwjgl.opengl.GL30C.glGenFramebuffers;
+import static org.lwjgl.opengl.GL30C.glGenRenderbuffers;
+import static org.lwjgl.opengl.GL30C.glGenTextures;
+import static org.lwjgl.opengl.GL30C.glGenVertexArrays;
+import static org.lwjgl.opengl.GL30C.glRenderbufferStorageMultisample;
+import static org.lwjgl.opengl.GL30C.glUniform1f;
+import static org.lwjgl.opengl.GL30C.glVertexAttribPointer;
+
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
@@ -12,11 +55,7 @@ import org.pixel.content.Texture;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.shader.Shader;
 import org.pixel.graphics.shader.ShaderManager;
-import org.pixel.math.Size;
-
-import static org.lwjgl.opengl.GL11.GL_CLAMP;
-import static org.lwjgl.opengl.GL15C.glDeleteBuffers;
-import static org.lwjgl.opengl.GL30C.*;
+import org.pixel.math.IntSize;
 
 public class ShaderPostProcessor implements PostProcessor {
 
@@ -25,7 +64,7 @@ public class ShaderPostProcessor implements PostProcessor {
     private Shader shader;
     private Color bgColor;
     private Texture texture;
-    private Size size;
+    private IntSize intSize;
     private int msfbo;
     private int fbo;
     private int rbo;
@@ -35,12 +74,12 @@ public class ShaderPostProcessor implements PostProcessor {
     private float uTime;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param shader
-     * @param bgColor
-     * @param width
-     * @param height
+     * @param shader  Shader to use.
+     * @param bgColor Background color.
+     * @param width   Width of the post-processed texture.
+     * @param height  Height of the post-processed texture.
      */
     public ShaderPostProcessor(Shader shader, Color bgColor, int width, int height) {
         if (shader == null) {
@@ -54,7 +93,7 @@ public class ShaderPostProcessor implements PostProcessor {
         this.rbo = glGenRenderbuffers(); // render buffer
         this.vao = glGenVertexArrays();
         this.vbo = glGenBuffers();
-        this.size = new Size(width, height);
+        this.intSize = new IntSize(width, height);
         this.setupBuffers();
         this.setupRenderData();
         this.setupShader();
@@ -67,7 +106,7 @@ public class ShaderPostProcessor implements PostProcessor {
         // initialize render buffer with a multi sampled fbo
         glBindFramebuffer(GL_FRAMEBUFFER, msfbo);
         glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, 8, GL_RGB, size.getWidth(), size.getHeight());
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, 8, GL_RGB, intSize.getWidth(), intSize.getHeight());
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             LOG.error("Failed to initialize MSFBO");
@@ -85,7 +124,7 @@ public class ShaderPostProcessor implements PostProcessor {
 
         // initialize fbo/texture for shader operations
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        texture.setData(null, size.getWidth(), size.getHeight());
+        texture.setData(null, intSize.getWidth(), intSize.getHeight());
         texture.unbind();
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.getId(), 0);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
@@ -95,7 +134,7 @@ public class ShaderPostProcessor implements PostProcessor {
     }
 
     /**
-     * Setup render data
+     * Setup render data.
      */
     private void setupRenderData() {
         float[] vertices = new float[]{
@@ -120,7 +159,7 @@ public class ShaderPostProcessor implements PostProcessor {
     }
 
     /**
-     * Setup shader
+     * Setup shader.
      */
     private void setupShader() {
         ShaderManager.useShader(shader);
@@ -128,7 +167,7 @@ public class ShaderPostProcessor implements PostProcessor {
     }
 
     /**
-     * Start the post processing phase
+     * Start the post-processing phase.
      */
     @Override
     public void begin() {
@@ -139,20 +178,22 @@ public class ShaderPostProcessor implements PostProcessor {
     }
 
     /**
-     * End the post processing phase
+     * End the post-processing phase.
      */
     @Override
     public void end() {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, msfbo);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
-        glBlitFramebuffer(0, 0, size.getWidth(), size.getHeight(), 0, 0, size.getWidth(), size.getHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBlitFramebuffer(0, 0, intSize.getWidth(), intSize.getHeight(), 0, 0, intSize.getWidth(), intSize.getHeight(),
+                GL_COLOR_BUFFER_BIT, GL_NEAREST);
         glBindFramebuffer(GL_FRAMEBUFFER, 0); // unbinds both buffers
         stage = 2;
     }
 
     /**
-     * Apply post processing
-     * @param delta
+     * Apply post-processing.
+     *
+     * @param delta Time since last frame.
      */
     @Override
     public void apply(DeltaTime delta) {
@@ -182,9 +223,6 @@ public class ShaderPostProcessor implements PostProcessor {
         stage = 0;
     }
 
-    /**
-     * Dispose function
-     */
     @Override
     public void dispose() {
         glDeleteFramebuffers(this.fbo);
@@ -195,26 +233,52 @@ public class ShaderPostProcessor implements PostProcessor {
         texture.dispose();
     }
 
-    public int getWidth() {
-        return size.getWidth();
-    }
-
+    /**
+     * Set post-processing texture size.
+     *
+     * @param width  Width.
+     * @param height Height.
+     */
     public void setSize(int width, int height) {
-        if (width != this.size.getWidth() || height != this.size.getHeight()) {
-            this.size.setWidth(width);
-            this.size.setHeight(height);
+        if (width != this.intSize.getWidth() || height != this.intSize.getHeight()) {
+            this.intSize.setWidth(width);
+            this.intSize.setHeight(height);
             this.setupBuffers();
         }
     }
 
-    public int getHeight() {
-        return size.getHeight();
+    /**
+     * Get texture width.
+     *
+     * @return Width.
+     */
+    public int getWidth() {
+        return intSize.getWidth();
     }
 
+    /**
+     * Get texture height.
+     *
+     * @return Height.
+     */
+    public int getHeight() {
+        return intSize.getHeight();
+    }
+
+    /**
+     * Get the post-processing shader.
+     *
+     * @return Shader.
+     */
     public Shader getShader() {
         return shader;
     }
 
+    /**
+     * Set post-processing shader.
+     *
+     * @param shader Shader.
+     */
     public void setShader(Shader shader) {
         if (shader != this.shader) {
             this.shader = shader;

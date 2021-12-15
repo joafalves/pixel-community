@@ -10,21 +10,21 @@ import org.pixel.math.Rectangle;
 public abstract class StatefulRenderEngine extends RenderEngine {
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param viewportDimensions
+     * @param viewportDimensions The dimensions of the viewport.
      */
     public StatefulRenderEngine(Rectangle viewportDimensions) {
         super(viewportDimensions);
     }
 
     /**
-     * Push current state into the render stack
+     * Push current state into the render stack.
      */
     public abstract void push();
 
     /**
-     * Pop current state from the render stack, restoring the previous point
+     * Pop current state from the render stack, restoring the previous point.
      */
     public abstract void pop();
 

@@ -72,16 +72,16 @@ public class SpriteBatch extends DrawBatch {
     //region constructors
 
     /**
-     * Constructor
+     * Constructor.
      */
     public SpriteBatch() {
         this(BUFFER_UNIT_LENGTH);
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param bufferMaxSize
+     * @param bufferMaxSize Maximum sprites per batch.
      */
     public SpriteBatch(int bufferMaxSize) {
         if (bufferMaxSize <= 0) {
@@ -222,12 +222,15 @@ public class SpriteBatch extends DrawBatch {
 
         // upload data to the buffer:
         // triangle A
-        this.uploadBufferData(bottomLeft.getX(), bottomLeft.getY(), tBottomLeft.getX(), tBottomLeft.getY(), sprite.color);
-        this.uploadBufferData(bottomRight.getX(), bottomRight.getY(), tBottomRight.getX(), tBottomRight.getY(), sprite.color);
+        this.uploadBufferData(bottomLeft.getX(), bottomLeft.getY(), tBottomLeft.getX(), tBottomLeft.getY(),
+                sprite.color);
+        this.uploadBufferData(bottomRight.getX(), bottomRight.getY(), tBottomRight.getX(), tBottomRight.getY(),
+                sprite.color);
         this.uploadBufferData(topLeft.getX(), topLeft.getY(), tTopLeft.getX(), tTopLeft.getY(), sprite.color);
         // triangle B
         this.uploadBufferData(topLeft.getX(), topLeft.getY(), tTopLeft.getX(), tTopLeft.getY(), sprite.color);
-        this.uploadBufferData(bottomRight.getX(), bottomRight.getY(), tBottomRight.getX(), tBottomRight.getY(), sprite.color);
+        this.uploadBufferData(bottomRight.getX(), bottomRight.getY(), tBottomRight.getX(), tBottomRight.getY(),
+                sprite.color);
         this.uploadBufferData(topRight.getX(), topRight.getY(), tTopRight.getX(), tTopRight.getY(), sprite.color);
     }
 
@@ -253,98 +256,119 @@ public class SpriteBatch extends DrawBatch {
     //region public methods
 
     /**
-     * @param texture
-     * @param position
+     * Draws a sprite.
+     *
+     * @param texture  The texture to use.
+     * @param position The position of the sprite.
      */
     public void draw(Texture texture, Vector2 position) {
         draw(texture, position, Color.WHITE);
     }
 
     /**
-     * @param texture
-     * @param position
-     * @param color
+     * Draws a sprite.
+     *
+     * @param texture  The texture to use.
+     * @param position The position of the sprite.
+     * @param color    The color overlay of the sprite.
      */
     public void draw(Texture texture, Vector2 position, Color color) {
         draw(texture, position, color, anchorZero, 1.0f);
     }
 
     /**
-     * @param texture
-     * @param position
-     * @param color
-     * param anchor
+     * Draws a sprite.
+     *
+     * @param texture  The texture to use.
+     * @param position The position of the sprite.
+     * @param color    The color overlay of the sprite.
+     * @param anchor   The anchor point of the sprite.
      */
     public void draw(Texture texture, Vector2 position, Color color, Vector2 anchor) {
         draw(texture, position, color, anchor, 1.0f);
     }
 
     /**
-     * @param texture
-     * @param position
-     * @param color
-     * @param anchor
-     * @param scale
+     * Draws a sprite.
+     *
+     * @param texture  The texture to use.
+     * @param position The position of the sprite.
+     * @param color    The color overlay of the sprite.
+     * @param anchor   The anchor point of the sprite.
+     * @param scale    The scale of the sprite.
      */
     public void draw(Texture texture, Vector2 position, Color color, Vector2 anchor, float scale) {
         draw(texture, position, color, anchor, scale, scale, 0.0f);
     }
 
     /**
-     * @param texture
-     * @param position
-     * @param color
-     * @param anchor
-     * @param scaleX
-     * @param scaleY
-     * @param rotation
+     * Draws a sprite.
+     *
+     * @param texture  The texture to use.
+     * @param position The position of the sprite.
+     * @param color    The color overlay of the sprite.
+     * @param anchor   The anchor point of the sprite.
+     * @param scaleX   The scale of the sprite on the x-axis.
+     * @param scaleY   The scale of the sprite on the y-axis.
+     * @param rotation The rotation of the sprite.
      */
-    public void draw(Texture texture, Vector2 position, Color color, Vector2 anchor, float scaleX, float scaleY, float rotation) {
+    public void draw(Texture texture, Vector2 position, Color color, Vector2 anchor, float scaleX, float scaleY,
+            float rotation) {
         this.draw(texture, position, null, color, anchor, scaleX, scaleY, rotation);
     }
 
     /**
-     * @param texture
-     * @param position
-     * @param source
-     * @param color
+     * Draws a sprite.
+     *
+     * @param texture  The texture to use.
+     * @param position The position of the sprite.
+     * @param source   The source rectangle of the sprite.
+     * @param color    The color overlay of the sprite.
      */
     public void draw(Texture texture, Vector2 position, Rectangle source, Color color) {
         this.draw(texture, position, source, color, anchorZero, 1.0f, 1.0f, 0.f);
     }
 
     /**
-     * @param texture
-     * @param position
-     * @param source
-     * @param color
-     * @param anchor
-     * @param scale
-     * @param rotation
+     * Draws a sprite.
+     *
+     * @param texture  The texture to use.
+     * @param position The position of the sprite.
+     * @param source   The source rectangle of the sprite.
+     * @param color    The color overlay of the sprite.
+     * @param anchor   The anchor point of the sprite.
+     * @param scale    The scale of the sprite.
+     * @param rotation The rotation of the sprite.
      */
-    public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scale, float rotation) {
+    public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scale,
+            float rotation) {
         this.draw(texture, position, source, color, anchor, scale, scale, rotation);
     }
 
     /**
-     * @param texture
-     * @param position
-     * @param source
-     * @param color
-     * @param anchor
-     * @param scaleX
-     * @param scaleY
-     * @param rotation
+     * Draws a sprite.
+     *
+     * @param texture  The texture to use.
+     * @param position The position of the sprite.
+     * @param source   The source rectangle of the sprite.
+     * @param color    The color overlay of the sprite.
+     * @param anchor   The anchor point of the sprite.
+     * @param scaleX   The scale of the sprite on the x-axis.
+     * @param scaleY   The scale of the sprite on the y-axis.
+     * @param rotation The rotation of the sprite.
      */
-    public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scaleX, float scaleY, float rotation) {
+    public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scaleX,
+            float scaleY, float rotation) {
         SpriteData spriteData = getSpriteDataObject();
         spriteData.textureId = texture.getId();
         spriteData.textureWidth = texture.getWidth();
         spriteData.textureHeight = texture.getHeight();
         spriteData.x = position.getX();
         spriteData.y = position.getY();
-        spriteData.width = texture.getWidth() * (source != null ? source.getWidth() / texture.getWidth() * scaleX : scaleX);
-        spriteData.height = texture.getHeight() * (source != null ? source.getHeight() / texture.getHeight() * scaleY : scaleY);
+        spriteData.width =
+                texture.getWidth() * (source != null ? source.getWidth() / texture.getWidth() * scaleX : scaleX);
+        spriteData.height =
+                texture.getHeight() * (source != null ? source.getHeight() / texture.getHeight() * scaleY : scaleY);
         spriteData.anchor = anchor;
         spriteData.color = color;
         spriteData.source = source;
@@ -353,42 +377,51 @@ public class SpriteBatch extends DrawBatch {
     }
 
     /**
-     * @param texture
-     * @param displayArea
+     * Draws a sprite.
+     *
+     * @param texture     The texture to use.
+     * @param displayArea The display area of the sprite.
      */
     public void draw(Texture texture, Rectangle displayArea) {
         this.draw(texture, displayArea, Color.WHITE, Vector2.ZERO, 0.f);
     }
 
     /**
-     * @param texture
-     * @param displayArea
-     * @param color
+     * Draws a sprite.
+     *
+     * @param texture     The texture to use.
+     * @param displayArea The display area of the sprite.
+     * @param color       The color overlay of the sprite.
      */
     public void draw(Texture texture, Rectangle displayArea, Color color) {
         this.draw(texture, displayArea, color, Vector2.ZERO, 0.f);
     }
 
     /**
-     * @param texture
-     * @param displayArea
-     * @param color
-     * @param anchor
-     * @param rotation
+     * Draws a sprite.
+     *
+     * @param texture     The texture to use.
+     * @param displayArea The display area of the sprite.
+     * @param color       The color overlay of the sprite.
+     * @param anchor      The anchor point of the sprite.
+     * @param rotation    The rotation of the sprite.
      */
     public void draw(Texture texture, Rectangle displayArea, Color color, Vector2 anchor, float rotation) {
         this.draw(texture, displayArea, null, color, anchor, rotation);
     }
 
     /**
-     * @param texture
-     * @param displayArea
-     * @param source
-     * @param color
-     * @param anchor
-     * @param rotation
+     * Draws a sprite.
+     *
+     * @param texture     The texture to use.
+     * @param displayArea The display area of the sprite.
+     * @param source      The source rectangle of the sprite.
+     * @param color       The color overlay of the sprite.
+     * @param anchor      The anchor point of the sprite.
+     * @param rotation    The rotation of the sprite.
      */
-    public void draw(Texture texture, Rectangle displayArea, Rectangle source, Color color, Vector2 anchor, float rotation) {
+    public void draw(Texture texture, Rectangle displayArea, Rectangle source, Color color, Vector2 anchor,
+            float rotation) {
         SpriteData spriteData = getSpriteDataObject();
         spriteData.textureId = texture.getId();
         spriteData.textureWidth = texture.getWidth();
@@ -406,21 +439,25 @@ public class SpriteBatch extends DrawBatch {
 
 
     /**
-     * @param font
-     * @param text
-     * @param position
-     * @param color
+     * Draws text.
+     *
+     * @param font     The font to use.
+     * @param text     The text to draw.
+     * @param position The position of the text.
+     * @param color    The color of the text.
      */
     public void drawText(Font font, String text, Vector2 position, Color color) {
         this.drawText(font, text, position, color, font.getFontSize());
     }
 
     /**
-     * @param font
-     * @param text
-     * @param position
-     * @param color
-     * @param fontSize
+     * Draws text.
+     *
+     * @param font     The font to use.
+     * @param text     The text to draw.
+     * @param position The position of the text.
+     * @param color    The color of the text.
+     * @param fontSize The size of the font.
      */
     public void drawText(Font font, String text, Vector2 position, Color color, int fontSize) {
         // we are going to create a sprite data for each text character:
@@ -460,9 +497,9 @@ public class SpriteBatch extends DrawBatch {
     }
 
     /**
-     * Begin drawing phase
+     * Begin drawing phase.
      *
-     * @param viewMatrix
+     * @param viewMatrix The view matrix.
      */
     @Override
     public void begin(Matrix4 viewMatrix) {
@@ -470,10 +507,10 @@ public class SpriteBatch extends DrawBatch {
     }
 
     /**
-     * Begin drawing phase
+     * Begin drawing phase.
      *
-     * @param viewMatrix
-     * @param blendMode
+     * @param viewMatrix The view matrix.
+     * @param blendMode The blend mode.
      */
     public void begin(Matrix4 viewMatrix, BlendMode blendMode) {
         dataBuffer.clear();
@@ -501,6 +538,9 @@ public class SpriteBatch extends DrawBatch {
         glUniformMatrix4fv(textureShader.getUniformLocation("uMatrix"), false, matrixBuffer);
     }
 
+    /**
+     * End drawing phase.
+     */
     @Override
     public void end() {
         flush();

@@ -5,19 +5,23 @@
 
 package org.pixel.graphics.shader.effect;
 
-import org.pixel.graphics.Color;
-import org.pixel.graphics.shader.Shader;
+import static org.lwjgl.opengl.GL20.glUniform1f;
+import static org.lwjgl.opengl.GL20.glUniform4f;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
+import org.pixel.graphics.Color;
+import org.pixel.graphics.shader.Shader;
 
-import static org.lwjgl.opengl.GL20.glUniform1f;
-import static org.lwjgl.opengl.GL20.glUniform4f;
-
+@Getter
+@Setter
 public class BorderEffectShader extends Shader {
 
-    private static final List<String> uniforms = Arrays.asList("uTextureImage", "uVertical", "uHorizontal", "uTime", "uColor");
+    private static final List<String> uniforms = Arrays.asList("uTextureImage", "uVertical", "uHorizontal", "uTime",
+            "uColor");
     private static final List<String> attributes = Collections.singletonList("aVertexPosition");
 
     private static final String vertSrc;
@@ -33,7 +37,10 @@ public class BorderEffectShader extends Shader {
     private Color color;
 
     /**
-     * Constructor
+     * Constructor.
+     *
+     * @param vertical   Vertical border size
+     * @param horizontal Horizontal border size
      */
     public BorderEffectShader(float vertical, float horizontal) {
         super(vertSrc, fragSrc, attributes, uniforms);
@@ -43,7 +50,11 @@ public class BorderEffectShader extends Shader {
     }
 
     /**
-     * Constructor
+     * Constructor.
+     *
+     * @param vertical   Vertical border size
+     * @param horizontal Horizontal border size
+     * @param color      Border color
      */
     public BorderEffectShader(float vertical, float horizontal, Color color) {
         super(vertSrc, fragSrc, attributes, uniforms);
@@ -52,9 +63,6 @@ public class BorderEffectShader extends Shader {
         this.color = color;
     }
 
-    /**
-     * Apply shader values
-     */
     @Override
     public void apply() {
         glUniform1f(getUniformLocation("uHorizontal"), horizontal);

@@ -17,9 +17,6 @@ import org.pixel.math.Vector2;
 
 import java.util.HashMap;
 
-/**
- * @author João Filipe Alves
- */
 @ContentImporterInfo(type = TexturePack.class, extension = ".json")
 public class TexturePackImporter implements ContentImporter<TexturePack> {
 

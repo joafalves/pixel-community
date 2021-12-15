@@ -5,13 +5,11 @@
 
 package org.pixel.core;
 
-import org.pixel.commons.lifecycle.Disposable;
+import java.io.Serializable;
 import org.pixel.math.Matrix4;
 import org.pixel.math.Vector2;
 
-import java.io.Serializable;
-
-public class Camera2D implements Disposable, Serializable {
+public class Camera2D implements Serializable {
 
     //region private properties
 
@@ -28,34 +26,34 @@ public class Camera2D implements Disposable, Serializable {
     //region constructors
 
     /**
-     * @param window
+     * Constructor. Sets the camera properties based on the given window virtual size.
+     *
+     * @param window The window instance.
      */
     public Camera2D(PixelWindow window) {
         this(0, 0, window.getVirtualWidth(), window.getVirtualHeight());
     }
 
     /**
-     * @param x
-     * @param y
-     * @param width
-     * @param height
+     * Constructor.
+     *
+     * @param x      The x position of the camera.
+     * @param y      The y position of the camera.
+     * @param width  The viewport width of the camera.
+     * @param height The viewport height of the camera.
      */
     public Camera2D(float x, float y, float width, float height) {
-        this.position = new Vector2(x, y);
-        this.width = width;
-        this.height = height;
-        this.dirty = true;
-        this.zoom = 1.0f;
-        this.origin = new Vector2(0.5f);
-        this.matrixCache = new Matrix4();
+        this(x, y, width, height, 1.0f);
     }
 
     /**
-     * @param x
-     * @param y
-     * @param width
-     * @param height
-     * @param zoom
+     * Constructor.
+     *
+     * @param x      The x position of the camera.
+     * @param y      The y position of the camera.
+     * @param width  The viewport width of the camera.
+     * @param height The viewport height of the camera.
+     * @param zoom   The zoom factor of the camera.
      */
     public Camera2D(float x, float y, float width, float height, float zoom) {
         this.position = new Vector2(x, y);
@@ -71,11 +69,15 @@ public class Camera2D implements Disposable, Serializable {
     //region private methods
 
     /**
-     * Always calculates a view matrix (no caching)
+     * Always calculates a view matrix regardless of the existing cache.
      *
-     * @return
+     * @return The view matrix.
      */
     private void computeMatrix() {
+        if (matrixCache == null) {
+            matrixCache = new Matrix4();
+        }
+
         float left = position.getX() - getWidth() / zoom * getOrigin().getX();
         float top = position.getY() - getHeight() / zoom * getOrigin().getY();
         matrixCache.setOrthographic(left, left + getWidth() / zoom, top + getHeight() / zoom, top, 0.0f, 1.0f);
@@ -86,12 +88,12 @@ public class Camera2D implements Disposable, Serializable {
     //region public methods
 
     /**
-     * Calculates the view matrix when needed (cache based)
+     * Get the view matrix. The view matrix is calculated only when the camera properties are modified.
      *
-     * @return
+     * @return The view matrix.
      */
     public Matrix4 getViewMatrix() {
-        if (matrixCache == null || this.dirty) {
+        if (matrixCache == null || dirty) {
             computeMatrix();
             dirty = false; // matrix updated, clear dirty flag
         }
@@ -100,19 +102,21 @@ public class Camera2D implements Disposable, Serializable {
     }
 
     /**
-     * Transforms a given screen position to game coordinates
+     * Transforms a given screen position to virtual coordinates.
      *
-     * @param screenPosition
-     * @return
+     * @param screenPosition The screen position.
+     * @return The virtual position.
      */
     public Vector2 screenToVirtualCoordinates(Vector2 screenPosition) {
         return screenToVirtualCoordinates(screenPosition.getX(), screenPosition.getY());
     }
 
     /**
-     * Transforms a given screen position to game coordinates
+     * Transforms a given screen position to virtual coordinates.
      *
-     * @return
+     * @param screenX The screen x position.
+     * @param screenY The screen y position.
+     * @return The virtual position.
      */
     public Vector2 screenToVirtualCoordinates(float screenX, float screenY) {
         // normalize screen position:
@@ -125,31 +129,37 @@ public class Camera2D implements Disposable, Serializable {
     }
 
     /**
-     * @return
+     * Get the position of the camera.
+     *
+     * @return The position of the camera.
      */
     public Vector2 getPosition() {
         return this.position;
     }
 
     /**
-     * @return
+     * Get the position (x-axis) of the camera.
+     *
+     * @return The position (x-axis) of the camera.
      */
     public float getPositionX() {
         return this.position.getX();
     }
 
     /**
-     * @return
+     * Get the position (y-axis) of the camera.
+     *
+     * @return The position (y-axis) of the camera.
      */
     public float getPositionY() {
         return this.position.getY();
     }
 
     /**
-     * Add camera position
+     * Translate the camera by the given amount.
      *
-     * @param x
-     * @param y
+     * @param x The amount to translate the camera on the x-axis.
+     * @param y The amount to translate the camera on the y-axis.
      */
     public void translate(float x, float y) {
         this.position.add(x, y);
@@ -157,10 +167,10 @@ public class Camera2D implements Disposable, Serializable {
     }
 
     /**
-     * Set camera position
+     * Set camera position to the given values.
      *
-     * @param x
-     * @param y
+     * @param x The new x-position of the camera.
+     * @param y The new y-position of the camera.
      */
     public void setPosition(float x, float y) {
         this.position.set(x, y);
@@ -168,9 +178,9 @@ public class Camera2D implements Disposable, Serializable {
     }
 
     /**
-     * Set camera position
+     * Set camera position to the given values.
      *
-     * @param position
+     * @param position The new position of the camera.
      */
     public void setPosition(Vector2 position) {
         this.position.set(position.getX(), position.getY());
@@ -178,9 +188,9 @@ public class Camera2D implements Disposable, Serializable {
     }
 
     /**
-     * Set camera origin
+     * Set camera origin to the given values.
      *
-     * @param xy
+     * @param xy The new origin of the camera (both axis).
      */
     public void setOrigin(float xy) {
         this.origin.set(xy, xy);
@@ -188,10 +198,10 @@ public class Camera2D implements Disposable, Serializable {
     }
 
     /**
-     * Set camera origin
+     * Set camera origin to the given values.
      *
-     * @param x
-     * @param y
+     * @param x The new x-origin of the camera.
+     * @param y The new y-origin of the camera.
      */
     public void setOrigin(float x, float y) {
         this.origin.set(x, y);
@@ -199,9 +209,9 @@ public class Camera2D implements Disposable, Serializable {
     }
 
     /**
-     * Set camera origin
+     * Set camera origin to the given values.
      *
-     * @param origin
+     * @param origin The new origin of the camera.
      */
     public void setOrigin(Vector2 origin) {
         this.origin.set(origin.getX(), origin.getY());
@@ -209,18 +219,18 @@ public class Camera2D implements Disposable, Serializable {
     }
 
     /**
-     * Get camera origin
+     * Get camera origin.
      *
-     * @return
+     * @return The camera origin.
      */
     public Vector2 getOrigin() {
         return origin;
     }
 
     /**
-     * Set camera zoom
+     * Set camera zoom to the given value.
      *
-     * @param zoom
+     * @param zoom The new zoom value.
      */
     public void setZoom(float zoom) {
         this.zoom = zoom;
@@ -228,18 +238,18 @@ public class Camera2D implements Disposable, Serializable {
     }
 
     /**
-     * Get camera zoom
+     * Get camera zoom value.
      *
-     * @return
+     * @return The camera zoom value.
      */
     public float getZoom() {
         return zoom;
     }
 
     /**
-     * Set camera width
+     * Set camera width to the given value.
      *
-     * @param width
+     * @param width The new width value.
      */
     public void setWidth(float width) {
         this.width = width;
@@ -247,18 +257,18 @@ public class Camera2D implements Disposable, Serializable {
     }
 
     /**
-     * Get camera width
+     * Get camera width value.
      *
-     * @return
+     * @return The camera width value.
      */
     public float getWidth() {
         return width;
     }
 
     /**
-     * Set camera height
+     * Set camera height to the given value.
      *
-     * @param height
+     * @param height The new height value.
      */
     public void setHeight(float height) {
         this.height = height;
@@ -266,19 +276,19 @@ public class Camera2D implements Disposable, Serializable {
     }
 
     /**
-     * Get camera height
+     * Get camera height value.
      *
-     * @return
+     * @return The camera height value.
      */
     public float getHeight() {
         return height;
     }
 
     /**
-     * Set camera size
+     * Set camera size to the given values.
      *
-     * @param width
-     * @param height
+     * @param width  The new width value.
+     * @param height The new height value.
      */
     public void setSize(float width, float height) {
         this.width = width;
@@ -287,18 +297,10 @@ public class Camera2D implements Disposable, Serializable {
     }
 
     /**
-     * Set dirty state
+     * Set dirty state of the camera (force {@link #getViewMatrix()}. to calculate on the next call).
      */
     public void setDirty() {
         this.dirty = true;
-    }
-
-    /**
-     * Dispose this object
-     */
-    @Override
-    public void dispose() {
-
     }
 
     //endregion

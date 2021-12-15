@@ -18,14 +18,19 @@ public enum GamePadAxe {
     private final int value;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param value
+     * @param value The value of the axe
      */
     GamePadAxe(int value) {
         this.value = value;
     }
 
+    /**
+     * Get the value of the axe.
+     *
+     * @return The value of the axe
+     */
     public int getValue() {
         return this.value;
     }

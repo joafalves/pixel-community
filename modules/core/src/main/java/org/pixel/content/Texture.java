@@ -34,14 +34,29 @@ public class Texture implements Disposable {
 
     //region getters & setters
 
+    /**
+     * Get the width of the texture.
+     *
+     * @return the width of the texture.
+     */
     public float getWidth() {
         return width;
     }
 
+    /**
+     * Get the height of the texture.
+     *
+     * @return the height of the texture.
+     */
     public float getHeight() {
         return height;
     }
 
+    /**
+     * Get the native texture id.
+     *
+     * @return the native texture id.
+     */
     public int getId() {
         return id;
     }
@@ -51,25 +66,28 @@ public class Texture implements Disposable {
     //region constructors
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param id
+     * @param id The native texture id.
      */
     public Texture(int id) {
         this.id = id;
     }
 
     /**
-     *
+     * Binds the texture to the current rendering context. This function must be called before rendering or updating the
+     * texture properties.
      */
     public void bind() {
         glBindTexture(GL_TEXTURE_2D, id);
     }
 
     /**
-     * @param data
-     * @param width
-     * @param height
+     * Set the texture data from a byte buffer.
+     *
+     * @param data   The byte buffer containing the texture data.
+     * @param width  The width of the texture.
+     * @param height The height of the texture.
      */
     public void setData(@Nullable ByteBuffer data, int width, int height) {
         this.width = width;
@@ -80,8 +98,10 @@ public class Texture implements Disposable {
     }
 
     /**
-     * @param wrapS
-     * @param wrapT
+     * Set the texture wrapping mode.
+     *
+     * @param wrapS The horizontal wrapping mode.
+     * @param wrapT The vertical wrapping mode.
      */
     public void setTextureWrap(int wrapS, int wrapT) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
@@ -89,8 +109,10 @@ public class Texture implements Disposable {
     }
 
     /**
-     * @param minFilter
-     * @param magFilter
+     * Set the texture filtering mode.
+     *
+     * @param minFilter The minification filter.
+     * @param magFilter The magnification filter.
      */
     public void setTextureMinMag(int minFilter, int magFilter) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
@@ -98,14 +120,14 @@ public class Texture implements Disposable {
     }
 
     /**
-     * Unbind texture
+     * Unbind texture from the current rendering context.
      */
     public void unbind() {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     /**
-     * Disposes the Texture (attention: this will unbind the rendering texture from memory)
+     * Disposes the Texture (attention: this will unbind the rendering texture from memory).
      */
     @Override
     public void dispose() {

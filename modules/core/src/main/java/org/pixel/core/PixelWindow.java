@@ -103,7 +103,7 @@ import org.pixel.commons.util.IOUtils;
 import org.pixel.graphics.Color;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.mouse.Mouse;
-import org.pixel.math.Size;
+import org.pixel.math.IntSize;
 
 public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disposable {
 
@@ -133,7 +133,9 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
     private boolean vsyncEnabled;
 
     /**
-     * Constructor
+     * Constructor.
+     *
+     * @param settings The settings to use.
      */
     public PixelWindow(WindowSettings settings) {
         this.windowEventListeners = new ArrayList<>();
@@ -141,7 +143,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
         this.clientProperties = settings.getClientProperties();
         this.windowResizable = settings.isWindowResizable();
         this.multisampling = settings.getMultisampling();
-        this.vsyncEnabled = settings.isVsyncEnabled();
+        this.vsyncEnabled = settings.isVsync();
         this.backgroundColor = settings.getBackgroundColor();
         this.debugMode = settings.isDebugMode();
         this.windowTitle = settings.getWindowTitle();
@@ -156,7 +158,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
     }
 
     /**
-     * This function will initialize and run the game window
+     * This function will initialize and run the game window.
      */
     public void start() {
         this.init();
@@ -164,7 +166,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
     }
 
     /**
-     * Initialization method
+     * Initializes the window and rendering context.
      */
     public void init() {
         if (initialized) {
@@ -307,7 +309,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
     }
 
     /**
-     * Update Viewport
+     * Update Viewport.
      */
     private void updateViewport() {
         try (MemoryStack stack = stackPush()) {
@@ -322,9 +324,9 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
     }
 
     /**
-     * Set window icon
+     * Set multiple window icons from common image extensions (for example: png).
      *
-     * @param filenames
+     * @param filenames The filenames
      */
     public void setWindowIcon(String... filenames) {
         GLFWImage[] imageDataArray = new GLFWImage[filenames.length];
@@ -349,7 +351,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
     }
 
     /**
-     * Starts the game loop
+     * Starts the game loop. To terminate the loop, call {@link #close()} or close the window.
      */
     public void run() {
         if (!initialized) {
@@ -366,6 +368,9 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
         glfwTerminate();
     }
 
+    /**
+     * The render loop.
+     */
     private void renderLoop() {
         // pre-variable configurations
         DeltaTime delta = new DeltaTime();
@@ -412,17 +417,17 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
 
     @Override
     public void load() {
-        // empty by design
+        // empty by design (not abstract to make this optional)
     }
 
     @Override
     public void update(DeltaTime delta) {
-        // empty by design
+        // empty by design (not abstract to make this optional)
     }
 
     @Override
     public void draw(DeltaTime delta) {
-        // empty by design
+        // empty by design (not abstract to make this optional)
     }
 
     @Override
@@ -436,7 +441,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
     }
 
     /**
-     * Close game window
+     * Flag the rendering loop to terminate.
      */
     public void close() {
         // set the closing flag so at the start of the next game loop the game closes
@@ -444,7 +449,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
     }
 
     /**
-     * Centers game window
+     * Centers game window on the primary screen.
      */
     public void centerWindow() {
         // Get the thread stack and push a new frame
@@ -478,95 +483,111 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
     }
 
     /**
-     * @return
+     * Get the window dimensions.
+     *
+     * @return The window dimensions.
      */
     public WindowDimensions getWindowDimensions() {
         return windowDimensions;
     }
 
     /**
-     * @return
+     * Get the window width.
+     *
+     * @return The window width.
      */
     public int getWindowWidth() {
         return this.windowDimensions.getWindowWidth();
     }
 
     /**
-     * @return
+     * Get the window height.
+     *
+     * @return The window height.
      */
     public int getWindowHeight() {
         return this.windowDimensions.getWindowHeight();
     }
 
     /**
-     * @return
+     * Get the window frame width.
+     *
+     * @return The window frame width.
      */
     public int getWindowFrameWidth() {
         return this.windowDimensions.getFrameWidth();
     }
 
     /**
-     * @return
+     * Get the window frame height.
+     *
+     * @return The window frame height.
      */
     public int getWindowFrameHeight() {
         return this.windowDimensions.getFrameHeight();
     }
 
     /**
-     * Get the window width
+     * Get the window virtual width.
      *
-     * @return
+     * @return The window virtual width.
      */
     public int getVirtualWidth() {
         return this.windowDimensions.getVirtualWidth();
     }
 
     /**
-     * Get the window height
+     * Get the window virtual height.
      *
-     * @return
+     * @return The window virtual height.
      */
     public int getVirtualHeight() {
         return this.windowDimensions.getVirtualHeight();
     }
 
     /**
-     * @return
+     * Get the viewport width.
+     *
+     * @return The viewport width.
      */
     public int getViewportWidth() {
         return this.getWindowWidth();
     }
 
     /**
-     * @return
+     * Get the viewport height.
+     *
+     * @return The viewport height.
      */
     public int getViewportHeight() {
         return this.getWindowHeight();
     }
 
     /**
-     * @return
+     * Get the viewport dimensions.
+     *
+     * @return The viewport dimensions.
      */
-    public Size getViewportSize() {
-        return new Size(windowDimensions.getWindowWidth(), windowDimensions.getWindowHeight());
+    public IntSize getViewportSize() {
+        return new IntSize(windowDimensions.getWindowWidth(), windowDimensions.getWindowHeight());
     }
 
     /**
-     * Get active monitor size
+     * Get primary screen size.
      *
-     * @return
+     * @return The primary screen size.
      */
-    public Size getPrimaryMonitorSize() {
+    public IntSize getPrimaryMonitorSize() {
         GLFWVidMode video = glfwGetVideoMode(glfwGetPrimaryMonitor());
         if (video == null) {
             return null;
         }
 
-        return new Size(video.width(), video.height());
+        return new IntSize(video.width(), video.height());
     }
 
     /**
-     * Toggle fullscreen
+     * Toggle fullscreen mode.
      */
     public void toggleFullscreen() {
         long monitor = NULL;
@@ -599,7 +620,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
     }
 
     /**
-     * Trigger window size change event
+     * Trigger window size change event.
      */
     private void triggerWindowSizeChangeEvent() {
         windowEventListeners.forEach(listener ->
@@ -607,7 +628,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
     }
 
     /**
-     * Trigger window size change event
+     * Trigger window size change event.
      */
     private void triggerWindowModeChangeEvent() {
         windowEventListeners.forEach(listener ->
@@ -615,9 +636,9 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
     }
 
     /**
-     * Set cursor mode
+     * Set cursor mode.
      *
-     * @param mode
+     * @param mode The cursor mode.
      */
     public void setCursorMode(CursorMode mode) {
         int glfwMode;
@@ -636,16 +657,18 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
     }
 
     /**
-     * Set window title
+     * Set window title.
      *
-     * @param title
+     * @param title The window title.
      */
     public void setWindowTitle(String title) {
         glfwSetWindowTitle(windowHandle, title);
     }
 
     /**
-     * @param backgroundColor
+     * Set the window background color.
+     *
+     * @param backgroundColor The window background color.
      */
     public void setBackgroundColor(Color backgroundColor) {
         this.backgroundColor = backgroundColor;
@@ -655,36 +678,57 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
         }
     }
 
+    /**
+     * Get the window background color.
+     *
+     * @return The window background color.
+     */
     public Color getBackgroundColor() {
         return this.backgroundColor;
     }
 
     /**
-     * Get user properties
+     * Get client properties.
+     *
+     * @return The client properties.
      */
     public Properties getClientProperties() {
         return clientProperties;
     }
 
     /**
-     * @param listener
-     * @return
+     * Register a window event listener.
+     *
+     * @param listener The window event listener to remove.
+     * @return True if the listener was successfully unregistered.
      */
     public boolean removeWindowEventListener(WindowEventListener listener) {
         return windowEventListeners.remove(listener);
     }
 
     /**
-     * @param listener
+     * Register a window event listener.
+     *
+     * @param listener The window event listener to register.
      */
     public void addWindowEventListener(WindowEventListener listener) {
         this.windowEventListeners.add(listener);
     }
 
+    /**
+     * Get vsync mode.
+     *
+     * @return The vsync mode.
+     */
     public boolean isVsyncEnabled() {
         return vsyncEnabled;
     }
 
+    /**
+     * Set vsync mode.
+     *
+     * @param vsyncEnabled The vsync mode.
+     */
     public void setVsyncEnabled(boolean vsyncEnabled) {
         if (vsyncEnabled == this.vsyncEnabled) {
             return;
@@ -693,10 +737,20 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
         glfwSwapInterval(vsyncEnabled ? GLFW_TRUE : GLFW_FALSE);
     }
 
+    /**
+     * Get the window focus state.
+     *
+     * @return The window focus state.
+     */
     public boolean isWindowFocused() {
         return windowFocused;
     }
 
+    /**
+     * Get the window native handle.
+     *
+     * @return The window native handle.
+     */
     public long getWindowHandle() {
         return windowHandle;
     }

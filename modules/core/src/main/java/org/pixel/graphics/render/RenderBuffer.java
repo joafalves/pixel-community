@@ -5,19 +5,10 @@
 
 package org.pixel.graphics.render;
 
-import org.pixel.commons.lifecycle.Disposable;
-import org.pixel.commons.logger.Logger;
-import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.graphics.shader.Shader;
-import org.pixel.graphics.shader.ShaderManager;
-import org.pixel.graphics.shader.standard.RenderBufferShader;
-import org.pixel.content.Texture;
-import org.pixel.math.Rectangle;
-
+import static org.lwjgl.opengl.GL11.GL_CLAMP;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_STENCIL_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11C.GL_FLOAT;
 import static org.lwjgl.opengl.GL11C.GL_LINEAR;
 import static org.lwjgl.opengl.GL11C.GL_RGBA;
@@ -26,7 +17,46 @@ import static org.lwjgl.opengl.GL11C.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL11C.glClear;
 import static org.lwjgl.opengl.GL11C.glDrawArrays;
 import static org.lwjgl.opengl.GL11C.glGenTextures;
-import static org.lwjgl.opengl.GL30C.*;
+import static org.lwjgl.opengl.GL30C.GL_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL30C.GL_COLOR_ATTACHMENT0;
+import static org.lwjgl.opengl.GL30C.GL_DRAW_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30C.GL_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30C.GL_FRAMEBUFFER_COMPLETE;
+import static org.lwjgl.opengl.GL30C.GL_READ_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30C.GL_RENDERBUFFER;
+import static org.lwjgl.opengl.GL30C.GL_STATIC_DRAW;
+import static org.lwjgl.opengl.GL30C.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL30C.glActiveTexture;
+import static org.lwjgl.opengl.GL30C.glBindBuffer;
+import static org.lwjgl.opengl.GL30C.glBindFramebuffer;
+import static org.lwjgl.opengl.GL30C.glBindRenderbuffer;
+import static org.lwjgl.opengl.GL30C.glBindVertexArray;
+import static org.lwjgl.opengl.GL30C.glBlitFramebuffer;
+import static org.lwjgl.opengl.GL30C.glBufferData;
+import static org.lwjgl.opengl.GL30C.glCheckFramebufferStatus;
+import static org.lwjgl.opengl.GL30C.glDeleteBuffers;
+import static org.lwjgl.opengl.GL30C.glDeleteFramebuffers;
+import static org.lwjgl.opengl.GL30C.glDeleteRenderbuffers;
+import static org.lwjgl.opengl.GL30C.glDeleteVertexArrays;
+import static org.lwjgl.opengl.GL30C.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL30C.glFramebufferRenderbuffer;
+import static org.lwjgl.opengl.GL30C.glFramebufferTexture2D;
+import static org.lwjgl.opengl.GL30C.glGenBuffers;
+import static org.lwjgl.opengl.GL30C.glGenFramebuffers;
+import static org.lwjgl.opengl.GL30C.glGenRenderbuffers;
+import static org.lwjgl.opengl.GL30C.glGenVertexArrays;
+import static org.lwjgl.opengl.GL30C.glRenderbufferStorageMultisample;
+import static org.lwjgl.opengl.GL30C.glUniform1f;
+import static org.lwjgl.opengl.GL30C.glVertexAttribPointer;
+
+import org.pixel.commons.lifecycle.Disposable;
+import org.pixel.commons.logger.Logger;
+import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.content.Texture;
+import org.pixel.graphics.shader.Shader;
+import org.pixel.graphics.shader.ShaderManager;
+import org.pixel.graphics.shader.standard.RenderBufferShader;
+import org.pixel.math.Rectangle;
 
 public class RenderBuffer implements Disposable {
 
@@ -42,9 +72,9 @@ public class RenderBuffer implements Disposable {
     private int vbo;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param sourceArea
+     * @param sourceArea The area to capture
      */
     public RenderBuffer(Rectangle sourceArea) {
         this.sourceArea = sourceArea;
@@ -52,7 +82,7 @@ public class RenderBuffer implements Disposable {
     }
 
     /**
-     * Setup render buffer
+     * Setup render buffer.
      */
     private void setupRenderBuffer() {
         glBindFramebuffer(GL_FRAMEBUFFER, msfbo);
@@ -84,7 +114,7 @@ public class RenderBuffer implements Disposable {
     }
 
     /**
-     * Initialize
+     * Initialize.
      */
     private void init() {
         this.shader = new RenderBufferShader();
@@ -125,7 +155,7 @@ public class RenderBuffer implements Disposable {
     }
 
     /**
-     * Start capturing render data
+     * Start capturing render data.
      */
     public void begin() {
         glBindFramebuffer(GL_FRAMEBUFFER, msfbo);
@@ -134,7 +164,7 @@ public class RenderBuffer implements Disposable {
     }
 
     /**
-     * Stop capturing render data
+     * Stop capturing render data.
      */
     public void end() {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, msfbo);
@@ -145,7 +175,7 @@ public class RenderBuffer implements Disposable {
     }
 
     /**
-     * Draw captured data
+     * Draw captured data.
      */
     public void draw() {
         ShaderManager.useShader(shader);
@@ -159,10 +189,12 @@ public class RenderBuffer implements Disposable {
     }
 
     /**
-     * @param x
-     * @param y
-     * @param width
-     * @param height
+     * Set source area.
+     *
+     * @param x Top left x coordinate.
+     * @param y Top left y coordinate.
+     * @param width Width.
+     * @param height Height.
      */
     public void setSourceArea(float x, float y, float width, float height) {
         if (sourceArea.getWidth() != width || sourceArea.getHeight() != height) {
@@ -171,9 +203,6 @@ public class RenderBuffer implements Disposable {
         }
     }
 
-    /**
-     * Dispose function
-     */
     @Override
     public void dispose() {
         glDeleteFramebuffers(this.fbo);

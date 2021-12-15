@@ -30,15 +30,12 @@ public class TextureShader extends Shader {
     //region constructors
 
     /**
-     * Constructor
+     * Constructor.
      */
     public TextureShader() {
         super(vertSrc, fragSrc, attributes, uniforms);
     }
 
-    /**
-     * Apply shader values
-     */
     @Override
     public void apply() {
 

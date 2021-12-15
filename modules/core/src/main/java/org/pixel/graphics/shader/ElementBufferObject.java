@@ -5,9 +5,12 @@
 
 package org.pixel.graphics.shader;
 
-import org.pixel.commons.lifecycle.Disposable;
+import static org.lwjgl.opengl.GL30.GL_ELEMENT_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL30.glBindBuffer;
+import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
+import static org.lwjgl.opengl.GL30.glGenBuffers;
 
-import static org.lwjgl.opengl.GL30.*;
+import org.pixel.commons.lifecycle.Disposable;
 
 public class ElementBufferObject implements Disposable {
 
@@ -20,7 +23,7 @@ public class ElementBufferObject implements Disposable {
     //region constructors
 
     /**
-     * Constructor
+     * Constructor.
      */
     public ElementBufferObject() {
         id = glGenBuffers();
@@ -31,29 +34,28 @@ public class ElementBufferObject implements Disposable {
     //region public methods
 
     /**
-     * @return
+     * Get the EBO native id.
+     *
+     * @return the EBO native id.
      */
     public int getID() {
         return this.id;
     }
 
     /**
-     *
+     * Binds the EBO.
      */
     public void bind() {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
     }
 
     /**
-     *
+     * Unbinds the EBO.
      */
     public void unbind() {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    /**
-     *
-     */
     @Override
     public void dispose() {
         glDeleteVertexArrays(id);

@@ -50,15 +50,15 @@ public class Color {
     //region <constructors>
 
     /**
-     * Constructor
+     * Constructor.
      */
     public Color() {
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param color
+     * @param color The color to copy
      */
     public Color(Color color) {
         if (color != null) {
@@ -70,11 +70,11 @@ public class Color {
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param r [0-1]
-     * @param g [0-1]
-     * @param b [0-1]
+     * @param r [0-1] Red.
+     * @param g [0-1] Green.
+     * @param b [0-1] Blue.
      */
     public Color(float r, float g, float b) {
         this.r = r;
@@ -84,12 +84,12 @@ public class Color {
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param r [0-1]
-     * @param g [0-1]
-     * @param b [0-1]
-     * @param a [0-1]
+     * @param r [0-1] Red.
+     * @param g [0-1] Green.
+     * @param b [0-1] Blue.
+     * @param a [0-1] Alpha.
      */
     public Color(float r, float g, float b, float a) {
         this.r = r;
@@ -99,9 +99,9 @@ public class Color {
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param rgba8888
+     * @param rgba8888 The color to apply in rgba 8888 format.
      */
     public Color(int rgba8888) {
         rgba8888(this, rgba8888);
@@ -111,6 +111,11 @@ public class Color {
 
     //region <public methods>
 
+    /**
+     * Set the color based on another.
+     *
+     * @param color The color to copy.
+     */
     public void set(Color color) {
         this.r = color.r;
         this.g = color.g;
@@ -118,12 +123,27 @@ public class Color {
         this.a = color.a;
     }
 
+    /**
+     * Set the color from the given values.
+     *
+     * @param r [0-1] Red.
+     * @param g [0-1] Green.
+     * @param b [0-1] Blue.
+     */
     public void set(float r, float g, float b) {
         this.r = r;
         this.g = g;
         this.b = b;
     }
 
+    /**
+     * Set the color from the given values.
+     *
+     * @param r [0-1] Red.
+     * @param g [0-1] Green.
+     * @param b [0-1] Blue.
+     * @param a [0-1] Alpha.
+     */
     public void set(float r, float g, float b, float a) {
         this.r = r;
         this.g = g;
@@ -131,38 +151,83 @@ public class Color {
         this.a = a;
     }
 
+    /**
+     * Set the red color value.
+     *
+     * @param value [0-1] Red.
+     */
     private void setRed(float value) {
         this.r = value;
     }
 
+    /**
+     * Set the green color value.
+     *
+     * @param value [0-1] Green.
+     */
     private void setGreen(float value) {
         this.g = value;
     }
 
+    /**
+     * Set the blue color value.
+     *
+     * @param value [0-1] Blue.
+     */
     private void setBlue(float value) {
         this.b = value;
     }
 
+    /**
+     * Set the alpha color value.
+     *
+     * @param value [0-1] Alpha.
+     */
     public void setAlpha(float value) {
         this.a = value;
     }
 
+    /**
+     * Get the red color value.
+     *
+     * @param rgba8888 The color to apply in rgba 8888 format.
+     */
     public void set(int rgba8888) {
         rgba8888(this, rgba8888);
     }
 
+    /**
+     * Get the red color value.
+     *
+     * @return [0-1] Red.
+     */
     public float getRed() {
         return r;
     }
 
+    /**
+     * Get the green color value.
+     *
+     * @return [0-1] Green.
+     */
     public float getGreen() {
         return g;
     }
 
+    /**
+     * Get the blue color value.
+     *
+     * @return [0-1] Blue.
+     */
     public float getBlue() {
         return b;
     }
 
+    /**
+     * Get the alpha color value.
+     *
+     * @return [0-1] Alpha.
+     */
     public float getAlpha() {
         return a;
     }
@@ -171,6 +236,12 @@ public class Color {
 
     //region <public static methods>
 
+    /**
+     * Generates a random color with custom alpha.
+     *
+     * @param alpha [0-1] Alpha.
+     * @return The color.
+     */
     public static Color random(float alpha) {
         Color color = new Color();
         color.r = (float) Math.random();
@@ -181,10 +252,21 @@ public class Color {
         return color;
     }
 
+    /**
+     * Generates a random color.
+     *
+     * @return The color.
+     */
     public static Color random() {
         return random(1.f);
     }
 
+    /**
+     * Applies the given color (in rgba 8888 format) to the given color.
+     *
+     * @param color    The color object to be applied.
+     * @param rgba8888 The source color.
+     */
     public static void rgba8888(Color color, int rgba8888) {
         color.r = ((rgba8888 & 0xff000000) >>> 24) / 255f;
         color.g = ((rgba8888 & 0x00ff0000) >>> 16) / 255f;
@@ -192,6 +274,12 @@ public class Color {
         color.a = ((rgba8888 & 0x000000ff)) / 255f;
     }
 
+    /**
+     * Applies the given color (in rgba 4444 format) to the given color.
+     *
+     * @param color    The color object to be applied.
+     * @param rgba4444 The source color.
+     */
     public static void rgba4444(Color color, int rgba4444) {
         color.r = ((rgba4444 & 0x0000f000) >>> 12) / 15f;
         color.g = ((rgba4444 & 0x00000f00) >>> 8) / 15f;
@@ -200,8 +288,10 @@ public class Color {
     }
 
     /**
-     * @param hex
-     * @return
+     * Creates a color from a hexadecimal color string (for eg: #A0A0A0).
+     *
+     * @param hex The hexadecimal color string.
+     * @return The color.
      */
     private static Color fromHex(String hex) {
         if (!hex.startsWith("#")) {
@@ -233,8 +323,11 @@ public class Color {
     }
 
     /**
-     * @param value
-     * @return
+     * Creates a color from string. Supports hexadecimal and rgb/rgba color strings (examples: #FF0000, #FF0000FF,
+     * rgb(255, 0, 0), rgba(255, 0, 0, 1)).
+     *
+     * @param value The color in string format.
+     * @return The color instance or null if unable to process.
      */
     public static Color fromString(String value) {
         value = value.trim();
@@ -270,7 +363,7 @@ public class Color {
 
         }
 
-        return null; // TODO: support others... (rgb/a for ex)
+        return null;
     }
 
     //endregion

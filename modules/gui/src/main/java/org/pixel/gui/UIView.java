@@ -29,7 +29,7 @@ import org.pixel.gui.component.UIComponent;
 import org.pixel.gui.style.Style;
 import org.pixel.gui.style.StyleFactory;
 import org.pixel.math.Rectangle;
-import org.pixel.math.Size;
+import org.pixel.math.IntSize;
 
 public class UIView implements Updatable, Loadable, Disposable, WindowEventListener {
 
@@ -160,7 +160,7 @@ public class UIView implements Updatable, Loadable, Disposable, WindowEventListe
     /**
      * @return
      */
-    public Size getViewportSize() {
+    public IntSize getViewportSize() {
         return window.getViewportSize();
     }
 

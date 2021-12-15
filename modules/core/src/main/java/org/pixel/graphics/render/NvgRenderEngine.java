@@ -62,7 +62,7 @@ import org.pixel.commons.model.Solidity;
 import org.pixel.commons.model.VerticalAlignment;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.shader.ShaderManager;
-import org.pixel.math.FSize;
+import org.pixel.math.Size;
 import org.pixel.math.Matrix4;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
@@ -81,6 +81,12 @@ public class NvgRenderEngine extends RenderEngine2D {
 
     private final long ctx;
 
+    /**
+     * Constructor.
+     *
+     * @param viewportWidth The width of the viewport.
+     * @param viewportHeight The height of the viewport.
+     */
     public NvgRenderEngine(int viewportWidth, int viewportHeight) {
         super(new Rectangle(0, 0, viewportWidth, viewportHeight));
         this.fontMapping = new HashMap<>();
@@ -237,11 +243,11 @@ public class NvgRenderEngine extends RenderEngine2D {
     }
 
     @Override
-    public FSize measureText(String text, Vector2 position, float maxRowWidth) {
+    public Size measureText(String text, Vector2 position, float maxRowWidth) {
         // compute
         nvgTextBoxBounds(ctx, position.getX(), position.getY(), maxRowWidth, text, buffer4);
 
-        return new FSize(buffer4.get(2) - buffer4.get(0), buffer4.get(3) - buffer4.get(1));
+        return new Size(buffer4.get(2) - buffer4.get(0), buffer4.get(3) - buffer4.get(1));
     }
 
     @Override

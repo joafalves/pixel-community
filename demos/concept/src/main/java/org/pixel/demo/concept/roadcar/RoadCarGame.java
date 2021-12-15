@@ -13,7 +13,7 @@ import org.pixel.graphics.render.RenderEngine2D;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 import org.pixel.math.MathHelper;
-import org.pixel.math.Size;
+import org.pixel.math.IntSize;
 import org.pixel.math.Vector2;
 
 public class RoadCarGame extends PixelWindow {
@@ -102,7 +102,7 @@ public class RoadCarGame extends PixelWindow {
             var segment = getNearestRoadSegmentStarter(cameraPosition);
             var targetSegment = segment.getRandomNextSegment();
             var vehicle = Vehicle.builder()
-                    .size(new Size(75, 40))
+                    .intSize(new IntSize(75, 40))
                     .color(Color.random())
                     .position(new Vector2(segment.getPosition()))
                     .orientation(MathHelper.direction(segment.getPosition(), targetSegment.getPosition()))
@@ -187,15 +187,15 @@ public class RoadCarGame extends PixelWindow {
 
             renderEngine.beginPath();
             renderEngine.rectangle(
-                    -vehicle.getSize().getHalfWidth(), -vehicle.getSize().getHalfHeight(),
-                    vehicle.getSize().getWidth(), vehicle.getSize().getHeight());
+                    -vehicle.getIntSize().getHalfWidth(), -vehicle.getIntSize().getHalfHeight(),
+                    vehicle.getIntSize().getWidth(), vehicle.getIntSize().getHeight());
             renderEngine.fillColor(vehicle.getColor());
             renderEngine.fill();
             renderEngine.endPath();
 
             renderEngine.beginPath();
             renderEngine.moveTo(0, 0);
-            renderEngine.lineTo(vehicle.getSize().getHalfWidth(), 0);
+            renderEngine.lineTo(vehicle.getIntSize().getHalfWidth(), 0);
             renderEngine.strokeColor(Color.BLACK);
             renderEngine.stroke();
             renderEngine.endPath();

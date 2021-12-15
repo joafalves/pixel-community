@@ -19,9 +19,6 @@ import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.openal.ALCapabilities;
 
-/**
- * @author João Filipe Alves
- */
 public class AudioTest {
 
     @Test

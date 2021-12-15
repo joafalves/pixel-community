@@ -145,18 +145,18 @@ public enum KeyboardKey {
     private final int value;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param value
+     * @param value The key value.
      */
     KeyboardKey(int value) {
         this.value = value;
     }
 
     /**
-     * Get key value
+     * Get key value.
      *
-     * @return
+     * @return The key value.
      */
     public int getValue() {
         return this.value;

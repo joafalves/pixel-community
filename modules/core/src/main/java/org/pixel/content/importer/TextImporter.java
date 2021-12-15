@@ -10,9 +10,6 @@ import org.pixel.content.ContentImporter;
 import org.pixel.content.ContentImporterInfo;
 import org.pixel.content.ImportContext;
 
-/**
- * @author João Filipe Alves
- */
 @ContentImporterInfo(type = String.class, extension = ".txt")
 public class TextImporter implements ContentImporter<String> {
 

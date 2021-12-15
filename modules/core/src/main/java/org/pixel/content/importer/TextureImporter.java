@@ -23,9 +23,6 @@ import org.pixel.content.ImportContext;
 import org.pixel.content.Texture;
 import org.pixel.content.importer.settings.TextureImporterSettings;
 
-/**
- * @author João Filipe Alves
- */
 @ContentImporterInfo(type = Texture.class, extension = {".png", ".jpeg", ".jpg", ".bmp"})
 public class TextureImporter implements ContentImporter<Texture> {
 

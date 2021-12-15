@@ -3,7 +3,7 @@
  * Copyright (c) 2020
  */
 
-project.ext.mavenPublish = true
+project.ext.mavenPublish = false
 
 dependencies {
     api project(":${rootProject.name}-commons")
