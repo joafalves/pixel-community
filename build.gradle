@@ -12,7 +12,7 @@ def lwjglVersion = "3.3.0"
 def buildTarget = System.getenv("BUILD_TARGET")
 def buildTargetList = []
 if (buildTarget == "all") {
-    // Use this build mode for testing only! Ideally there should be 1 build per architecture type
+    // Use this build mode publishing:
     buildTargetList.addAll([
             "natives-windows", "natives-windows-x86", "natives-windows-arm64",
             "natives-macos", "natives-macos-arm64",
@@ -21,19 +21,16 @@ if (buildTarget == "all") {
     // applies the build target based on the BUILD_TARGET environment variable:
     buildTargetList.add(buildTarget)
 } else {
-    // no manual build type assigned, apply the classifier based on the current Operating System:
-    buildTarget = getCurrentClassifier()
-    buildTargetList.add(buildTarget)
+    // no manual build type assigned, apply the classifier based on the current OS:
+    buildTargetList.add(getCurrentClassifier())
 }
 
 allprojects {
-    // plugins
     apply plugin: 'java'
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
     apply plugin: 'signing'
 
-    // project version
     version rootProject.version
 
     repositories {
@@ -42,7 +39,6 @@ allprojects {
     }
 
     dependencies {
-        // lwjgl-general
         api group: "org.lwjgl", name: "lwjgl", version: lwjglVersion
         api group: "org.lwjgl", name: "lwjgl-glfw", version: lwjglVersion
         api group: "org.lwjgl", name: "lwjgl-opengl", version: lwjglVersion
@@ -146,7 +142,7 @@ allprojects {
             }
         }
         repositories {
-            if (property("sonatypeUsername") != null) {
+            if (rootProject.hasProperty("sonatypeUsername") && rootProject.hasProperty("sonatypePassword")) {
                 maven {
                     url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2"
                     credentials {
@@ -162,33 +158,6 @@ allprojects {
         {
             // only publish modules with 'mavenPublish' set to 'true'
             it.enabled = (project.ext.has("mavenPublish") && project.ext.get("mavenPublish"))
-        }
-    }
-}
-
-//def bundleList = rootProject.subprojects.collect { ":" + it.name } // kinda cool but not configurable
-def bundleList = [":pixel-commons", ":pixel-core", ":pixel-input", ":pixel-math"]
-task bundle(type: Jar, dependsOn: bundleList.collect { it + ":compileJava" }) {
-    // bundle jar name
-    archivesBaseName = rootProject.name + "-bundle-" + buildTarget
-    group = "build"
-    // other settings
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    // bundle manifest
-    manifest {
-        attributes(
-                "Implementation-Title": getArchiveBaseName(),
-                "Implementation-Version": getArchiveVersion()
-        )
-    }
-    // module output files included in bundle
-    from files(bundleList.collect {
-        project(it).sourceSets.main.output
-    })
-    from {
-        // bundle all sub-dependencies in each project as well:
-        bundleList.collect {
-            project(it).configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
         }
     }
 }
