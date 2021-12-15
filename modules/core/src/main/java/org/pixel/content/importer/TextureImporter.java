@@ -68,7 +68,7 @@ public class TextureImporter implements ContentImporter<Texture> {
             return texture;
 
         } catch (Exception e) {
-            log.error("Exception caught: %s", e);
+            log.error("Exception caught!", e);
             return null;
         }
     }

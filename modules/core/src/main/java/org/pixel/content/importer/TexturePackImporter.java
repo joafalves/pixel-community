@@ -28,7 +28,7 @@ public class TexturePackImporter implements ContentImporter<TexturePack> {
         JSONObject json = new JSONObject(src);
         JSONObject frames = json.getJSONObject("frames");
         if (frames == null) {
-            log.warn("Unable to load texture pack due to invalid format");
+            log.warn("Unable to load texture pack due to invalid format.");
             return null;
         }
 

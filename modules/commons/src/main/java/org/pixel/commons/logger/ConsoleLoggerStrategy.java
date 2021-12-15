@@ -14,7 +14,7 @@ public class ConsoleLoggerStrategy implements LoggerStrategy {
      */
     @Override
     public Logger createLogger(Class<?> classRef) {
-        return new ConsoleLogger(LogManager.getContext(classRef));
+        return new ConsoleLogger(classRef.getSimpleName());
     }
 
     /**
@@ -25,7 +25,7 @@ public class ConsoleLoggerStrategy implements LoggerStrategy {
      */
     @Override
     public Logger createLogger(String context) {
-        return new ConsoleLogger(LogManager.getContext(context));
+        return new ConsoleLogger(context);
     }
 
 }

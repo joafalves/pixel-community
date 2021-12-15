@@ -42,7 +42,7 @@ public class VorbisAudioImporter implements ContentImporter<Sound> {
 
             rawAudioBuffer = stb_vorbis_decode_memory(ctx.getBuffer(), channelsBuffer, sampleRateBuffer);
             if (rawAudioBuffer == null) {
-                log.warn("Failed to load sound resource, invalid buffer");
+                log.warn("Failed to load sound resource, invalid buffer.");
                 return null;
             }
 
@@ -51,7 +51,7 @@ public class VorbisAudioImporter implements ContentImporter<Sound> {
             sampleRate = sampleRateBuffer.get(0);
 
         } catch (Exception e) {
-            log.error("Exception caught: %s", e);
+            log.error("Exception caught!", e);
             return null;
         }
 

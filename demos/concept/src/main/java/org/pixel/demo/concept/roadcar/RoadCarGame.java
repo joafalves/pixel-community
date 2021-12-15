@@ -3,10 +3,12 @@ package org.pixel.demo.concept.roadcar;
 import java.util.ArrayList;
 import java.util.List;
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.concept.roadcar.model.RoadSegment;
 import org.pixel.demo.concept.roadcar.model.Vehicle;
+import org.pixel.ext.log4j.Log4j2LoggerStrategy;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.NvgRenderEngine;
 import org.pixel.graphics.render.RenderEngine2D;
@@ -17,6 +19,10 @@ import org.pixel.math.IntSize;
 import org.pixel.math.Vector2;
 
 public class RoadCarGame extends PixelWindow {
+
+    static {
+        LoggerFactory.setDefaultStrategy(new Log4j2LoggerStrategy());
+    }
 
     private static final float CAMERA_SPEED = 330;
     private static final int VEHICLE_SPAWN_DELAY = 1000;
@@ -230,7 +236,7 @@ public class RoadCarGame extends PixelWindow {
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
-        settings.setDebugMode(true);
+        settings.setDebugMode(false);
         settings.setWindowWidth(width);
         settings.setWindowHeight(height);
 

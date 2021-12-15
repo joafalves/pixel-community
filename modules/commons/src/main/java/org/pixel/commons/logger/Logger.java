@@ -9,24 +9,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 public abstract class Logger {
-    //region Fields & Properties
-
-    protected LoggerContext context;
-
-    //endregion
-
-    //region Constructors
-
-    /**
-     * Constructor.
-     *
-     * @param context Logger context.
-     */
-    public Logger(LoggerContext context) {
-        this.context = context;
-    }
-
-    //endregion
 
     //region Internal Functions
 
@@ -51,45 +33,35 @@ public abstract class Logger {
      *
      * @return True if enabled.
      */
-    public boolean isTraceEnabled() {
-        return this.context.getLevel().getValue() <= LogLevel.TRACE.getValue();
-    }
+    public abstract boolean isTraceEnabled();
 
     /**
      * Checks if logger has DEBUG enabled.
      *
      * @return True if enabled.
      */
-    public boolean isDebugEnabled() {
-        return this.context.getLevel().getValue() <= LogLevel.DEBUG.getValue();
-    }
+    public abstract boolean isDebugEnabled();
 
     /**
      * Checks if logger has INFO enabled.
      *
      * @return True if enabled.
      */
-    public boolean isInfoEnabled() {
-        return this.context.getLevel().getValue() <= LogLevel.INFO.getValue();
-    }
+    public abstract boolean isInfoEnabled();
 
     /**
      * Checks if logger has WARN enabled.
      *
      * @return True if enabled.
      */
-    public boolean isWarnEnabled() {
-        return this.context.getLevel().getValue() <= LogLevel.WARN.getValue();
-    }
+    public abstract boolean isWarnEnabled();
 
     /**
      * Checks if logger has ERROR enabled.
      *
      * @return True if enabled.
      */
-    public boolean isErrorEnabled() {
-        return this.context.getLevel().getValue() <= LogLevel.ERROR.getValue();
-    }
+    public abstract boolean isErrorEnabled();
 
     /**
      * Log a TRACE level message.
@@ -130,24 +102,6 @@ public abstract class Logger {
      * @param params  Parameters to print.
      */
     public abstract void error(String message, Object... params);
-
-    /**
-     * Get logger context.
-     *
-     * @return Logger context.
-     */
-    public LoggerContext getContext() {
-        return context;
-    }
-
-    /**
-     * Set logger context.
-     *
-     * @param context Logger context.
-     */
-    public void setContext(LoggerContext context) {
-        this.context = context;
-    }
 
     //endregion
 

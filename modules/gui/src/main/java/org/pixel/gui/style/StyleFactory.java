@@ -78,7 +78,7 @@ public class StyleFactory {
             css = CSSFactory.parseString(value, null);
 
         } catch (IOException | CSSException e) {
-            LOG.error("Could not parse CSS style '%s'", value);
+            LOG.error("Could not parse CSS style '{}'.", value);
             return null;
         }
 
@@ -109,7 +109,7 @@ public class StyleFactory {
     public static Style getStyle(String filepath) {
         String styleSrc = IOUtils.loadFileString(filepath);
         if (styleSrc == null) {
-            LOG.warn("Could not load style from path '%s'", filepath);
+            LOG.warn("Could not load style from path '{}'.", filepath);
             return null;
         }
 
@@ -118,7 +118,7 @@ public class StyleFactory {
             css = CSSFactory.parseString(styleSrc, null);
 
         } catch (IOException | CSSException e) {
-            LOG.error("Could not parse CSS style from path '%s'", filepath);
+            LOG.error("Could not parse CSS style from path '{}'.", filepath);
             return null;
         }
 

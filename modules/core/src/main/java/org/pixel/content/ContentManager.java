@@ -64,7 +64,7 @@ public class ContentManager implements Disposable {
     public void addContentImporter(ContentImporter importer) {
         ContentImporterInfo importerDetails = importer.getClass().getAnnotation(ContentImporterInfo.class);
         if (importerDetails == null) {
-            log.warn("Unable to add content importer without ContentImporter annotation");
+            log.warn("Unable to add content importer without ContentImporter annotation.");
             return;
         }
 
@@ -104,13 +104,13 @@ public class ContentManager implements Disposable {
 
         ContentImporter<T> fileImporter = this.importers.get(type);
         if (fileImporter == null) {
-            log.warn("Unable to load asset due to unavailable importer for %s", type.getCanonicalName());
+            log.warn("Unable to load asset due to unavailable importer for '{}'.", type.getCanonicalName());
             return null;
         }
 
         ByteBuffer resourceData = IOUtils.loadFile(filepath);
         if (resourceData == null) {
-            log.warn("Unable to load asset %s; target could not be found", filepath);
+            log.warn("Unable to load asset '{}'; target could not be found.", filepath);
             return null;
         }
 

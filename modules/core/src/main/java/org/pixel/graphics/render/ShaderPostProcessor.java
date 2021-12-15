@@ -109,7 +109,7 @@ public class ShaderPostProcessor implements PostProcessor {
         glRenderbufferStorageMultisample(GL_RENDERBUFFER, 8, GL_RGB, intSize.getWidth(), intSize.getHeight());
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            LOG.error("Failed to initialize MSFBO");
+            LOG.error("Failed to initialize MSFBO.");
         }
 
         if (texture == null) {
@@ -128,7 +128,7 @@ public class ShaderPostProcessor implements PostProcessor {
         texture.unbind();
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.getId(), 0);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            LOG.error("Failed to initialize FBO");
+            LOG.error("Failed to initialize FBO.");
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0); // unbind any frame buffer
     }

@@ -21,7 +21,7 @@ public class FpsCounter {
         elapsed += delta.getElapsed();
 
         if (elapsed + delta.getElapsed() > 1) {
-            log.debug("FPS: %d", count);
+            log.debug("FPS: {}.", count);
 
             elapsed = 0;
             count = 0;

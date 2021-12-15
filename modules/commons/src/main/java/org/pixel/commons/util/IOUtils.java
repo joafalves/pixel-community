@@ -39,7 +39,7 @@ public class IOUtils {
     public static ImageData loadImage(String filepath) {
         ByteBuffer rawBuffer = loadFile(filepath);
         if (rawBuffer == null) {
-            LOG.warn("Unable to load image due to IO failure (cannot read file from '%s')", filepath);
+            LOG.warn("Unable to load image due to IO failure (cannot read file from '{}').", filepath);
             return null;
         }
 
@@ -73,7 +73,7 @@ public class IOUtils {
         if (!path.isAbsolute()) {
             InputStream in = FileUtils.class.getClassLoader().getResourceAsStream(filepath);
             if (in == null) {
-                LOG.warn("Unable to load local resource file %s", filepath);
+                LOG.warn("Unable to load local resource file '{}'.", filepath);
                 return null;
             }
 

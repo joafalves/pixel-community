@@ -67,7 +67,7 @@ public class UIView implements Updatable, Loadable, Disposable, WindowEventListe
     public void loadStyle(String filepath) {
         Style style = StyleFactory.getStyle(filepath);
         if (style == null) {
-            LOG.warn("Could not load style on the given filepath %s", filepath);
+            LOG.warn("Could not load style on the given filepath '{}'.", filepath);
             return;
         }
 

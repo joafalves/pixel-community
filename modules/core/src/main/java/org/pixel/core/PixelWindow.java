@@ -109,8 +109,8 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
 
     private static final String DEFAULT_WINDOW_ICON_PATH_64 = "engine/images/app-icon@64.png";
     private static final String DEFAULT_WINDOW_ICON_PATH_32 = "engine/images/app-icon@32.png";
-    private static final Logger log = LoggerFactory.getLogger(PixelWindow.class);
 
+    private final Logger log = LoggerFactory.getLogger(PixelWindow.class);
     private final List<WindowEventListener> windowEventListeners;
 
     private final Properties clientProperties;
@@ -173,7 +173,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
             throw new RuntimeException("This game class has already been initialized");
         }
 
-        // Setup an error callback. The default implementation
+        // Set up an error callback. The default implementation
         // will print the error message in System.err.
         GLFWErrorCallback.createPrint(System.err).set();
 
@@ -275,7 +275,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
         });
 
         glfwSetWindowFocusCallback(windowHandle, ((window, focused) -> {
-            log.debug("Windows focus changed: %b", focused);
+            log.debug("Windows focus changed: {}.", focused);
             windowFocused = focused;
         }));
 
@@ -333,7 +333,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
         for (int i = 0; i < filenames.length; i++) {
             ImageData imgData = IOUtils.loadImage(filenames[i]);
             if (imgData == null) {
-                log.warn("Unable to set window icon, cannot load image from given file path '%s'", filenames[i]);
+                log.warn("Unable to set window icon, cannot load image from given file path '{}'.", filenames[i]);
                 return;
             }
 
@@ -463,7 +463,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
             // Get the resolution of the primary monitor
             GLFWVidMode videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
             if (videoMode == null) {
-                log.warn("Failure to center window (unable to get resolution from the primary monitor)");
+                log.warn("Failure to center window (unable to get resolution from the primary monitor).");
                 return;
             }
 

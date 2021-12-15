@@ -7,6 +7,14 @@ package org.pixel.commons.logger;
 
 public class ConsoleLogger extends Logger {
 
+    //region Properties
+
+    private static LogLevel logLevel = LogLevel.DEBUG;
+
+    private final String context;
+
+    //endregion
+
     //region Constructors
 
     /**
@@ -14,8 +22,8 @@ public class ConsoleLogger extends Logger {
      *
      * @param context Logger context.
      */
-    public ConsoleLogger(LoggerContext context) {
-        super(context);
+    public ConsoleLogger(String context) {
+        this.context = context;
     }
 
     //endregion
@@ -32,7 +40,7 @@ public class ConsoleLogger extends Logger {
         // TODO: allow customizable formats
         try {
             StringBuilder output = new StringBuilder(
-                    level + "|" + context.getIdentifier() + "|" + String.format(message, params));
+                    level + "|" + context + "|" + formatMessage(message, params));
 
             for (Object param : params) {
                 if (param instanceof Exception) {
@@ -47,9 +55,68 @@ public class ConsoleLogger extends Logger {
         }
     }
 
+    /**
+     * Formats the given message with the given parameters.
+     *
+     * @param message The message to format.
+     * @param params  The parameters to format.
+     */
+    private String formatMessage(String message, Object... params) {
+        int paramIndex = 0;
+        while (message.contains("{}")) {
+            message = message.replaceFirst("\\{}",
+                    paramIndex < params.length ? params[paramIndex++].toString() : "");
+        }
+
+        return message;
+    }
+
     //endregion
 
     //region Public Functions
+
+    @Override
+    public boolean isTraceEnabled() {
+        return logLevel.getValue() <= LogLevel.TRACE.getValue();
+    }
+
+    @Override
+    public boolean isDebugEnabled() {
+        return logLevel.getValue() <= LogLevel.DEBUG.getValue();
+    }
+
+    @Override
+    public boolean isInfoEnabled() {
+        return logLevel.getValue() <= LogLevel.INFO.getValue();
+    }
+
+    @Override
+    public boolean isWarnEnabled() {
+        return logLevel.getValue() <= LogLevel.WARN.getValue();
+    }
+
+    @Override
+    public boolean isErrorEnabled() {
+        return logLevel.getValue() <= LogLevel.ERROR.getValue();
+    }
+
+    /**
+     * Get the current log level.
+     *
+     * @return The current log level.
+     */
+    public static LogLevel getLogLevel() {
+        return logLevel;
+    }
+
+    /**
+     * Set the log level.
+     *
+     * @param logLevel The log level to set.
+     */
+    public static void setLogLevel(LogLevel logLevel) {
+        ConsoleLogger.logLevel = logLevel;
+    }
 
     /**
      * Log a TRACE level message.

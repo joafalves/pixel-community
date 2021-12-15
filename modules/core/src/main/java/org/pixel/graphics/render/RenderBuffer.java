@@ -90,7 +90,7 @@ public class RenderBuffer implements Disposable {
         glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGBA, (int) sourceArea.getWidth(), (int) sourceArea.getHeight());
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            LOG.error("Failed to initialize MSFBO");
+            LOG.error("Failed to initialize MSFBO.");
         }
 
         if (texture == null) {
@@ -108,7 +108,7 @@ public class RenderBuffer implements Disposable {
         texture.unbind();
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.getId(), 0);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            LOG.error("Failed to initialize FBO");
+            LOG.error("Failed to initialize FBO.");
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0); // unbind any frame buffer
     }

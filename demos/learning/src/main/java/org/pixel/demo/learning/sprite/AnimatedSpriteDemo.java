@@ -57,7 +57,7 @@ public class AnimatedSpriteDemo extends DemoGame {
 
         animDelay += delta.getElapsed();
         if (animDelay > ANIM_DELAY) {
-            log.debug("Animation yield exceeded %f", animDelay);
+            log.debug("Animation yield exceeded '{}'.", animDelay);
 
             animDelay = 0;
             animStep++;
