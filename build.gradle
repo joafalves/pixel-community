@@ -96,7 +96,9 @@ allprojects {
     }
 
     signing {
-        sign(publishing.publications) // sign everything to be published
+        if (rootProject.hasProperty("signing.keyId")) {
+            sign(publishing.publications) // sign everything to be published
+        }
     }
 
     publishing {
