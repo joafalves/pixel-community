@@ -31,10 +31,10 @@ public class IOUtils {
     private static final Logger LOG = LoggerFactory.getLogger(IOUtils.class);
 
     /**
-     * Load image file (stbi)
+     * Load image file.
      *
-     * @param filepath
-     * @return
+     * @param filepath The image file path.
+     * @return The image data.
      */
     public static ImageData loadImage(String filepath) {
         ByteBuffer rawBuffer = loadFile(filepath);
@@ -63,10 +63,10 @@ public class IOUtils {
     }
 
     /**
-     * Load file as byte buffer
+     * Load file as byte buffer.
      *
-     * @param filepath
-     * @return
+     * @param filepath The file path.
+     * @return The byte buffer.
      */
     public static ByteBuffer loadFile(String filepath) {
         Path path = Paths.get(filepath);
@@ -105,10 +105,10 @@ public class IOUtils {
     }
 
     /**
-     * Load file as string
+     * Load file content.
      *
-     * @param filepath
-     * @return
+     * @param filepath The file path.
+     * @return The file content.
      */
     public static String loadFileString(String filepath) {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();

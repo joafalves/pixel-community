@@ -10,9 +10,9 @@ public class ConsoleLogger extends Logger {
     //region Constructors
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param context
+     * @param context Logger context.
      */
     public ConsoleLogger(LoggerContext context) {
         super(context);
@@ -23,15 +23,16 @@ public class ConsoleLogger extends Logger {
     //region Private Functions
 
     /**
-     * Prints given message to System Out
+     * Prints given message to System Out.
      *
-     * @param message
-     * @param params
+     * @param message Message to print.
+     * @param params  Parameters to print.
      */
     private void printToConsole(LogLevel level, String message, Object... params) {
         // TODO: allow customizable formats
         try {
-            StringBuilder output = new StringBuilder(level + "|" + context.getIdentifier() + "|" + String.format(message, params));
+            StringBuilder output = new StringBuilder(
+                    level + "|" + context.getIdentifier() + "|" + String.format(message, params));
 
             for (Object param : params) {
                 if (param instanceof Exception) {
@@ -51,10 +52,10 @@ public class ConsoleLogger extends Logger {
     //region Public Functions
 
     /**
-     * Log a TRACE level message
+     * Log a TRACE level message.
      *
-     * @param message
-     * @param params
+     * @param message Message to print.
+     * @param params  Parameters to print.
      */
     @Override
     public void trace(String message, Object... params) {
@@ -64,10 +65,10 @@ public class ConsoleLogger extends Logger {
     }
 
     /**
-     * Log a DEBUG level message
+     * Log a DEBUG level message.
      *
-     * @param message
-     * @param params
+     * @param message Message to print.
+     * @param params  Parameters to print.
      */
     @Override
     public void debug(String message, Object... params) {
@@ -77,10 +78,10 @@ public class ConsoleLogger extends Logger {
     }
 
     /**
-     * Log an INFO level message
+     * Log an INFO level message.
      *
-     * @param message
-     * @param params
+     * @param message Message to print.
+     * @param params  Parameters to print.
      */
     @Override
     public void info(String message, Object... params) {
@@ -90,10 +91,10 @@ public class ConsoleLogger extends Logger {
     }
 
     /**
-     * Log a WARN level message
+     * Log a WARN level message.
      *
-     * @param message
-     * @param params
+     * @param message Message to print.
+     * @param params  Parameters to print.
      */
     @Override
     public void warn(String message, Object... params) {
@@ -103,10 +104,10 @@ public class ConsoleLogger extends Logger {
     }
 
     /**
-     * Log an ERROR level message
+     * Log an ERROR level message.
      *
-     * @param message
-     * @param params
+     * @param message Message to print.
+     * @param params  Parameters to print.
      */
     @Override
     public void error(String message, Object... params) {

@@ -19,7 +19,7 @@ public class LogManager {
     //region Constructors
 
     /**
-     * Private constructor
+     * Private constructor.
      */
     private LogManager() {
         // disable new instances..
@@ -30,20 +30,20 @@ public class LogManager {
     //region Public Functions
 
     /**
-     * Creates or gets a logger context for a given class identifier
+     * Creates or gets a logger context for a given class identifier.
      *
-     * @param classRef
-     * @return
+     * @param classRef The class reference.
+     * @return The logger context.
      */
     public static LoggerContext getContext(Class<?> classRef) {
         return getContext(classRef.getSimpleName());
     }
 
     /**
-     * Creates or gets a logger context for a given identifier
+     * Creates or gets a logger context for a given identifier.
      *
-     * @param context
-     * @return
+     * @param context The context identifier.
+     * @return The logger context.
      */
     public static LoggerContext getContext(String context) {
         LoggerContext loggerContext = logContextMap.get(context);
@@ -57,9 +57,9 @@ public class LogManager {
     }
 
     /**
-     * Sets the log level for all existing log contexts and assigns the new default log level
+     * Sets the log level for all existing log contexts and assigns the new default log level.
      *
-     * @param level
+     * @param level The new default log level.
      */
     public static void setLogLevel(LogLevel level) {
         logContextMap.forEach((s, loggerContext) -> loggerContext.setLevel(level));
@@ -67,18 +67,18 @@ public class LogManager {
     }
 
     /**
-     * Sets the default log level (applied when creating new loggers)
+     * Sets the default log level (applied when creating new loggers).
      *
-     * @param level
+     * @param level The new default log level.
      */
     public static void setDefaultLogLevel(LogLevel level) {
         defaultLevel = level;
     }
 
     /**
-     * Gets the default log level. To
+     * Gets the default log level.
      *
-     * @return
+     * @return The default log level.
      */
     public static LogLevel getDefaultLogLevel() {
         return defaultLevel;

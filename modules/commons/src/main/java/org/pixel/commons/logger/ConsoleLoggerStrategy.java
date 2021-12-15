@@ -8,9 +8,9 @@ package org.pixel.commons.logger;
 public class ConsoleLoggerStrategy implements LoggerStrategy {
 
     /**
-     * Creates a logger object
+     * Creates a logger object.
      *
-     * @return
+     * @return Logger instance.
      */
     @Override
     public Logger createLogger(Class<?> classRef) {
@@ -18,10 +18,10 @@ public class ConsoleLoggerStrategy implements LoggerStrategy {
     }
 
     /**
-     * Creates a logger object
+     * Creates a logger object.
      *
-     * @param context
-     * @return
+     * @param context Logger context.
+     * @return Logger instance.
      */
     @Override
     public Logger createLogger(String context) {

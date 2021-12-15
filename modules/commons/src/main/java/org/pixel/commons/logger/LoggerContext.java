@@ -17,9 +17,9 @@ public class LoggerContext {
     //region Constructors
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param identifier
+     * @param identifier Context identifier.
      */
     public LoggerContext(String identifier) {
         this.identifier = identifier;
@@ -31,27 +31,27 @@ public class LoggerContext {
     //region Public Functions
 
     /**
-     * Get context identifier
+     * Get context identifier.
      *
-     * @return
+     * @return Context identifier.
      */
     public String getIdentifier() {
         return identifier;
     }
 
     /**
-     * Get context log level
+     * Get context log level.
      *
-     * @return
+     * @return Context log level.
      */
     public LogLevel getLevel() {
         return level;
     }
 
     /**
-     * Set context log level
+     * Set context log level.
      *
-     * @param level
+     * @param level Context log level.
      */
     public void setLevel(LogLevel level) {
         this.level = level;

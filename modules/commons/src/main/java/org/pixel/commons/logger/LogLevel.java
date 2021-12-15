@@ -22,9 +22,9 @@ public enum LogLevel {
     //region Constructors
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param value
+     * @param value The value of the log level.
      */
     LogLevel(byte value) {
         this.value = value;
@@ -34,6 +34,11 @@ public enum LogLevel {
 
     //region Public Functions
 
+    /**
+     * Get the value of the log level.
+     *
+     * @return The value of the log level.
+     */
     public byte getValue() {
         return this.value;
     }

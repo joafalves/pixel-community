@@ -19,25 +19,25 @@ public class DeltaTime {
     }
 
     /**
-     * Get the elapsed time in seconds
+     * Get the elapsed time since the last tick (in seconds).
      *
-     * @return seconds
+     * @return Elapsed time in seconds.
      */
     public float getElapsed() {
         return elapsedSeconds;
     }
 
     /**
-     * Get the elapsed time in milliseconds
+     * Get the elapsed time since the last tick (in milliseconds).
      *
-     * @return milliseconds
+     * @return Elapsed time in milliseconds.
      */
     public long getElapsedMs() {
         return elapsedMilliseconds;
     }
 
     /**
-     * Update elapsed time (calculates delta since last tick)
+     * Update elapsed time (calculates delta since last tick).
      */
     public void tick() {
         long now = System.nanoTime() / 1000000;

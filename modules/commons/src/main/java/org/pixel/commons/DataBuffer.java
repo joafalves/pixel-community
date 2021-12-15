@@ -7,9 +7,6 @@ package org.pixel.commons;
 
 import java.nio.charset.Charset;
 
-/**
- * @author João Filipe Alves
- */
 public class DataBuffer {
 
     private byte[] source;
@@ -18,56 +15,56 @@ public class DataBuffer {
     private int readerIndex;
 
     /**
-     * Constructor
+     * Constructor.
      */
     public DataBuffer() {
         this.set(null, 0, 0);
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param that
+     * @param that The other buffer.
      */
     public DataBuffer(DataBuffer that) {
         this.set(that.source, that.offset, that.length);
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param source
+     * @param source The source buffer.
      */
     public DataBuffer(byte[] source) {
         this.set(source, 0, 0);
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param source
-     * @param offset
-     * @param length
+     * @param source The source buffer.
+     * @param offset The source buffer offset.
+     * @param length The length of the data to be read.
      */
     public DataBuffer(byte[] source, int offset, int length) {
         this.set(source, offset, length);
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param source
+     * @param source The source buffer.
      */
     public DataBuffer(String source) {
         this.set(source.getBytes(), 0, source.length());
     }
 
     /**
-     * Set byte buffer params
+     * Set byte buffer data by given offset and length.
      *
-     * @param source
-     * @param offset
-     * @param length
+     * @param source The source buffer.
+     * @param offset The source buffer offset.
+     * @param length The length of the data to be read.
      */
     public void set(byte[] source, int offset, int length) {
         this.source = source;
@@ -77,14 +74,14 @@ public class DataBuffer {
     }
 
     /**
-     * Reset the reader index
+     * Reset the reader index.
      */
     public void resetReaderIndex() {
         this.readerIndex = 0;
     }
 
     /**
-     * Reset offset, length and reader index. No modifications are applied to source buffer
+     * Reset offset, length and reader index. No modifications are applied to source buffer.
      */
     public void reset() {
         this.offset = 0;
@@ -93,55 +90,55 @@ public class DataBuffer {
     }
 
     /**
-     * Set reader index
+     * Set reader index.
      *
-     * @param value
+     * @param value The new reader index.
      */
     public void setReaderIndex(int value) {
         this.readerIndex = value;
     }
 
     /**
-     * Read the next byte
+     * Read a byte from the source buffer starting on the reader index.
      *
-     * @return
+     * @return The next byte.
      */
     public byte readByte() {
         return this.source[offset + readerIndex++]; // note: ++ after is important in this scenario, dont change!
     }
 
     /**
-     * Peek the next byte (does not change reader index)
+     * Peek the next byte (does not change reader index).
      *
-     * @return
+     * @return The next byte.
      */
     public byte peekByte() {
         return this.source[offset + readerIndex];
     }
 
     /**
-     * Peek the next byte at given position (does not change reader index)
+     * Peek the next byte at given position (does not change reader index).
      *
-     * @return
+     * @return The next byte.
      */
     public byte peekByte(int pos) {
         return this.source[offset + readerIndex + pos];
     }
 
     /**
-     * Read unsigned int
+     * Read unsigned int from the source buffer starting on the reader index
      *
-     * @return
+     * @return The next unsigned int.
      */
     public long readUnsignedInt() {
         return readLong(4);
     }
 
     /**
-     * Get 'size' bytes of from the source buffer starting on the reader index
+     * Get the number of bytes that can be read from the source buffer starting on the reader index.
      *
-     * @param size
-     * @return
+     * @param size The number of bytes to read.
+     * @return The next bytes encapsulated in a DataBuffer.
      */
     public DataBuffer getBytes(int size) {
         //checkOverflow(size);
@@ -149,36 +146,36 @@ public class DataBuffer {
     }
 
     /**
-     * Get the number of readable bytes
+     * Get the number of readable bytes.
      *
-     * @return
+     * @return The number of readable bytes.
      */
     public int getReadableBytes() {
         return this.length - this.readerIndex;
     }
 
     /**
-     * Get the number of available bytes after the readable bytes amount
+     * Get the number of available bytes after the readable bytes amount.
      *
-     * @return
+     * @return The number of available bytes.
      */
     public int getUnassignedBytes() {
         return this.source.length - (this.offset + this.length);
     }
 
     /**
-     * Get readable text
+     * Get the assignable content of the buffer as a String.
      *
-     * @return
+     * @return The content of the buffer as a String.
      */
     public String getReadableText() {
         return new String(source, offset, length, Charset.defaultCharset());
     }
 
     /**
-     * Resize current source buffer (overflow bytes are clipped)
+     * Resize current source buffer (overflow bytes are clipped).
      *
-     * @param length
+     * @param length The new length of the buffer.
      */
     public void resize(int length) {
         if (length == this.source.length) {
@@ -195,9 +192,9 @@ public class DataBuffer {
     /**
      * Appends given bytes to the end of the current source (considers current length and offset values).
      *
-     * @param source source of data
-     * @param offset offset of the source data
-     * @param length length of the source data to obtain
+     * @param source Source buffer to append.
+     * @param offset Offset of the source buffer.
+     * @param length The length of the data to be read.
      */
     public void append(byte[] source, int offset, int length) {
         if (this.offset + this.length + length > this.source.length) {
@@ -210,18 +207,18 @@ public class DataBuffer {
     }
 
     /**
-     * Append given byte buffer
+     * Append given byte buffer to the end of the current source (considers current length and offset values).
      *
-     * @param value
+     * @param value Byte buffer to append.
      */
     public void append(DataBuffer value) {
         this.append(value.getSource(), value.getOffset(), value.getLength());
     }
 
     /**
-     * Append given byte
+     * Append given byte to the end of the current source (considers current length and offset values).
      *
-     * @param value
+     * @param value Byte to append.
      */
     public void append(byte value) {
         if (this.offset + this.length + 1 > this.source.length) {
@@ -233,10 +230,10 @@ public class DataBuffer {
     }
 
     /**
-     * Peek the next bytes (does not change reader index)
+     * Peek the next bytes at the reader index position.
      *
-     * @param bytes
-     * @return
+     * @param bytes The number of bytes to peek.
+     * @return The next bytes.
      */
     public long peekLong(int bytes) {
         long result = 0;
@@ -249,10 +246,10 @@ public class DataBuffer {
     }
 
     /**
-     * Read long from source buffer
+     * Read a long value from the source buffer starting on the reader index.
      *
-     * @param bytes
-     * @return
+     * @param bytes The number of bytes to read.
+     * @return The next long value.
      */
     public synchronized long readLong(int bytes) {
         long result = peekLong(bytes);
@@ -262,10 +259,10 @@ public class DataBuffer {
     }
 
     /**
-     * Peek the next bytes (does not change reader index)
+     * Peek the next int value at the reader index position.
      *
-     * @param bytes
-     * @return
+     * @param bytes The number of bytes to peek.
+     * @return The next int value.
      */
     public int peekInt(int bytes) {
         int result = 0;
@@ -278,10 +275,10 @@ public class DataBuffer {
     }
 
     /**
-     * Read int from source buffer
+     * Read an int value from the source buffer starting on the reader index.
      *
-     * @param bytes
-     * @return
+     * @param bytes The number of bytes to read.
+     * @return The next int value.
      */
     public synchronized int readInt(int bytes) {
         int result = peekInt(bytes);
@@ -291,39 +288,36 @@ public class DataBuffer {
     }
 
     /**
-     * @param size
-     */
-    private void checkOverflow(int size) {
-        if (readerIndex > offset + length + size) {
-            throw new RuntimeException("Buffer overflow");
-        }
-    }
-
-    /**
-     * @return
+     * Get the length of the buffer.
+     *
+     * @return The length of the buffer.
      */
     public int getLength() {
         return length;
     }
 
     /**
-     * @param value
+     * Set the length of the buffer.
+     *
+     * @param value The length of the buffer.
      */
     public void setLength(int value) {
         this.length = value;
     }
 
     /**
-     * @param value
+     * Set the offset of the buffer.
+     *
+     * @param value The offset of the buffer.
      */
     public void setOffset(int value) {
         this.offset = value;
     }
 
     /**
-     * Increases current reader index by given value
+     * Increases current reader index by given value.
      *
-     * @param value
+     * @param value The value to increase the reader index by.
      */
     public void increaseReaderIndex(int value) {
         this.readerIndex += value;
@@ -334,9 +328,9 @@ public class DataBuffer {
     }
 
     /**
-     * Decreases current reader index by given value
+     * Decreases current reader index by given value.
      *
-     * @param value
+     * @param value The value to decrease the reader index by.
      */
     public void decreaseReaderIndex(int value) {
         this.readerIndex += value;
@@ -347,9 +341,9 @@ public class DataBuffer {
     }
 
     /**
-     * Increases current offset by given value
+     * Increases current offset by given value.
      *
-     * @param value
+     * @param value The value to increase the offset by.
      */
     public void increaseOffset(int value) {
         this.offset += value;
@@ -366,9 +360,9 @@ public class DataBuffer {
     }
 
     /**
-     * Decreases current offset by given value
+     * Decreases current offset by given value.
      *
-     * @param value
+     * @param value The value to decrease the offset by.
      */
     public void decreaseOffset(int value) {
         this.offset += value;
@@ -379,25 +373,52 @@ public class DataBuffer {
     }
 
     /**
-     * @return
+     * Get the source buffer length.
+     *
+     * @return The source buffer length.
      */
     public int getSourceLength() {
-        if (source == null) return 0;
+        if (source == null) {
+            return 0;
+        }
         return source.length;
     }
 
     /**
-     * @return
+     * Get the reader index.
+     *
+     * @return The reader index.
      */
     public int getReaderIndex() {
         return readerIndex;
     }
 
+    /**
+     * Get the source buffer bytes.
+     *
+     * @return The source buffer bytes.
+     */
     public byte[] getSource() {
         return source;
     }
 
+    /**
+     * Get the source buffer offset.
+     *
+     * @return The source buffer offset.
+     */
     public int getOffset() {
         return offset;
+    }
+
+    /**
+     * Check buffer overflow.
+     *
+     * @param size The size to check.
+     */
+    private void checkOverflow(int size) {
+        if (readerIndex > offset + length + size) {
+            throw new RuntimeException("Buffer overflow");
+        }
     }
 }

@@ -10,10 +10,10 @@ import java.nio.ByteBuffer;
 public class TextUtils {
 
     /**
-     * Convert bytebuffer to string
+     * Convert bytebuffer to string.
      *
-     * @param buffer
-     * @return
+     * @param buffer Input buffer.
+     * @return String.
      */
     public static String convertToString(ByteBuffer buffer) {
         byte[] array = new byte[buffer.limit()];

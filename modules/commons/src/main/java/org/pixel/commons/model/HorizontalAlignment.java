@@ -9,8 +9,10 @@ public enum HorizontalAlignment {
     LEFT, CENTER, RIGHT;
 
     /**
-     * @param value
-     * @return
+     * Returns the horizontal alignment based on the given string.
+     *
+     * @param value The string value.
+     * @return The horizontal alignment instance.
      */
     public static HorizontalAlignment fromString(String value) {
         switch (value.toLowerCase()) {

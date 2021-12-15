@@ -9,8 +9,10 @@ public enum VerticalAlignment {
     BOTTOM, MIDDLE, TOP;
 
     /**
-     * @param value
-     * @return
+     * Returns the vertical alignment based on the given string.
+     *
+     * @param value The string value.
+     * @return The vertical alignment instance.
      */
     public static VerticalAlignment fromString(String value) {
         switch (value.toLowerCase()) {

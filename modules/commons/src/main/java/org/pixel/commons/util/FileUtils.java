@@ -7,18 +7,15 @@ package org.pixel.commons.util;
 
 import java.io.File;
 
-/**
- * @author João Filipe Alves
- */
 public class FileUtils {
 
     public static final String FILE_SEPARATOR = "/";
 
     /**
-     * Gets the parent directory of a given path
+     * Gets the parent directory of a given path.
      *
-     * @param path
-     * @return
+     * @param path The input path.
+     * @return The parent directory of the input path.
      */
     public static String getParentDirectory(String path) {
         int index = path.lastIndexOf(FILE_SEPARATOR);

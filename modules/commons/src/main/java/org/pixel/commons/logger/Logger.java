@@ -18,9 +18,9 @@ public abstract class Logger {
     //region Constructors
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param context
+     * @param context Logger context.
      */
     public Logger(LoggerContext context) {
         this.context = context;
@@ -31,8 +31,8 @@ public abstract class Logger {
     //region Internal Functions
 
     /**
-     * @param e
-     * @return
+     * @param e Exception instance.
+     * @return Exception message.
      */
     protected String toString(Exception e) {
         StringWriter sw = new StringWriter();
@@ -47,103 +47,103 @@ public abstract class Logger {
     //region Public Functions
 
     /**
-     * Checks if logger has TRACE enabled
+     * Checks if logger has TRACE enabled.
      *
-     * @return
+     * @return True if enabled.
      */
     public boolean isTraceEnabled() {
         return this.context.getLevel().getValue() <= LogLevel.TRACE.getValue();
     }
 
     /**
-     * Checks if logger has DEBUG enabled
+     * Checks if logger has DEBUG enabled.
      *
-     * @return
+     * @return True if enabled.
      */
     public boolean isDebugEnabled() {
         return this.context.getLevel().getValue() <= LogLevel.DEBUG.getValue();
     }
 
     /**
-     * Checks if logger has INFO enabled
+     * Checks if logger has INFO enabled.
      *
-     * @return
+     * @return True if enabled.
      */
     public boolean isInfoEnabled() {
         return this.context.getLevel().getValue() <= LogLevel.INFO.getValue();
     }
 
     /**
-     * Checks if logger has WARN enabled
+     * Checks if logger has WARN enabled.
      *
-     * @return
+     * @return True if enabled.
      */
     public boolean isWarnEnabled() {
         return this.context.getLevel().getValue() <= LogLevel.WARN.getValue();
     }
 
     /**
-     * Checks if logger has ERROR enabled
+     * Checks if logger has ERROR enabled.
      *
-     * @return
+     * @return True if enabled.
      */
     public boolean isErrorEnabled() {
         return this.context.getLevel().getValue() <= LogLevel.ERROR.getValue();
     }
 
     /**
-     * Log a TRACE level message
+     * Log a TRACE level message.
      *
-     * @param message
-     * @param params
+     * @param message Message to print.
+     * @param params  Parameters to print.
      */
     public abstract void trace(String message, Object... params);
 
     /**
-     * Log a DEBUG level message
+     * Log a DEBUG level message.
      *
-     * @param message
-     * @param params
+     * @param message Message to print.
+     * @param params  Parameters to print.
      */
     public abstract void debug(String message, Object... params);
 
     /**
-     * Log an INFO level message
+     * Log an INFO level message.
      *
-     * @param message
-     * @param params
+     * @param message Message to print.
+     * @param params  Parameters to print.
      */
     public abstract void info(String message, Object... params);
 
     /**
-     * Log an WARN level message
+     * Log an WARN level message.
      *
-     * @param message
-     * @param params
+     * @param message Message to print.
+     * @param params  Parameters to print.
      */
     public abstract void warn(String message, Object... params);
 
     /**
-     * Log an ERROR level message
+     * Log an ERROR level message.
      *
-     * @param message
-     * @param params
+     * @param message Message to print.
+     * @param params  Parameters to print.
      */
     public abstract void error(String message, Object... params);
 
     /**
-     * Get logger context
+     * Get logger context.
      *
-     * @return
+     * @return Logger context.
      */
     public LoggerContext getContext() {
         return context;
     }
 
     /**
-     * Set logger context
+     * Set logger context.
      *
-     * @param context
+     * @param context Logger context.
      */
     public void setContext(LoggerContext context) {
         this.context = context;
