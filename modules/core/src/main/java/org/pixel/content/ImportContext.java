@@ -9,9 +9,6 @@ import org.pixel.content.importer.settings.ContentImporterSettings;
 
 import java.nio.ByteBuffer;
 
-/**
- * @author João Filipe Alves
- */
 public class ImportContext {
 
     private final ContentManager contentManager;
@@ -20,12 +17,12 @@ public class ImportContext {
     private final ContentImporterSettings settings;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param contentManager
-     * @param buffer
-     * @param filepath
-     * @param settings
+     * @param contentManager The content manager.
+     * @param buffer         The content data buffer.
+     * @param filepath       The filepath.
+     * @param settings       The settings.
      */
     public ImportContext(ContentManager contentManager, ByteBuffer buffer, String filepath,
             ContentImporterSettings settings) {
@@ -35,18 +32,35 @@ public class ImportContext {
         this.settings = settings;
     }
 
+    /**
+     * Get the content manager.
+     *
+     * @return The content manager.
+     */
     public ContentManager getContentManager() {
         return contentManager;
     }
 
+    /**
+     * Get the content data buffer.
+     * @return The content data buffer.
+     */
     public ByteBuffer getBuffer() {
         return buffer;
     }
 
+    /**
+     * Get the filepath.
+     * @return The filepath.
+     */
     public String getFilepath() {
         return filepath;
     }
 
+    /**
+     * Get the settings.
+     * @return The settings.
+     */
     public ContentImporterSettings getSettings() {
         return settings;
     }

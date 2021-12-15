@@ -17,12 +17,12 @@ public class Line implements Serializable {
     private float x2, y2;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param x1
-     * @param y1
-     * @param x2
-     * @param y2
+     * @param x1 The x coordinate of the first point.
+     * @param y1 The y coordinate of the first point.
+     * @param x2 The x coordinate of the second point.
+     * @param y2 The y coordinate of the second point.
      */
     public Line(float x1, float y1, float x2, float y2) {
         this.x1 = x1;
@@ -32,19 +32,19 @@ public class Line implements Serializable {
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param point1
-     * @param point2
+     * @param point1 The first point.
+     * @param point2 The second point.
      */
     public Line(Vector2 point1, Vector2 point2) {
         this(point1.getX(), point1.getY(), point2.getX(), point2.getY());
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param other
+     * @param other The other line.
      */
     public Line(Line other) {
         this.x1 = other.x1;
@@ -53,6 +53,27 @@ public class Line implements Serializable {
         this.y2 = other.y2;
     }
 
+    /**
+     * Set the line values.
+     *
+     * @param point1 The first point.
+     * @param point2 The second point.
+     */
+    public void set(Vector2 point1, Vector2 point2) {
+        this.x1 = point1.getX();
+        this.y1 = point1.getY();
+        this.x2 = point2.getX();
+        this.y2 = point2.getY();
+    }
+
+    /**
+     * Set the line values.
+     *
+     * @param x1 The x coordinate of the first point.
+     * @param y1 The y coordinate of the first point.
+     * @param x2 The x coordinate of the second point.
+     * @param y2 The y coordinate of the second point.
+     */
     public void set(float x1, float y1, float x2, float y2) {
         this.x1 = x1;
         this.y1 = y1;

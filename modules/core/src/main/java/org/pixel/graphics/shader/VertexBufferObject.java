@@ -5,12 +5,15 @@
 
 package org.pixel.graphics.shader;
 
-import org.pixel.commons.lifecycle.Disposable;
+import static org.lwjgl.opengl.GL15.glBindBuffer;
+import static org.lwjgl.opengl.GL15.glBufferData;
+import static org.lwjgl.opengl.GL15.glBufferSubData;
+import static org.lwjgl.opengl.GL15.glDeleteBuffers;
+import static org.lwjgl.opengl.GL15.glGenBuffers;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-
-import static org.lwjgl.opengl.GL15.*;
+import org.pixel.commons.lifecycle.Disposable;
 
 public class VertexBufferObject implements Disposable {
 
@@ -23,7 +26,7 @@ public class VertexBufferObject implements Disposable {
     //region constructors
 
     /**
-     * Constructor
+     * Constructor.
      */
     public VertexBufferObject() {
         id = glGenBuffers();
@@ -34,49 +37,56 @@ public class VertexBufferObject implements Disposable {
     //region public methods
 
     /**
-     * @return
+     * Get the VBO native id.
+     *
+     * @return The VBO native id.
      */
     public int getID() {
         return this.id;
     }
 
     /**
-     * @param target
+     * Bind the VBO.
+     *
+     * @param target The target.
      */
     public void bind(int target) {
         glBindBuffer(target, id);
     }
 
     /**
-     * @param target
-     * @param offset
-     * @param data
+     * Upload sub-data to the VBO.
+     *
+     * @param target The target.
+     * @param offset The offset.
+     * @param data   The data.
      */
     public void uploadSubData(int target, long offset, FloatBuffer data) {
         glBufferSubData(target, offset, data);
     }
 
     /**
-     * @param target
-     * @param data
-     * @param usage
+     * Upload data to the VBO.
+     *
+     * @param target The target.
+     * @param data   The data.
+     * @param usage  The usage.
      */
     public void uploadData(int target, FloatBuffer data, int usage) {
         glBufferData(target, data, usage);
     }
 
     /**
-     * @param target
-     * @param data
-     * @param usage
+     * Upload data to the VBO.
+     *
+     * @param target The target.
+     * @param data   The data.
+     * @param usage  The usage.
      */
     public void uploadData(int target, IntBuffer data, int usage) {
         glBufferData(target, data, usage);
     }
 
-    /**
-     *
-     */
     @Override
     public void dispose() {
         glDeleteBuffers(id);

@@ -31,14 +31,19 @@ public enum GamePadButton {
     private final int value;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param value
+     * @param value The value of the button.
      */
     GamePadButton(int value) {
         this.value = value;
     }
 
+    /**
+     * Get the value of the button.
+     *
+     * @return The value of the button.
+     */
     public int getValue() {
         return this.value;
     }

@@ -20,7 +20,7 @@ public class Matrix4 implements Serializable {
     //region constructors
 
     /**
-     * Matrix with identity values
+     * Constructor. Matrix with identity values.
      */
     public Matrix4() {
         setIdentity();
@@ -31,15 +31,15 @@ public class Matrix4 implements Serializable {
     //region public static methods
 
     /**
-     * Creates an orthographic projection matrix
+     * Creates an orthographic projection matrix.
      *
-     * @param left   Coordinate for the left vertical clipping pane
-     * @param right  Coordinate for the right vertical clipping pane
-     * @param bottom Coordinate for the bottom horizontal clipping pane
-     * @param top    Coordinate for the top horizontal clipping pane
-     * @param near   Coordinate for the near depth clipping pane
-     * @param far    Coordinate for the far depth clipping pane
-     * @return Orthographic matrix
+     * @param left   The coordinate for the left vertical clipping pane.
+     * @param right  The coordinate for the right vertical clipping pane.
+     * @param bottom The coordinate for the bottom horizontal clipping pane.
+     * @param top    The coordinate for the top horizontal clipping pane.
+     * @param near   The coordinate for the near depth clipping pane.
+     * @param far    The coordinate for the far depth clipping pane.
+     * @return The orthographic projection matrix.
      */
     public static Matrix4 orthographic(float left, float right, float bottom, float top, float near, float far) {
         Matrix4 matrix = new Matrix4();
@@ -48,15 +48,15 @@ public class Matrix4 implements Serializable {
     }
 
     /**
-     * Creates a perspective projection matrix
+     * Creates a perspective projection matrix.
      *
-     * @param left   Coordinate for the left vertical clipping pane
-     * @param right  Coordinate for the right vertical clipping pane
-     * @param bottom Coordinate for the bottom horizontal clipping pane
-     * @param top    Coordinate for the top horizontal clipping pane
-     * @param near   Coordinate for the near depth clipping pane
-     * @param far    Coordinate for the far depth clipping pane
-     * @return Perspective matrix
+     * @param left   The coordinate for the left vertical clipping pane.
+     * @param right  The coordinate for the right vertical clipping pane.
+     * @param bottom The coordinate for the bottom horizontal clipping pane.
+     * @param top    The coordinate for the top horizontal clipping pane.
+     * @param near   The coordinate for the near depth clipping pane.
+     * @param far    The coordinate for the far depth clipping pane.
+     * @return The perspective projection matrix.
      */
     public static Matrix4 frustum(float left, float right, float bottom, float top, float near, float far) {
         Matrix4 matrix = new Matrix4();
@@ -73,13 +73,13 @@ public class Matrix4 implements Serializable {
     }
 
     /**
-     * Creates a perspective projection matrix
+     * Creates a perspective projection matrix.
      *
-     * @param fovy   Field of view angle (radians)
-     * @param aspect The aspect ratio is the ratio of width to height
-     * @param near   Distance from the viewer to the near clipping plane
-     * @param far    Distance from the viewer to the far clipping plane
-     * @return Perspective matrix
+     * @param fovy   The field of view angle, in radians.
+     * @param aspect The aspect ratio (width to height).
+     * @param near   The distance for the near depth clipping pane.
+     * @param far    The distance for the far depth clipping pane.
+     * @return The perspective projection matrix.
      */
     public static Matrix4 perspective(float fovy, float aspect, float near, float far) {
         float o = (float) (1.0f / Math.tan(fovy / 2.0f));
@@ -125,7 +125,7 @@ public class Matrix4 implements Serializable {
     //region public methods
 
     /**
-     * Clears all matrix values
+     * Clears all matrix values (sets all values to zero).
      */
     public void clear() {
         m[0][0] = 0.0f;
@@ -147,12 +147,14 @@ public class Matrix4 implements Serializable {
     }
 
     /**
-     * @param left
-     * @param right
-     * @param bottom
-     * @param top
-     * @param near
-     * @param far
+     * Set the values to an orthographic projection matrix.
+     *
+     * @param left   The coordinate for the left vertical clipping pane.
+     * @param right  The coordinate for the right vertical clipping pane.
+     * @param bottom The coordinate for the bottom horizontal clipping pane.
+     * @param top    The coordinate for the top horizontal clipping pane.
+     * @param near   The coordinate for the near depth clipping pane.
+     * @param far    The coordinate for the far depth clipping pane.
      */
     public void setOrthographic(float left, float right, float bottom, float top, float near, float far) {
         setIdentity();
@@ -167,7 +169,7 @@ public class Matrix4 implements Serializable {
     }
 
     /**
-     * Sets the values to a identity matrix
+     * Sets the values to an identity matrix
      */
     public void setIdentity() {
         m[0][0] = 1.0f;
@@ -190,7 +192,9 @@ public class Matrix4 implements Serializable {
     }
 
     /**
-     * @param matrix
+     * Matrix addition.
+     *
+     * @param matrix The matrix to add.
      */
     public void add(Matrix4 matrix) {
         for (int i = 0; i < m.length; ++i) {
@@ -201,7 +205,9 @@ public class Matrix4 implements Serializable {
     }
 
     /**
-     * @param matrix
+     * Matrix subtraction.
+     *
+     * @param matrix The matrix to subtract.
      */
     public void subtract(Matrix4 matrix) {
         for (int i = 0; i < m.length; ++i) {
@@ -212,7 +218,9 @@ public class Matrix4 implements Serializable {
     }
 
     /**
-     * @param matrix
+     * Matrix multiplication.
+     *
+     * @param matrix The matrix to multiply.
      */
     public void multiply(Matrix4 matrix) {
         tmp[0][0] = m[0][0] * matrix.m[0][0] + m[0][1] * matrix.m[1][0] + m[0][2] * matrix.m[2][0] + m[0][3] * m[3][0];
@@ -239,7 +247,9 @@ public class Matrix4 implements Serializable {
     }
 
     /**
-     * @param scalar
+     * Matrix multiplication by a scalar.
+     *
+     * @param scalar The scalar.
      */
     public void multiply(float scalar) {
         for (int i = 0; i < m.length; ++i) {
@@ -250,14 +260,14 @@ public class Matrix4 implements Serializable {
     }
 
     /**
-     *
+     * Multiples each value on the matrix by -1.
      */
     public void negate() {
         multiply(-1.0f);
     }
 
     /**
-     *
+     * Inverts the matrix.
      */
     public void invert() {
         float num1 = m[0][0];
@@ -282,11 +292,16 @@ public class Matrix4 implements Serializable {
         float num20 = (float) ((double) num9 * (double) num16 - (double) num12 * (double) num13);
         float num21 = (float) ((double) num9 * (double) num15 - (double) num11 * (double) num13);
         float num22 = (float) ((double) num9 * (double) num14 - (double) num10 * (double) num13);
-        float num23 = (float) ((double) num6 * (double) num17 - (double) num7 * (double) num18 + (double) num8 * (double) num19);
-        float num24 = (float) -((double) num5 * (double) num17 - (double) num7 * (double) num20 + (double) num8 * (double) num21);
-        float num25 = (float) ((double) num5 * (double) num18 - (double) num6 * (double) num20 + (double) num8 * (double) num22);
-        float num26 = (float) -((double) num5 * (double) num19 - (double) num6 * (double) num21 + (double) num7 * (double) num22);
-        float num27 = (float) (1.0 / ((double) num1 * (double) num23 + (double) num2 * (double) num24 + (double) num3 * (double) num25 + (double) num4 * (double) num26));
+        float num23 = (float) ((double) num6 * (double) num17 - (double) num7 * (double) num18
+                + (double) num8 * (double) num19);
+        float num24 = (float) -((double) num5 * (double) num17 - (double) num7 * (double) num20
+                + (double) num8 * (double) num21);
+        float num25 = (float) ((double) num5 * (double) num18 - (double) num6 * (double) num20
+                + (double) num8 * (double) num22);
+        float num26 = (float) -((double) num5 * (double) num19 - (double) num6 * (double) num21
+                + (double) num7 * (double) num22);
+        float num27 = (float) (1.0 / ((double) num1 * (double) num23 + (double) num2 * (double) num24
+                + (double) num3 * (double) num25 + (double) num4 * (double) num26));
         float num28 = (float) ((double) num7 * (double) num16 - (double) num8 * (double) num15);
         float num29 = (float) ((double) num6 * (double) num16 - (double) num8 * (double) num14);
         float num30 = (float) ((double) num6 * (double) num15 - (double) num7 * (double) num14);
@@ -304,22 +319,34 @@ public class Matrix4 implements Serializable {
         m[1][0] = num24 * num27;
         m[2][0] = num25 * num27;
         m[3][0] = num26 * num27;
-        m[0][1] = (float) -((double) num2 * (double) num17 - (double) num3 * (double) num18 + (double) num4 * (double) num19) * num27;
-        m[1][1] = (float) ((double) num1 * (double) num17 - (double) num3 * (double) num20 + (double) num4 * (double) num21) * num27;
-        m[2][1] = (float) -((double) num1 * (double) num18 - (double) num2 * (double) num20 + (double) num4 * (double) num22) * num27;
-        m[3][1] = (float) ((double) num1 * (double) num19 - (double) num2 * (double) num21 + (double) num3 * (double) num22) * num27;
-        m[0][2] = (float) ((double) num2 * (double) num28 - (double) num3 * (double) num29 + (double) num4 * (double) num30) * num27;
-        m[1][2] = (float) -((double) num1 * (double) num28 - (double) num3 * (double) num31 + (double) num4 * (double) num32) * num27;
-        m[2][2] = (float) ((double) num1 * (double) num29 - (double) num2 * (double) num31 + (double) num4 * (double) num33) * num27;
-        m[3][2] = (float) -((double) num1 * (double) num30 - (double) num2 * (double) num32 + (double) num3 * (double) num33) * num27;
-        m[0][3] = (float) -((double) num2 * (double) num34 - (double) num3 * (double) num35 + (double) num4 * (double) num36) * num27;
-        m[1][3] = (float) ((double) num1 * (double) num34 - (double) num3 * (double) num37 + (double) num4 * (double) num38) * num27;
-        m[2][3] = (float) -((double) num1 * (double) num35 - (double) num2 * (double) num37 + (double) num4 * (double) num39) * num27;
-        m[3][3] = (float) ((double) num1 * (double) num36 - (double) num2 * (double) num38 + (double) num3 * (double) num39) * num27;
+        m[0][1] = (float) -((double) num2 * (double) num17 - (double) num3 * (double) num18
+                + (double) num4 * (double) num19) * num27;
+        m[1][1] = (float) ((double) num1 * (double) num17 - (double) num3 * (double) num20
+                + (double) num4 * (double) num21) * num27;
+        m[2][1] = (float) -((double) num1 * (double) num18 - (double) num2 * (double) num20
+                + (double) num4 * (double) num22) * num27;
+        m[3][1] = (float) ((double) num1 * (double) num19 - (double) num2 * (double) num21
+                + (double) num3 * (double) num22) * num27;
+        m[0][2] = (float) ((double) num2 * (double) num28 - (double) num3 * (double) num29
+                + (double) num4 * (double) num30) * num27;
+        m[1][2] = (float) -((double) num1 * (double) num28 - (double) num3 * (double) num31
+                + (double) num4 * (double) num32) * num27;
+        m[2][2] = (float) ((double) num1 * (double) num29 - (double) num2 * (double) num31
+                + (double) num4 * (double) num33) * num27;
+        m[3][2] = (float) -((double) num1 * (double) num30 - (double) num2 * (double) num32
+                + (double) num3 * (double) num33) * num27;
+        m[0][3] = (float) -((double) num2 * (double) num34 - (double) num3 * (double) num35
+                + (double) num4 * (double) num36) * num27;
+        m[1][3] = (float) ((double) num1 * (double) num34 - (double) num3 * (double) num37
+                + (double) num4 * (double) num38) * num27;
+        m[2][3] = (float) -((double) num1 * (double) num35 - (double) num2 * (double) num37
+                + (double) num4 * (double) num39) * num27;
+        m[3][3] = (float) ((double) num1 * (double) num36 - (double) num2 * (double) num38
+                + (double) num3 * (double) num39) * num27;
     }
 
     /**
-     * Transpose Matrix
+     * Transposes the matrix.
      */
     public void transpose() {
         tmp[0][0] = m[0][0];
@@ -346,20 +373,20 @@ public class Matrix4 implements Serializable {
     }
 
     /**
-     * Translates matrix
+     * Translates matrix by a given vector.
      *
-     * @param position
+     * @param position The vector to translate by.
      */
     public void translate(Vector3 position) {
         this.translate(position.getX(), position.getY(), position.getZ());
     }
 
     /**
-     * Translates matrix
+     * Translates matrix by the given coordinates.
      *
-     * @param x
-     * @param y
-     * @param z
+     * @param x The x coordinate.
+     * @param y The y coordinate.
+     * @param z The z coordinate.
      */
     public void translate(float x, float y, float z) {
         m[3][0] = m[0][0] * x + m[1][0] * y + m[2][0] * z + m[3][0];
@@ -369,10 +396,10 @@ public class Matrix4 implements Serializable {
     }
 
     /**
-     * Rotates the matrix along an axis
+     * Rotates the matrix along an axis.
      *
-     * @param angle
-     * @param axis
+     * @param angle The angle to rotate by.
+     * @param axis  The axis to rotate along.
      */
     public void rotate(float angle, Vector3 axis) {
         // axis.normalize(); // should do this to prevent issues.. but Math.sqrt is quite costly..
@@ -380,16 +407,16 @@ public class Matrix4 implements Serializable {
     }
 
     /**
-     * Rotates the matrix along an axis
+     * Rotates the matrix along an axis.
      *
-     * @param angle rotation value (radians)
-     * @param x     X magnitude (from 0 to 1)
-     * @param y     Y magnitude (from 0 to 1)
-     * @param z     Z magnitude (from 0 to 1)
+     * @param angle The angle to rotate by in radians.
+     * @param x     The x coordinate magnitude (from 0 to 1)
+     * @param y     The y coordinate magnitude (from 0 to 1)
+     * @param z     The z coordinate magnitude (from 0 to 1)
      */
     public void rotate(float angle, float x, float y, float z) {
-        float c = (float) Math.cos(angle);
-        float s = (float) Math.sin(angle);
+        float c = MathHelper.cos(angle);
+        float s = MathHelper.sin(angle);
 
         m[0][0] = x * x * (1f - c) + c;
         m[1][0] = y * x * (1f - c) + z * s;
@@ -403,16 +430,20 @@ public class Matrix4 implements Serializable {
     }
 
     /**
-     * @param factor
+     * Scales the matrix by the given vector.
+     *
+     * @param factor The vector to scale by.
      */
     public void scale(Vector3 factor) {
         this.scale(factor.getX(), factor.getY(), factor.getZ());
     }
 
     /**
-     * @param x
-     * @param y
-     * @param z
+     * Scales the matrix by coordinates scaling values.
+     *
+     * @param x The x coordinate scaling value.
+     * @param y The y coordinate scaling value.
+     * @param z The z coordinate scaling value.
      */
     public void scale(float x, float y, float z) {
         m[0][0] *= x;
@@ -430,39 +461,39 @@ public class Matrix4 implements Serializable {
     }
 
     /**
-     * @return
+     * Clones the matrix.
+     *
+     * @return The cloned matrix.
      */
     public Matrix4 clone() {
         Matrix4 matrix = new Matrix4();
-
-        // straight clone doesn't work here due to the array having multiple dimensions..
-        for (int i = 0; i < m.length; ++i) {
-            matrix.m[i] = m[i].clone();
-        }
+        matrix.m = toArray();
 
         return matrix;
     }
 
     /**
-     * Clones and returns the array value of the matrix
+     * Clones and returns the array value of the matrix.
      *
-     * @return
+     * @return The array value of the matrix.
      */
     public float[][] toArray() {
         return m.clone();
     }
 
     /**
-     * Returns the original array value of the matrix
+     * Returns the original array value of the matrix.
      *
-     * @return
+     * @return The original array value of the matrix.
      */
     public float[][] toUnsafeArray() {
         return m;
     }
 
     /**
-     * @param buffer
+     * Write matrix values to given float buffer.
+     *
+     * @param buffer The float buffer to write to.
      */
     public void writeBuffer(FloatBuffer buffer) {
         buffer.put(m[0][0]).put(m[0][1]).put(m[0][2]).put(m[0][3]);

@@ -5,9 +5,25 @@
 
 package org.pixel.graphics.shader;
 
-import org.pixel.commons.lifecycle.Disposable;
-import org.pixel.commons.logger.Logger;
-import org.pixel.commons.logger.LoggerFactory;
+import static org.lwjgl.opengl.GL11.GL_TRUE;
+import static org.lwjgl.opengl.GL20.GL_COMPILE_STATUS;
+import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
+import static org.lwjgl.opengl.GL20.GL_LINK_STATUS;
+import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
+import static org.lwjgl.opengl.GL20.glAttachShader;
+import static org.lwjgl.opengl.GL20.glCompileShader;
+import static org.lwjgl.opengl.GL20.glCreateProgram;
+import static org.lwjgl.opengl.GL20.glCreateShader;
+import static org.lwjgl.opengl.GL20.glDeleteProgram;
+import static org.lwjgl.opengl.GL20.glDeleteShader;
+import static org.lwjgl.opengl.GL20.glGetAttribLocation;
+import static org.lwjgl.opengl.GL20.glGetProgramInfoLog;
+import static org.lwjgl.opengl.GL20.glGetProgrami;
+import static org.lwjgl.opengl.GL20.glGetShaderInfoLog;
+import static org.lwjgl.opengl.GL20.glGetShaderi;
+import static org.lwjgl.opengl.GL20.glGetUniformLocation;
+import static org.lwjgl.opengl.GL20.glLinkProgram;
+import static org.lwjgl.opengl.GL20.glShaderSource;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,9 +32,9 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.lwjgl.opengl.GL11.GL_TRUE;
-import static org.lwjgl.opengl.GL20.*;
+import org.pixel.commons.lifecycle.Disposable;
+import org.pixel.commons.logger.Logger;
+import org.pixel.commons.logger.LoggerFactory;
 
 public abstract class Shader implements Disposable {
 
@@ -43,12 +59,12 @@ public abstract class Shader implements Disposable {
     //region constructors
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param vertexSrc
-     * @param fragSrc
-     * @param attributes
-     * @param uniforms
+     * @param vertexSrc  The vertex shader source.
+     * @param fragSrc    The fragment shader source.
+     * @param attributes The shader attributes.
+     * @param uniforms   The shader uniforms.
      */
     public Shader(String vertexSrc, String fragSrc, List<String> attributes, List<String> uniforms) {
         this.vertSrc = vertexSrc;
@@ -117,21 +133,25 @@ public abstract class Shader implements Disposable {
     //region public methods
 
     /**
-     * Apply shader values
+     * Apply shader values.
      */
     public abstract void apply();
 
     /**
-     * @param name
-     * @return
+     * Get shader uniform location.
+     *
+     * @param name The uniform name.
+     * @return The uniform location.
      */
     public Integer getUniformLocation(String name) {
         return uniformLocationMap.get(name);
     }
 
     /**
-     * @param name
-     * @return
+     * Get shader attribute location.
+     *
+     * @param name The attribute name.
+     * @return The attribute location.
      */
     public Integer getAttributeLocation(String name) {
         return attributeLocationMap.get(name);
@@ -149,6 +169,11 @@ public abstract class Shader implements Disposable {
 
     //region getters & setters
 
+    /**
+     * Get the native program id.
+     *
+     * @return The native program id.
+     */
     public int getProgramId() {
         return this.programId;
     }
@@ -157,12 +182,20 @@ public abstract class Shader implements Disposable {
 
     // region static
 
+    /**
+     * Load shader source from file.
+     *
+     * @param fileName The file name.
+     * @return The shader source.
+     */
     protected static String loadShader(String fileName) {
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
         try (InputStream is = classLoader.getResourceAsStream(fileName)) {
-            if (is == null) return null;
+            if (is == null) {
+                return null;
+            }
             try (InputStreamReader isr = new InputStreamReader(is);
-                 BufferedReader reader = new BufferedReader(isr)) {
+                    BufferedReader reader = new BufferedReader(isr)) {
                 return reader.lines().collect(Collectors.joining(System.lineSeparator()));
             }
         } catch (IOException e) {
@@ -171,7 +204,6 @@ public abstract class Shader implements Disposable {
 
         return "";
     }
-
 
     // endregion
 

@@ -5,14 +5,17 @@
 
 package org.pixel.graphics.shader.effect;
 
-import org.pixel.graphics.Color;
-import org.pixel.graphics.shader.Shader;
+import static org.lwjgl.opengl.GL20.glUniform4f;
 
 import java.util.Arrays;
 import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
+import org.pixel.graphics.Color;
+import org.pixel.graphics.shader.Shader;
 
-import static org.lwjgl.opengl.GL20.glUniform4f;
-
+@Getter
+@Setter
 public class OverlayEffectShader extends Shader {
 
     private static final List<String> uniforms = Arrays.asList("uTextureImage", "uOverlayColor", "uTime");
@@ -29,16 +32,15 @@ public class OverlayEffectShader extends Shader {
     private Color overlayColor;
 
     /**
-     * Constructor
+     * Constructor.
+     *
+     * @param overlayColor The overlay color.
      */
     public OverlayEffectShader(Color overlayColor) {
         super(vertSrc, fragSrc, attributes, uniforms);
         this.overlayColor = overlayColor;
     }
 
-    /**
-     * Apply shader values
-     */
     @Override
     public void apply() {
         glUniform4f(getUniformLocation("uOverlayColor"), overlayColor.getRed(), overlayColor.getGreen(),

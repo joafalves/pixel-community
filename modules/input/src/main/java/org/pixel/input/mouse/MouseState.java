@@ -18,9 +18,9 @@ public class MouseState {
     //region constructors
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param buttons
+     * @param buttons The snapshot of the mouse state.
      */
     public MouseState(HashMap<Integer, Integer> buttons) {
         this.buttons = buttons;
@@ -31,10 +31,10 @@ public class MouseState {
     //region public methods
 
     /**
-     * Checks if a given mouse button is down
+     * Checks if a given mouse button is down.
      *
-     * @param button
-     * @return
+     * @param button The mouse button to check.
+     * @return True if the mouse button is down, false otherwise.
      */
     public boolean isMouseButtonDown(MouseButton button) {
         Integer value = buttons.get(button.getValue());
@@ -42,10 +42,10 @@ public class MouseState {
     }
 
     /**
-     * Checks if a given mouse button is up
+     * Checks if a given mouse button is up.
      *
-     * @param button
-     * @return
+     * @param button The mouse button to check.
+     * @return True if the mouse button is up, false otherwise.
      */
     public boolean isMouseButtonUp(MouseButton button) {
         Integer value = buttons.get(button.getValue());

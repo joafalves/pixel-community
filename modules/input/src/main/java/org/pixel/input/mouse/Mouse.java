@@ -34,6 +34,11 @@ public class Mouse {
 
     //region public static methods
 
+    /**
+     * Static method to get a snapshot of the mouse state.
+     *
+     * @return MouseState snapshot.
+     */
     public static MouseState getState() {
         return Mouse.getMouseState();
     }
@@ -42,18 +47,32 @@ public class Mouse {
 
     //region public methods
 
+    /**
+     * Static method to determine if the given mouse button is down.
+     *
+     * @param button MouseButton to check.
+     * @return True if the button is down, false otherwise.
+     */
     public static boolean isMouseButtonDown(MouseButton button) {
         Integer value = buttons.get(button.getValue());
         return value != null && value > 0;
     }
 
+    /**
+     * Static method to determine if the given mouse button is up.
+     *
+     * @param button MouseButton to check.
+     * @return True if the button is up, false otherwise.
+     */
     public static boolean isMouseButtonUp(MouseButton button) {
         Integer value = buttons.get(button.getValue());
         return value != null && value == 0;
     }
 
     /**
-     * @return
+     * Static method to get a snapshot of the mouse state.
+     *
+     * @return MouseState snapshot.
      */
     public static MouseState getMouseState() {
         return new MouseState((HashMap<Integer, Integer>) buttons.clone());
@@ -61,22 +80,21 @@ public class Mouse {
 
     //endregion
 
-    //region private methods
-
-
-    //endregion
-
     //region getters & setters
 
     /**
-     * @return
+     * Get the current mouse position.
+     *
+     * @return The current mouse position.
      */
     public static Vector2 getPosition() {
         return position;
     }
 
     /**
-     * @return
+     * Get the current mouse position box.
+     *
+     * @return The current mouse position box.
      */
     public static Rectangle getPositionBox() {
         return positionBox;
@@ -87,7 +105,7 @@ public class Mouse {
     //region internal classes
 
     /**
-     * Cursor Position Handler
+     * Cursor Position Handler.
      */
     public static class CursorPositionHandler extends GLFWCursorPosCallback {
 
@@ -99,7 +117,7 @@ public class Mouse {
     }
 
     /**
-     * Mouse Button Handler
+     * Mouse Button Handler.
      */
     public static class MouseButtonHandler extends GLFWMouseButtonCallback {
 

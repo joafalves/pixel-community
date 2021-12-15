@@ -11,9 +11,9 @@ public class Vector3 implements Serializable {
 
     //region static
 
-    public static final Vector3 ZERO = new Vector3(0, 0, 0);
-    public static final Vector3 ONE = new Vector3(1, 1, 1);
-    public static final Vector3 HALF = new Vector3(0.5f, 0.5f, 0.5f);
+    public static final Vector3 ZERO = Vector3.zero();
+    public static final Vector3 ONE = Vector3.one();
+    public static final Vector3 HALF = Vector3.half();
 
     //endregion
 
@@ -28,7 +28,7 @@ public class Vector3 implements Serializable {
     //region constructors
 
     /**
-     * Constructor
+     * Constructor.
      */
     public Vector3() {
         this.setX(0);
@@ -37,9 +37,9 @@ public class Vector3 implements Serializable {
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param xyz
+     * @param xyz The x, y and z coordinates of the vector.
      */
     public Vector3(float xyz) {
         this.setX(xyz);
@@ -48,9 +48,11 @@ public class Vector3 implements Serializable {
     }
 
     /**
-     * @param x
-     * @param y
-     * @param z
+     * Constructor.
+     *
+     * @param x The x coordinate of the vector.
+     * @param y The y coordinate of the vector.
+     * @param z The z coordinate of the vector.
      */
     public Vector3(float x, float y, float z) {
         this.setX(x);
@@ -59,7 +61,9 @@ public class Vector3 implements Serializable {
     }
 
     /**
-     * @param other
+     * Constructor.
+     *
+     * @param other The vector to copy.
      */
     public Vector3(Vector3 other) {
         if (other != null) {
@@ -77,7 +81,9 @@ public class Vector3 implements Serializable {
     //region public methods
 
     /**
-     * @param vec3
+     * Adds the vector to this vector.
+     *
+     * @param vec3 The vector to add.
      */
     public void add(Vector3 vec3) {
         this.setX(this.getX() + vec3.getX());
@@ -86,9 +92,11 @@ public class Vector3 implements Serializable {
     }
 
     /**
-     * @param x
-     * @param y
-     * @param z
+     * Adds the given coordinates to the vector.
+     *
+     * @param x The x coordinate of the vector.
+     * @param y The y coordinate of the vector.
+     * @param z The z coordinate of the vector.
      */
     public void add(float x, float y, float z) {
         this.setX(this.getX() + x);
@@ -97,7 +105,9 @@ public class Vector3 implements Serializable {
     }
 
     /**
-     * @param vec3
+     * Subtracts the vector from this vector.
+     *
+     * @param vec3 The vector to subtract.
      */
     public void subtract(Vector3 vec3) {
         this.setX(this.getX() - vec3.getX());
@@ -106,9 +116,11 @@ public class Vector3 implements Serializable {
     }
 
     /**
-     * @param x
-     * @param y
-     * @param z
+     * Sets the vector to the given coordinates.
+     *
+     * @param x The x coordinate of the vector.
+     * @param y The y coordinate of the vector.
+     * @param z The z coordinate of the vector.
      */
     public void subtract(float x, float y, float z) {
         this.setX(this.getX() - x);
@@ -117,7 +129,9 @@ public class Vector3 implements Serializable {
     }
 
     /**
-     * @param vec3
+     * Multiplies the vector by the given vector.
+     *
+     * @param vec3 The vector to multiply.
      */
     public void multiply(Vector3 vec3) {
         this.setX(this.getX() * vec3.getX());
@@ -126,9 +140,11 @@ public class Vector3 implements Serializable {
     }
 
     /**
-     * @param x
-     * @param y
-     * @param z
+     * Multiplies the vector by the given coordinates.
+     *
+     * @param x The x coordinate of the vector.
+     * @param y The y coordinate of the vector.
+     * @param z The z coordinate of the vector.
      */
     public void multiply(float x, float y, float z) {
         this.setX(this.getX() * x);
@@ -137,7 +153,7 @@ public class Vector3 implements Serializable {
     }
 
     /**
-     * Normalizes the vector2
+     * Normalizes the vector (length of 1).
      */
     public void normalize() {
         float value = 1.0f / this.length();
@@ -147,38 +163,40 @@ public class Vector3 implements Serializable {
     }
 
     /**
-     * Calculates the distance from vector to target
+     * Calculates the distance from vector to target.
      *
-     * @param target
-     * @return
+     * @param target The target vector.
+     * @return The distance.
      */
     public float distanceTo(Vector3 target) {
         return (float) Math.sqrt(Vector3.squaredDistance(this, target));
     }
 
     /**
-     * The dot product of this vector with another vector
+     * The dot product of this vector with another vector.
      *
-     * @param vec
-     * @return
+     * @param vec The other vector.
+     * @return The dot product.
      */
     public float dot(Vector3 vec) {
         return this.getX() * vec.getX() + this.getY() * vec.getY() + this.getZ() * vec.getZ();
     }
 
     /**
-     * @return
+     * Calculates the squared lenght of the vector.
+     *
+     * @return The squared length.
      */
     public float lengthSquared() {
         return getX() * getX() + getY() * getY() + getZ() * getZ();
     }
 
     /**
-     * Set vecto values
+     * Set vector values.
      *
-     * @param x
-     * @param y
-     * @param z
+     * @param x The x coordinate of the vector.
+     * @param y The y coordinate of the vector.
+     * @param z The z coordinate of the vector.
      */
     public void set(float x, float y, float z) {
         this.x = x;
@@ -187,9 +205,9 @@ public class Vector3 implements Serializable {
     }
 
     /**
-     * Set vector values
+     * Set vector values.
      *
-     * @param xyz
+     * @param xyz The xyz coordinates of the vector.
      */
     public void set(float xyz) {
         this.x = xyz;
@@ -198,9 +216,9 @@ public class Vector3 implements Serializable {
     }
 
     /**
-     * Set vector values
+     * Set vector values (x, y).
      *
-     * @param o
+     * @param o The vector to copy.
      */
     public void set(Vector2 o) {
         this.x = o.getX();
@@ -208,9 +226,9 @@ public class Vector3 implements Serializable {
     }
 
     /**
-     * Set vector values
+     * Set vector values.
      *
-     * @param o
+     * @param o The vector to copy.
      */
     public void set(Vector3 o) {
         this.x = o.x;
@@ -219,72 +237,93 @@ public class Vector3 implements Serializable {
     }
 
     /**
-     * @return
+     * Calculates the length of the vector.
+     *
+     * @return The length of the vector.
      */
     public float length() {
         return (float) Math.sqrt(lengthSquared());
     }
 
     /**
-     * Get vector X value
+     * Get the x coordinate of the vector.
      *
-     * @return
+     * @return The x coordinate of the vector.
      */
     public float getX() {
         return x;
     }
 
     /**
-     * Set vector X value
+     * Set the x coordinate of the vector.
      *
-     * @param x
+     * @param x The x coordinate of the vector.
      */
     public void setX(float x) {
         this.x = x;
     }
 
     /**
-     * Get vector Y value
+     * Get the y coordinate of the vector.
      *
-     * @return
+     * @return The y coordinate of the vector.
      */
     public float getY() {
         return y;
     }
 
     /**
-     * Set vector Y value
+     * Set the y coordinate of the vector.
      *
-     * @param y
+     * @param y The y coordinate of the vector.
      */
     public void setY(float y) {
         this.y = y;
     }
 
     /**
-     * Get vector Z value
+     * Get the z coordinate of the vector.
      *
-     * @return
+     * @return The z coordinate of the vector.
      */
     public float getZ() {
         return z;
     }
 
     /**
-     * Set vector Z value
+     * Set the z coordinate of the vector.
      *
-     * @param z
+     * @param z The z coordinate of the vector.
      */
     public void setZ(float z) {
         this.z = z;
     }
 
+    /**
+     * Creates a new instance of the vector with values (0, 0, 0).
+     *
+     * @return The new vector.
+     */
     public static Vector3 zero() {
         return new Vector3(0);
     }
 
+    /**
+     * Creates a new instance of the vector with values (1, 1, 1).
+     *
+     * @return The new vector.
+     */
     public static Vector3 one() {
-        return new Vector3(0);
+        return new Vector3(1);
+    }
+
+    /**
+     * Creates a new instance of the vector with values (0.5, 0.5, 0.5).
+     *
+     * @return The new vector.
+     */
+    public static Vector3 half() {
+        return new Vector3(0.5f);
     }
 
     @Override
@@ -307,10 +346,10 @@ public class Vector3 implements Serializable {
     //region public static methods
 
     /**
-     * Calculates a normalized vector without affecting the original
+     * Normalizes the vector and returns the result as a new instance.
      *
-     * @param vec
-     * @return
+     * @param vec The vector to normalize.
+     * @return The normalized vector.
      */
     public static Vector3 normalize(Vector3 vec) {
         float value = 1.0f / vec.length();
@@ -318,22 +357,22 @@ public class Vector3 implements Serializable {
     }
 
     /**
-     * Calculates the distance between two vectors
+     * Calculates the distance between two vectors.
      *
-     * @param vec1
-     * @param vec2
-     * @return
+     * @param vec1 The first vector.
+     * @param vec2 The second vector.
+     * @return The distance between the two vectors.
      */
     public static float distance(Vector3 vec1, Vector3 vec2) {
         return (float) Math.sqrt(Vector3.squaredDistance(vec1, vec2));
     }
 
     /**
-     * Calculates the squared distance between two vectors
+     * Calculates the squared distance between two vectors.
      *
-     * @param vec1
-     * @param vec2
-     * @return
+     * @param vec1 The first vector.
+     * @param vec2 The second vector.
+     * @return The squared distance between the two vectors.
      */
     public static float squaredDistance(Vector3 vec1, Vector3 vec2) {
         float vx = vec1.getX() - vec2.getX();

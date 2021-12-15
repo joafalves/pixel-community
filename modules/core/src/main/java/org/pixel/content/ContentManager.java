@@ -16,9 +16,6 @@ import org.pixel.content.importer.settings.ContentImporterSettings;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * @author João Filipe Alves
- */
 public class ContentManager implements Disposable {
 
     private static final Logger log = LoggerFactory.getLogger(ContentManager.class);
@@ -49,18 +46,20 @@ public class ContentManager implements Disposable {
     }
 
     /**
-     * @param filename
-     * @param type
-     * @return
+     * Get a reference to the asset cache.
+     *
+     * @param filename The filename of the asset.
+     * @param type     The type of the asset.
+     * @return A reference to the asset cache.
      */
     private String getCacheReference(String filename, Class type) {
         return type.getCanonicalName() + ":" + filename;
     }
 
     /**
-     * Add a custom content importer
+     * Add a custom content importer to the content manager.
      *
-     * @param importer
+     * @param importer The importer to add.
      */
     public void addContentImporter(ContentImporter importer) {
         ContentImporterInfo importerDetails = importer.getClass().getAnnotation(ContentImporterInfo.class);
@@ -73,25 +72,26 @@ public class ContentManager implements Disposable {
     }
 
     /**
-     * Load a resource file. Supports both full and relative paths (based on the project resource folder)
+     * Load a resource file - supports both absolute and relative paths (based on the project resource folder).
      *
-     * @param filepath
-     * @param type
-     * @param <T>
-     * @return
+     * @param filepath The filepath of the resource - supports both relative and absolute paths.
+     * @param type     The class type of the resource.
+     * @param <T>      The type of the resource.
+     * @return The loaded resource.
      */
     public <T> T load(String filepath, Class<T> type) {
         return load(filepath, type, null);
     }
 
     /**
-     * Load a resource file. Supports both full and relative paths (based on the project resource folder)
+     * Load a resource file with a custom importer settings - supports both absolute and relative paths (based on the
+     * project resource folder).
      *
-     * @param filepath
-     * @param type
-     * @param settings
-     * @param <T>
-     * @return
+     * @param filepath The filepath of the resource - supports both relative and absolute paths.
+     * @param type     The class type of the resource.
+     * @param settings The settings to use for the importer.
+     * @param <T>      The type of the resource.
+     * @return The loaded resource.
      */
     public <T> T load(String filepath, Class<T> type, @Nullable ContentImporterSettings settings) {
         String assetRef = getCacheReference(filepath, type);

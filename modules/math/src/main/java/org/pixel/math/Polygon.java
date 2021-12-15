@@ -21,7 +21,9 @@ public class Polygon implements Serializable {
     //region constructors
 
     /**
-     * @param vertices
+     * Constructor.
+     *
+     * @param vertices The vertices of the polygon.
      */
     public Polygon(Vector2... vertices) {
         if (vertices.length < 3) {
@@ -32,7 +34,9 @@ public class Polygon implements Serializable {
     }
 
     /**
-     * @param vertices
+     * Constructor.
+     *
+     * @param vertices The vertices of the polygon.
      */
     public Polygon(List<Vector2> vertices) {
         if (vertices.size() < 3) {
@@ -45,7 +49,7 @@ public class Polygon implements Serializable {
     /**
      * Constructor
      *
-     * @param other
+     * @param other The other polygon.
      */
     public Polygon(Polygon other) {
         this.vertices = new ArrayList<>();
@@ -59,10 +63,11 @@ public class Polygon implements Serializable {
     //region public methods
 
     /**
-     * Tests polygon is overlapping another (vertices are required to be ordered either clockwise or counter-clockwise)
+     * Tests polygon is overlapping another (vertices are required to be ordered either clockwise or
+     * counter-clockwise).
      *
-     * @param other
-     * @return
+     * @param other The other polygon.
+     * @return True if overlapping, false otherwise.
      */
     public boolean overlapsWith(Polygon other) {
         return overlap(this, other);
@@ -86,11 +91,11 @@ public class Polygon implements Serializable {
     //region public static methods
 
     /**
-     * Tests if two polygons are overlapping each other
+     * Tests if two polygons are overlapping each other.
      *
-     * @param a
-     * @param b
-     * @return
+     * @param a The first polygon.
+     * @param b The second polygon.
+     * @return True if overlapping, false otherwise.
      */
     public static boolean overlap(Polygon a, Polygon b) {
         return MathHelper.overlap(a.vertices, b.vertices);
@@ -100,10 +105,20 @@ public class Polygon implements Serializable {
 
     //region getters & setters
 
+    /**
+     * Get the vertices of the polygon.
+     *
+     * @return The vertices of the polygon.
+     */
     public List<Vector2> getVertices() {
         return vertices;
     }
 
+    /**
+     * Set the vertices of the polygon.
+     *
+     * @param vertices The vertices of the polygon.
+     */
     public void setVertices(List<Vector2> vertices) {
         this.vertices = vertices;
     }

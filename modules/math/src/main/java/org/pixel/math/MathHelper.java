@@ -26,89 +26,105 @@ public class MathHelper {
     //region public static methods
 
     /**
-     * @param value
-     * @return
+     * Tangent function.
+     *
+     * @param value The value to calculate the tangent of.
+     * @return The tangent of the value.
      */
     public static float tan(float value) {
         return (float) Math.tan(value);
     }
 
     /**
-     * @param value
-     * @return
+     * Sinus function.
+     *
+     * @param value The value to calculate the sinus of.
+     * @return The sinus of the value.
      */
     public static float sin(float value) {
         return (float) Math.sin(value);
     }
 
     /**
-     * @param value
-     * @return
+     * Cosine function.
+     *
+     * @param value The value to calculate the cosine of.
+     * @return The cosine of the value.
      */
     public static float cos(float value) {
         return (float) Math.cos(value);
     }
 
     /**
-     * @param value
-     * @return
+     * Arc cosine function.
+     *
+     * @param value The value to calculate the arc cosine of.
+     * @return The arc cosine of the value.
      */
     public static float acos(float value) {
         return (float) Math.acos(value);
     }
 
     /**
-     * @param y
-     * @param x
-     * @return
+     * Arc Tangent function (inverted).
+     *
+     * @param y The y value.
+     * @param x The x value.
+     * @return The arc tangent of the x and y value.
      */
     public static float atan2(float y, float x) {
         return (float) Math.atan2(y, x);
     }
 
     /**
-     * Generates a random integer number between two numbers
+     * Generates a random integer number between two numbers.
      *
-     * @param min
-     * @param max
-     * @return
+     * @param min The minimum value.
+     * @param max The maximum value.
+     * @return The random integer number.
      */
     public static int random(int min, int max) {
         return ThreadLocalRandom.current().nextInt(max - min) + min;
     }
 
     /**
-     * Generates a random float number between two numbers
+     * Generates a random float number between two numbers.
      *
-     * @param min
-     * @param max
-     * @return
+     * @param min The minimum value.
+     * @param max The maximum value.
+     * @return The random float number.
      */
     public static float random(float min, float max) {
         return min + ThreadLocalRandom.current().nextFloat() * (max - min);
     }
 
     /**
-     * @param a
-     * @param b
-     * @return
+     * Determines the greater value of the given values.
+     *
+     * @param a The first value.
+     * @param b The second value.
+     * @return The greater value.
      */
     public static float max(float a, float b) {
         return Math.max(a, b);
     }
 
     /**
-     * @param a
-     * @param b
-     * @return
+     * Determines the smaller value of the given values.
+     *
+     * @param a The first value.
+     * @param b The second value.
+     * @return The smaller value.
      */
     public static float min(float a, float b) {
         return Math.min(a, b);
     }
 
     /**
-     * @param values
-     * @return
+     * Determines the greater value of the given values.
+     *
+     * @param values The values.
+     * @return The greater value.
      */
     public static float max(float... values) {
         float max = Float.MIN_VALUE;
@@ -121,8 +137,10 @@ public class MathHelper {
     }
 
     /**
-     * @param values
-     * @return
+     * Determines the smaller value of the given values.
+     *
+     * @param values The values.
+     * @return The smaller value.
      */
     public static float min(float... values) {
         float min = Float.MAX_VALUE;
@@ -135,96 +153,106 @@ public class MathHelper {
     }
 
     /**
-     * @param value
-     * @param min
-     * @param max
-     * @return
+     * Clamps the given value between the given min and max values.
+     *
+     * @param value The value to clamp.
+     * @param min   The minimum value.
+     * @param max   The maximum value.
+     * @return The clamped value.
      */
     public static long clamp(long value, long min, long max) {
         return value < min ? min : value > max ? max : value;
     }
 
     /**
-     * @param value
-     * @param min
-     * @param max
-     * @return
+     * Clamps the given value between the given min and max values.
+     *
+     * @param value The value to clamp.
+     * @param min   The minimum value.
+     * @param max   The maximum value.
+     * @return The clamped value.
      */
     public static float clamp(float value, float min, float max) {
         return value < min ? min : value > max ? max : value;
     }
 
     /**
-     * @param value
-     * @param min
-     * @param max
-     * @return
+     * Clamps the given value between the given min and max values.
+     *
+     * @param value The value to clamp.
+     * @param min   The minimum value.
+     * @param max   The maximum value.
+     * @return The clamped value.
      */
     public static int clamp(int value, int min, int max) {
         return value < min ? min : value > max ? max : value;
     }
 
     /**
-     * @param degree
-     * @return
+     * Converts the given degrees to radians.
+     *
+     * @param degree The degrees to convert.
+     * @return The radians.
      */
     public static float toRadians(float degree) {
         return degree * 0.0174532925f;
     }
 
     /**
-     * @param radian
-     * @return
+     * Converts the given radians to degrees.
+     *
+     * @param radian The radians to convert.
+     * @return The degrees.
      */
     public static float toDegrees(float radian) {
         return radian * 57.295779513f;
     }
 
     /**
-     * Linear interpolation between two points
+     * Linear interpolation between two points.
      *
-     * @param a point A
-     * @param b point B
-     * @param t amount of interpolation
-     * @return
+     * @param a The first point.
+     * @param b The second point.
+     * @param t The interpolation value.
+     * @return The interpolated value.
      */
     public static byte linearInterpolation(byte a, byte b, float t) {
         return (byte) (a + (b - a) * t);
     }
 
     /**
-     * Linear interpolation between two points
+     * Linear interpolation between two points.
      *
-     * @param a point A
-     * @param b point B
-     * @param t amount of interpolation
-     * @return
+     * @param a The first point.
+     * @param b The second point.
+     * @param t The interpolation value.
+     * @return The interpolated value.
      */
     public static float linearInterpolation(float a, float b, float t) {
         return a + (b - a) * t;
     }
 
     /**
-     * Rotates a point around a given origin
+     * Rotates a point around a given origin.
      *
-     * @param point
-     * @param origin
-     * @param angle
-     * @return
+     * @param point  The point to rotate.
+     * @param origin The origin.
+     * @param angle  The angle to rotate in radians.
+     * @return The rotated point.
      */
     public static Vector2 rotatePoint(Vector2 point, Vector2 origin, float angle) {
         return rotatePoint(point.getX(), point.getY(), origin.getX(), origin.getY(), angle);
     }
 
     /**
-     * Rotates a point around a given origin
+     * Rotates a point around a given origin.
      *
-     * @param x       point x
-     * @param y       point y
-     * @param originX origin point x
-     * @param originY origin point y
-     * @param angle   angle in radians
-     * @return
+     * @param x       The x-coordinate of the point to rotate.
+     * @param y       The y-coordinate of the point to rotate.
+     * @param originX The x-coordinate of the origin.
+     * @param originY The y-coordinate of the origin.
+     * @param angle   The angle to rotate in radians.
+     * @return The rotated point.
      */
     public static Vector2 rotatePoint(float x, float y, float originX, float originY, float angle) {
         return new Vector2(originX + (x - originX) * cos(angle) - (y - originY) * sin(angle),
@@ -232,24 +260,24 @@ public class MathHelper {
     }
 
     /**
-     * Calculates the resulting direction for a given target based on the current origin
+     * Calculates the resulting direction for a given target based on the current origin.
      *
-     * @param origin
-     * @param target
-     * @return
+     * @param origin The current origin.
+     * @param target The target.
+     * @return The resulting direction.
      */
     public static float direction(Vector2 origin, Vector2 target) {
         return direction(origin.getX(), origin.getY(), target.getX(), target.getY());
     }
 
     /**
-     * Calculates the resulting direction for a given target based on the current origin
+     * Calculates the resulting direction for a given target based on the current origin.
      *
-     * @param originX
-     * @param originY
-     * @param targetX
-     * @param targetY
-     * @return
+     * @param originX The current x-coordinate of the origin.
+     * @param originY The current y-coordinate of the origin.
+     * @param targetX The target x-coordinate.
+     * @param targetY The target y-coordinate.
+     * @return The resulting direction.
      */
     public static float direction(float originX, float originY, float targetX, float targetY) {
         return (float) Math.atan2(targetY - originY, targetX - originX);
@@ -259,9 +287,9 @@ public class MathHelper {
      * Checks for polygon collision (vertices are required to be ordered either clockwise or counter-clockwise). This
      * approach is based on the SAT (Separating Axis Theorem).
      *
-     * @param polygonVerticesA
-     * @param polygonVerticesB
-     * @return
+     * @param polygonVerticesA The vertices of the first polygon.
+     * @param polygonVerticesB The vertices of the second polygon.
+     * @return True if the polygons collide, false otherwise.
      */
     public static boolean overlap(List<Vector2> polygonVerticesA, List<Vector2> polygonVerticesB) {
         if (polygonVerticesA.size() < 3 || polygonVerticesB.size() < 3) {
@@ -316,9 +344,9 @@ public class MathHelper {
     /**
      * Checks for line intersection against a polygon. Returns the intersection point(s) if any.
      *
-     * @param line
-     * @param polygon
-     * @return
+     * @param line    The probe line.
+     * @param polygon The polygon.
+     * @return The intersection point(s) if any.
      */
     public static List<Vector2> intersect(Line line, Polygon polygon) {
         List<Vector2> intersections = null;
@@ -344,9 +372,9 @@ public class MathHelper {
     /**
      * Checks for line intersection and returns a point of intersection if found.
      *
-     * @param a
-     * @param b
-     * @return
+     * @param a The first line.
+     * @param b The second line.
+     * @return The intersection point if any.
      */
     public static Vector2 intersect(Line a, Line b) {
         if (a == null || b == null || a.equals(b)) {
@@ -359,15 +387,15 @@ public class MathHelper {
     /**
      * Checks for line intersection and returns a point of intersection if found.
      *
-     * @param p1x1
-     * @param p1y1
-     * @param p1x2
-     * @param p1y2
-     * @param p2x1
-     * @param p2y1
-     * @param p2x2
-     * @param p2y2
-     * @return
+     * @param p1x1 The x-coordinate of the first line's first point.
+     * @param p1y1 The y-coordinate of the first line's first point.
+     * @param p1x2 The x-coordinate of the first line's second point.
+     * @param p1y2 The y-coordinate of the first line's second point.
+     * @param p2x1 The x-coordinate of the second line's first point.
+     * @param p2y1 The y-coordinate of the second line's first point.
+     * @param p2x2 The x-coordinate of the second line's second point.
+     * @param p2y2 The y-coordinate of the second line's second point.
+     * @return The intersection point if any.
      */
     public static Vector2 intersect(float p1x1, float p1y1, float p1x2, float p1y2,
             float p2x1, float p2y1, float p2x2, float p2y2) {

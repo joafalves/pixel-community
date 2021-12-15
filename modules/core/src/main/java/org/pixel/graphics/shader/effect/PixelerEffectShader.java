@@ -10,11 +10,16 @@ import static org.lwjgl.opengl.GL20C.glUniform1i;
 
 import java.util.Arrays;
 import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 import org.pixel.graphics.shader.Shader;
 
+@Getter
+@Setter
 public class PixelerEffectShader extends Shader {
 
-    private static final List<String> uniforms = Arrays.asList("uTextureImage", "uBlockSizeH", "uBlockSizeV", "uAnimated", "uTime");
+    private static final List<String> uniforms = Arrays.asList("uTextureImage", "uBlockSizeH", "uBlockSizeV",
+            "uAnimated", "uTime");
     private static final List<String> attributes = Arrays.asList("aVertexPosition");
 
     private static final String vertSrc;
@@ -30,7 +35,10 @@ public class PixelerEffectShader extends Shader {
     private float verticalBlockSize;
 
     /**
-     * Constructor
+     * Constructor.
+     *
+     * @param horizontalBlockSize The horizontal block size.
+     * @param verticalBlockSize   The vertical block size.
      */
     public PixelerEffectShader(float horizontalBlockSize, float verticalBlockSize) {
         super(vertSrc, fragSrc, attributes, uniforms);
@@ -39,37 +47,10 @@ public class PixelerEffectShader extends Shader {
         this.animated = false;
     }
 
-    /**
-     * Apply shader values
-     */
     @Override
     public void apply() {
         glUniform1f(getUniformLocation("uBlockSizeH"), horizontalBlockSize);
         glUniform1f(getUniformLocation("uBlockSizeV"), verticalBlockSize);
         glUniform1i(getUniformLocation("uAnimated"), animated ? 1 : 0);
-    }
-
-    public float getHorizontalBlockSize() {
-        return horizontalBlockSize;
-    }
-
-    public void setHorizontalBlockSize(float horizontalBlockSize) {
-        this.horizontalBlockSize = horizontalBlockSize;
-    }
-
-    public float getVerticalBlockSize() {
-        return verticalBlockSize;
-    }
-
-    public void setVerticalBlockSize(float verticalBlockSize) {
-        this.verticalBlockSize = verticalBlockSize;
-    }
-
-    public boolean isAnimated() {
-        return animated;
-    }
-
-    public void setAnimated(boolean animated) {
-        this.animated = animated;
     }
 }

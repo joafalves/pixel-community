@@ -24,12 +24,12 @@ public class Boundary implements Serializable {
     //region constructors
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param topLeft
-     * @param topRight
-     * @param bottomLeft
-     * @param bottomRight
+     * @param topLeft     The top left coordinate.
+     * @param topRight    The top right coordinate.
+     * @param bottomLeft  The bottom left coordinate.
+     * @param bottomRight The bottom right coordinate.
      */
     public Boundary(Vector2 topLeft, Vector2 topRight, Vector2 bottomLeft, Vector2 bottomRight) {
         this.topLeft = topLeft;
@@ -40,19 +40,19 @@ public class Boundary implements Serializable {
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param topLeftX
-     * @param topLeftY
-     * @param topRightX
-     * @param topRightY
-     * @param bottomLeftX
-     * @param bottomLeftY
-     * @param bottomRightX
-     * @param bottomRightY
+     * @param topLeftX     The top left x coordinate.
+     * @param topLeftY     The top left y coordinate.
+     * @param topRightX    The top right x coordinate.
+     * @param topRightY    The top right y coordinate.
+     * @param bottomLeftX  The bottom left x coordinate.
+     * @param bottomLeftY  The bottom left y coordinate.
+     * @param bottomRightX The bottom right x coordinate.
+     * @param bottomRightY The bottom right y coordinate.
      */
-    public Boundary(float topLeftX, float topLeftY, float topRightX, float topRightY,
-            float bottomLeftX, float bottomLeftY, float bottomRightX, float bottomRightY) {
+    public Boundary(float topLeftX, float topLeftY, float topRightX, float topRightY, float bottomLeftX,
+            float bottomLeftY, float bottomRightX, float bottomRightY) {
         this.topLeft = new Vector2(topLeftX, topLeftY);
         this.topRight = new Vector2(topRightX, topRightY);
         this.bottomLeft = new Vector2(bottomLeftX, bottomLeftY);
@@ -61,10 +61,10 @@ public class Boundary implements Serializable {
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param position
-     * @param bulk
+     * @param position The position of the center of the boundary.
+     * @param bulk     The bulk of the boundary.
      */
     public Boundary(Vector2 position, float bulk) {
         float halfBulk = bulk / 2.0f;
@@ -76,12 +76,12 @@ public class Boundary implements Serializable {
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param x
-     * @param y
-     * @param width
-     * @param height
+     * @param x      The top left x coordinate.
+     * @param y      The top left y coordinate.
+     * @param width  The width of the boundary.
+     * @param height The height of the boundary.
      */
     public Boundary(float x, float y, float width, float height) {
         this.topLeft = new Vector2(x, y);
@@ -92,9 +92,9 @@ public class Boundary implements Serializable {
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param other
+     * @param other The other boundary.
      */
     public Boundary(Boundary other) {
         this.topLeft = new Vector2(other.topLeft);
@@ -109,19 +109,19 @@ public class Boundary implements Serializable {
     //region public methods
 
     /**
-     * Test if current boundary is overlapping another
+     * Test if current boundary is overlapping another.
      *
-     * @param other
-     * @return
+     * @param other The other boundary.
+     * @return True if overlapping, false otherwise.
      */
     public boolean overlapsWith(Boundary other) {
         return overlap(this, other);
     }
 
     /**
-     * Returns all vertices in an array (clock-wise)
+     * Returns all vertices in an array (clock-wise).
      *
-     * @return {[{topLeft: Vector2, topRight:Vector2, bottomRight: Vector2, bottomLeft: Vector2}]}
+     * @return {[{topLeft: Vector2, topRight:Vector2, bottomRight: Vector2, bottomLeft: Vector2}]} The vertices.
      */
     public List<Vector2> getVertices() {
         if (vectorCache == null) {
@@ -136,12 +136,12 @@ public class Boundary implements Serializable {
     }
 
     /**
-     * Update boundary values
+     * Update boundary values.
      *
-     * @param x
-     * @param y
-     * @param width
-     * @param height
+     * @param x      The top left x coordinate.
+     * @param y      The top left y coordinate.
+     * @param width  The width of the boundary.
+     * @param height The height of the boundary.
      */
     public void set(float x, float y, float width, float height) {
         this.topLeft.set(x, y);
@@ -151,118 +151,126 @@ public class Boundary implements Serializable {
     }
 
     /**
-     * Set Top Left coordinate
+     * Set Top Left coordinate.
      *
-     * @param topLeft
+     * @param topLeft The top left coordinate.
      */
     public void setTopLeft(Vector2 topLeft) {
         this.topLeft.set(topLeft);
     }
 
     /**
-     * Set Top Right coordinate
+     * Set Top Right coordinate.
      *
-     * @param topRight
+     * @param topRight The top right coordinate.
      */
     public void setTopRight(Vector2 topRight) {
         this.topRight.set(topRight);
     }
 
     /**
-     * Set Bottom Left coordinate
+     * Set Bottom Left coordinate.
      *
-     * @param bottomLeft
+     * @param bottomLeft The bottom left coordinate.
      */
     public void setBottomLeft(Vector2 bottomLeft) {
         this.bottomLeft.set(bottomLeft);
     }
 
     /**
-     * Set Bottom Right coordinate
+     * Set Bottom Right coordinate.
      *
-     * @param bottomRight
+     * @param bottomRight The bottom right coordinate.
      */
     public void setBottomRight(Vector2 bottomRight) {
         this.bottomRight.set(bottomRight);
     }
 
     /**
-     * @return
+     * Get the top left coordinate.
+     *
+     * @return The top left coordinate.
      */
     public Vector2 getTopLeft() {
         return this.topLeft;
     }
 
     /**
-     * @return
+     * Get the top right coordinate.
+     *
+     * @return The top right coordinate.
      */
     public Vector2 getTopRight() {
         return this.topRight;
     }
 
     /**
-     * @return
+     * Get the bottom left coordinate.
+     *
+     * @return The bottom left coordinate.
      */
     public Vector2 getBottomLeft() {
         return this.bottomLeft;
     }
 
     /**
-     * @return
+     * Get the bottom right coordinate.
+     *
+     * @return The bottom right coordinate.
      */
     public Vector2 getBottomRight() {
         return this.bottomRight;
     }
 
     /**
-     * Get the most left X coordinate of this boundary
+     * Get the most left X coordinate of this boundary.
      *
-     * @return
+     * @return The most left X coordinate.
      */
     public float getLeft() {
         return this.bottomLeft.getX() < this.topLeft.getX() ? this.bottomLeft.getX() : this.topLeft.getX();
     }
 
     /**
-     * Get the most top Y coordinate of this boundary
+     * Get the most top Y coordinate of this boundary.
      *
-     * @return
+     * @return The most top Y coordinate.
      */
     public float getTop() {
         return this.topRight.getY() < this.topLeft.getY() ? this.topRight.getY() : this.topLeft.getY();
     }
 
     /**
-     * Get the most right X coordinate of this boundary
+     * Get the most right X coordinate of this boundary.
      *
-     * @return
+     * @return The most right X coordinate.
      */
     public float getRight() {
         return this.topRight.getX() > this.bottomRight.getX() ? this.topRight.getX() : this.bottomRight.getX();
     }
 
     /**
-     * Get the most top Y coordinate of this boundary
+     * Get the most top Y coordinate of this boundary.
      *
-     * @return
+     * @return The most top Y coordinate.
      */
     public float getBottom() {
         return this.bottomRight.getY() > this.bottomLeft.getY() ? this.bottomRight.getY() : this.bottomLeft.getY();
     }
 
     /**
-     * Get boundary width
+     * Get boundary width.
      *
-     * @return
+     * @return The boundary width.
      */
     public float getWidth() {
         return this.getRight() - this.getLeft();
     }
 
     /**
-     * Get boundary height
+     * Get boundary height.
      *
-     * @return
+     * @return The boundary height.
      */
     public float getHeight() {
         return this.getBottom() - this.getTop();
@@ -275,9 +283,9 @@ public class Boundary implements Serializable {
     /**
      * Tests if two boundaries are overlapping each other
      *
-     * @param a
-     * @param b
-     * @return
+     * @param a The first boundary.
+     * @param b The second boundary.
+     * @return True if the boundaries are overlapping each other.
      */
     public static boolean overlap(Boundary a, Boundary b) {
         return MathHelper.overlap(a.getVertices(), b.getVertices());
@@ -286,10 +294,9 @@ public class Boundary implements Serializable {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Boundary) {
-            return ((Boundary) obj).topLeft.equals(this.topLeft)
-                    && ((Boundary) obj).topRight.equals(this.topRight)
-                    && ((Boundary) obj).bottomLeft.equals(this.bottomLeft)
-                    && ((Boundary) obj).bottomRight.equals(this.bottomRight);
+            return ((Boundary) obj).topLeft.equals(this.topLeft) && ((Boundary) obj).topRight.equals(this.topRight)
+                    && ((Boundary) obj).bottomLeft.equals(this.bottomLeft) && ((Boundary) obj).bottomRight.equals(
+                    this.bottomRight);
         }
         return false;
     }
