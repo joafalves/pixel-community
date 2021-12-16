@@ -7,7 +7,7 @@ package org.pixel.commons.lifecycle;
 
 public interface Loadable {
     /**
-     * Load function
+     * Load function.
      */
     void load();
 }

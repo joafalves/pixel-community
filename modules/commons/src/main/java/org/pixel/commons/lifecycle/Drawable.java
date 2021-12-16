@@ -10,9 +10,9 @@ import org.pixel.commons.DeltaTime;
 public interface Drawable {
 
     /**
-     * Draw function
+     * Draw function.
      *
-     * @param delta Delta time
+     * @param delta Time since last draw.
      */
     void draw(DeltaTime delta);
 }

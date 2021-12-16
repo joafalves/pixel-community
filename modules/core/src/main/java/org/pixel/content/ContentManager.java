@@ -95,7 +95,7 @@ public class ContentManager implements Disposable {
      */
     public <T> T load(String filepath, Class<T> type, @Nullable ContentImporterSettings settings) {
         String assetRef = getCacheReference(filepath, type);
-        if (assetCache.contains(assetRef)) {
+        if (assetCache.containsKey(assetRef)) {
             Object o = assetCache.get(assetRef);
             if (type.isInstance(o)) {
                 return (T) assetCache.get(assetRef);

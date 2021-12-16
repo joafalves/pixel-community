@@ -15,6 +15,6 @@ public class TextImporter implements ContentImporter<String> {
 
     @Override
     public String process(ImportContext ctx) {
-        return TextUtils.convertToString(ctx.getBuffer());
+        return TextUtils.convertBufferToString(ctx.getBuffer());
     }
 }

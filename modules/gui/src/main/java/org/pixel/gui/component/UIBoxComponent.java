@@ -6,7 +6,7 @@
 package org.pixel.gui.component;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.model.Solidity;
+import org.pixel.commons.attribute.Solidity;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.RenderEngine2D;
 import org.pixel.gui.common.UIContext;

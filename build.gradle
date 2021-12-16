@@ -26,16 +26,17 @@ if (buildTarget == "all") {
 }
 
 allprojects {
-    apply plugin: 'java'
-    apply plugin: 'java-library'
-    apply plugin: 'maven-publish'
-    apply plugin: 'signing'
+    apply plugin: "java"
+    apply plugin: "java-library"
+    apply plugin: "maven-publish"
+    apply plugin: "signing"
 
     version rootProject.version
 
     repositories {
         mavenCentral()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url "https://s01.oss.sonatype.org/content/repositories/releases/" }
     }
 
     dependencies {
@@ -58,17 +59,17 @@ allprojects {
         })
 
         // lombok
-        compileOnly 'org.projectlombok:lombok:1.18.22'
-        annotationProcessor 'org.projectlombok:lombok:1.18.22'
+        compileOnly "org.projectlombok:lombok:1.18.22"
+        annotationProcessor "org.projectlombok:lombok:1.18.22"
 
         // test:
-        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
-        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+        testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.2"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.2"
     }
 
-    test {
-        useJUnitPlatform()
-    }
+        test {
+            useJUnitPlatform()
+        }
 
     jar {
         manifest {
@@ -104,41 +105,41 @@ allprojects {
     publishing {
         publications {
             mavenJava(MavenPublication) {
-                groupId 'io.github.joafalves'
+                groupId "io.github.joafalves"
                 artifactId project.name
                 version rootProject.version
 
                 from components.java
 
                 artifact(sourceJar) {
-                    classifier = 'sources'
+                    classifier = "sources"
                 }
 
                 artifact(javadocJar) {
-                    classifier = 'javadoc'
+                    classifier = "javadoc"
                 }
 
                 pom {
-                    name = 'Pixel 2D Game Framework'
-                    description = 'Java 2D Game Framework inspired on the popular XNA framework.'
-                    url = 'https://github.com/joafalves/pixel-community'
+                    name = "Pixel 2D Game Framework"
+                    description = "Java 2D Game Framework inspired on the popular XNA framework."
+                    url = "https://github.com/joafalves/pixel-community"
                     licenses {
                         license {
-                            name = 'The Apache License, Version 2.0'
-                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            name = "The Apache License, Version 2.0"
+                            url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
                         }
                     }
                     developers {
                         developer {
-                            id = 'jfalves'
-                            name = 'João Alves'
-                            email = 'joao.cpp.sca@gmail.com'
+                            id = "jfalves"
+                            name = "João Alves"
+                            email = "joao.cpp.sca@gmail.com"
                         }
                     }
                     scm {
-                        connection = 'scm:git:git://github.com/joafalves/pixel-community.git'
-                        developerConnection = 'scm:git:ssh://github.com/joafalves/pixel-community.git'
-                        url = 'https://github.com/joafalves/pixel-community'
+                        connection = "scm:git:git://github.com/joafalves/pixel-community.git"
+                        developerConnection = "scm:git:ssh://github.com/joafalves/pixel-community.git"
+                        url = "https://github.com/joafalves/pixel-community"
                     }
                 }
             }
@@ -158,9 +159,16 @@ allprojects {
 
     tasks.withType(AbstractPublishToMaven).configureEach {
         {
-            // only publish modules with 'mavenPublish' set to 'true'
+            // only publish modules with "mavenPublish" set to "true"
             it.enabled = (project.ext.has("mavenPublish") && project.ext.get("mavenPublish"))
         }
+    }
+
+    tasks.withType(Javadoc) {
+        failOnError false
+        options.addStringOption("Xdoclint:none", "-quiet")
+        options.addStringOption("encoding", "UTF-8")
+        options.addStringOption("charSet", "UTF-8")
     }
 }
 

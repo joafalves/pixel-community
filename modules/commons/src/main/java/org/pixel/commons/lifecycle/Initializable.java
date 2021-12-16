@@ -7,9 +7,9 @@ package org.pixel.commons.lifecycle;
 
 public interface Initializable {
     /**
-     * Initialize function
+     * Initialize function.
      *
-     * @return true when initialized with success
+     * @return True if the initialization was successful.
      */
     boolean init();
 }

@@ -5,9 +5,9 @@
 
 package org.pixel.graphics.render;
 
-import org.pixel.commons.model.HorizontalAlignment;
-import org.pixel.commons.model.Solidity;
-import org.pixel.commons.model.VerticalAlignment;
+import org.pixel.commons.attribute.HorizontalAlignment;
+import org.pixel.commons.attribute.Solidity;
+import org.pixel.commons.attribute.VerticalAlignment;
 import org.pixel.graphics.Color;
 import org.pixel.math.Size;
 import org.pixel.math.Matrix4;

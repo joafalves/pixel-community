@@ -10,10 +10,10 @@ rootProject.name = "pixel"
 include "modules/commons", "modules/core", "modules/input", "modules/math", "modules/gui", "modules/physics"
 
 // extensions:
-include "extensions/ext-log4j2"
+include "extensions/ext-log4j2", "extensions/ext-ldtk"
 
 // demos
-include "demos/learning", "demos/concept", "demos/imgui", "demos/kotlin"
+include "demos/learning", "demos/concept", "demos/imgui", "demos/kotlin", "demos/ldtk"
 
 rootProject.children.each {
     it.name = rootProject.name + "-" + it.name.split("/").last()

@@ -5,8 +5,8 @@
 
 package org.pixel.gui.style.processor.property;
 
-import org.pixel.commons.model.HorizontalAlignment;
-import org.pixel.commons.model.VerticalAlignment;
+import org.pixel.commons.attribute.HorizontalAlignment;
+import org.pixel.commons.attribute.VerticalAlignment;
 import org.pixel.gui.style.StyleProperty;
 import org.pixel.gui.style.StylePropertyValue;
 import org.pixel.gui.style.properties.TextStyle;

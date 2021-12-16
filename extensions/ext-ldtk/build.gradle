@@ -1,0 +1,13 @@
+/*
+ * This software is available under Apache License
+ * Copyright (c) 2020
+ */
+
+project.ext.mavenPublish = true
+
+dependencies {
+    api project(":${rootProject.name}-commons")
+    api project(":${rootProject.name}-core")
+
+    implementation 'io.github.joafalves:java-ldtk-api:0.9.3'
+}

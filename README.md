@@ -82,6 +82,7 @@ The framework functionality is divided into multiple modules which can be import
     .build/                         # Bundle .jar files (run 'bundle' gradle task)
     .demos/                         # Feature showroom and learning examples
     .extensions/                    # Extensions for the framework
+        ├── ext-ldtk                # LDTK extension
         └── ext-log4j2              # Log4j2 extension
     .modules/
         ├── commons                 # Common utility classes
@@ -105,13 +106,7 @@ The framework functionality is divided into multiple modules which can be import
             ├── src                  # Module Source folder
             │   ├── main             # Module Main Source classes
             │   └── test             # Module Test Source classes
-            └── build.gradle         # Module Gradle build file (contains inner dependency definitions)   
-
-### Third-party libs ###
-
-    lwjgl 3.x       (runtime)
-    org.json 2021+  (runtime)
-    junit 5.x       (test)
+            └── build.gradle         # Module Gradle build file (contains inner dependency definitions)
    
 ### Setup Requirements ###
 

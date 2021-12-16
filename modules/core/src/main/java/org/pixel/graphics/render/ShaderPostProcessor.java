@@ -5,7 +5,10 @@
 
 package org.pixel.graphics.render;
 
-import static org.lwjgl.opengl.GL11.GL_CLAMP;
+import static org.lwjgl.opengl.GL11C.GL_ONE;
+import static org.lwjgl.opengl.GL11C.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11C.glBlendFunc;
+import static org.lwjgl.opengl.GL12C.GL_CLAMP_TO_EDGE;
 import static org.lwjgl.opengl.GL15C.glDeleteBuffers;
 import static org.lwjgl.opengl.GL30C.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL30C.GL_COLOR_ATTACHMENT0;
@@ -31,7 +34,6 @@ import static org.lwjgl.opengl.GL30C.glBlitFramebuffer;
 import static org.lwjgl.opengl.GL30C.glBufferData;
 import static org.lwjgl.opengl.GL30C.glCheckFramebufferStatus;
 import static org.lwjgl.opengl.GL30C.glClear;
-import static org.lwjgl.opengl.GL30C.glClearColor;
 import static org.lwjgl.opengl.GL30C.glDeleteFramebuffers;
 import static org.lwjgl.opengl.GL30C.glDeleteRenderbuffers;
 import static org.lwjgl.opengl.GL30C.glDeleteVertexArrays;
@@ -52,7 +54,6 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.Texture;
-import org.pixel.graphics.Color;
 import org.pixel.graphics.shader.Shader;
 import org.pixel.graphics.shader.ShaderManager;
 import org.pixel.math.IntSize;
@@ -62,14 +63,13 @@ public class ShaderPostProcessor implements PostProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(ShaderPostProcessor.class);
 
     private Shader shader;
-    private Color bgColor;
     private Texture texture;
-    private IntSize intSize;
-    private int msfbo;
-    private int fbo;
-    private int rbo;
-    private int vao;
-    private int vbo;
+    private final IntSize intSize;
+    private final int msfbo;
+    private final int fbo;
+    private final int rbo;
+    private final int vao;
+    private final int vbo;
     private int stage = 0;
     private float uTime;
 
@@ -77,17 +77,15 @@ public class ShaderPostProcessor implements PostProcessor {
      * Constructor.
      *
      * @param shader  Shader to use.
-     * @param bgColor Background color.
      * @param width   Width of the post-processed texture.
      * @param height  Height of the post-processed texture.
      */
-    public ShaderPostProcessor(Shader shader, Color bgColor, int width, int height) {
+    public ShaderPostProcessor(Shader shader, int width, int height) {
         if (shader == null) {
             throw new RuntimeException("Unable to instantiate post processor without a Shader");
         }
 
         this.shader = shader;
-        this.bgColor = bgColor;
         this.fbo = glGenFramebuffers(); // std frame buffer
         this.msfbo = glGenFramebuffers(); // multi sample frame buffer
         this.rbo = glGenRenderbuffers(); // render buffer
@@ -115,7 +113,7 @@ public class ShaderPostProcessor implements PostProcessor {
         if (texture == null) {
             texture = new Texture(glGenTextures());
             texture.bind();
-            texture.setTextureWrap(GL_CLAMP, GL_CLAMP);
+            texture.setTextureWrap(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
             texture.setTextureMinMag(GL_NEAREST, GL_NEAREST);
 
         } else {
@@ -171,9 +169,9 @@ public class ShaderPostProcessor implements PostProcessor {
      */
     @Override
     public void begin() {
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         glBindFramebuffer(GL_FRAMEBUFFER, msfbo);
-        glClearColor(bgColor.getRed(), bgColor.getGreen(), bgColor.getBlue(), bgColor.getAlpha());
-        glClear(GL_COLOR_BUFFER_BIT); // clear the screen
+        glClear(GL_COLOR_BUFFER_BIT);
         stage = 1;
     }
 
@@ -184,8 +182,8 @@ public class ShaderPostProcessor implements PostProcessor {
     public void end() {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, msfbo);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
-        glBlitFramebuffer(0, 0, intSize.getWidth(), intSize.getHeight(), 0, 0, intSize.getWidth(), intSize.getHeight(),
-                GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBlitFramebuffer(0, 0, intSize.getWidth(), intSize.getHeight(), 0, 0, intSize.getWidth(),
+                intSize.getHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
         glBindFramebuffer(GL_FRAMEBUFFER, 0); // unbinds both buffers
         stage = 2;
     }
@@ -216,6 +214,7 @@ public class ShaderPostProcessor implements PostProcessor {
         // Render textured quad
         glActiveTexture(GL_TEXTURE0);
         texture.bind();
+
         glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);

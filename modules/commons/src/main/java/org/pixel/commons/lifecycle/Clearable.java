@@ -7,7 +7,7 @@ package org.pixel.commons.lifecycle;
 
 public interface Clearable {
     /**
-     * Clear function
+     * Clear function.
      */
     void clear();
 }
