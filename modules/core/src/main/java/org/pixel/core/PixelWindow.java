@@ -98,7 +98,7 @@ import org.pixel.commons.lifecycle.Loadable;
 import org.pixel.commons.lifecycle.Updatable;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.commons.model.ImageData;
+import org.pixel.commons.data.ImageData;
 import org.pixel.commons.util.IOUtils;
 import org.pixel.graphics.Color;
 import org.pixel.input.keyboard.Keyboard;

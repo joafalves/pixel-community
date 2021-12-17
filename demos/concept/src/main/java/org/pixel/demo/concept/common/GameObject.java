@@ -9,7 +9,7 @@ import org.pixel.commons.lifecycle.Entity;
 import org.pixel.commons.DeltaTime;
 
 import java.util.LinkedList;
-import org.pixel.commons.model.AttributeMap;
+import org.pixel.commons.AttributeMap;
 
 public abstract class GameObject implements Entity {
 

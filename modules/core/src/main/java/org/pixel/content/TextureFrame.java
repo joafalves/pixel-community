@@ -5,7 +5,7 @@
 
 package org.pixel.content;
 
-import org.pixel.commons.model.AttributeMap;
+import org.pixel.commons.AttributeMap;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 

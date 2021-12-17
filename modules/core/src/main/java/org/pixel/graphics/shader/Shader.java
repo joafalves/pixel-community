@@ -5,25 +5,25 @@
 
 package org.pixel.graphics.shader;
 
-import static org.lwjgl.opengl.GL11.GL_TRUE;
-import static org.lwjgl.opengl.GL20.GL_COMPILE_STATUS;
-import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
-import static org.lwjgl.opengl.GL20.GL_LINK_STATUS;
-import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
-import static org.lwjgl.opengl.GL20.glAttachShader;
-import static org.lwjgl.opengl.GL20.glCompileShader;
-import static org.lwjgl.opengl.GL20.glCreateProgram;
-import static org.lwjgl.opengl.GL20.glCreateShader;
-import static org.lwjgl.opengl.GL20.glDeleteProgram;
-import static org.lwjgl.opengl.GL20.glDeleteShader;
-import static org.lwjgl.opengl.GL20.glGetAttribLocation;
-import static org.lwjgl.opengl.GL20.glGetProgramInfoLog;
-import static org.lwjgl.opengl.GL20.glGetProgrami;
-import static org.lwjgl.opengl.GL20.glGetShaderInfoLog;
-import static org.lwjgl.opengl.GL20.glGetShaderi;
-import static org.lwjgl.opengl.GL20.glGetUniformLocation;
-import static org.lwjgl.opengl.GL20.glLinkProgram;
-import static org.lwjgl.opengl.GL20.glShaderSource;
+import static org.lwjgl.opengl.GL11C.GL_TRUE;
+import static org.lwjgl.opengl.GL20C.GL_COMPILE_STATUS;
+import static org.lwjgl.opengl.GL20C.GL_FRAGMENT_SHADER;
+import static org.lwjgl.opengl.GL20C.GL_LINK_STATUS;
+import static org.lwjgl.opengl.GL20C.GL_VERTEX_SHADER;
+import static org.lwjgl.opengl.GL20C.glAttachShader;
+import static org.lwjgl.opengl.GL20C.glCompileShader;
+import static org.lwjgl.opengl.GL20C.glCreateProgram;
+import static org.lwjgl.opengl.GL20C.glCreateShader;
+import static org.lwjgl.opengl.GL20C.glDeleteProgram;
+import static org.lwjgl.opengl.GL20C.glDeleteShader;
+import static org.lwjgl.opengl.GL20C.glGetAttribLocation;
+import static org.lwjgl.opengl.GL20C.glGetProgramInfoLog;
+import static org.lwjgl.opengl.GL20C.glGetProgrami;
+import static org.lwjgl.opengl.GL20C.glGetShaderInfoLog;
+import static org.lwjgl.opengl.GL20C.glGetShaderi;
+import static org.lwjgl.opengl.GL20C.glGetUniformLocation;
+import static org.lwjgl.opengl.GL20C.glLinkProgram;
+import static org.lwjgl.opengl.GL20C.glShaderSource;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -3,7 +3,7 @@
  * Copyright (c) 2020
  */
 
-package org.pixel.commons.model;
+package org.pixel.commons.attribute;
 
 public enum HorizontalAlignment {
     LEFT, CENTER, RIGHT;

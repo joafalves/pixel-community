@@ -7,7 +7,7 @@ package org.pixel.commons.lifecycle;
 
 public interface Disposable {
     /**
-     * Dispose function
+     * Dispose function.
      */
     void dispose();
 }

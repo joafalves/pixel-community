@@ -3,7 +3,7 @@
  * Copyright (c) 2020
  */
 
-package org.pixel.commons;
+package org.pixel.commons.data;
 
 public class Pair<A, B> {
 

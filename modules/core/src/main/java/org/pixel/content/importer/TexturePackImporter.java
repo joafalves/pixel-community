@@ -8,7 +8,7 @@ package org.pixel.content.importer;
 import org.json.JSONObject;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.commons.model.AttributeMap;
+import org.pixel.commons.AttributeMap;
 import org.pixel.commons.util.FileUtils;
 import org.pixel.commons.util.TextUtils;
 import org.pixel.content.*;
@@ -24,7 +24,7 @@ public class TexturePackImporter implements ContentImporter<TexturePack> {
 
     @Override
     public TexturePack process(ImportContext ctx) {
-        String src = TextUtils.convertToString(ctx.getBuffer());
+        String src = TextUtils.convertBufferToString(ctx.getBuffer());
         JSONObject json = new JSONObject(src);
         JSONObject frames = json.getJSONObject("frames");
         if (frames == null) {

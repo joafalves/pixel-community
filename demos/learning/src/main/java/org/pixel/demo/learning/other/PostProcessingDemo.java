@@ -8,9 +8,9 @@ package org.pixel.demo.learning.other;
 import org.pixel.commons.DeltaTime;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
-import org.pixel.graphics.render.ShaderPostProcessor;
-import org.pixel.graphics.shader.effect.SepiaEffectShader;
 import org.pixel.demo.learning.sprite.SingleSpriteDemo;
+import org.pixel.graphics.render.ShaderPostProcessor;
+import org.pixel.graphics.shader.effect.PixelerEffectShader;
 
 public class PostProcessingDemo extends SingleSpriteDemo {
 
@@ -25,13 +25,13 @@ public class PostProcessingDemo extends SingleSpriteDemo {
         super.load();
 
         // note: try using org.pixel.learning.other shaders.. or make your own! :)
-        pp = new ShaderPostProcessor(new SepiaEffectShader(1f), getBackgroundColor(),
-                getVirtualWidth(), getVirtualHeight());
+        pp = new ShaderPostProcessor(
+                new PixelerEffectShader(100, 100), getVirtualWidth(), getVirtualHeight());
     }
 
     @Override
     public void draw(DeltaTime delta) {
-        // post processing affects whole renders, therefore they must begin before the drawing phase (of what you wish
+        // post-processing affects whole renders, therefore they must begin before the drawing phase (of what you wish
         // to have the effect)
         pp.begin();
 
@@ -47,7 +47,7 @@ public class PostProcessingDemo extends SingleSpriteDemo {
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
-        settings.setDebugMode(true);
+        settings.setDebugMode(false);
 
         PixelWindow window = new PostProcessingDemo(settings);
         window.start();

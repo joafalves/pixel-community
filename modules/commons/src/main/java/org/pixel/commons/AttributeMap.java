@@ -1,4 +1,4 @@
-package org.pixel.commons.model;
+package org.pixel.commons;
 
 import java.util.HashMap;
 

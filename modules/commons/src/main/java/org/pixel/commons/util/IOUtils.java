@@ -24,11 +24,11 @@ import java.util.stream.Collectors;
 import org.lwjgl.system.MemoryStack;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.commons.model.ImageData;
+import org.pixel.commons.data.ImageData;
 
 public class IOUtils {
 
-    private static final Logger LOG = LoggerFactory.getLogger(IOUtils.class);
+    private static final Logger log = LoggerFactory.getLogger(IOUtils.class);
 
     /**
      * Load image file.
@@ -39,7 +39,7 @@ public class IOUtils {
     public static ImageData loadImage(String filepath) {
         ByteBuffer rawBuffer = loadFile(filepath);
         if (rawBuffer == null) {
-            LOG.warn("Unable to load image due to IO failure (cannot read file from '{}').", filepath);
+            log.warn("Unable to load image due to IO failure (cannot read file from '{}').", filepath);
             return null;
         }
 
@@ -73,7 +73,7 @@ public class IOUtils {
         if (!path.isAbsolute()) {
             InputStream in = FileUtils.class.getClassLoader().getResourceAsStream(filepath);
             if (in == null) {
-                LOG.warn("Unable to load local resource file '{}'.", filepath);
+                log.warn("Unable to load local resource file '{}'.", filepath);
                 return null;
             }
 
@@ -83,7 +83,7 @@ public class IOUtils {
                 return buffer.put(bytes).flip();
 
             } catch (IOException e) {
-                LOG.error("Exception caught while loading relative path resource!", e);
+                log.error("Exception caught while loading relative path resource!", e);
             }
 
             return null;
@@ -97,7 +97,7 @@ public class IOUtils {
                 return buffer.flip();
 
             } catch (IOException e) {
-                LOG.error("Exception caught!", e);
+                log.error("Exception caught!", e);
             }
         }
 
@@ -116,8 +116,8 @@ public class IOUtils {
             return new BufferedReader(new InputStreamReader(Objects.requireNonNull(resourceStream)))
                     .lines().collect(Collectors.joining(System.lineSeparator()));
 
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        } catch (IOException e) {
+            log.error("Exception caught!", e);
         }
 
         return null;

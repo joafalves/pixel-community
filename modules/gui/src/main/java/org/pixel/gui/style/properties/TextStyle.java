@@ -6,8 +6,8 @@
 package org.pixel.gui.style.properties;
 
 import lombok.*;
-import org.pixel.commons.model.HorizontalAlignment;
-import org.pixel.commons.model.VerticalAlignment;
+import org.pixel.commons.attribute.HorizontalAlignment;
+import org.pixel.commons.attribute.VerticalAlignment;
 import org.pixel.gui.style.StyleProperty;
 
 @Getter

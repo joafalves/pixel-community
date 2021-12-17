@@ -10,9 +10,9 @@ import org.pixel.commons.DeltaTime;
 public interface Updatable {
 
     /**
-     * Update function
+     * Update function.
      *
-     * @param delta Delta time
+     * @param delta Time since last update.
      */
     void update(DeltaTime delta);
 }
