@@ -8,7 +8,7 @@ apply plugin: "application"
 dependencies {
     api project(":${rootProject.name}-core")
     api project(":${rootProject.name}-input")
-    api project(":${rootProject.name}-gui")
-    api project(":${rootProject.name}-physics");
+    api project(":${rootProject.name}-ext-gui")
+    api project(":${rootProject.name}-ext-physics");
     api project(":${rootProject.name}-math");
 }
