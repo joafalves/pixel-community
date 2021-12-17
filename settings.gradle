@@ -7,10 +7,10 @@
 rootProject.name = "pixel"
 
 // modules:
-include "modules/commons", "modules/core", "modules/input", "modules/math", "modules/gui", "modules/physics"
+include "modules/commons", "modules/core", "modules/input", "modules/math"
 
 // extensions:
-include "extensions/ext-log4j2", "extensions/ext-ldtk"
+include "extensions/ext-log4j2", "extensions/ext-ldtk", "extensions/ext-physics", "extensions/ext-gui"
 
 // demos
 include "demos/learning", "demos/concept", "demos/imgui", "demos/kotlin", "demos/ldtk"
