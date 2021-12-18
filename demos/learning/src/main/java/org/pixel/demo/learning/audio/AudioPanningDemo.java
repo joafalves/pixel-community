@@ -47,7 +47,7 @@ public class AudioPanningDemo extends AudioDemo {
         panningValue += 0.001f * delta.getElapsedMs(); // dummy panning reference
         texturePosition.set(MathHelper.cos(panningValue) * 100f, MathHelper.sin(panningValue) * 100f);
 
-        AudioEngine.setPanning(sound, MathHelper.cos(panningValue), MathHelper.sin(panningValue));
+        AudioEngine.setPosition(sound, MathHelper.cos(panningValue), MathHelper.sin(panningValue));
     }
 
     @Override
