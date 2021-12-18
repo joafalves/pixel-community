@@ -6,7 +6,7 @@
 package org.pixel.demo.learning.audio;
 
 import org.pixel.audio.AudioEngine;
-import org.pixel.audio.Sound;
+import org.pixel.content.Sound;
 import org.pixel.commons.DeltaTime;
 import org.pixel.core.PixelWindow;
 import org.pixel.demo.learning.common.DemoGame;

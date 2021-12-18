@@ -18,7 +18,7 @@ import static org.lwjgl.system.libc.LibCStdlib.free;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import org.lwjgl.system.MemoryStack;
-import org.pixel.audio.Sound;
+import org.pixel.content.Sound;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ContentImporter;
