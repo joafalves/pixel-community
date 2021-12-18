@@ -17,10 +17,10 @@ public class AudioDemo extends DemoGame {
 
     private static final float SOUND_DURATION = 0.5f;
 
-    private ContentManager content;
     private float soundElapsed = SOUND_DURATION;
 
     protected Sound sound;
+    protected ContentManager content;
 
     public AudioDemo(WindowSettings settings) {
         super(settings);

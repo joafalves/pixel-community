@@ -38,13 +38,13 @@ public class AudioEngine {
      * @param panning The panning to set (-1 to 1).
      */
     public static void setPanning(Sound sound, float panning) {
-        AL10.alSourcefv(sound.getSourcePointer(), AL10.AL_POSITION, new float[]{panning, -1, 0});
+        AL10.alSourcefv(sound.getSourcePointer(), AL10.AL_POSITION, new float[]{panning, 0, 0});
     }
 
     /**
      * Set the audio panning of the given Sound instance.
      *
-     * @param sound   The Sound instance to set the panning of.
+     * @param sound    The Sound instance to set the panning of.
      * @param panningH The horizontal panning to set (-1 to 1).
      * @param panningV The vertical panning to set (-1 to 1).
      */

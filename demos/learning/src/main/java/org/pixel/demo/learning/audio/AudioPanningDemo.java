@@ -7,16 +7,37 @@ package org.pixel.demo.learning.audio;
 
 import org.pixel.audio.AudioEngine;
 import org.pixel.commons.DeltaTime;
+import org.pixel.content.Texture;
+import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
+import org.pixel.graphics.Color;
+import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.MathHelper;
+import org.pixel.math.Vector2;
 
 public class AudioPanningDemo extends AudioDemo {
 
+    private SpriteBatch spriteBatch;
+    private Texture texture;
+    private Camera2D camera;
+
     private float panningValue = 0;
+    private Vector2 texturePosition;
 
     public AudioPanningDemo(WindowSettings settings) {
         super(settings);
+    }
+
+    @Override
+    public void load() {
+        super.load();
+
+        spriteBatch = new SpriteBatch();
+        camera = new Camera2D(this);
+        texturePosition = new Vector2();
+
+        texture = content.load("images/earth-48x48.png", Texture.class);
     }
 
     @Override
@@ -24,8 +45,22 @@ public class AudioPanningDemo extends AudioDemo {
         super.update(delta);
 
         panningValue += 0.001f * delta.getElapsedMs(); // dummy panning reference
+        texturePosition.set(MathHelper.cos(panningValue) * 100f, MathHelper.sin(panningValue) * 100f);
 
-        AudioEngine.setPanning(sound, MathHelper.cos(panningValue));
+        AudioEngine.setPanning(sound, MathHelper.cos(panningValue), MathHelper.sin(panningValue));
+    }
+
+    @Override
+    public void draw(DeltaTime delta) {
+        super.draw(delta);
+
+        spriteBatch.begin(camera.getViewMatrix());
+
+        spriteBatch.draw(texture, Vector2.ZERO, Color.WHITE, Vector2.HALF, 2f);
+
+        spriteBatch.draw(texture, texturePosition, Color.WHITE, Vector2.HALF);
+
+        spriteBatch.end();
     }
 
     public static void main(String[] args) {
