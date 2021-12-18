@@ -5,15 +5,18 @@
 
 package org.pixel.demo.learning.text;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.PixelWindow;
-import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
+import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
+import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
 
 public class TextDemo extends DemoGame {
@@ -24,8 +27,7 @@ public class TextDemo extends DemoGame {
     private SpriteBatch spriteBatch;
 
     private Font font;
-    private Vector2 textPos;
-    private Vector2 smallTextPos;
+    private List<TextDisplayDemo> textDisplayDemoList;
 
     public TextDemo(WindowSettings settings) {
         super(settings);
@@ -42,11 +44,18 @@ public class TextDemo extends DemoGame {
 
         // load font into memory
         font = content.load("fonts/gidole-regular.ttf", Font.class);
-        font.setFontSize(32);
+        font.setFontSize(32); // the base font-size (as it will be applied on the generated texture)
 
-        // related properties
-        textPos = new Vector2(10, 10);
-        smallTextPos = new Vector2(10, 100);
+        textDisplayDemoList = new ArrayList<>();
+        for (float verticalOffset = 10; verticalOffset < getVirtualHeight(); ) {
+            TextDisplayDemo textDisplayDemo = new TextDisplayDemo();
+            textDisplayDemo.fontSize = verticalOffset == 10 ? 32 : MathHelper.random(16, font.getFontSize());
+            textDisplayDemo.textColor = verticalOffset == 10 ? Color.WHITE : Color.random();
+            textDisplayDemo.verticalOffset = verticalOffset;
+            textDisplayDemoList.add(textDisplayDemo);
+
+            verticalOffset += textDisplayDemo.fontSize * 2 + 10; // 2 lines + 5 pixels between each line
+        }
     }
 
     @Override
@@ -60,10 +69,10 @@ public class TextDemo extends DemoGame {
         spriteBatch.begin(gameCamera.getViewMatrix(), BlendMode.NORMAL_BLEND);
 
         // font definition for this drawing phase:
-        spriteBatch.drawText(font, TEXT, textPos, Color.WHITE);
-
-        // font definition for this drawing phase (downscaled):
-        spriteBatch.drawText(font, TEXT, smallTextPos, Color.GOLD, 18);
+        for (TextDisplayDemo textDisplayDemo : textDisplayDemoList) {
+            spriteBatch.drawText(font, TEXT, new Vector2(10, textDisplayDemo.verticalOffset),
+                    textDisplayDemo.textColor, textDisplayDemo.fontSize);
+        }
 
         // end and draw all sprites stored:
         spriteBatch.end();
@@ -76,12 +85,19 @@ public class TextDemo extends DemoGame {
         font.dispose();
     }
 
+    private static class TextDisplayDemo {
+
+        private int fontSize;
+        private float verticalOffset;
+        private Color textColor;
+    }
+
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(600, 480);
+        WindowSettings settings = new WindowSettings(900, 420);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
-        settings.setDebugMode(true);
+        settings.setDebugMode(false);
 
         PixelWindow window = new TextDemo(settings);
         window.start();
