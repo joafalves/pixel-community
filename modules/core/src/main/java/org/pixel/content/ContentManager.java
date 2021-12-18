@@ -94,8 +94,23 @@ public class ContentManager implements Disposable {
      * @return The loaded resource.
      */
     public <T> T load(String filepath, Class<T> type, @Nullable ContentImporterSettings settings) {
+        return load(filepath, type, settings, true);
+    }
+
+    /**
+     * Load a resource file with a custom importer settings - supports both absolute and relative paths (based on the
+     * project resource folder).
+     *
+     * @param filepath The filepath of the resource - supports both relative and absolute paths.
+     * @param type     The class type of the resource.
+     * @param settings The settings to use for the importer.
+     * @param useCache Determines whether to use the asset cache or not.
+     * @param <T>      The type of the resource.
+     * @return The loaded resource.
+     */
+    public <T> T load(String filepath, Class<T> type, @Nullable ContentImporterSettings settings, boolean useCache) {
         String assetRef = getCacheReference(filepath, type);
-        if (assetCache.containsKey(assetRef)) {
+        if (useCache && assetCache.containsKey(assetRef)) {
             Object o = assetCache.get(assetRef);
             if (type.isInstance(o)) {
                 return (T) assetCache.get(assetRef);
@@ -116,7 +131,7 @@ public class ContentManager implements Disposable {
 
         ImportContext ctx = new ImportContext(this, resourceData, filepath, settings);
         T asset = fileImporter.process(ctx);
-        if (asset != null) {
+        if (useCache && asset != null) {
             assetCache.put(assetRef, asset);
         }
 

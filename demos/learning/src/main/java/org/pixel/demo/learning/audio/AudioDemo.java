@@ -5,7 +5,7 @@
 
 package org.pixel.demo.learning.audio;
 
-import org.pixel.audio.AudioDevice;
+import org.pixel.audio.AudioEngine;
 import org.pixel.audio.Sound;
 import org.pixel.commons.DeltaTime;
 import org.pixel.core.PixelWindow;
@@ -18,8 +18,9 @@ public class AudioDemo extends DemoGame {
     private static final float SOUND_DURATION = 0.5f;
 
     private ContentManager content;
-    private Sound sound;
     private float soundElapsed = SOUND_DURATION;
+
+    protected Sound sound;
 
     public AudioDemo(WindowSettings settings) {
         super(settings);
@@ -42,7 +43,7 @@ public class AudioDemo extends DemoGame {
         if (soundElapsed > SOUND_DURATION) {
             soundElapsed = 0;
             // AudioDevice is used to play, stop and pause sound sources
-            AudioDevice.play(sound);
+            AudioEngine.play(sound);
         }
     }
 

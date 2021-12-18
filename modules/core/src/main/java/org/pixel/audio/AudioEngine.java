@@ -5,12 +5,9 @@
 
 package org.pixel.audio;
 
-import static org.lwjgl.openal.AL10.AL_TRUE;
-import static org.lwjgl.openal.ALC10.ALC_FALSE;
-
 import org.lwjgl.openal.AL10;
 
-public class AudioDevice {
+public class AudioEngine {
 
     /**
      * Play the given Sound instance.
@@ -25,13 +22,34 @@ public class AudioDevice {
      * Play the given Sound instance.
      *
      * @param sound The Sound instance to play.
-     * @param loop Whether the sound should loop.
+     * @param loop  Whether the sound should loop.
      */
     public static void play(Sound sound, boolean loop) {
-        AL10.alSourcei(sound.getSourcePointer(), AL10.AL_LOOPING, loop ? AL_TRUE : ALC_FALSE);
+        AL10.alSourcei(sound.getSourcePointer(), AL10.AL_LOOPING, loop ? AL10.AL_TRUE : AL10.AL_FALSE);
         AL10.alSourcef(sound.getSourcePointer(), AL10.AL_PITCH, sound.getPitch());
         AL10.alSourcef(sound.getSourcePointer(), AL10.AL_GAIN, sound.getGain());
         AL10.alSourcePlay(sound.getSourcePointer());
+    }
+
+    /**
+     * Set the (horizontal) audio panning of the given Sound instance.
+     *
+     * @param sound   The Sound instance to set the panning of.
+     * @param panning The panning to set (-1 to 1).
+     */
+    public static void setPanning(Sound sound, float panning) {
+        AL10.alSourcefv(sound.getSourcePointer(), AL10.AL_POSITION, new float[]{panning, -1, 0});
+    }
+
+    /**
+     * Set the audio panning of the given Sound instance.
+     *
+     * @param sound   The Sound instance to set the panning of.
+     * @param panningH The horizontal panning to set (-1 to 1).
+     * @param panningV The vertical panning to set (-1 to 1).
+     */
+    public static void setPanning(Sound sound, float panningH, float panningV) {
+        AL10.alSourcefv(sound.getSourcePointer(), AL10.AL_POSITION, new float[]{panningH, panningV, 0});
     }
 
     /**
