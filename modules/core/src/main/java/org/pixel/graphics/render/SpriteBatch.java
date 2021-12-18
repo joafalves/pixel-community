@@ -56,14 +56,14 @@ public class SpriteBatch extends DrawBatch {
     private static final Vector2 topLeft = new Vector2();
     private static final Vector2 topRight = new Vector2();
 
-    private VertexBufferObject vbo;
-    private VertexArrayObject vao;
-    private TextureShader textureShader;
-    private FloatBuffer dataBuffer;
-    private FloatBuffer matrixBuffer;
-    private SpriteData[] spriteData;
-    private Vector2 anchorZero = Vector2.zero();
-    private int bufferMaxSize;
+    private final VertexBufferObject vbo;
+    private final VertexArrayObject vao;
+    private final TextureShader textureShader;
+    private final FloatBuffer dataBuffer;
+    private final FloatBuffer matrixBuffer;
+    private final SpriteData[] spriteData;
+    private final Vector2 anchorZero = Vector2.zero();
+    private final int bufferMaxSize;
     private int bufferCount;
     private int lastTextureId;
 
@@ -436,7 +436,6 @@ public class SpriteBatch extends DrawBatch {
         spriteData.rotation = rotation;
         spriteDataAdded();
     }
-
 
     /**
      * Draws text.
