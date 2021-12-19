@@ -9,6 +9,8 @@
 This repository contains the Pixel Java Framework and associated modules/dependencies. 
 **At the moment this software is in Development Stage and not ready for production use. Feel free to experiment and help this project grow.** 
 
+** BETA 0.6.0 is expected to be released in January 2022**
+
 ### Description ###
 
 The Pixel Framework aims to provide a high performance and lightweight OpenGL 2D game development workflow. 
