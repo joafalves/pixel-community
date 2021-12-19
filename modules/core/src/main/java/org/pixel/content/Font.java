@@ -70,7 +70,7 @@ public class Font implements Disposable {
     //region Private Functions
 
     private void init() {
-        this.fontSize = 16;
+        this.fontSize = 32;
         this.textureId = -1;
         this.horizontalSpacing = 0;
         this.verticalSpacing = 0;
