@@ -62,6 +62,13 @@ public class SingleSpriteDemo extends PixelWindow {
         // end and draw all sprites stored:
         spriteBatch.end();
     }
+
+    @Override
+    public void dispose() {
+        content.dispose();
+        spriteBatch.dispose();
+        spriteTex.dispose();
+    }
 }
 ```
 
