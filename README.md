@@ -38,15 +38,13 @@ public class SingleSpriteDemo extends PixelWindow {
 
     @Override
     public void load() {
-        // game related changes & definitions
+        // load up of resources and game managers/utilities
         gameCamera = new Camera2D(this);
-
-        // general game instances
         content = new ContentManager();
         spriteBatch = new SpriteBatch();
 
-        // load texture into memory
-        spriteTex = content.load("<texture_path>", Texture.class);
+        // example of loading a texture into memory:
+        spriteTex = content.load("<texture_path>", Texture.class); 
     }
 
     @Override
@@ -59,8 +57,8 @@ public class SingleSpriteDemo extends PixelWindow {
         // begin the spritebatch phase:
         spriteBatch.begin(gameCamera.getViewMatrix(), BlendMode.NORMAL_BLEND);
 
-        // sprite definition for this drawing phase:
-        spriteBatch.draw(spriteTex, Vector2.ZERO, Color.WHITE, Vector2.HALF, 3f);
+        // sprite draw/put for this drawing phase:
+        spriteBatch.draw(spriteTex, Vector2.ZERO, Color.WHITE);
 
         // end and draw all sprites stored:
         spriteBatch.end();
@@ -84,8 +82,8 @@ The framework functionality is divided into multiple modules which can be import
     .modules/
         ├── commons                 # Common utility classes
         ├── core                    # Main module, contains principal classes
-        ├── input                   # Input module
-        └── math                    # Math module
+        ├── input                   # Input module (Keyboard, Gamepad, Mouse)
+        └── math                    # Math module (Vector, Matrix, etc)
     .resources/
         └── images                  # Project resource images
     .build.gradle                   # Gradle build file
