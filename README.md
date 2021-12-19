@@ -30,7 +30,6 @@ public class SingleSpriteDemo extends PixelWindow {
     private SpriteBatch spriteBatch;
 
     private Texture spriteTex;
-    private Vector2 spritePos;
 
     public SingleSpriteDemo(GameSettings settings) {
         super(settings);
@@ -41,17 +40,13 @@ public class SingleSpriteDemo extends PixelWindow {
     public void load() {
         // game related changes & definitions
         gameCamera = new Camera2D(this);
-        gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
         content = new ContentManager();
         spriteBatch = new SpriteBatch();
 
         // load texture into memory
-        spriteTex = content.load("images/earth-48x48.png", Texture.class);
-
-        // related sprite properties
-        spritePos = new Vector2(getVirtualWidth() / 2f, getVirtualHeight() / 2f);
+        spriteTex = content.load("<texture_path>", Texture.class);
     }
 
     @Override
@@ -65,7 +60,7 @@ public class SingleSpriteDemo extends PixelWindow {
         spriteBatch.begin(gameCamera.getViewMatrix(), BlendMode.NORMAL_BLEND);
 
         // sprite definition for this drawing phase:
-        spriteBatch.draw(spriteTex, spritePos, Color.WHITE, Vector2.HALF, 3f);
+        spriteBatch.draw(spriteTex, Vector2.ZERO, Color.WHITE, Vector2.HALF, 3f);
 
         // end and draw all sprites stored:
         spriteBatch.end();
