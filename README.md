@@ -33,7 +33,6 @@ public class SingleSpriteDemo extends PixelWindow {
 
     public SingleSpriteDemo(GameSettings settings) {
         super(settings);
-        setBackgroundColor(Color.BLACK);
     }
 
     @Override
