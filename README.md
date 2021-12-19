@@ -67,7 +67,6 @@ public class SingleSpriteDemo extends PixelWindow {
     public void dispose() {
         content.dispose();
         spriteBatch.dispose();
-        spriteTex.dispose();
     }
 }
 ```
