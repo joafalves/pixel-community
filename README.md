@@ -20,7 +20,7 @@ It is heavily influenced by the popular XNA framework and is built on top of the
 
 ### Examples ##
 
-Check the :file_folder: demos folder for more examples and development approaches.
+Check the :file_folder: [demos folder](https://github.com/joafalves/pixel-community/tree/devel/demos) for more examples and development approaches.
 
 ##### Drawing a Sprite #####
 
