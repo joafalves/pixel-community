@@ -9,7 +9,7 @@ version = "0.5.4"
 
 // Lwjgl Version & Build Target(s)
 def lwjglVersion = "3.3.0"
-def buildTarget = System.getenv("BUILD_TARGET")
+def buildTarget = System.properties["BUILD_TARGET"]
 def buildTargetList = []
 if (buildTarget == "all") {
     // Use this build mode publishing:
@@ -24,6 +24,8 @@ if (buildTarget == "all") {
     // no manual build type assigned, apply the classifier based on the current OS:
     buildTargetList.add(getCurrentClassifier())
 }
+
+println("Build Targets: ${buildTargetList}")
 
 allprojects {
     apply plugin: "java"
