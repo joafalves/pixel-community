@@ -6,6 +6,7 @@
 package org.pixel.math;
 
 import java.io.Serializable;
+import lombok.Builder;
 
 public class Vector2 implements Serializable {
 
@@ -55,6 +56,7 @@ public class Vector2 implements Serializable {
      * @param x The x value of the vector.
      * @param y The y value of the vector.
      */
+    @Builder
     public Vector2(float x, float y) {
         this.setX(x);
         this.setY(y);
@@ -228,6 +230,19 @@ public class Vector2 implements Serializable {
         float value = 1.f / this.length();
         this.setX(this.getX() * value);
         this.setY(this.getY() * value);
+    }
+
+    /**
+     * Rotates the vector by the given angle.
+     *
+     * @param origin The center of rotation.
+     * @param angle  The angle to rotate by (in radians).
+     */
+    public void rotateAround(Vector2 origin, float angle) {
+        this.set(origin.getX() + (x - origin.getX()) * MathHelper.cos(angle)
+                        - (y - origin.getY()) * MathHelper.sin(angle),
+                origin.getY() + (y - origin.getY()) * MathHelper.cos(angle)
+                        + (x - origin.getX()) * MathHelper.sin(angle));
     }
 
     /**

@@ -90,6 +90,7 @@ public class LdtkDemo extends PixelWindow {
 
         spriteBatch.begin(gameCamera.getViewMatrix());
 
+
         for (LdtkGameLevel level : ldtkGameWorld.getLevels()) {
             level.draw(delta, spriteBatch); // for demonstration purposes, draw all levels
         }

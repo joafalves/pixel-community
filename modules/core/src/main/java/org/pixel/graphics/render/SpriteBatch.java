@@ -25,6 +25,7 @@ import static org.lwjgl.opengl.GL20.glUniformMatrix4fv;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 import org.lwjgl.system.MemoryUtil;
 import org.pixel.content.Font;
 import org.pixel.content.FontGlyph;
@@ -66,6 +67,8 @@ public class SpriteBatch extends DrawBatch {
     private final int bufferMaxSize;
     private int bufferCount;
     private int lastTextureId;
+    private int lastDepthLevel;
+    private boolean hasDifferentDepthLevels;
 
     //endregion
 
@@ -131,7 +134,7 @@ public class SpriteBatch extends DrawBatch {
         }
     }
 
-    private SpriteData getSpriteDataObject() {
+    private SpriteData getNextSpriteDataObject() {
         return this.spriteData[this.bufferCount++];
     }
 
@@ -142,17 +145,27 @@ public class SpriteBatch extends DrawBatch {
     }
 
     private void flush() {
-        // draw the sprite data..
-        for (int i = 0, count = 1; i < bufferCount; i++, count++) {
-            SpriteData sprite = spriteData[i];
+        if (hasDifferentDepthLevels) {
+            Arrays.sort(this.spriteData, (o1, o2) -> {
+                if (!o1.active || !o2.active) {
+                    return Boolean.compare(o2.active, o1.active);
+                }
 
-            // acceptable?
-            if (sprite.textureId < 0) {
-                continue;
+                return o1.depth - o2.depth;
+            });
+        }
+
+        // draw the sprite data..
+        for (int i = 0, count = 1; i < bufferCount; i++) {
+            SpriteData spriteData = this.spriteData[i];
+            if (!spriteData.active) {
+                continue; // skip inactive sprites
             }
 
+            count++;
+
             // texture checkup:
-            if (lastTextureId != sprite.textureId) {
+            if (lastTextureId != spriteData.textureId) {
                 // is there any previous texture id?
                 if (lastTextureId >= 0) {
                     // yes, which means we have something to render..
@@ -163,11 +176,12 @@ public class SpriteBatch extends DrawBatch {
 
                 // bind the new texture:
                 glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, sprite.textureId);
-                lastTextureId = sprite.textureId;
+                glBindTexture(GL_TEXTURE_2D, spriteData.textureId);
+                lastTextureId = spriteData.textureId;
             }
 
-            processSpriteData(sprite);
+            processSpriteData(spriteData);
+            spriteData.active = false;
 
             if (i == bufferCount - 1) {
                 flushBatch(count);
@@ -175,6 +189,8 @@ public class SpriteBatch extends DrawBatch {
             }
         }
 
+        hasDifferentDepthLevels = false;
+        lastDepthLevel = -1;
         bufferCount = 0;
     }
 
@@ -314,7 +330,7 @@ public class SpriteBatch extends DrawBatch {
      */
     public void draw(Texture texture, Vector2 position, Color color, Vector2 anchor, float scaleX, float scaleY,
             float rotation) {
-        this.draw(texture, position, null, color, anchor, scaleX, scaleY, rotation);
+        this.draw(texture, position, null, color, anchor, scaleX, scaleY, rotation, 0);
     }
 
     /**
@@ -326,7 +342,7 @@ public class SpriteBatch extends DrawBatch {
      * @param color    The color overlay of the sprite.
      */
     public void draw(Texture texture, Vector2 position, Rectangle source, Color color) {
-        this.draw(texture, position, source, color, anchorZero, 1.0f, 1.0f, 0.f);
+        this.draw(texture, position, source, color, anchorZero, 1.0f, 1.0f, 0.f, 0);
     }
 
     /**
@@ -342,7 +358,7 @@ public class SpriteBatch extends DrawBatch {
      */
     public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scale,
             float rotation) {
-        this.draw(texture, position, source, color, anchor, scale, scale, rotation);
+        this.draw(texture, position, source, color, anchor, scale, scale, rotation, 0);
     }
 
     /**
@@ -359,7 +375,30 @@ public class SpriteBatch extends DrawBatch {
      */
     public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scaleX,
             float scaleY, float rotation) {
-        SpriteData spriteData = getSpriteDataObject();
+        this.draw(texture, position, source, color, anchor, scaleX, scaleY, rotation, 0);
+    }
+
+    /**
+     * Draws a sprite.
+     *
+     * @param texture  The texture to use.
+     * @param position The position of the sprite.
+     * @param source   The source rectangle of the sprite.
+     * @param color    The color overlay of the sprite.
+     * @param anchor   The anchor point of the sprite.
+     * @param scaleX   The scale of the sprite on the x-axis.
+     * @param scaleY   The scale of the sprite on the y-axis.
+     * @param rotation The rotation of the sprite.
+     * @param depth    The drawing depth of the sprite (lower numbers are drawn first).
+     */
+    public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scaleX,
+            float scaleY, float rotation, int depth) {
+        if (lastDepthLevel >= 0 && depth != lastDepthLevel) {
+            hasDifferentDepthLevels = true;
+        }
+
+        SpriteData spriteData = getNextSpriteDataObject();
+        spriteData.active = true;
         spriteData.textureId = texture.getId();
         spriteData.textureWidth = texture.getWidth();
         spriteData.textureHeight = texture.getHeight();
@@ -373,6 +412,10 @@ public class SpriteBatch extends DrawBatch {
         spriteData.color = color;
         spriteData.source = source;
         spriteData.rotation = rotation;
+        spriteData.depth = depth;
+
+        lastDepthLevel = depth;
+
         spriteDataAdded();
     }
 
@@ -417,12 +460,45 @@ public class SpriteBatch extends DrawBatch {
      * @param displayArea The display area of the sprite.
      * @param source      The source rectangle of the sprite.
      * @param color       The color overlay of the sprite.
+     */
+    public void draw(Texture texture, Rectangle displayArea, Rectangle source, Color color) {
+        this.draw(texture, displayArea, source, color, Vector2.ZERO, 0f);
+    }
+
+    /**
+     * Draws a sprite.
+     *
+     * @param texture     The texture to use.
+     * @param displayArea The display area of the sprite.
+     * @param source      The source rectangle of the sprite.
+     * @param color       The color overlay of the sprite.
      * @param anchor      The anchor point of the sprite.
      * @param rotation    The rotation of the sprite.
      */
     public void draw(Texture texture, Rectangle displayArea, Rectangle source, Color color, Vector2 anchor,
             float rotation) {
-        SpriteData spriteData = getSpriteDataObject();
+        this.draw(texture, displayArea, source, color, anchor, rotation, 0);
+    }
+
+    /**
+     * Draws a sprite.
+     *
+     * @param texture     The texture to use.
+     * @param displayArea The display area of the sprite.
+     * @param source      The source rectangle of the sprite.
+     * @param color       The color overlay of the sprite.
+     * @param anchor      The anchor point of the sprite.
+     * @param rotation    The rotation of the sprite.
+     * @param depth       The drawing depth of the sprite (lower numbers are drawn first).
+     */
+    public void draw(Texture texture, Rectangle displayArea, Rectangle source, Color color, Vector2 anchor,
+            float rotation, int depth) {
+        if (lastDepthLevel >= 0 && depth != lastDepthLevel) {
+            hasDifferentDepthLevels = true;
+        }
+
+        SpriteData spriteData = getNextSpriteDataObject();
+        spriteData.active = true;
         spriteData.textureId = texture.getId();
         spriteData.textureWidth = texture.getWidth();
         spriteData.textureHeight = texture.getHeight();
@@ -434,6 +510,10 @@ public class SpriteBatch extends DrawBatch {
         spriteData.source = source;
         spriteData.color = color;
         spriteData.rotation = rotation;
+        spriteData.depth = depth;
+
+        lastDepthLevel = depth;
+
         spriteDataAdded();
     }
 
@@ -467,7 +547,7 @@ public class SpriteBatch extends DrawBatch {
         for (char ch : text.toCharArray()) {
             FontGlyph glyph = font.getGlyph(ch);
             if (glyph == null) {
-                continue; // cannot process this char data..
+                continue; // cannot process this char data...
             }
 
             if (ch == '\n') {
@@ -476,7 +556,8 @@ public class SpriteBatch extends DrawBatch {
                 continue;
             }
 
-            SpriteData spriteData = getSpriteDataObject();
+            SpriteData spriteData = getNextSpriteDataObject();
+            spriteData.active = true;
             spriteData.textureId = font.getTextureId();
             spriteData.textureWidth = font.getTextureWidth();
             spriteData.textureHeight = font.getTextureHeight();
@@ -509,12 +590,14 @@ public class SpriteBatch extends DrawBatch {
      * Begin drawing phase.
      *
      * @param viewMatrix The view matrix.
-     * @param blendMode The blend mode.
+     * @param blendMode  The blend mode.
      */
     public void begin(Matrix4 viewMatrix, BlendMode blendMode) {
         dataBuffer.clear();
         bufferCount = 0;
         lastTextureId = -1;
+        lastDepthLevel = -1;
+        hasDifferentDepthLevels = false;
 
         if (blendMode == BlendMode.ADDITIVE) {
             glBlendFunc(GL_ONE, GL_ONE);
@@ -566,7 +649,9 @@ public class SpriteBatch extends DrawBatch {
      */
     private static class SpriteData {
 
+        boolean active;
         int textureId;
+        int depth;
         float textureWidth;
         float textureHeight;
         float rotation;

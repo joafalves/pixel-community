@@ -26,6 +26,30 @@ public class Matrix4 implements Serializable {
         setIdentity();
     }
 
+    /**
+     * Constructor.
+     *
+     * @param other The matrix to copy values from.
+     */
+    public Matrix4(Matrix4 other) {
+        this.m[0][0] = other.m[0][0];
+        this.m[0][1] = other.m[0][1];
+        this.m[0][2] = other.m[0][2];
+        this.m[0][3] = other.m[0][3];
+        this.m[1][0] = other.m[1][0];
+        this.m[1][1] = other.m[1][1];
+        this.m[1][2] = other.m[1][2];
+        this.m[1][3] = other.m[1][3];
+        this.m[2][0] = other.m[2][0];
+        this.m[2][1] = other.m[2][1];
+        this.m[2][2] = other.m[2][2];
+        this.m[2][3] = other.m[2][3];
+        this.m[3][0] = other.m[3][0];
+        this.m[3][1] = other.m[3][1];
+        this.m[3][2] = other.m[3][2];
+        this.m[3][3] = other.m[3][3];
+    }
+
     //endregion
 
     //region public static methods
@@ -458,18 +482,6 @@ public class Matrix4 implements Serializable {
         m[2][1] *= z;
         m[2][2] *= z;
         m[2][3] *= z;
-    }
-
-    /**
-     * Clones the matrix.
-     *
-     * @return The cloned matrix.
-     */
-    public Matrix4 clone() {
-        Matrix4 matrix = new Matrix4();
-        matrix.m = toArray();
-
-        return matrix;
     }
 
     /**

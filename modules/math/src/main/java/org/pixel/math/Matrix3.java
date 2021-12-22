@@ -26,6 +26,22 @@ public class Matrix3 implements Serializable {
         setIdentity();
     }
 
+    /**
+     * Constructor.
+     * @param other The matrix to copy values from.
+     */
+    public Matrix3(Matrix3 other) {
+        this.m[0][0] = other.m[0][0];
+        this.m[0][1] = other.m[0][1];
+        this.m[0][2] = other.m[0][2];
+        this.m[1][0] = other.m[1][0];
+        this.m[1][1] = other.m[1][1];
+        this.m[1][2] = other.m[1][2];
+        this.m[2][0] = other.m[2][0];
+        this.m[2][1] = other.m[2][1];
+        this.m[2][2] = other.m[2][2];
+    }
+
     //endregion
 
     //region private methods
@@ -147,18 +163,6 @@ public class Matrix3 implements Serializable {
         tmp[2][2] = m[2][2];
 
         assignFromTmp();
-    }
-
-    /**
-     * Clone the matrix.
-     *
-     * @return The cloned matrix.
-     */
-    public Matrix3 clone() {
-        Matrix3 matrix = new Matrix3();
-        matrix.m = toArray();
-
-        return matrix;
     }
 
     /**

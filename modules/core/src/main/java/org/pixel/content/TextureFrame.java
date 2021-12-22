@@ -11,6 +11,7 @@ import org.pixel.math.Vector2;
 
 public class TextureFrame {
 
+    private Texture texture;
     private Rectangle source;
     private Vector2 pivot;
     private AttributeMap attributes;
@@ -18,10 +19,12 @@ public class TextureFrame {
     /**
      * Constructor.
      *
-     * @param source The source rectangle.
-     * @param pivot  The pivot point.
+     * @param texture The texture this frame belongs to.
+     * @param source  The source rectangle.
+     * @param pivot   The pivot point.
      */
-    public TextureFrame(Rectangle source, Vector2 pivot) {
+    public TextureFrame(Texture texture, Rectangle source, Vector2 pivot) {
+        this.texture = texture;
         this.source = source;
         this.pivot = pivot;
     }
@@ -29,11 +32,13 @@ public class TextureFrame {
     /**
      * Constructor
      *
+     * @param texture    The texture this frame belongs to.
      * @param source     The source rectangle.
      * @param pivot      The pivot point.
      * @param attributes The attributes (usually the meta associated to the frame).
      */
-    public TextureFrame(Rectangle source, Vector2 pivot, AttributeMap attributes) {
+    public TextureFrame(Texture texture, Rectangle source, Vector2 pivot, AttributeMap attributes) {
+        this.texture = texture;
         this.source = source;
         this.pivot = pivot;
         this.attributes = attributes;
@@ -91,5 +96,23 @@ public class TextureFrame {
      */
     public void setAttributes(AttributeMap attributes) {
         this.attributes = attributes;
+    }
+
+    /**
+     * Get the texture associated to this frame.
+     *
+     * @return The texture.
+     */
+    public Texture getTexture() {
+        return texture;
+    }
+
+    /**
+     * Set the texture associated to this frame.
+     *
+     * @param texture The texture.
+     */
+    public void setTexture(Texture texture) {
+        this.texture = texture;
     }
 }

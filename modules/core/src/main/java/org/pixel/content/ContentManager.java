@@ -21,7 +21,7 @@ public class ContentManager implements Disposable {
     private static final Logger log = LoggerFactory.getLogger(ContentManager.class);
 
     private final ConcurrentHashMap<String, Object> assetCache;
-    private final ConcurrentHashMap<Class, ContentImporter> importers;
+    private final ConcurrentHashMap<Class<?>, ContentImporter<?>> importers;
 
     /**
      * Constructor
@@ -52,7 +52,7 @@ public class ContentManager implements Disposable {
      * @param type     The type of the asset.
      * @return A reference to the asset cache.
      */
-    private String getCacheReference(String filename, Class type) {
+    private String getCacheReference(String filename, Class<?> type) {
         return type.getCanonicalName() + ":" + filename;
     }
 
@@ -61,7 +61,7 @@ public class ContentManager implements Disposable {
      *
      * @param importer The importer to add.
      */
-    public void addContentImporter(ContentImporter importer) {
+    public void addContentImporter(ContentImporter<?> importer) {
         ContentImporterInfo importerDetails = importer.getClass().getAnnotation(ContentImporterInfo.class);
         if (importerDetails == null) {
             log.warn("Unable to add content importer without ContentImporter annotation.");
@@ -72,12 +72,108 @@ public class ContentManager implements Disposable {
     }
 
     /**
+     * Load an image resource file with a custom importer settings - supports both absolute and relative paths (based on
+     * the project resource folder).
+     *
+     * @param filepath The filepath of the resource - supports both relative and absolute paths.
+     * @return The loaded resource or null if the resource could not be loaded.
+     */
+    public Texture loadTexture(String filepath) {
+        return load(filepath, Texture.class);
+    }
+
+    /**
+     * Load an image resource file with a custom importer settings - supports both absolute and relative paths (based on
+     * the project resource folder).
+     *
+     * @param filepath The filepath of the resource - supports both relative and absolute paths.
+     * @param settings The settings to use for the importer.
+     * @param useCache Whether to use the cache or not.
+     * @return The loaded resource or null if the resource could not be loaded.
+     */
+    public Texture loadTexture(String filepath, @Nullable ContentImporterSettings settings, boolean useCache) {
+        return load(filepath, Texture.class, settings, useCache);
+    }
+
+    /**
+     * Load a texture pack resource file with a custom importer settings - supports both absolute and relative paths
+     * (based on the project resource folder).
+     *
+     * @param filepath The filepath of the resource - supports both relative and absolute paths.
+     * @return The loaded resource or null if the resource could not be loaded.
+     */
+    public TexturePack loadTexturePack(String filepath) {
+        return load(filepath, TexturePack.class);
+    }
+
+    /**
+     * Load a texture pack resource file with a custom importer settings - supports both absolute and relative paths
+     * (based on the project resource folder).
+     *
+     * @param filepath The filepath of the resource - supports both relative and absolute paths.
+     * @param settings The settings to use for the importer.
+     * @param useCache Whether to use the cache or not.
+     * @return The loaded resource or null if the resource could not be loaded.
+     */
+    public TexturePack loadTexturePack(String filepath, @Nullable ContentImporterSettings settings, boolean useCache) {
+        return load(filepath, TexturePack.class, settings, useCache);
+    }
+
+    /**
+     * Load an audio resource file with a custom importer settings - supports both absolute and relative paths (based on
+     * the project resource folder).
+     *
+     * @param filepath The filepath of the resource - supports both relative and absolute paths.
+     * @return The loaded resource or null if the resource could not be loaded.
+     */
+    public Sound loadSound(String filepath) {
+        return load(filepath, Sound.class);
+    }
+
+    /**
+     * Load a sound resource file with a custom importer settings - supports both absolute and relative paths (based on
+     * the project resource folder).
+     *
+     * @param filepath The filepath of the resource - supports both relative and absolute paths.
+     * @param settings The settings to use for the importer.
+     * @param useCache Whether to use the cache or not.
+     * @return The loaded resource or null if the resource could not be loaded.
+     */
+    public Sound loadSound(String filepath, @Nullable ContentImporterSettings settings, boolean useCache) {
+        return load(filepath, Sound.class, settings, useCache);
+    }
+
+    /**
+     * Load a font resource file with a custom importer settings - supports both absolute and relative paths (based on
+     * the project resource folder).
+     *
+     * @param filepath The filepath of the resource - supports both relative and absolute paths.
+     * @return The loaded resource or null if the resource could not be loaded.
+     */
+    public Font loadFont(String filepath) {
+        return load(filepath, Font.class);
+    }
+
+    /**
+     * Load a font resource file with a custom importer settings - supports both absolute and relative paths (based on
+     * the project resource folder).
+     *
+     * @param filepath The filepath of the resource - supports both relative and absolute paths.
+     * @param settings The settings to use for the importer.
+     * @param useCache Whether to use the cache or not.
+     * @return The loaded resource or null if the resource could not be loaded.
+     */
+    public Font loadFont(String filepath, @Nullable ContentImporterSettings settings, boolean useCache) {
+        return load(filepath, Font.class, settings, useCache);
+    }
+
+    /**
      * Load a resource file - supports both absolute and relative paths (based on the project resource folder).
      *
      * @param filepath The filepath of the resource - supports both relative and absolute paths.
      * @param type     The class type of the resource.
      * @param <T>      The type of the resource.
-     * @return The loaded resource.
+     * @return The loaded resource or null if the resource could not be loaded.
      */
     public <T> T load(String filepath, Class<T> type) {
         return load(filepath, type, null);
@@ -91,7 +187,7 @@ public class ContentManager implements Disposable {
      * @param type     The class type of the resource.
      * @param settings The settings to use for the importer.
      * @param <T>      The type of the resource.
-     * @return The loaded resource.
+     * @return The loaded resource or null if the resource could not be loaded.
      */
     public <T> T load(String filepath, Class<T> type, @Nullable ContentImporterSettings settings) {
         return load(filepath, type, settings, true);
@@ -106,7 +202,7 @@ public class ContentManager implements Disposable {
      * @param settings The settings to use for the importer.
      * @param useCache Determines whether to use the asset cache or not.
      * @param <T>      The type of the resource.
-     * @return The loaded resource.
+     * @return The loaded resource or null if the resource could not be loaded.
      */
     public <T> T load(String filepath, Class<T> type, @Nullable ContentImporterSettings settings, boolean useCache) {
         String assetRef = getCacheReference(filepath, type);
@@ -117,7 +213,7 @@ public class ContentManager implements Disposable {
             }
         }
 
-        ContentImporter<T> fileImporter = this.importers.get(type);
+        ContentImporter<T> fileImporter = (ContentImporter<T>) this.importers.get(type);
         if (fileImporter == null) {
             log.warn("Unable to load asset due to unavailable importer for '{}'.", type.getCanonicalName());
             return null;

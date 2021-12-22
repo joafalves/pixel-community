@@ -54,7 +54,6 @@ public class LoggerFactory {
         return strategy.createLogger(context);
     }
 
-
     /**
      * Get a logger associated to given context.
      *

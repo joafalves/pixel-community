@@ -12,7 +12,7 @@ public interface Updatable {
     /**
      * Update function.
      *
-     * @param delta Time since last update.
+     * @param delta The time since the last update.
      */
     void update(DeltaTime delta);
 }

@@ -5,17 +5,21 @@
 
 package org.pixel.content.importer;
 
+import java.util.HashMap;
 import org.json.JSONObject;
+import org.pixel.commons.AttributeMap;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.commons.AttributeMap;
 import org.pixel.commons.util.FileUtils;
 import org.pixel.commons.util.TextUtils;
-import org.pixel.content.*;
+import org.pixel.content.ContentImporter;
+import org.pixel.content.ContentImporterInfo;
+import org.pixel.content.ImportContext;
+import org.pixel.content.Texture;
+import org.pixel.content.TextureFrame;
+import org.pixel.content.TexturePack;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
-
-import java.util.HashMap;
 
 @ContentImporterInfo(type = TexturePack.class, extension = ".json")
 public class TexturePackImporter implements ContentImporter<TexturePack> {
@@ -32,7 +36,18 @@ public class TexturePackImporter implements ContentImporter<TexturePack> {
             return null;
         }
 
-        HashMap<String, TextureFrame> frameMap = new HashMap<>();
+        // when available, attempt to load the associated texture pack meta:
+        Texture texture = null;
+        if (json.has("meta")) {
+            JSONObject meta = json.getJSONObject("meta");
+            if (meta.has("image")) {
+                texture = ctx.getContentManager().load(FileUtils.getParentDirectory(ctx.getFilepath()) +
+                        FileUtils.FILE_SEPARATOR + meta.getString("image"), Texture.class);
+            }
+        }
+
+        final HashMap<String, TextureFrame> frameMap = new HashMap<>();
+        final Texture frameTexture = texture;
         frames.keys().forEachRemaining(key -> {
             JSONObject frameInfo = frames.getJSONObject(key);
             JSONObject frameSrc = frameInfo.getJSONObject("frame");
@@ -49,7 +64,7 @@ public class TexturePackImporter implements ContentImporter<TexturePack> {
                 pivot = new Vector2(0, 0);
             }
 
-            TextureFrame textureFrame = new TextureFrame(source, pivot);
+            TextureFrame textureFrame = new TextureFrame(frameTexture, source, pivot);
             if (frameInfo.has("attributes")) { // does it have attributes?
                 var attributeMap = new AttributeMap();
                 var attributes = frameInfo.getJSONObject("attributes");
@@ -61,16 +76,6 @@ public class TexturePackImporter implements ContentImporter<TexturePack> {
 
             frameMap.put(key, textureFrame);
         });
-
-        // when available, attempt to load the associated texture pack meta:
-        Texture texture = null;
-        if (json.has("meta")) {
-            JSONObject meta = json.getJSONObject("meta");
-            if (meta.has("image")) {
-                texture = ctx.getContentManager().load(FileUtils.getParentDirectory(ctx.getFilepath()) +
-                        FileUtils.FILE_SEPARATOR + meta.getString("image"), Texture.class);
-            }
-        }
 
         return frameMap.size() > 0 ? new TexturePack(texture, frameMap) : null;
     }

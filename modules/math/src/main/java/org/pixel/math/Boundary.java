@@ -8,6 +8,7 @@ package org.pixel.math;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Builder;
 
 public class Boundary implements Serializable {
 
@@ -31,6 +32,7 @@ public class Boundary implements Serializable {
      * @param bottomLeft  The bottom left coordinate.
      * @param bottomRight The bottom right coordinate.
      */
+    @Builder
     public Boundary(Vector2 topLeft, Vector2 topRight, Vector2 bottomLeft, Vector2 bottomRight) {
         this.topLeft = topLeft;
         this.topRight = topRight;
@@ -101,6 +103,20 @@ public class Boundary implements Serializable {
         this.topRight = new Vector2(other.topRight);
         this.bottomLeft = new Vector2(other.bottomLeft);
         this.bottomRight = new Vector2(other.bottomRight);
+        this.vectorCache = null;
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param rectangle The rectangle to extract the boundary from.
+     */
+    public Boundary(Rectangle rectangle) {
+        this.topLeft = new Vector2(rectangle.getX(), rectangle.getY());
+        this.topRight = new Vector2(rectangle.getX() + rectangle.getWidth(), rectangle.getY());
+        this.bottomLeft = new Vector2(rectangle.getX(), rectangle.getY() + rectangle.getHeight());
+        this.bottomRight = new Vector2(rectangle.getX() + rectangle.getWidth(),
+                rectangle.getY() + rectangle.getHeight());
         this.vectorCache = null;
     }
 
@@ -274,6 +290,19 @@ public class Boundary implements Serializable {
      */
     public float getHeight() {
         return this.getBottom() - this.getTop();
+    }
+
+    /**
+     * Rotate all the vertices of this boundary around the given origin.
+     *
+     * @param origin The origin of the rotation.
+     * @param angle  The angle of the rotation.
+     */
+    public void rotate(Vector2 origin, float angle) {
+        this.topLeft.rotateAround(origin, angle);
+        this.topRight.rotateAround(origin, angle);
+        this.bottomLeft.rotateAround(origin, angle);
+        this.bottomRight.rotateAround(origin, angle);
     }
 
     //endregion

@@ -11,8 +11,11 @@ plugins {
 dependencies {
     api project(":${rootProject.name}-core")
     api project(":${rootProject.name}-input")
+    api project(":${rootProject.name}-ext-ldtk")
     api project(":${rootProject.name}-ext-gui")
     api project(":${rootProject.name}-ext-physics")
+    api project(":${rootProject.name}-ext-ecs")
+    api project(":${rootProject.name}-ext-ecs-extra")
     api project(":${rootProject.name}-math")
 
     api project(":${rootProject.name}-ext-log4j2")

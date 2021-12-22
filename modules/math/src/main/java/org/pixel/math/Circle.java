@@ -6,6 +6,7 @@
 package org.pixel.math;
 
 import java.io.Serializable;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,6 +23,7 @@ public class Circle implements Serializable {
      * @param position The position of the circle.
      * @param radius   The radius of the circle.
      */
+    @Builder
     public Circle(Vector2 position, float radius) {
         this.position = position;
         this.radius = radius;
