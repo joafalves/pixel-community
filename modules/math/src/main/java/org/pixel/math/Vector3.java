@@ -6,6 +6,7 @@
 package org.pixel.math;
 
 import java.io.Serializable;
+import lombok.Builder;
 
 public class Vector3 implements Serializable {
 
@@ -54,6 +55,7 @@ public class Vector3 implements Serializable {
      * @param y The y coordinate of the vector.
      * @param z The z coordinate of the vector.
      */
+    @Builder
     public Vector3(float x, float y, float z) {
         this.setX(x);
         this.setY(y);

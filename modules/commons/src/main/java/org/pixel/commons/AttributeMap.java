@@ -1,6 +1,7 @@
 package org.pixel.commons;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class AttributeMap extends HashMap<String, Object> {
 
@@ -174,5 +175,15 @@ public class AttributeMap extends HashMap<String, Object> {
      */
     public Boolean getBoolean(String key, Boolean defaultValue) {
         return get(key, Boolean.class, defaultValue);
+    }
+
+    /**
+     * Get the value of the key as a List. If the key is not found, null is returned.
+     *
+     * @param key The key.
+     * @return The value of the key as a List.
+     */
+    public List getList(String key) {
+        return get(key, List.class, null);
     }
 }

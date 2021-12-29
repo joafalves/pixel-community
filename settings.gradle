@@ -10,11 +10,14 @@ rootProject.name = "pixel"
 include "modules/commons", "modules/core", "modules/input", "modules/math"
 
 // extensions:
-include "extensions/ext-log4j2", "extensions/ext-ldtk", "extensions/ext-physics", "extensions/ext-gui"
+include "extensions/ext-log4j2", "extensions/ext-ldtk", "extensions/ext-physics", "extensions/ext-gui",   \
+   "extensions/ext-ecs", "extensions/ext-ecs-extra"
 
 // demos
 include "demos/learning", "demos/concept", "demos/imgui", "demos/kotlin", "demos/ldtk"
 
 rootProject.children.each {
-    it.name = rootProject.name + "-" + it.name.split("/").last()
+    def parts = it.name.split("/")
+    def prefix = rootProject.name + "-"
+    it.name = prefix + parts.last()
 }

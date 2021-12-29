@@ -8,6 +8,7 @@ package org.pixel.math;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Builder;
 
 public class Rectangle implements Serializable {
     //region Fields & Properties
@@ -54,6 +55,7 @@ public class Rectangle implements Serializable {
      * @param width  The width of the rectangle.
      * @param height The height of the rectangle.
      */
+    @Builder
     public Rectangle(float x, float y, float width, float height) {
         this.x = x;
         this.y = y;
@@ -149,6 +151,56 @@ public class Rectangle implements Serializable {
     }
 
     /**
+     * Expands the rectangle by the given amount.
+     *
+     * @param amount The amount to expand.
+     */
+    public void expand(float amount) {
+        this.x -= amount;
+        this.y -= amount;
+        this.width += amount * 2;
+        this.height += amount * 2;
+    }
+
+    /**
+     * Expands the rectangle by the given amount.
+     *
+     * @param amountX The amount to expand on the x-axis.
+     * @param amountY The amount to expand on the y-axis.
+     */
+    public void expand(float amountX, float amountY) {
+        this.x -= amountX;
+        this.y -= amountY;
+        this.width += amountX * 2;
+        this.height += amountY * 2;
+    }
+
+    /**
+     * Shrinks the rectangle by the given amount.
+     *
+     * @param amount The amount to shrink.
+     */
+    public void shrink(float amount) {
+        this.x += amount;
+        this.y += amount;
+        this.width -= amount * 2;
+        this.height -= amount * 2;
+    }
+
+    /**
+     * Shrinks the rectangle by the given amount.
+     *
+     * @param amountX The amount to shrink on the x-axis.
+     * @param amountY The amount to shrink on the y-axis.
+     */
+    public void shrink(float amountX, float amountY) {
+        this.x += amountX;
+        this.y += amountY;
+        this.width -= amountX * 2;
+        this.height -= amountY * 2;
+    }
+
+    /**
      * Changes the rectangle properties to the union of the current rectangle and the given rectangle.
      *
      * @param other The other rectangle.
@@ -214,6 +266,37 @@ public class Rectangle implements Serializable {
         }
 
         this.set(tx1, ty1, tx2, ty2);
+    }
+
+    /**
+     * Checks whether the given point is inside the rectangle.
+     *
+     * @param point The point to check.
+     * @return True if the point is inside the rectangle, false otherwise.
+     */
+    public boolean contains(Vector2 point) {
+        return contains(point.getX(), point.getY());
+    }
+
+    /**
+     * Checks whether the given point is inside the rectangle.
+     *
+     * @param x The x coordinate of the point.
+     * @param y The y coordinate of the point.
+     * @return True if the point is inside the rectangle, false otherwise.
+     */
+    public boolean contains(float x, float y) {
+        return x >= this.x && x <= this.x + this.width && y >= this.y && y <= this.y + this.height;
+    }
+
+    /**
+     * Checks if the rectangle intersect with another.
+     *
+     * @param other The other rectangle.
+     * @return True if the rectangles intersect, false otherwise.
+     */
+    public boolean intersects(Rectangle other) {
+        return intersects(x, y, width, height, other.x, other.y, other.width, other.height);
     }
 
     /**

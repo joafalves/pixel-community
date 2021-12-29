@@ -1,6 +1,6 @@
 # PUBLISH #
 
-### Who is this file for? ###
+### Who is this documentation for? ###
 
 If you are responsible for publishing pixel artifacts on public repositories.
 

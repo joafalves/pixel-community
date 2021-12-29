@@ -26,6 +26,17 @@ public class Matrix2 implements Serializable {
         setIdentity();
     }
 
+    /**
+     * Constructor.
+     * @param other The matrix to copy values from.
+     */
+    public Matrix2(Matrix2 other) {
+        this.m[0][0] = other.m[0][0];
+        this.m[0][1] = other.m[0][1];
+        this.m[1][0] = other.m[1][0];
+        this.m[1][1] = other.m[1][1];
+    }
+
     //endregion
 
     //region private methods
@@ -120,18 +131,6 @@ public class Matrix2 implements Serializable {
         float o10 = m[1][0];
         m[1][0] = m[0][1];
         m[0][1] = o10;
-    }
-
-    /**
-     * Clone the matrix.
-     *
-     * @return The cloned matrix.
-     */
-    public Matrix2 clone() {
-        Matrix2 matrix = new Matrix2();
-        matrix.m = toArray();
-
-        return matrix;
     }
 
     /**

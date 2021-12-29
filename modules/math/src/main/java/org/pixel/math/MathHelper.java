@@ -26,6 +26,28 @@ public class MathHelper {
     //region public static methods
 
     /**
+     * Returns the largest (closest to positive infinity) double value that is less than or equal to the argument and is
+     * equal to a mathematical integer. Special cases:
+     *
+     * @param value The value.
+     * @return The largest integer less than or equal to the argument.
+     */
+    public static float floor(float value) {
+        return (float) Math.floor(value);
+    }
+
+    /**
+     * Returns the smallest (closest to negative infinity) double value that is greater than or equal to the argument
+     * and is equal to a mathematical integer. Special cases:
+     *
+     * @param value The value.
+     * @return The smallest integer greater than or equal to the argument.
+     */
+    public static float ceil(float value) {
+        return (float) Math.ceil(value);
+    }
+
+    /**
      * Tangent function.
      *
      * @param value The value to calculate the tangent of.
@@ -74,6 +96,17 @@ public class MathHelper {
      */
     public static float atan2(float y, float x) {
         return (float) Math.atan2(y, x);
+    }
+
+    /**
+     * Get the absolute value of a float value. If the argument is not negative, the argument is returned. If the
+     * argument is negative, the negation of the argument is returned
+     *
+     * @param value The value.
+     * @return The absolute value of the argument.
+     */
+    public static float abs(float value) {
+        return Math.abs(value);
     }
 
     /**
@@ -191,21 +224,21 @@ public class MathHelper {
     /**
      * Converts the given degrees to radians.
      *
-     * @param degree The degrees to convert.
+     * @param degrees The degrees to convert.
      * @return The radians.
      */
-    public static float toRadians(float degree) {
-        return degree * 0.0174532925f;
+    public static float toRadians(float degrees) {
+        return degrees * 0.0174532925f;
     }
 
     /**
      * Converts the given radians to degrees.
      *
-     * @param radian The radians to convert.
+     * @param radians The radians to convert.
      * @return The degrees.
      */
-    public static float toDegrees(float radian) {
-        return radian * 57.295779513f;
+    public static float toDegrees(float radians) {
+        return radians * 57.295779513f;
     }
 
     /**

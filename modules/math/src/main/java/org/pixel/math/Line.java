@@ -6,6 +6,7 @@
 package org.pixel.math;
 
 import java.io.Serializable;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,6 +25,7 @@ public class Line implements Serializable {
      * @param x2 The x coordinate of the second point.
      * @param y2 The y coordinate of the second point.
      */
+    @Builder
     public Line(float x1, float y1, float x2, float y2) {
         this.x1 = x1;
         this.y1 = y1;

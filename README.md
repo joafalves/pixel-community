@@ -6,23 +6,26 @@
 
 ### What is this repository for? ###
 
-This repository contains the Pixel Java Framework and associated modules/dependencies. 
-**At the moment this software is in Development Stage and not ready for production use. Feel free to experiment and help this project grow.** 
+This repository contains the Pixel Java Framework and associated modules/dependencies.
+**At the moment this software is in Development Stage and not ready for production use. Feel free to experiment and help
+this project grow.**
 
-** BETA 0.6.0 is expected to be released in January 2022**
+> **BETA 0.6.0 is expected to be released in January 2022!**
 
 ### Description ###
 
-The Pixel Framework aims to provide a high performance and lightweight OpenGL 2D game development workflow. 
-It is heavily influenced by the popular XNA framework and is built on top of the [LWJGL](https://www.lwjgl.org/) and [GLFW](https://www.glfw.org/) projects.
+The Pixel Framework aims to provide a high performance and lightweight OpenGL 2D game development workflow. It is
+heavily influenced by the popular XNA framework and is built on top of the [LWJGL](https://www.lwjgl.org/)
+and [GLFW](https://www.glfw.org/) projects.
 
-:book: For practical details on how to use this framework, please check our [wiki page](https://github.com/joafalves/pixel-community/wiki)  (under construction) 
+:book: For practical details on how to use this framework, please check
+our [wiki page](https://github.com/joafalves/pixel-community/wiki).
 
 ### Examples ##
 
-Check the :file_folder: [demos folder](https://github.com/joafalves/pixel-community/tree/devel/demos) for more examples and development approaches.
+Check the :file_folder: [demos folder](https://github.com/joafalves/pixel-community/tree/devel/demos) for examples.
 
-##### Drawing a Sprite #####
+##### Basic example (Drawing a Sprite) #####
 
 ```java
 public class SingleSpriteDemo extends PixelWindow {
@@ -45,7 +48,7 @@ public class SingleSpriteDemo extends PixelWindow {
         spriteBatch = new SpriteBatch();
 
         // example of loading a texture into memory:
-        spriteTex = content.load("<texture_path>", Texture.class); 
+        spriteTex = content.load("<texture_path>", Texture.class);
     }
 
     @Override
@@ -73,15 +76,17 @@ public class SingleSpriteDemo extends PixelWindow {
 }
 ```
 
-### Project Structure ###
+### Project structure ###
 
 The framework functionality is divided into multiple modules which can be imported individually as required.
 
-##### Root Directory Structure #####
+##### Root directory structure #####
 
     .build/                         # Bundle .jar files (run 'bundle' gradle task)
     .demos/                         # Feature showroom and learning examples
     .extensions/                    # Extensions for the framework (optional)
+        ├── ext-ecs                 # Entity component system extension
+        ├── ext-ecs-extra           # ECS utility components
         ├── ext-gui                 # GUI extension *WIP*
         ├── ext-ldtk                # LDTK extension
         ├── ext-log4j2              # Log4j2 extension
@@ -95,8 +100,8 @@ The framework functionality is divided into multiple modules which can be import
         └── images                  # Project resource images
     .build.gradle                   # Gradle build file
     .settings.gradle                # Gradle settings file
-    
-##### Inner Module Structure #####
+
+##### Inner module structure #####
 
     .modules/
         └── *module*                 # Presented file structure similar in all modules
@@ -107,19 +112,26 @@ The framework functionality is divided into multiple modules which can be import
             │   ├── main             # Module Main Source classes
             │   └── test             # Module Test Source classes
             └── build.gradle         # Module Gradle build file (contains inner dependency definitions)
-   
-### Setup Requirements ###
 
-1. Java 11+ (up-to version 17)
-2. Gradle 7.x+
+### Development requirements ###
+
+- Java 11+
+- Gradle 7.x+
+
+### Runtime OS compatibility ###
+
+Pretty much the same as the [LWJGL](https://www.lwjgl.org/) dependency, which includes:
+
+- Windows (x86, x64, arm64)
+- MacOS (x64, arm64)
+- Linux (x86, x64, arm64, arm32)
 
 ### FAQ ###
 
-**I'm unable to run Pixel on MacOS due to system error**
-
-Add `-XstartOnFirstThread` as a java VM Option before running your project.
+1. I'm unable to run Pixel on MacOS due to system error
+    - Add `-XstartOnFirstThread` as a java VM Option before running your project.
 
 ### Who do I talk to? ###
 
-* Repo owner or admin
-* Other community or team contact
+* It's a bug or a feature request? [Please open an issue](https://github.com/joafalves/pixel-community/issues).
+* Repo owner or moderator.

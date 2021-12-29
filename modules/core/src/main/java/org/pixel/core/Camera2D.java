@@ -122,7 +122,7 @@ public class Camera2D implements Serializable {
         // normalize screen position:
         float nx = 2.0f * screenX / getWidth() - 1.0f;
         float ny = 1.0f - 2.0f * screenY / getHeight();
-        Matrix4 invertMatrix = getViewMatrix().clone();
+        Matrix4 invertMatrix = new Matrix4(getViewMatrix());
         invertMatrix.invert();
 
         return Vector2.transformMatrix4(new Vector2(nx, ny), invertMatrix);

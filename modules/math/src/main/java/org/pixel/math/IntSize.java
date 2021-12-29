@@ -6,6 +6,7 @@
 package org.pixel.math;
 
 import java.io.Serializable;
+import lombok.Builder;
 
 public class IntSize implements Serializable {
 
@@ -18,6 +19,7 @@ public class IntSize implements Serializable {
      * @param width  The width of the size.
      * @param height The height of the size.
      */
+    @Builder
     public IntSize(int width, int height) {
         this.width = width;
         this.height = height;

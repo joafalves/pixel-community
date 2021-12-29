@@ -12,7 +12,7 @@ public interface Drawable {
     /**
      * Draw function.
      *
-     * @param delta Time since last draw.
+     * @param delta The time since the last update.
      */
     void draw(DeltaTime delta);
 }
