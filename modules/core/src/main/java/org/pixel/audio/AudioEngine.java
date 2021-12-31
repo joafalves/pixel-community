@@ -152,10 +152,10 @@ public class AudioEngine {
     }
 
     /**
-     * Get the playing time position of the given Sound instance.
+     * Get the playing time position of the given Sound instance (in seconds).
      *
      * @param sound The Sound instance to get the time position of.
-     * @return The time position of the given Sound instance.
+     * @return The time position of the given Sound instance (in seconds).
      */
     public static synchronized float getTimePosition(Sound sound) {
         AL11.alGetSourcef(sound.getSourcePointer(), AL11.AL_SEC_OFFSET, readBufferFloat);
