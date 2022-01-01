@@ -131,8 +131,12 @@ Pretty much the same as the [LWJGL](https://www.lwjgl.org/) dependency, which in
 1. I'm unable to run Pixel on MacOS due to system error
     - Add `-XstartOnFirstThread` as a java VM Option before running your project.
 2. Is Pixel compatible with Kotlin?
-    - Yes, the framework is fully compatible with Kotlin. Check
+    - Yes, Pixel is fully compatible with Kotlin. Check
       this [demo](https://github.com/joafalves/pixel-community/tree/devel/demos/kotlin) for an example.
+3. Is Pixel available as a Maven dependency?
+    - Yes, Pixel is available as a public Maven
+      dependency. [Click here](https://github.com/joafalves/pixel-community/wiki/1.-Getting-Started) for more details on
+      how to import using Maven or Gradle.
 
 ### Who do I talk to? ###
 
