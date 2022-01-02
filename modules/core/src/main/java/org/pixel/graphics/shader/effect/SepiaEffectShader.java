@@ -34,7 +34,7 @@ public class SepiaEffectShader extends Shader {
     /**
      * Constructor.
      *
-     * @param amount The amount of sepia.
+     * @param amount The amount of sepia (0 to 1).
      */
     public SepiaEffectShader(float amount) {
         super(vertSrc, fragSrc, attributes, uniforms);

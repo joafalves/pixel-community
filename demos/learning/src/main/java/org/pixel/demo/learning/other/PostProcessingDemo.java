@@ -10,7 +10,7 @@ import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.sprite.SingleSpriteDemo;
 import org.pixel.graphics.render.ShaderPostProcessor;
-import org.pixel.graphics.shader.effect.PixelerEffectShader;
+import org.pixel.graphics.shader.effect.SepiaEffectShader;
 
 public class PostProcessingDemo extends SingleSpriteDemo {
 
@@ -26,7 +26,7 @@ public class PostProcessingDemo extends SingleSpriteDemo {
 
         // note: try using org.pixel.learning.other shaders.. or make your own! :)
         pp = new ShaderPostProcessor(
-                new PixelerEffectShader(100, 100), getVirtualWidth(), getVirtualHeight());
+                new SepiaEffectShader(1f), getVirtualWidth(), getVirtualHeight());
     }
 
     @Override
@@ -43,7 +43,7 @@ public class PostProcessingDemo extends SingleSpriteDemo {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(600, 480);
+        WindowSettings settings = new WindowSettings(600, 320);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);

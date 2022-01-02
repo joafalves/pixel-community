@@ -20,10 +20,7 @@ public class SingleSpriteDemo extends DemoGame {
 
     private ContentManager content;
     private SpriteBatch spriteBatch;
-
     private Texture spriteTex;
-    private Vector2 spritePos;
-    private Vector2 spriteAnchor;
 
     public SingleSpriteDemo(WindowSettings settings) {
         super(settings);
@@ -40,11 +37,7 @@ public class SingleSpriteDemo extends DemoGame {
         spriteBatch = new SpriteBatch();
 
         // load texture into memory
-        spriteTex = content.load("images/earth-48x48.png", Texture.class);
-
-        // related org.pixel.learning.sprite properties
-        spriteAnchor = Vector2.half();
-        spritePos = new Vector2(getVirtualWidth() / 2f, getVirtualHeight() / 2f);
+        spriteTex = content.load("images/screenshot-600x320.png", Texture.class);
     }
 
     @Override
@@ -58,7 +51,7 @@ public class SingleSpriteDemo extends DemoGame {
         spriteBatch.begin(gameCamera.getViewMatrix(), BlendMode.NORMAL_BLEND);
 
         // org.pixel.learning.sprite definition for this drawing phase:
-        spriteBatch.draw(spriteTex, spritePos, Color.WHITE, spriteAnchor, 3f);
+        spriteBatch.draw(spriteTex, Vector2.ZERO, Color.WHITE);
 
         // end and draw all sprites stored:
         spriteBatch.end();
@@ -72,7 +65,7 @@ public class SingleSpriteDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(600, 480);
+        WindowSettings settings = new WindowSettings(600, 320);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
