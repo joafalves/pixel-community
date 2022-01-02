@@ -29,6 +29,7 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
     @Override
     public void update(DeltaTime delta) {
         if (components != null && !components.isEmpty()) {
+            // do not replace with for-each (can result in concurrent modification exception)
             for (int i = 0; i < components.size(); i++) {
                 var component = components.get(i);
                 if (component.isEnabled()) {

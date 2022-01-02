@@ -38,7 +38,8 @@ public class GameScene extends GameObjectContainer implements Updatable, Drawabl
     @Override
     public void update(DeltaTime delta) {
         var children = getChildren();
-        for (int i = 0; i < children.size(); i++) { // this for loop is to avoid concurrent modification exception while iterating
+        // do not replace with for-each (can result in concurrent modification exception)
+        for (int i = 0; i < children.size(); i++) {
             if (children.get(i).isEnabled()) {
                 children.get(i).update(delta);
             }
