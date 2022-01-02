@@ -11,7 +11,6 @@ import org.pixel.graphics.render.RenderEngine2D;
 public class PrimitivesDemo extends DemoGame {
 
     private RenderEngine2D re;
-    private Color fillColor;
 
     /**
      * Constructor
@@ -25,44 +24,60 @@ public class PrimitivesDemo extends DemoGame {
     @Override
     public void load() {
         re = new NvgRenderEngine(getViewportWidth(), getViewportHeight());
-        fillColor = Color.GOLD;
     }
 
     @Override
     public void draw(DeltaTime delta) {
         re.begin();
         re.strokeWidth(6);
-        re.fillColor(fillColor);
 
         // rectangle
         re.beginPath();
-        re.rectangle(10,10, 50, 50);
+        re.rectangle(10, 10, 280, 180);
         re.endPath();
-        re.stroke(); // apply stroke
-        re.fill(); // apply fill
+        re.stroke();
+        re.fillColor(Color.RED);
+        re.fill();
 
         // circle
         re.beginPath();
-        re.circle(getViewportWidth() / 2.f, getViewportHeight() / 2.f, 50);
+        re.circle(450, 100, 80);
         re.endPath();
-        re.stroke(); // apply stroke
-        re.fill(); // apply fill
+        re.stroke();
+        re.fillColor(Color.GREEN);
+        re.fill();
 
-        // triangle
+        // triangle left
         re.beginPath();
-        re.moveTo(100, 60);
-        re.lineTo(120, 80);
-        re.lineTo(80, 80);
+        re.moveTo(10, 210);
+        re.lineTo(260, 210);
+        re.lineTo(10, 390);
         re.endPath();
+        re.stroke();
+        re.fillColor(Color.BLUE);
+        re.fill();
 
-        re.stroke(); // apply stroke
-        re.fill(); // apply fill
+        // triangle right
+        re.beginPath();
+        re.moveTo(280, 210);
+        re.lineTo(280, 390);
+        re.lineTo(30, 390);
+        re.endPath();
+        re.stroke();
+        re.fillColor(Color.CORAL);
+        re.fill();
+
+        re.beginPath();
+        re.moveTo(310, 210);
+        re.quadraticCurveTo(450, 390, 590, 210);
+        re.stroke();
+        re.beginPath();
 
         re.end();
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(600, 480);
+        WindowSettings settings = new WindowSettings(600, 400);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
