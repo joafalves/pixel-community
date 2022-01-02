@@ -1,9 +1,10 @@
 package org.pixel.ext.ecs;
 
+import java.io.Serializable;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
 
-public class Transform {
+public class Transform implements Serializable {
 
     private GameObject gameObject;
 

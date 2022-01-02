@@ -1,5 +1,6 @@
 package org.pixel.ext.ecs;
 
+import java.io.Serializable;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.commons.lifecycle.Updatable;
@@ -7,7 +8,7 @@ import org.pixel.ext.ecs.lifecycle.Attachable;
 import org.pixel.graphics.SpriteDrawable;
 import org.pixel.graphics.render.SpriteBatch;
 
-public abstract class GameComponent implements Attachable, Updatable, SpriteDrawable, Disposable {
+public abstract class GameComponent implements Attachable, Updatable, SpriteDrawable, Disposable, Serializable {
 
     private String name;
     private GameObject gameObject;

@@ -1,11 +1,12 @@
 package org.pixel.ext.ecs;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import org.pixel.commons.AttributeMap;
 import org.pixel.commons.lifecycle.Disposable;
 
-public abstract class GameObjectContainer implements Disposable {
+public abstract class GameObjectContainer implements Disposable, Serializable {
 
     private final AttributeMap attributeMap;
 
