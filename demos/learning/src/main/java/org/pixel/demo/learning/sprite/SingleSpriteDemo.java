@@ -6,11 +6,11 @@
 package org.pixel.demo.learning.sprite;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
+import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
@@ -59,6 +59,7 @@ public class SingleSpriteDemo extends DemoGame {
 
     @Override
     public void dispose() {
+        super.dispose();
         content.dispose();
         spriteBatch.dispose();
         spriteTex.dispose();

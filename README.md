@@ -126,6 +126,8 @@ Pretty much the same as the [LWJGL](https://www.lwjgl.org/) dependency, which in
 - MacOS (x64, arm64)
 - Linux (x86, x64, arm64, arm32)
 
+> Requires OpenGL 3.3+ support.
+
 ### FAQ ###
 
 1. I'm unable to run Pixel on MacOS due to system error

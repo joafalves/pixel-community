@@ -62,9 +62,9 @@ import org.pixel.commons.attribute.Solidity;
 import org.pixel.commons.attribute.VerticalAlignment;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.shader.ShaderManager;
-import org.pixel.math.Size;
 import org.pixel.math.Matrix4;
 import org.pixel.math.Rectangle;
+import org.pixel.math.Size;
 import org.pixel.math.Vector2;
 
 public class NvgRenderEngine extends RenderEngine2D {

@@ -7,15 +7,24 @@ package org.pixel.graphics.render;
 
 import static org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11C.GL_DEPTH_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11C.GL_STENCIL_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11C.GL_FLOAT;
 import static org.lwjgl.opengl.GL11C.GL_LINEAR;
 import static org.lwjgl.opengl.GL11C.GL_RGBA;
+import static org.lwjgl.opengl.GL11C.GL_RGBA8;
+import static org.lwjgl.opengl.GL11C.GL_STENCIL_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MAG_FILTER;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MIN_FILTER;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_S;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_T;
 import static org.lwjgl.opengl.GL11C.GL_TRIANGLES;
+import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_BYTE;
+import static org.lwjgl.opengl.GL11C.glBindTexture;
 import static org.lwjgl.opengl.GL11C.glClear;
 import static org.lwjgl.opengl.GL11C.glDrawArrays;
 import static org.lwjgl.opengl.GL11C.glGenTextures;
+import static org.lwjgl.opengl.GL11C.glTexImage2D;
+import static org.lwjgl.opengl.GL11C.glTexParameteri;
 import static org.lwjgl.opengl.GL12C.GL_CLAMP_TO_EDGE;
 import static org.lwjgl.opengl.GL30C.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL30C.GL_COLOR_ATTACHMENT0;
@@ -49,6 +58,7 @@ import static org.lwjgl.opengl.GL30C.glRenderbufferStorageMultisample;
 import static org.lwjgl.opengl.GL30C.glUniform1f;
 import static org.lwjgl.opengl.GL30C.glVertexAttribPointer;
 
+import java.nio.ByteBuffer;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
@@ -87,7 +97,8 @@ public class RenderBuffer implements Disposable {
     private void setupRenderBuffer() {
         glBindFramebuffer(GL_FRAMEBUFFER, msfbo);
         glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGBA, (int) sourceArea.getWidth(), (int) sourceArea.getHeight());
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGBA, (int) sourceArea.getWidth(),
+                (int) sourceArea.getHeight());
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             LOG.error("Failed to initialize MSFBO.");
@@ -95,17 +106,20 @@ public class RenderBuffer implements Disposable {
 
         if (texture == null) {
             texture = new Texture(glGenTextures());
-            texture.bind();
-            texture.setTextureWrap(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
-            texture.setTextureMinMag(GL_LINEAR, GL_LINEAR);
+            glBindTexture(GL_TEXTURE_2D, texture.getId());
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         } else {
-            texture.bind();
+            glBindTexture(GL_TEXTURE_2D, texture.getId());
         }
 
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        texture.setData(null, (int) sourceArea.getWidth(), (int) sourceArea.getHeight());
-        texture.unbind();
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, (int) sourceArea.getWidth(), (int) sourceArea.getHeight(), 0, GL_RGBA,
+                GL_UNSIGNED_BYTE, (ByteBuffer) null);
+        glBindTexture(GL_TEXTURE_2D, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.getId(), 0);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             LOG.error("Failed to initialize FBO.");
@@ -182,7 +196,7 @@ public class RenderBuffer implements Disposable {
 
         // Render textured quad
         glActiveTexture(GL_TEXTURE0);
-        texture.bind();
+        glBindTexture(GL_TEXTURE_2D, texture.getId());
         glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
@@ -191,9 +205,9 @@ public class RenderBuffer implements Disposable {
     /**
      * Set source area.
      *
-     * @param x Top left x coordinate.
-     * @param y Top left y coordinate.
-     * @param width Width.
+     * @param x      Top left x coordinate.
+     * @param y      Top left y coordinate.
+     * @param width  Width.
      * @param height Height.
      */
     public void setSourceArea(float x, float y, float width, float height) {

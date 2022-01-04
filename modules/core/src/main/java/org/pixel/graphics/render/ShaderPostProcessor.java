@@ -7,7 +7,17 @@ package org.pixel.graphics.render;
 
 import static org.lwjgl.opengl.GL11C.GL_ONE;
 import static org.lwjgl.opengl.GL11C.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11C.GL_RGBA;
+import static org.lwjgl.opengl.GL11C.GL_RGBA8;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MAG_FILTER;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MIN_FILTER;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_S;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_T;
+import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_BYTE;
+import static org.lwjgl.opengl.GL11C.glBindTexture;
 import static org.lwjgl.opengl.GL11C.glBlendFunc;
+import static org.lwjgl.opengl.GL11C.glTexImage2D;
+import static org.lwjgl.opengl.GL11C.glTexParameteri;
 import static org.lwjgl.opengl.GL12C.GL_CLAMP_TO_EDGE;
 import static org.lwjgl.opengl.GL15C.glDeleteBuffers;
 import static org.lwjgl.opengl.GL30C.GL_ARRAY_BUFFER;
@@ -50,6 +60,7 @@ import static org.lwjgl.opengl.GL30C.glRenderbufferStorageMultisample;
 import static org.lwjgl.opengl.GL30C.glUniform1f;
 import static org.lwjgl.opengl.GL30C.glVertexAttribPointer;
 
+import java.nio.ByteBuffer;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
@@ -76,9 +87,9 @@ public class ShaderPostProcessor implements PostProcessor {
     /**
      * Constructor.
      *
-     * @param shader  Shader to use.
-     * @param width   Width of the post-processed texture.
-     * @param height  Height of the post-processed texture.
+     * @param shader Shader to use.
+     * @param width  Width of the post-processed texture.
+     * @param height Height of the post-processed texture.
      */
     public ShaderPostProcessor(Shader shader, int width, int height) {
         if (shader == null) {
@@ -112,18 +123,21 @@ public class ShaderPostProcessor implements PostProcessor {
 
         if (texture == null) {
             texture = new Texture(glGenTextures());
-            texture.bind();
-            texture.setTextureWrap(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
-            texture.setTextureMinMag(GL_NEAREST, GL_NEAREST);
+            glBindTexture(GL_TEXTURE_2D, texture.getId());
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         } else {
-            texture.bind();
+            glBindTexture(GL_TEXTURE_2D, texture.getId());
         }
 
         // initialize fbo/texture for shader operations
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        texture.setData(null, intSize.getWidth(), intSize.getHeight());
-        texture.unbind();
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, intSize.getWidth(), intSize.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                (ByteBuffer) null);
+        glBindTexture(GL_TEXTURE_2D, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.getId(), 0);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             LOG.error("Failed to initialize FBO.");
@@ -213,7 +227,7 @@ public class ShaderPostProcessor implements PostProcessor {
 
         // Render textured quad
         glActiveTexture(GL_TEXTURE0);
-        texture.bind();
+        glBindTexture(GL_TEXTURE_2D, texture.getId());
 
         glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, 6);

@@ -7,7 +7,17 @@ package org.pixel.content.importer;
 
 import static org.lwjgl.opengl.GL11C.GL_NEAREST;
 import static org.lwjgl.opengl.GL11C.GL_REPEAT;
+import static org.lwjgl.opengl.GL11C.GL_RGBA;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MAG_FILTER;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MIN_FILTER;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_S;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_T;
+import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_BYTE;
+import static org.lwjgl.opengl.GL11C.glBindTexture;
 import static org.lwjgl.opengl.GL11C.glGenTextures;
+import static org.lwjgl.opengl.GL11C.glTexImage2D;
+import static org.lwjgl.opengl.GL11C.glTexParameteri;
 import static org.lwjgl.stb.STBImage.stbi_failure_reason;
 import static org.lwjgl.stb.STBImage.stbi_load_from_memory;
 import static org.lwjgl.system.libc.LibCStdlib.free;
@@ -56,16 +66,22 @@ public class TextureImporter implements ContentImporter<Texture> {
             }
 
             // create and setup texture
-            Texture texture = new Texture(glGenTextures());
-            texture.bind();
-            texture.setTextureWrap(wrapS, wrapT);
-            texture.setTextureMinMag(minFilter, magFilter);
-            texture.setData(imageData, w.get(), h.get());
-            texture.unbind();
+            int textureId = glGenTextures();
+            int width = w.get();
+            int height = h.get();
 
+            glBindTexture(GL_TEXTURE_2D, textureId);
+
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+
+            glBindTexture(GL_TEXTURE_2D, 0); // unbind
             free(imageData);
 
-            return texture;
+            return new Texture(textureId, width, height);
 
         } catch (Exception e) {
             log.error("Exception caught!", e);

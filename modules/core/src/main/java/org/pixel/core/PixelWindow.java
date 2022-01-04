@@ -61,19 +61,25 @@ import static org.lwjgl.opengl.GL11C.GL_CULL_FACE;
 import static org.lwjgl.opengl.GL11C.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11C.GL_DEPTH_TEST;
 import static org.lwjgl.opengl.GL11C.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11C.GL_RGBA;
 import static org.lwjgl.opengl.GL11C.GL_SRC_ALPHA;
 import static org.lwjgl.opengl.GL11C.GL_STENCIL_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11C.GL_STENCIL_TEST;
 import static org.lwjgl.opengl.GL11C.GL_TRUE;
+import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_BYTE;
 import static org.lwjgl.opengl.GL11C.glBlendFunc;
 import static org.lwjgl.opengl.GL11C.glClear;
 import static org.lwjgl.opengl.GL11C.glClearColor;
 import static org.lwjgl.opengl.GL11C.glDisable;
 import static org.lwjgl.opengl.GL11C.glEnable;
+import static org.lwjgl.opengl.GL11C.glReadPixels;
 import static org.lwjgl.opengl.GL11C.glViewport;
 import static org.lwjgl.opengl.GL13C.GL_MULTISAMPLE;
+import static org.lwjgl.stb.STBImageWrite.stbi_write_png;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
+import static org.lwjgl.system.MemoryUtil.memAlloc;
+import static org.lwjgl.system.MemoryUtil.memFree;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -438,6 +444,47 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
         if (debugLocalCallback != null) {
             debugLocalCallback.free();
         }
+    }
+
+    /**
+     * Takes a screenshot of the current frame (PNG format).
+     *
+     * @param filename The output filename.
+     * @param opaque   Determine if the image should be opaque (transparency) or not.
+     */
+    public void screenshot(String filename, boolean opaque) {
+        int width = getViewportWidth();
+        int height = getViewportHeight();
+        int stride = width * 4;
+
+        ByteBuffer imageBuffer = memAlloc(width * height * 4);
+        glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, imageBuffer);
+
+        if (opaque) {
+            for (int y = 0, x; y < height; y++) {
+                int row = y * stride;
+                for (x = 0; x < width; x++) {
+                    imageBuffer.put(row + x * 4 + 3, (byte) 255);
+                }
+            }
+        }
+
+        // flip the image data:
+        int i = 0, j = height - 1, k;
+        while (i < j) {
+            int ri = i * stride;
+            int rj = j * stride;
+            for (k = 0; k < width * 4; k++) {
+                byte t = imageBuffer.get(ri + k);
+                imageBuffer.put(ri + k, imageBuffer.get(rj + k));
+                imageBuffer.put(rj + k, t);
+            }
+            i++;
+            j--;
+        }
+
+        stbi_write_png(filename, width, height, 4, imageBuffer, width * 4);
+        memFree(imageBuffer);
     }
 
     /**

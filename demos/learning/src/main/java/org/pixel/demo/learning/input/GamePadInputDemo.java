@@ -84,6 +84,7 @@ public class GamePadInputDemo extends DemoGame {
 
     @Override
     public void dispose() {
+        super.dispose();
         content.dispose();
         spriteBatch.dispose();
         spriteTex.dispose();

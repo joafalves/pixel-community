@@ -3,9 +3,17 @@ package org.pixel.demo.concept.spaceshooter.content;
 import static org.lwjgl.opengl.GL11C.GL_NEAREST;
 import static org.lwjgl.opengl.GL11C.GL_REPEAT;
 import static org.lwjgl.opengl.GL11C.GL_RGBA;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MAG_FILTER;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MIN_FILTER;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_S;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_T;
 import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_BYTE;
+import static org.lwjgl.opengl.GL11C.glBindTexture;
 import static org.lwjgl.opengl.GL11C.glGenTextures;
 import static org.lwjgl.opengl.GL11C.glGetTexImage;
+import static org.lwjgl.opengl.GL11C.glTexImage2D;
+import static org.lwjgl.opengl.GL11C.glTexParameteri;
 import static org.lwjgl.system.libc.LibCStdlib.free;
 
 import java.nio.ByteBuffer;
@@ -19,9 +27,6 @@ import org.pixel.content.TextureFrame;
 
 public class BackgroundTexture extends Texture {
 
-    /**
-     * Constructor
-     */
     public BackgroundTexture() {
         super(glGenTextures());
     }
@@ -36,9 +41,9 @@ public class BackgroundTexture extends Texture {
                 (int) (baseTexture.getWidth() * baseTexture.getHeight() * 4));
         final ByteBuffer data = BufferUtils.createByteBuffer((int) (tw * th * 4));
 
-        baseTexture.bind();
+        glBindTexture(GL_TEXTURE_2D, baseTexture.getId());
         glGetTexImage(GL11C.GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, originalData);
-        baseTexture.unbind();
+        glBindTexture(GL_TEXTURE_2D, 0);
 
         frames.sort(Comparator.comparingInt(o -> o.getAttributes().getInteger("weight", 1)));
 
@@ -56,11 +61,16 @@ public class BackgroundTexture extends Texture {
             }
         }
 
-        bind();
-        setTextureWrap(GL_REPEAT, GL_REPEAT);
-        setTextureMinMag(GL_NEAREST, GL_NEAREST);
-        setData(data.flip(), (int) tw, (int) th);
-        unbind();
+        glBindTexture(GL_TEXTURE_2D, getId());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (int) tw, (int) th, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.flip());
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        width = tw;
+        height = th;
 
         free(originalData);
         free(data);

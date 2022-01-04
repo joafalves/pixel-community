@@ -10,7 +10,7 @@ import org.pixel.content.ContentImporter;
 import org.pixel.content.ContentImporterInfo;
 import org.pixel.content.ImportContext;
 
-@ContentImporterInfo(type = String.class, extension = ".txt")
+@ContentImporterInfo(type = String.class, extension = "*")
 public class TextImporter implements ContentImporter<String> {
 
     @Override

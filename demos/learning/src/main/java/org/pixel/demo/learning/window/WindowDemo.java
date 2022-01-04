@@ -32,7 +32,7 @@ public class WindowDemo extends PixelWindow {
 
     @Override
     public void dispose() {
-
+        super.dispose();
     }
 
     public static void main(String[] args) {

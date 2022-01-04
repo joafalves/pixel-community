@@ -30,8 +30,7 @@ public class GamePad {
      */
     public static GamePadState getState(GamePadIndex index) {
         String name = GLFW.glfwGetJoystickName(index.getValue());
-        if (name != null) {
-            // the controller is connected
+        if (name != null) { // also checks if the controller is connected
             FloatBuffer axes = GLFW.glfwGetJoystickAxes(index.getValue());
             ByteBuffer buttons = GLFW.glfwGetJoystickButtons(index.getValue());
 

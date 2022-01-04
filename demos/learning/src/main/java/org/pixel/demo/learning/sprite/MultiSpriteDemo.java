@@ -72,6 +72,7 @@ public class MultiSpriteDemo extends DemoGame {
 
     @Override
     public void dispose() {
+        super.dispose();
         content.dispose();
         spriteBatch.dispose();
         spriteTexA.dispose();

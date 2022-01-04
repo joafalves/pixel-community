@@ -80,6 +80,7 @@ public class SpaceShooterGame extends PixelWindow {
 
     @Override
     public void dispose() {
+        super.dispose();
         content.dispose();
         gameScene.dispose();
     }

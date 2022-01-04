@@ -43,6 +43,7 @@ public class ContentManager implements Disposable {
         this.addContentImporter(new TextImporter());
         this.addContentImporter(new TexturePackImporter());
         this.addContentImporter(new FontImporter());
+        this.addContentImporter(new ByteBufferImporter());
     }
 
     /**
