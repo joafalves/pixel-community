@@ -15,7 +15,7 @@ import org.pixel.math.Vector2;
  */
 public class Sprite extends GameObject {
 
-    private Texture texture;
+    private transient Texture texture;
     private Rectangle textureSource;
     private Color overlayColor;
     private int sortingDepth;
@@ -77,6 +77,13 @@ public class Sprite extends GameObject {
         var transform = getTransform();
         spriteBatch.draw(texture, transform.getWorldPosition(), textureSource, overlayColor, pivot,
                 transform.getWorldScaleX(), transform.getWorldScaleY(), transform.getWorldRotation(), sortingDepth);
+    }
+
+    @Override
+    public GameObject copy() {
+        var copy = (Sprite) super.copy();
+        copy.texture = this.texture;
+        return copy;
     }
 
     /**

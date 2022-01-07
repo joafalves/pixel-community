@@ -282,5 +282,4 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
             }
         }
     }
-
 }

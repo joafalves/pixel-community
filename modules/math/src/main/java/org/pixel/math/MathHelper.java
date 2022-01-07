@@ -110,10 +110,19 @@ public class MathHelper {
     }
 
     /**
+     * Generates a random true or false value.
+     *
+     * @return True or false.
+     */
+    public static boolean random() {
+        return ThreadLocalRandom.current().nextBoolean();
+    }
+
+    /**
      * Generates a random integer number between two numbers.
      *
-     * @param min The minimum value.
-     * @param max The maximum value.
+     * @param min The minimum value (inclusive).
+     * @param max The maximum value (exclusive).
      * @return The random integer number.
      */
     public static int random(int min, int max) {
@@ -123,8 +132,8 @@ public class MathHelper {
     /**
      * Generates a random float number between two numbers.
      *
-     * @param min The minimum value.
-     * @param max The maximum value.
+     * @param min The minimum value (inclusive).
+     * @param max The maximum value (exclusive).
      * @return The random float number.
      */
     public static float random(float min, float max) {

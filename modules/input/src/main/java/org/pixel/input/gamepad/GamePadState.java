@@ -5,10 +5,11 @@
 
 package org.pixel.input.gamepad;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
-public class GamePadState {
+public class GamePadState implements Serializable {
 
     private final String name;
     private final ByteBuffer buttonState;

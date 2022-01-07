@@ -6,13 +6,18 @@ import org.pixel.content.ContentManager;
 import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
+import org.pixel.demo.concept.commons.TitleFpsCounter;
 import org.pixel.demo.concept.commons.component.PlayerBoundaryComponent;
 import org.pixel.demo.concept.spaceshooter.component.PlayerInputComponent;
 import org.pixel.demo.concept.spaceshooter.content.BackgroundTexture;
 import org.pixel.demo.concept.spaceshooter.entity.BackgroundSprite;
+import org.pixel.demo.concept.spaceshooter.entity.EnemySpawner;
 import org.pixel.demo.concept.spaceshooter.entity.PlayerSprite;
+import org.pixel.ext.ecs.GameObject;
 import org.pixel.ext.ecs.GameScene;
+import org.pixel.ext.ecs.Sprite;
 import org.pixel.ext.ecs.component.ConstantVelocityComponent;
+import org.pixel.ext.ecs.component.SpriteAnimationComponent;
 import org.pixel.math.Boundary;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Rectangle;
@@ -20,8 +25,9 @@ import org.pixel.math.Vector2;
 
 public class SpaceShooterGame extends PixelWindow {
 
-    public static final EventDispatcher EVENT = new EventDispatcher();
+    public static final EventDispatcher $ = new EventDispatcher();
 
+    private TitleFpsCounter fpsCounter;
     private Camera2D gameCamera;
     private ContentManager content;
 
@@ -33,44 +39,64 @@ public class SpaceShooterGame extends PixelWindow {
 
     @Override
     public void load() {
+        fpsCounter = new TitleFpsCounter(this);
         content = new ContentManager();
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
 
         // content load
         var texturePack = content.loadTexturePack("spaceshooter/spritemap.json");
+        var engineFireTexture = content.loadTexture("spaceshooter/engine_fire_multiphase.png");
 
         // game scene
         gameScene = new GameScene("MainScene", gameCamera);
 
         // instances
-        var playerSprite = new PlayerSprite(texturePack.getFrame("player-ship"));
-        playerSprite.getTransform().setPosition(getVirtualWidth() / 2.f, getVirtualHeight() / 2.f);
-        playerSprite.getTransform().setRotation(MathHelper.PIo2);
-        playerSprite.addComponent(new PlayerInputComponent());
-        playerSprite.addComponent(new ConstantVelocityComponent(new Vector2(0, 40.f)));
-        playerSprite.addComponent(
-                new PlayerBoundaryComponent(
-                        new Boundary(gameCamera.getPositionX(), gameCamera.getPositionY(),
-                                gameCamera.getWidth(), gameCamera.getHeight())));
-
-        var bgTex = new BackgroundTexture();
-        bgTex.setData(texturePack.getTexture(), texturePack.getFrames("bg-01", "bg-02", "bg-03", "bg-04"),
+        var backgroundTexture = new BackgroundTexture();
+        backgroundTexture.setData(texturePack.getTexture(), texturePack.getFrames("bg-01", "bg-02", "bg-03", "bg-04"),
                 20, 15);
-
-        var backgroundSprite = new BackgroundSprite("backgroundTexture", bgTex,
+        var backgroundSprite = new BackgroundSprite("backgroundTexture", backgroundTexture,
                 new Rectangle(0, 0, getVirtualWidth(), getVirtualHeight()),
                 new Rectangle(0, 0, getVirtualWidth(), getVirtualHeight()));
         backgroundSprite.getTransform().setScale(getVirtualWidth(), getVirtualHeight());
-
-        // add entities to scene:
         gameScene.addChild(backgroundSprite);
+
+        var bulletContainer = new GameObject("BulletContainer");
+        gameScene.addChild(bulletContainer);
+
+        var playerSprite = new PlayerSprite(texturePack.getFrame("player-ship"));
+        playerSprite.getAttributeMap().put(SpaceShooterAttribute.BULLET_CONTAINER, bulletContainer);
+        playerSprite.getAttributeMap().put(SpaceShooterAttribute.BULLET1_FRAME, texturePack.getFrame("bullet1"));
+        playerSprite.getTransform().setPosition(getVirtualWidth() / 2.f, getVirtualHeight() / 2.f);
+        playerSprite.getTransform().setRotation(-MathHelper.PIo2);
+        playerSprite.addComponent(new PlayerInputComponent());
+        playerSprite.addComponent(new ConstantVelocityComponent(new Vector2(0, 55.f)));
+        playerSprite.addComponent(
+                new PlayerBoundaryComponent(new Boundary(0, 0, gameCamera.getWidth(), gameCamera.getHeight())));
         gameScene.addChild(playerSprite);
+
+        var engineFireSprite = new Sprite("EngineFire", engineFireTexture);
+        engineFireSprite.getTransform().setRotation(MathHelper.PIo2);
+        engineFireSprite.getTransform().setScale(1.4f);
+        engineFireSprite.getTransform().setPosition(24, 0);
+        playerSprite.addChild(engineFireSprite);
+
+        var engineFireAnimationComponent = new SpriteAnimationComponent(11, 11, 20);
+        engineFireAnimationComponent.setPreFrame(4);
+        engineFireAnimationComponent.setStartFrame(30);
+        engineFireAnimationComponent.setEndFrame(119);
+        engineFireSprite.addComponent(engineFireAnimationComponent);
+        engineFireAnimationComponent.play(true);
+
+        var enemySpawner = new EnemySpawner("EnemySpawner", new Rectangle(0, 0, getVirtualWidth(), 50),
+                texturePack.getFrame("enemy-ship1"), texturePack.getFrame("enemy-ship2"), playerSprite);
+        gameScene.addChild(enemySpawner);
     }
 
     @Override
     public void update(DeltaTime delta) {
         gameScene.update(delta);
+        fpsCounter.update(delta);
     }
 
     @Override

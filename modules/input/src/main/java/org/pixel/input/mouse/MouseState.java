@@ -5,9 +5,10 @@
 
 package org.pixel.input.mouse;
 
+import java.io.Serializable;
 import java.util.HashMap;
 
-public class MouseState {
+public class MouseState implements Serializable {
 
     //region properties
 

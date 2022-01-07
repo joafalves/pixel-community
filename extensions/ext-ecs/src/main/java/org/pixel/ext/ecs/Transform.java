@@ -89,6 +89,7 @@ public class Transform implements Serializable {
      */
     public void lookAt(Vector2 target) {
         this.rotation = MathHelper.direction(this.getWorldPosition(), target);
+        this.setDirtyAndPropagate();
     }
 
     /**

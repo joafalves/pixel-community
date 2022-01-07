@@ -426,7 +426,7 @@ public class Matrix4 implements Serializable {
      * @param axis  The axis to rotate along.
      */
     public void rotate(float angle, Vector3 axis) {
-        // axis.normalize(); // should do this to prevent issues.. but Math.sqrt is quite costly..
+        // axis.normalize(); // should do this to prevent issues... but Math.sqrt is quite costly...
         this.rotate(angle, axis.getX(), axis.getY(), axis.getZ());
     }
 
@@ -440,7 +440,7 @@ public class Matrix4 implements Serializable {
      */
     public void rotate(float angle, float x, float y, float z) {
         float c = MathHelper.cos(angle);
-        float s = MathHelper.sin(angle);
+        float s = MathHelper.sin(-angle); // y-axis is inverted in Pixel
 
         m[0][0] = x * x * (1f - c) + c;
         m[1][0] = y * x * (1f - c) + z * s;

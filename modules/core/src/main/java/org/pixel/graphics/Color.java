@@ -5,7 +5,9 @@
 
 package org.pixel.graphics;
 
-public class Color {
+import java.io.Serializable;
+
+public class Color implements Serializable {
 
     //region <static>
 

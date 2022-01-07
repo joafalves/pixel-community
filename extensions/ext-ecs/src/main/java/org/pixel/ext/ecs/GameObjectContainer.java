@@ -1,5 +1,9 @@
 package org.pixel.ext.ecs;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,11 +12,11 @@ import org.pixel.commons.lifecycle.Disposable;
 
 public abstract class GameObjectContainer implements Disposable, Serializable {
 
-    private final AttributeMap attributeMap;
+    private transient AttributeMap attributeMap = new AttributeMap();
 
     private String name;
     private List<GameObject> children;
-    private GameObjectContainer parent;
+    private transient GameObjectContainer parent;
 
     private boolean disposed;
 
@@ -22,7 +26,6 @@ public abstract class GameObjectContainer implements Disposable, Serializable {
      * @param name The name of the container.
      */
     public GameObjectContainer(String name) {
-        this.attributeMap = new AttributeMap();
         this.name = name;
         this.parent = null;
         this.children = null;
@@ -41,6 +44,33 @@ public abstract class GameObjectContainer implements Disposable, Serializable {
             }
         }
         this.disposed = true;
+    }
+
+    /**
+     * Creates and returns a copied instance of this game object.
+     *
+     * @return A copied instance of this game object.
+     */
+    public GameObjectContainer copy() {
+        //Serialization of object
+        try {
+            var bos = new ByteArrayOutputStream();
+            var out = new ObjectOutputStream(bos);
+            out.writeObject(this);
+
+            //De-serialization of object
+            var bis = new ByteArrayInputStream(bos.toByteArray());
+            var in = new ObjectInputStream(bis);
+
+            var copy = (GameObjectContainer) in.readObject();
+            copy.attributeMap = new AttributeMap();
+            copy.attributeMap.putAll(this.attributeMap);
+
+            return copy;
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

@@ -1,5 +1,6 @@
 package org.pixel.ext.ecs;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ public class Text extends GameObject {
     private final List<TextLine> textLineList;
     private final Vector2 pivot;
     private Color color;
-    private Font font;
+    private transient Font font;
     private String text;
     private Alignment alignment;
     private int fontSize;
@@ -87,6 +88,13 @@ public class Text extends GameObject {
         for (TextLine textLine : textLineList) {
             spriteBatch.drawText(font, textLine.text, textLine.position, color, fontSize);
         }
+    }
+
+    @Override
+    public GameObjectContainer copy() {
+        var copy = (Text) super.copy();
+        copy.font = this.font;
+        return copy;
     }
 
     /**
@@ -293,7 +301,7 @@ public class Text extends GameObject {
     }
 
     @RequiredArgsConstructor
-    private static class TextLine {
+    private static class TextLine implements Serializable {
 
         private final Vector2 position = new Vector2();
         private final String text;
