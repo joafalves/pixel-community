@@ -22,10 +22,10 @@ dependencies {
 }
 
 application {
-    mainClass = 'org.pixel.concept.spaceshooter.SpaceShooterGame'
+    mainClass = 'org.pixel.demo.concept.spaceshooter.SpaceShooterGame'
 }
 
 launch4j {
-    mainClassName = 'org.pixel.concept.spaceshooter.SpaceShooterGame'
+    mainClassName = 'org.pixel.demo.concept.spaceshooter.SpaceShooterGame'
     // icon = "${projectDir}/icons/myApp.ico"
 }

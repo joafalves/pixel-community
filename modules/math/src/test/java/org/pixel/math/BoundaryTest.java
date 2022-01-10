@@ -17,9 +17,9 @@ public class BoundaryTest {
         b = new Boundary(new Vector2(5, 5), new Vector2(20, 5), new Vector2(5, 20), new Vector2(20, 20));
         c = new Boundary(new Vector2(15, 15), new Vector2(20, 15), new Vector2(15, 20), new Vector2(20, 20));
 
-        Assertions.assertTrue(a.overlapsWith(b));
-        Assertions.assertFalse(a.overlapsWith(c));
-        Assertions.assertTrue(b.overlapsWith(c));
+        Assertions.assertTrue(a.overlaps(b));
+        Assertions.assertFalse(a.overlaps(c));
+        Assertions.assertTrue(b.overlaps(c));
     }
 
 }

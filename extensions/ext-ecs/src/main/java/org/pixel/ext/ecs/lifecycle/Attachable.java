@@ -1,8 +1,6 @@
 package org.pixel.ext.ecs.lifecycle;
 
-import org.pixel.ext.ecs.GameObject;
-
-public interface Attachable {
+public interface Attachable<T> {
 
     /**
      * Called when a new parent is attached.
@@ -10,12 +8,12 @@ public interface Attachable {
      * @param parent         The new parent.
      * @param previousParent The previous parent or null if there was none.
      */
-    void attached(GameObject parent, GameObject previousParent);
+    void attached(T parent, T previousParent);
 
     /**
      * Called when a parent is detached.
      *
      * @param previousParent The previous parent.
      */
-    void detached(GameObject previousParent);
+    void detached(T previousParent);
 }

@@ -130,7 +130,7 @@ public class Boundary implements Serializable {
      * @param other The other boundary.
      * @return True if overlapping, false otherwise.
      */
-    public boolean overlapsWith(Boundary other) {
+    public boolean overlaps(Boundary other) {
         return overlap(this, other);
     }
 

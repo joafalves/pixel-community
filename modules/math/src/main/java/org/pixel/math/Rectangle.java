@@ -290,41 +290,41 @@ public class Rectangle implements Serializable {
     }
 
     /**
-     * Checks if the rectangle intersect with another.
+     * Checks if the rectangle overlap with another.
      *
      * @param other The other rectangle.
-     * @return True if the rectangles intersect, false otherwise.
+     * @return True if the rectangles overlaps, false otherwise.
      */
-    public boolean intersects(Rectangle other) {
-        return intersects(x, y, width, height, other.x, other.y, other.width, other.height);
+    public boolean overlaps(Rectangle other) {
+        return overlaps(x, y, width, height, other.x, other.y, other.width, other.height);
     }
 
     /**
-     * Checks if this rectangle intersects the given rectangle.
+     * Checks if this rectangle overlap the given rectangle.
      *
      * @param x      The x coordinate of the rectangle.
      * @param y      The y coordinate of the rectangle.
      * @param width  The width of the rectangle.
      * @param height The height of the rectangle.
-     * @return True if the rectangles intersect, false otherwise.
+     * @return True if the rectangles overlaps, false otherwise.
      */
-    public boolean intersects(float x, float y, float width, float height) {
-        return intersects(this.x, this.y, this.width, this.height, x, y, width, height);
+    public boolean overlaps(float x, float y, float width, float height) {
+        return overlaps(this.x, this.y, this.width, this.height, x, y, width, height);
     }
 
     /**
-     * Checks if the given rectangles intersect with each other.
+     * Checks if the given rectangles overlap with each other.
      *
      * @param a The first rectangle.
      * @param b The second rectangle.
-     * @return True if the rectangles intersect, false otherwise.
+     * @return True if the rectangles overlaps, false otherwise.
      */
-    public static boolean intersects(Rectangle a, Rectangle b) {
-        return intersects(a.x, a.y, a.width, a.height, b.x, b.y, b.width, b.height);
+    public static boolean overlaps(Rectangle a, Rectangle b) {
+        return overlaps(a.x, a.y, a.width, a.height, b.x, b.y, b.width, b.height);
     }
 
     /**
-     * Checks if the given rectangles intersect with each other.
+     * Checks if the given rectangles overlap with each other.
      *
      * @param ax The x coordinate of the first rectangle.
      * @param ay The y coordinate of the first rectangle.
@@ -334,9 +334,9 @@ public class Rectangle implements Serializable {
      * @param by The y coordinate of the second rectangle.
      * @param bw The width of the second rectangle.
      * @param bh The height of the second rectangle.
-     * @return True if the rectangles intersect, false otherwise.
+     * @return True if the rectangles overlaps, false otherwise.
      */
-    public static boolean intersects(float ax, float ay, float aw, float ah, float bx, float by, float bw, float bh) {
+    public static boolean overlaps(float ax, float ay, float aw, float ah, float bx, float by, float bw, float bh) {
         float tw = aw;
         float th = ah;
         float rw = bw;

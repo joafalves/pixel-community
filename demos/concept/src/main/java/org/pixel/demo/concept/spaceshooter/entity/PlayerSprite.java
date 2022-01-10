@@ -22,7 +22,7 @@ public class PlayerSprite extends SpaceShipSprite {
     private static final float BULLET_SPEED = 350f;
 
     public PlayerSprite(TextureFrame textureFrame) {
-        super("player", textureFrame, 10);
+        super("Player", textureFrame, 10);
         subscribeEvents();
     }
 
@@ -37,6 +37,7 @@ public class PlayerSprite extends SpaceShipSprite {
 
     private Sprite createBullet(float x, float y) {
         var bullet = new Sprite("bullet", (TextureFrame) getAttributeMap().get(SpaceShooterAttribute.BULLET1_FRAME));
+        bullet.getAttributeMap().put(SpaceShooterAttribute.BULLET_TYPE, 0); // 0 = player
         bullet.getTransform().setPosition(x, y);
         bullet.getTransform().setRotation(-MathHelper.PIo2);
         bullet.addComponent(new ConstantVelocityComponent(new Vector2(0, -BULLET_SPEED)));

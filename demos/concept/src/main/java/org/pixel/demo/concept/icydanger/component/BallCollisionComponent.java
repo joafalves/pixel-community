@@ -32,7 +32,7 @@ public class BallCollisionComponent extends GameComponent {
         // enemy collision check
         var enemyBoundingRect = enemySprite.getBoundingRect();
         enemyBoundingRect.shrink(9f, 5f);
-        if (boundingRect.intersects(enemyBoundingRect)) {
+        if (boundingRect.overlaps(enemyBoundingRect)) {
             var animComponent = enemySprite.getComponent(FlashAnimationComponent.class);
             if (!animComponent.isPlaying()) {
                 // please notice that this is for demonstration purposes only, ideally there should be a manager
@@ -49,7 +49,7 @@ public class BallCollisionComponent extends GameComponent {
 
         // static collision check
         for (Rectangle collisionRect : collisionList) {
-            if (boundingRect.intersects(collisionRect)) {
+            if (boundingRect.overlaps(collisionRect)) {
                 var stackPositionX = (position.getX() > collisionRect.getX() + collisionRect.getWidth() / 2)
                         ? collisionRect.getX() + collisionRect.getWidth() : collisionRect.getX();
 

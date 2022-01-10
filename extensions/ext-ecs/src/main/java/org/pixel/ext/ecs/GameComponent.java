@@ -8,7 +8,8 @@ import org.pixel.ext.ecs.lifecycle.Attachable;
 import org.pixel.graphics.SpriteDrawable;
 import org.pixel.graphics.render.SpriteBatch;
 
-public abstract class GameComponent implements Attachable, Updatable, SpriteDrawable, Disposable, Serializable {
+public abstract class GameComponent implements Attachable<GameObject>, Updatable, SpriteDrawable, Disposable,
+        Serializable {
 
     private String name;
     private GameObject gameObject;

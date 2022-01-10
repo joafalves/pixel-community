@@ -96,25 +96,6 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
     }
 
     /**
-     * Remove a component from the game object.
-     *
-     * @param component The component to remove.
-     * @return True if the component was removed, false otherwise.
-     */
-    public boolean removeComponent(GameComponent component) {
-        if (components == null) {
-            return false;
-        }
-
-        if (components.remove(component)) {
-            component.setGameObject(null);
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Get the components of this game object.
      *
      * @return The components of this game object.

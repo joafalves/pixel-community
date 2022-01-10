@@ -9,15 +9,15 @@ import java.util.ArrayList;
 import java.util.List;
 import org.pixel.commons.AttributeMap;
 import org.pixel.commons.lifecycle.Disposable;
+import org.pixel.ext.ecs.lifecycle.Attachable;
 
-public abstract class GameObjectContainer implements Disposable, Serializable {
+public abstract class GameObjectContainer implements Attachable<GameObjectContainer>, Disposable, Serializable {
 
     private transient AttributeMap attributeMap = new AttributeMap();
 
-    private String name;
     private List<GameObject> children;
     private transient GameObjectContainer parent;
-
+    private String name;
     private boolean disposed;
 
     /**
@@ -28,8 +28,18 @@ public abstract class GameObjectContainer implements Disposable, Serializable {
     public GameObjectContainer(String name) {
         this.name = name;
         this.parent = null;
-        this.children = null;
+        this.children = new ArrayList<>();
         this.disposed = false;
+    }
+
+    @Override
+    public void attached(GameObjectContainer parent, GameObjectContainer previousParent) {
+        // intentionally left blank
+    }
+
+    @Override
+    public void detached(GameObjectContainer previousParent) {
+        // intentionally left blank
     }
 
     /**
@@ -74,23 +84,11 @@ public abstract class GameObjectContainer implements Disposable, Serializable {
     }
 
     /**
-     * Initializes the children list.
-     */
-    protected void initializeChildrenList() {
-        if (children == null) {
-            children = new ArrayList<>();
-        }
-    }
-
-    /**
      * Add a child GameObject to this instance.
      *
      * @param child The child to add.
      */
     public void addChild(GameObject child) {
-        if (children == null) {
-            children = new ArrayList<>();
-        }
         children.add(child);
         child.setParent(this);
     }
@@ -220,7 +218,8 @@ public abstract class GameObjectContainer implements Disposable, Serializable {
     }
 
     /**
-     * Remove a child from this game object.
+     * Remove a child from this game object. Use this function outside the game loop, or it may cause a concurrent
+     * modification exception. To remove a child safely, use {@link #dispose()} instead.
      *
      * @param child The child to remove.
      * @return True if the child was removed, false otherwise.
@@ -261,25 +260,14 @@ public abstract class GameObjectContainer implements Disposable, Serializable {
      * @param parent The parent of this game object.
      */
     protected void setParent(GameObjectContainer parent) {
+        var previousParent = this.getParent();
         this.parent = parent;
-    }
 
-    /**
-     * Detaches itself from its parent (if any).
-     *
-     * @return The parent of this game object or null if there was no parent.
-     */
-    public GameObjectContainer detach() {
-        if (parent == null) {
-            return null;
+        if (parent != null) {
+            attached(parent, previousParent);
+        } else {
+            detached(previousParent);
         }
-
-        var parent = this.parent;
-        if (parent.removeChild(this)) {
-            return parent;
-        }
-
-        return null;
     }
 
     /**

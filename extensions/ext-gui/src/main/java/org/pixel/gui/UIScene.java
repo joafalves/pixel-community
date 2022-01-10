@@ -169,7 +169,7 @@ public class UIScene implements Updatable, Drawable {
                 * context.getWindowDimensions().getPixelRatio();
 
         Rectangle bounds = component.getBounds();
-        if (Rectangle.intersects(mpx, mpy, 1, 1,
+        if (Rectangle.overlaps(mpx, mpy, 1, 1,
                 tx + bounds.getX() - 1, ty + bounds.getY() - 1, bounds.getWidth() + 2, bounds.getHeight() + 2)) {
             // mouse is hovering the component..
             component.setState(ComponentState.HOVER);
@@ -192,18 +192,18 @@ public class UIScene implements Updatable, Drawable {
 
         if (component.getParent() == null) {
             // check with viewport bounds:
-            return (Rectangle.intersects(0, 0, context.getViewportWidth(), context.getViewportHeight(),
+            return (Rectangle.overlaps(0, 0, context.getViewportWidth(), context.getViewportHeight(),
                     bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight()));
 
         } else if (component.getParent() != null && component.getParent().getParent() == null) {
-            return Rectangle.intersects(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight(),
+            return Rectangle.overlaps(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight(),
                     0, 0, component.getParent().getBounds().getWidth(), component.getParent().getBounds().getHeight());
 
         } else if (component.getParent() != null && component.getParent().getParent() != null) {
             // nested visibility check:
             Rectangle pBounds1 = component.getParent().getBounds();
             Rectangle pBounds2 = component.getParent().getParent().getBounds();
-            return Rectangle.intersects(bounds.getX() + pBounds1.getX(), bounds.getY() + pBounds1.getY(), bounds.getWidth(), bounds.getHeight(),
+            return Rectangle.overlaps(bounds.getX() + pBounds1.getX(), bounds.getY() + pBounds1.getY(), bounds.getWidth(), bounds.getHeight(),
                     0, 0, pBounds2.getWidth(), pBounds2.getHeight());
         }
 

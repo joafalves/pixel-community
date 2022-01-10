@@ -3,19 +3,23 @@ package org.pixel.demo.concept.spaceshooter;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.event.EventDispatcher;
 import org.pixel.content.ContentManager;
+import org.pixel.content.Texture;
 import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.concept.commons.TitleFpsCounter;
 import org.pixel.demo.concept.commons.component.PlayerBoundaryComponent;
+import org.pixel.demo.concept.spaceshooter.component.CollisionHandlingComponent;
 import org.pixel.demo.concept.spaceshooter.component.PlayerInputComponent;
 import org.pixel.demo.concept.spaceshooter.content.BackgroundTexture;
 import org.pixel.demo.concept.spaceshooter.entity.BackgroundSprite;
-import org.pixel.demo.concept.spaceshooter.entity.EnemySpawner;
+import org.pixel.demo.concept.spaceshooter.entity.EnemyContainer;
 import org.pixel.demo.concept.spaceshooter.entity.PlayerSprite;
+import org.pixel.demo.concept.spaceshooter.model.CollisionData;
 import org.pixel.ext.ecs.GameObject;
 import org.pixel.ext.ecs.GameScene;
 import org.pixel.ext.ecs.Sprite;
+import org.pixel.ext.ecs.component.AutoDisposeComponent;
 import org.pixel.ext.ecs.component.ConstantVelocityComponent;
 import org.pixel.ext.ecs.component.SpriteAnimationComponent;
 import org.pixel.math.Boundary;
@@ -32,6 +36,7 @@ public class SpaceShooterGame extends PixelWindow {
     private ContentManager content;
 
     private GameScene gameScene;
+    private Texture explosionTexture;
 
     public SpaceShooterGame(WindowSettings settings) {
         super(settings);
@@ -47,6 +52,7 @@ public class SpaceShooterGame extends PixelWindow {
         // content load
         var texturePack = content.loadTexturePack("spaceshooter/spritemap.json");
         var engineFireTexture = content.loadTexture("spaceshooter/engine_fire_multiphase.png");
+        explosionTexture = content.loadTexture("spaceshooter/explosion.png");
 
         // game scene
         gameScene = new GameScene("MainScene", gameCamera);
@@ -88,9 +94,18 @@ public class SpaceShooterGame extends PixelWindow {
         engineFireSprite.addComponent(engineFireAnimationComponent);
         engineFireAnimationComponent.play(true);
 
-        var enemySpawner = new EnemySpawner("EnemySpawner", new Rectangle(0, 0, getVirtualWidth(), 50),
-                texturePack.getFrame("enemy-ship1"), texturePack.getFrame("enemy-ship2"), playerSprite);
-        gameScene.addChild(enemySpawner);
+        var enemyContainer = new EnemyContainer("EnemyContainer", new Rectangle(0, 0, getVirtualWidth(), 50),
+                texturePack.getFrame("enemy-ship1"), texturePack.getFrame("enemy-ship2"));
+        gameScene.addChild(enemyContainer);
+
+        var miscContainer = new GameObject("MiscContainer");
+        gameScene.addChild(miscContainer);
+
+        var collisionHandler = new GameObject("CollisionHandler");
+        gameScene.addChild(collisionHandler);
+        collisionHandler.addComponent(new CollisionHandlingComponent());
+
+        bindEvents();
     }
 
     @Override
@@ -109,6 +124,21 @@ public class SpaceShooterGame extends PixelWindow {
         super.dispose();
         content.dispose();
         gameScene.dispose();
+    }
+
+    private void bindEvents() {
+        $.subscribe("collision", CollisionData.class, (data) -> {
+            var explosionSprite = new Sprite("explosion", explosionTexture);
+            explosionSprite.getTransform().setPosition(data.getPosition());
+            var animationComponent = new SpriteAnimationComponent(9, 9, 5);
+            explosionSprite.addComponent(animationComponent);
+            explosionSprite.addComponent(new AutoDisposeComponent(5));
+
+            animationComponent.setStartFrame(12);
+            animationComponent.play(false);
+
+            gameScene.addChild(explosionSprite);
+        });
     }
 
     public static void main(String[] args) {

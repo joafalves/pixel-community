@@ -32,7 +32,6 @@ public class GameScene extends GameObjectContainer implements Updatable, Drawabl
         super(name);
         this.gameCamera = gameCamera;
         this.spriteBatch = spriteBatch;
-        this.initializeChildrenList();
     }
 
     @Override
