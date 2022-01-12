@@ -15,7 +15,7 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
 
     private transient AttributeMap attributeMap = new AttributeMap();
 
-    private List<GameObject> children;
+    private final List<GameObject> children;
     private transient GameObjectContainer parent;
     private String name;
     private boolean disposed;
@@ -48,7 +48,7 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
      */
     @Override
     public void dispose() {
-        if (children != null && !children.isEmpty()) {
+        if (!children.isEmpty()) {
             for (GameObject child : children) {
                 child.dispose();
             }
@@ -100,11 +100,9 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
      * @return The child with the given name or null if not found.
      */
     public GameObject getChild(String name) {
-        if (children != null) {
-            for (var child : children) {
-                if (name.equals(child.getName())) {
-                    return child;
-                }
+        for (var child : children) {
+            if (name.equals(child.getName())) {
+                return child;
             }
         }
         return null;
@@ -118,11 +116,9 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
      */
     public List<GameObject> getChildren(String name) {
         List<GameObject> result = new ArrayList<>();
-        if (children != null) {
-            for (var child : children) {
-                if (child.getName().equals(name)) {
-                    result.add(child);
-                }
+        for (var child : children) {
+            if (child.getName().equals(name)) {
+                result.add(child);
             }
         }
 
@@ -137,16 +133,14 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
      */
     public List<GameObject> getAllChildren(String name) {
         List<GameObject> result = new ArrayList<>();
-        if (children != null) {
-            for (var child : children) {
-                if (name.equals(child.getName())) {
-                    result.add(child);
-                }
+        for (var child : children) {
+            if (name.equals(child.getName())) {
+                result.add(child);
+            }
 
-                var childResult = child.getAllChildren(name);
-                if (childResult != null) {
-                    result.addAll(childResult);
-                }
+            var childResult = child.getAllChildren(name);
+            if (childResult != null) {
+                result.addAll(childResult);
             }
         }
 
@@ -162,16 +156,14 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
      */
     public <T> List<T> getAllChildren(Class<T> type) {
         List<T> result = new ArrayList<>();
-        if (children != null) {
-            for (var child : children) {
-                if (type.isAssignableFrom(child.getClass())) {
-                    result.add((T) child);
-                }
+        for (var child : children) {
+            if (type.isAssignableFrom(child.getClass())) {
+                result.add((T) child);
+            }
 
-                var childResult = child.getAllChildren(type);
-                if (childResult != null) {
-                    result.addAll(childResult);
-                }
+            var childResult = child.getAllChildren(type);
+            if (childResult != null) {
+                result.addAll(childResult);
             }
         }
 
@@ -186,11 +178,9 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
      * @return The child with the given type or null if not found.
      */
     public <T> T getChild(Class<T> type) {
-        if (children != null) {
-            for (var child : children) {
-                if (type.isAssignableFrom(child.getClass())) {
-                    return (T) child;
-                }
+        for (var child : children) {
+            if (type.isAssignableFrom(child.getClass())) {
+                return (T) child;
             }
         }
 
@@ -206,11 +196,9 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
      */
     public <T> List<T> getChildren(Class<T> type) {
         List<T> result = new ArrayList<>();
-        if (children != null) {
-            for (var child : children) {
-                if (type.isAssignableFrom(child.getClass())) {
-                    result.add((T) child);
-                }
+        for (var child : children) {
+            if (type.isAssignableFrom(child.getClass())) {
+                result.add((T) child);
             }
         }
 
@@ -225,12 +213,10 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
      * @return True if the child was removed, false otherwise.
      */
     public boolean removeChild(GameObjectContainer child) {
-        if (children != null) {
-            boolean removed = children.remove(child);
-            if (removed && child.getParent() == this) {
-                child.setParent(null);
-                return true;
-            }
+        boolean removed = children.remove(child);
+        if (removed && child.getParent() == this) {
+            child.setParent(null);
+            return true;
         }
         return false;
     }
