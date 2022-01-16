@@ -4,7 +4,6 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.content.TextureFrame;
 import org.pixel.ext.ecs.GameObject;
 import org.pixel.ext.ecs.GameObjectContainer;
-import org.pixel.ext.ecs.Sprite;
 import org.pixel.ext.ecs.component.AutoDisposeComponent;
 import org.pixel.ext.ecs.component.MoveTowardsComponent;
 import org.pixel.math.MathHelper;
@@ -84,13 +83,5 @@ public class EnemyContainer extends GameObject {
         return new Vector2(
                 MathHelper.random(spawnArea.getX(), spawnArea.getX() + spawnArea.getWidth()),
                 MathHelper.random(spawnArea.getY(), spawnArea.getY() + spawnArea.getHeight()));
-    }
-
-    private Sprite createEnemy() {
-        return null;
-    }
-
-    private Sprite createEnemySpanner() {
-        return null;
     }
 }

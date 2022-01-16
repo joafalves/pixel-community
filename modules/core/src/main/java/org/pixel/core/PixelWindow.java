@@ -101,6 +101,7 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.data.ImageData;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.commons.lifecycle.Drawable;
+import org.pixel.commons.lifecycle.Initializable;
 import org.pixel.commons.lifecycle.Loadable;
 import org.pixel.commons.lifecycle.Updatable;
 import org.pixel.commons.logger.Logger;
@@ -111,7 +112,7 @@ import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.mouse.Mouse;
 import org.pixel.math.IntSize;
 
-public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disposable {
+public abstract class PixelWindow implements Initializable, Loadable, Updatable, Drawable, Disposable {
 
     private static final String DEFAULT_WINDOW_ICON_PATH_64 = "engine/images/app-icon@64.png";
     private static final String DEFAULT_WINDOW_ICON_PATH_32 = "engine/images/app-icon@32.png";
@@ -137,6 +138,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
     private boolean initialized;
     private boolean windowFocused;
     private boolean vsyncEnabled;
+    private boolean autoWindowClear;
 
     /**
      * Constructor.
@@ -155,6 +157,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
         this.windowTitle = settings.getWindowTitle();
         this.windowMode = settings.getWindowMode();
         this.idleThrottling = settings.isIdleThrottle();
+        this.autoWindowClear = settings.isAutoWindowClear();
         this.windowDimensions = WindowDimensions.builder()
                 .windowWidth(settings.getWindowWidth())
                 .windowHeight(settings.getWindowHeight())
@@ -173,8 +176,11 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
 
     /**
      * Initializes the window and rendering context.
+     *
+     * @return True if the window was initialized successfully.
      */
-    public void init() {
+    @Override
+    public boolean init() {
         if (initialized) {
             throw new RuntimeException("This game class has already been initialized");
         }
@@ -303,7 +309,7 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
             AL.createCapabilities(alcCapabilities);
 
         } catch (Exception e) {
-            log.error("Exception caught!", e);
+            log.error("Exception caught while initializing the audio device!", e);
         }
 
         // call implementation loading method
@@ -312,6 +318,40 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
         load();
 
         initialized = true;
+
+        return true;
+    }
+
+    @Override
+    public void load() {
+        // empty by design (not abstract to make this optional)
+    }
+
+    @Override
+    public void update(DeltaTime delta) {
+        // empty by design (not abstract to make this optional)
+    }
+
+    @Override
+    public void draw(DeltaTime delta) {
+        // empty by design (not abstract to make this optional)
+    }
+
+    @Override
+    public void dispose() {
+        alcCloseDevice(audioDevice);
+        alcDestroyContext(audioContext);
+
+        if (debugLocalCallback != null) {
+            debugLocalCallback.free();
+        }
+    }
+
+    /**
+     * Clear the render window.
+     */
+    public void clear() {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // clear the screen
     }
 
     /**
@@ -386,7 +426,9 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
         // Run the rendering loop until the user has attempted to close
         // the windowHnd or has pressed the ESCAPE key.
         while (!glfwWindowShouldClose(windowHandle)) {
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // clear the screen
+            if (autoWindowClear) {
+                clear();
+            }
 
             // call the game user loop:
             delta.tick();
@@ -418,31 +460,6 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
 
             // TODO: study the feasibility/impact of implementing a multi-threaded mechanism on the game loop
             // more info: https://github.com/LWJGL/lwjgl3/blob/master/modules/samples/src/test/java/org/lwjgl/demo/glfw/Threads.java
-        }
-    }
-
-    @Override
-    public void load() {
-        // empty by design (not abstract to make this optional)
-    }
-
-    @Override
-    public void update(DeltaTime delta) {
-        // empty by design (not abstract to make this optional)
-    }
-
-    @Override
-    public void draw(DeltaTime delta) {
-        // empty by design (not abstract to make this optional)
-    }
-
-    @Override
-    public void dispose() {
-        alcCloseDevice(audioDevice);
-        alcDestroyContext(audioContext);
-
-        if (debugLocalCallback != null) {
-            debugLocalCallback.free();
         }
     }
 
@@ -800,5 +817,23 @@ public abstract class PixelWindow implements Loadable, Updatable, Drawable, Disp
      */
     public long getWindowHandle() {
         return windowHandle;
+    }
+
+    /**
+     * Get if the render window is automatically cleared before the rendering phase.
+     *
+     * @return
+     */
+    public boolean isAutoWindowClear() {
+        return autoWindowClear;
+    }
+
+    /**
+     * Set if the render window is automatically cleared before the rendering phase.
+     *
+     * @param autoWindowClear The automatic clear state.
+     */
+    public void setAutoWindowClear(boolean autoWindowClear) {
+        this.autoWindowClear = autoWindowClear;
     }
 }

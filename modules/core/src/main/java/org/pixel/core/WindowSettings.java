@@ -28,6 +28,7 @@ public class WindowSettings {
     private boolean vsync;
     private boolean debugMode;
     private boolean idleThrottle;
+    private boolean autoWindowClear;
 
     //endregion
 
@@ -51,6 +52,7 @@ public class WindowSettings {
         this.windowMode = WindowMode.WINDOWED;
         this.multisampling = 0;
         this.debugMode = false;
+        this.autoWindowClear = true;
         this.backgroundColor = Color.CORNFLOWER_BLUE;
     }
 

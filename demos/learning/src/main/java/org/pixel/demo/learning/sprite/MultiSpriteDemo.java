@@ -83,7 +83,7 @@ public class MultiSpriteDemo extends DemoGame {
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
-        settings.setDebugMode(true);
+        settings.setDebugMode(false);
 
         PixelWindow window = new MultiSpriteDemo(settings);
         window.start();

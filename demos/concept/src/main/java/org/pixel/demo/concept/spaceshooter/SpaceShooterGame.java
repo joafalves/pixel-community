@@ -147,7 +147,7 @@ public class SpaceShooterGame extends PixelWindow {
         WindowSettings settings = new WindowSettings(width / 2, height / 2);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
-        settings.setVsync(true);
+        settings.setVsync(false);
         settings.setDebugMode(false);
         settings.setWindowWidth(width);
         settings.setWindowHeight(height);
