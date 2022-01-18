@@ -2,13 +2,11 @@
 
 ![](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20MacOS-lightgrey) ![](https://img.shields.io/badge/java-%3E%3D%2011-green)
 
-# README #
+## Pixel Framework ##
 
 ### What is this repository for? ###
 
 This repository contains the Pixel Java Framework and associated modules/dependencies.
-
-> **BETA 0.6.0 is expected to be released in January 2022!**
 
 ### Description ###
 
@@ -16,8 +14,11 @@ The Pixel Framework aims to provide a high performance and lightweight OpenGL 2D
 heavily influenced by the popular XNA framework and is built on top of the [LWJGL](https://www.lwjgl.org/)
 and [GLFW](https://www.glfw.org/) projects.
 
-:book: For practical details on how to use this framework, please check
-our [wiki page](https://github.com/joafalves/pixel-community/wiki).
+> :book: For practical details on how to use this framework, please check
+the [wiki page](https://github.com/joafalves/pixel-community/wiki).
+
+Pixel is designed to be modular and easy to extend. Check [here](https://github.com/joafalves/pixel-community/wiki/E.-Extensions-Overview) for more
+details on how to use the available extensions (or how to create your own).
 
 ### Examples ##
 
@@ -70,6 +71,7 @@ public class SingleSpriteDemo extends PixelWindow {
     public void dispose() {
         content.dispose();
         spriteBatch.dispose();
+        super.dispose();
     }
 }
 ```
@@ -137,6 +139,8 @@ Pretty much the same as the [LWJGL](https://www.lwjgl.org/) dependency, which in
     - Yes, Pixel is available as a public Maven
       dependency. [Click here](https://github.com/joafalves/pixel-community/wiki/1.-Getting-Started) for more details on
       how to import using Maven or Gradle.
+4. Is Pixel free?
+    - Yes, Pixel is completely free to use and distribute as an application dependency.
 
 ### Who do I talk to? ###
 
