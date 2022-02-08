@@ -49,7 +49,6 @@ public class Text extends GameObject {
         this(name, font, text, color, Alignment.LEFT);
     }
 
-
     /**
      * Constructor.
      *

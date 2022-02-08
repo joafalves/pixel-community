@@ -156,13 +156,11 @@ public class SpriteBatch extends DrawBatch {
         }
 
         // draw the sprite data..
-        for (int i = 0, count = 1; i < bufferCount; i++) {
+        for (int i = 0, count = 0; i < bufferCount; i++) {
             SpriteData spriteData = this.spriteData[i];
             if (!spriteData.active) {
                 continue; // skip inactive sprites
             }
-
-            count++;
 
             // texture checkup:
             if (lastTextureId != spriteData.textureId) {
@@ -170,7 +168,7 @@ public class SpriteBatch extends DrawBatch {
                 if (lastTextureId >= 0) {
                     // yes, which means we have something to render..
                     flushBatch(count);
-                    count = 1;
+                    count = 0;
                     dataBuffer.clear();
                 }
 
@@ -181,6 +179,7 @@ public class SpriteBatch extends DrawBatch {
             }
 
             processSpriteData(spriteData);
+            count++;
             spriteData.active = false;
 
             if (i == bufferCount - 1) {
