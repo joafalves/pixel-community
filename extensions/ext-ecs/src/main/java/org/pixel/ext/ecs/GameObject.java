@@ -29,21 +29,20 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
     @Override
     public void update(DeltaTime delta) {
         if (components != null && !components.isEmpty()) {
-            // do not replace with for-each (can result in concurrent modification exception)
-            for (int i = 0; i < components.size(); i++) {
-                var component = components.get(i);
+            for (Iterator<GameComponent> iterator = components.iterator(); iterator.hasNext(); ) {
+                var component = iterator.next();
                 if (component.isEnabled()) {
                     component.update(delta);
                 }
-            }
-
-            components.removeIf(gameComponent -> {
-                if (gameComponent.isDisposed()) {
-                    gameComponent.setGameObject(null);
-                    return true;
+                if (component.isDisposed()) {
+                    component.setGameObject(null);
+                    iterator.remove();
                 }
-                return false;
-            });
+                if (isDisposed()) {
+                    // any of the attached components can call the "dispose()", that's why this validation exists...
+                    return;
+                }
+            }
         }
 
         var children = getChildren();

@@ -27,6 +27,9 @@ import org.pixel.content.TextureFrame;
 
 public class BackgroundTexture extends Texture {
 
+    private ByteBuffer imageData;
+    private ByteBuffer imageSourceData;
+
     public BackgroundTexture() {
         super(glGenTextures());
     }
@@ -37,12 +40,17 @@ public class BackgroundTexture extends Texture {
         final float fh = frames.get(0).getSource().getHeight();
         final float tw = fw * blocksX;
         final float th = fh * blocksY;
-        final ByteBuffer originalData = BufferUtils.createByteBuffer(
+
+        if (imageData != null) {
+            free(imageData);
+            free(imageSourceData);
+        }
+        imageSourceData = BufferUtils.createByteBuffer(
                 (int) (baseTexture.getWidth() * baseTexture.getHeight() * 4));
-        final ByteBuffer data = BufferUtils.createByteBuffer((int) (tw * th * 4));
+        imageData = BufferUtils.createByteBuffer((int) (tw * th * 4));
 
         glBindTexture(GL_TEXTURE_2D, baseTexture.getId());
-        glGetTexImage(GL11C.GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, originalData);
+        glGetTexImage(GL11C.GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageSourceData);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         frames.sort(Comparator.comparingInt(o -> o.getAttributes().getInteger("weight", 1)));
@@ -50,13 +58,15 @@ public class BackgroundTexture extends Texture {
         for (int i = 0; i < blocksX * blocksY; i++) {
             TextureFrame frame = pickTextureFrame(frames);
             int ex = (int) (baseTexture.getWidth() * 4.0);
-            for (int x = (int) frame.getSource().getX(); x < frame.getSource().getX() + frame.getSource().getWidth(); x++) {
-                for (int y = (int) frame.getSource().getY(); y < frame.getSource().getY() + frame.getSource().getHeight(); y++) {
+            for (int x = (int) frame.getSource().getX(); x < frame.getSource().getX() + frame.getSource().getWidth();
+                    x++) {
+                for (int y = (int) frame.getSource().getY();
+                        y < frame.getSource().getY() + frame.getSource().getHeight(); y++) {
                     int oxy = y * ex + x * 4;
-                    data.put(originalData.get(oxy));
-                    data.put(originalData.get(oxy + 1));
-                    data.put(originalData.get(oxy + 2));
-                    data.put(originalData.get(oxy + 3));
+                    imageData.put(imageSourceData.get(oxy));
+                    imageData.put(imageSourceData.get(oxy + 1));
+                    imageData.put(imageSourceData.get(oxy + 2));
+                    imageData.put(imageSourceData.get(oxy + 3));
                 }
             }
         }
@@ -66,14 +76,19 @@ public class BackgroundTexture extends Texture {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (int) tw, (int) th, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.flip());
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (int) tw, (int) th, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData.flip());
         glBindTexture(GL_TEXTURE_2D, 0);
 
         width = tw;
         height = th;
+    }
 
-        free(originalData);
-        free(data);
+    @Override
+    public void dispose() {
+        if (imageData != null) {
+            free(imageData);
+        }
+        super.dispose();
     }
 
     private TextureFrame pickTextureFrame(List<TextureFrame> frames) {

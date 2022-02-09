@@ -67,7 +67,7 @@ public class EnemyContainer extends GameObject {
     }
 
     private void spawnSentinelWave() {
-        for (var i = 0; i < 5; i++) {
+        for (var i = 0; i < 20; i++) {
             var sprite = new SpaceShipSprite("Sentinel", sentinelTextureFrame, 3);
             sprite.getTransform().setPosition(generateSpawnPosition());
             sprite.getTransform().setRotation(-MathHelper.PIo2);

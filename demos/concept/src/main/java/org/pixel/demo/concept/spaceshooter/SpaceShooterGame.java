@@ -37,6 +37,7 @@ public class SpaceShooterGame extends PixelWindow {
 
     private GameScene gameScene;
     private Texture explosionTexture;
+    private BackgroundTexture backgroundTexture;
 
     public SpaceShooterGame(WindowSettings settings) {
         super(settings);
@@ -58,7 +59,7 @@ public class SpaceShooterGame extends PixelWindow {
         gameScene = new GameScene("MainScene", gameCamera);
 
         // instances
-        var backgroundTexture = new BackgroundTexture();
+        backgroundTexture = new BackgroundTexture();
         backgroundTexture.setData(texturePack.getTexture(), texturePack.getFrames("bg-01", "bg-02", "bg-03", "bg-04"),
                 20, 15);
         var backgroundSprite = new BackgroundSprite("backgroundTexture", backgroundTexture,
@@ -94,7 +95,7 @@ public class SpaceShooterGame extends PixelWindow {
         engineFireSprite.addComponent(engineFireAnimationComponent);
         engineFireAnimationComponent.play(true);
 
-        var enemyContainer = new EnemyContainer("EnemyContainer", new Rectangle(0, 0, getVirtualWidth(), 50),
+        var enemyContainer = new EnemyContainer("EnemyContainer", new Rectangle(0, -100, getVirtualWidth(), 50),
                 texturePack.getFrame("enemy-ship1"), texturePack.getFrame("enemy-ship2"));
         gameScene.addChild(enemyContainer);
 
@@ -121,9 +122,10 @@ public class SpaceShooterGame extends PixelWindow {
 
     @Override
     public void dispose() {
-        super.dispose();
+        backgroundTexture.dispose();
         content.dispose();
         gameScene.dispose();
+        super.dispose();
     }
 
     private void bindEvents() {

@@ -294,6 +294,16 @@ public class Transform implements Serializable {
     }
 
     /**
+     * Increments the current rotation with the given value.
+     *
+     * @param rotation The rotation to increment with.
+     */
+    public void rotate(float rotation) {
+        this.rotation += rotation;
+        this.setDirtyAndPropagate();
+    }
+
+    /**
      * Set the dirty flag of the transform.
      */
     protected void setDirty() {

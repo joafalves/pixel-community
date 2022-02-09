@@ -11,5 +11,6 @@ dependencies {
     api project(":${rootProject.name}-ext-gui")
     api project(":${rootProject.name}-ext-physics");
     api project(":${rootProject.name}-ext-ecs");
+    api project(":${rootProject.name}-ext-ecs-extra");
     api project(":${rootProject.name}-math");
 }
