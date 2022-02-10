@@ -5,16 +5,20 @@
 
 package org.pixel.content;
 
+import java.nio.ByteBuffer;
+import java.util.concurrent.ConcurrentHashMap;
 import org.pixel.commons.annotations.Nullable;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.commons.util.IOUtils;
-import org.pixel.content.importer.*;
+import org.pixel.content.importer.ByteBufferImporter;
+import org.pixel.content.importer.FontImporter;
+import org.pixel.content.importer.TextImporter;
+import org.pixel.content.importer.TextureImporter;
+import org.pixel.content.importer.TexturePackImporter;
+import org.pixel.content.importer.VorbisAudioImporter;
 import org.pixel.content.importer.settings.ContentImporterSettings;
-
-import java.nio.ByteBuffer;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ContentManager implements Disposable {
 
@@ -227,6 +231,7 @@ public class ContentManager implements Disposable {
         }
 
         ImportContext ctx = new ImportContext(this, resourceData, filepath, settings);
+
         T asset = fileImporter.process(ctx);
         if (useCache && asset != null) {
             assetCache.put(assetRef, asset);
