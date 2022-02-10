@@ -158,7 +158,7 @@ public class Color implements Serializable {
      *
      * @param value [0-1] Red.
      */
-    private void setRed(float value) {
+    public void setRed(float value) {
         this.r = value;
     }
 
@@ -167,7 +167,7 @@ public class Color implements Serializable {
      *
      * @param value [0-1] Green.
      */
-    private void setGreen(float value) {
+    public void setGreen(float value) {
         this.g = value;
     }
 
@@ -176,7 +176,7 @@ public class Color implements Serializable {
      *
      * @param value [0-1] Blue.
      */
-    private void setBlue(float value) {
+    public void setBlue(float value) {
         this.b = value;
     }
 
