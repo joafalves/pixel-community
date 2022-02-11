@@ -8,10 +8,10 @@ package org.pixel.content;
 public interface ContentImporter<T> {
 
     /**
-     * Imports and transforms the content from the given path to the given type.
+     * Processes raw data and returns a content object.
      *
-     * @param ctx The context of the content.
-     * @return The transformed content.
+     * @param ctx The context of the raw content to process.
+     * @return The processed content item.
      */
     T process(ImportContext ctx);
 }

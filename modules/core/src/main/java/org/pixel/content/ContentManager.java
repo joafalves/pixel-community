@@ -5,16 +5,22 @@
 
 package org.pixel.content;
 
+import java.nio.ByteBuffer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import org.pixel.commons.annotations.Nullable;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.commons.util.IOUtils;
-import org.pixel.content.importer.*;
+import org.pixel.content.importer.ByteBufferImporter;
+import org.pixel.content.importer.FontImporter;
+import org.pixel.content.importer.TextImporter;
+import org.pixel.content.importer.TextureImporter;
+import org.pixel.content.importer.TexturePackImporter;
+import org.pixel.content.importer.VorbisAudioImporter;
 import org.pixel.content.importer.settings.ContentImporterSettings;
-
-import java.nio.ByteBuffer;
-import java.util.concurrent.ConcurrentHashMap;
+import org.pixel.pipeline.DataPipeline;
 
 public class ContentManager implements Disposable {
 
@@ -22,6 +28,8 @@ public class ContentManager implements Disposable {
 
     private final ConcurrentHashMap<String, Object> assetCache;
     private final ConcurrentHashMap<Class<?>, ContentImporter<?>> importers;
+
+    private DataPipeline<ByteBuffer> dataPipeline;
 
     /**
      * Constructor
@@ -31,6 +39,26 @@ public class ContentManager implements Disposable {
         this.importers = new ConcurrentHashMap<>();
 
         this.init();
+    }
+
+    /**
+     * Dispose function
+     */
+    @Override
+    public void dispose() {
+        assetCache.forEach((assetName, asset) -> {
+            // dispose all "disposable" assets
+            if (asset instanceof Disposable) {
+                ((Disposable) asset).dispose();
+            }
+        });
+
+        importers.forEach((importerName, importer) -> {
+            // dispose all "disposable" assets
+            if (importer instanceof Disposable) {
+                ((Disposable) importer).dispose();
+            }
+        });
     }
 
     /**
@@ -226,6 +254,16 @@ public class ContentManager implements Disposable {
             return null;
         }
 
+        if (dataPipeline != null) {
+            try {
+                resourceData = dataPipeline.begin(resourceData).get();
+
+            } catch (InterruptedException | ExecutionException e) {
+                log.error("Unable to execute data pipeline on asset '{}'.", filepath, e);
+                return null;
+            }
+        }
+
         ImportContext ctx = new ImportContext(this, resourceData, filepath, settings);
         T asset = fileImporter.process(ctx);
         if (useCache && asset != null) {
@@ -236,22 +274,21 @@ public class ContentManager implements Disposable {
     }
 
     /**
-     * Dispose function
+     * Get the data pipeline configured (if any).
+     *
+     * @return The data pipeline.
      */
-    @Override
-    public void dispose() {
-        assetCache.forEach((assetName, asset) -> {
-            // dispose all "disposable" assets
-            if (asset instanceof Disposable) {
-                ((Disposable) asset).dispose();
-            }
-        });
+    public DataPipeline<ByteBuffer> getDataPipeline() {
+        return dataPipeline;
+    }
 
-        importers.forEach((importerName, importer) -> {
-            // dispose all "disposable" assets
-            if (importer instanceof Disposable) {
-                ((Disposable) importer).dispose();
-            }
-        });
+    /**
+     * Set the data pipeline for this instance. If defined, this pipeline allows custom processing of any asset data
+     * before it's passed to the importer.
+     *
+     * @param dataPipeline The data pipeline to use.
+     */
+    public void setDataPipeline(DataPipeline<ByteBuffer> dataPipeline) {
+        this.dataPipeline = dataPipeline;
     }
 }
