@@ -10,6 +10,7 @@ import java.io.File;
 public class FileUtils {
 
     public static final String FILE_SEPARATOR = "/";
+    public static final String SYSTEM_FILE_SEPARATOR = File.separator;
 
     /**
      * Gets the parent directory of a given path.

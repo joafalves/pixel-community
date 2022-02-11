@@ -209,12 +209,10 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
             glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
         }
 
-        // DEBUG CONTEXT
         if (debugMode) {
             glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
         }
 
-        // Initial values
         windowFocused = true;
 
         // Create the windowHnd
@@ -224,11 +222,8 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
         if (windowHandle == NULL) {
             throw new RuntimeException("Failed to create the GLFW windowHnd");
         }
-
-        // center window in the user screen
         centerWindow();
 
-        // window mode
         GLFWVidMode videoMode;
         if (windowMode.equals(WindowMode.WINDOWED)) {
             // Get the resolution of the primary monitor
@@ -258,11 +253,9 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
         // Make the windowHnd visible
         glfwShowWindow(windowHandle);
 
-        // This line is critical for LWJGL's interoperation with GLFW's
-        // OpenGL context, or any context that is managed externally.
-        // LWJGL detects the context that is current in the current thread,
-        // creates the GLCapabilities instance and makes the OpenGL
-        // bindings available for use.
+        // This line is critical for LWJGL's interoperation with GLFW's OpenGL context, or any context that is managed
+        // externally. LWJGL detects the context that is current in the current thread, creates the GLCapabilities
+        // instance and makes the OpenGL bindings available for use.
         GL.createCapabilities();
         if (debugMode) {
             debugLocalCallback = GLUtil.setupDebugMessageCallback(); // must be called after "createCapabilities()"
@@ -272,13 +265,13 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
         glDisable(GL_CULL_FACE);
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
-        glEnable(GL_MULTISAMPLE); // should be enabled by default but let's be safe
+        glEnable(GL_MULTISAMPLE); // Should be enabled by default but let's be safe
         glEnable(GL_STENCIL_TEST);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         Configuration.DISABLE_CHECKS.set(!debugMode);
 
-        // set resize callback:
+        // Set resize callback:
         glfwSetWindowSizeCallback(windowHandle, (window, width, height) -> {
             windowDimensions.setWindowWidth(width);
             windowDimensions.setWindowHeight(height);
@@ -291,8 +284,7 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
             windowFocused = focused;
         }));
 
-        // setup org.pixel.audio main device
-        try {
+        try { // Attempt to initialize the audio device
             audioDevice = alcOpenDevice((ByteBuffer) null);
             if (audioDevice == NULL) {
                 throw new IllegalStateException("Failed to open the default OpenAL device.");
@@ -310,9 +302,10 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
 
         } catch (Exception e) {
             log.error("Exception caught while initializing the audio device!", e);
+            return false;
         }
 
-        // call implementation loading method
+        // Call implementation loading method
         updateViewport();
         setWindowIcon(DEFAULT_WINDOW_ICON_PATH_64, DEFAULT_WINDOW_ICON_PATH_32);
         load();
@@ -404,11 +397,9 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
             throw new RuntimeException("init() must be called before running the game..");
         }
 
-        // start the main loop:
         renderLoop();
 
-        // finalize
-        dispose(); // call for graceful termination..
+        dispose();
 
         glfwDestroyWindow(windowHandle);
         glfwTerminate();
@@ -423,27 +414,17 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
 
         glClearColor(backgroundColor.getRed(), backgroundColor.getGreen(), backgroundColor.getBlue(), 0.0f);
 
-        // Run the rendering loop until the user has attempted to close
-        // the windowHnd or has pressed the ESCAPE key.
         while (!glfwWindowShouldClose(windowHandle)) {
             if (autoWindowClear) {
                 clear();
             }
 
-            // call the game user loop:
             delta.tick();
 
-            // update call
             update(delta);
-
-            // draw call
             draw(delta);
 
-            // swap the color buffers
             glfwSwapBuffers(windowHandle);
-
-            // Poll for windowHnd events. The key callback above will only be
-            // invoked during this call.
             glfwPollEvents();
 
             if (!windowFocused && idleThrottling) {
@@ -456,8 +437,6 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
             }
 
             // TODO: frame cap mechanism (when v-sync is off)
-            // the possibility to run the game in low-resource usage should be available when the windows isn't focused
-
             // TODO: study the feasibility/impact of implementing a multi-threaded mechanism on the game loop
             // more info: https://github.com/LWJGL/lwjgl3/blob/master/modules/samples/src/test/java/org/lwjgl/demo/glfw/Threads.java
         }

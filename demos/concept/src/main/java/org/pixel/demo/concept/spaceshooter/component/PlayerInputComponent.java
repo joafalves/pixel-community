@@ -17,7 +17,7 @@ public class PlayerInputComponent extends GameComponent {
 
     private final float SPEED_Y = 150f;
     private final float SPEED_X = 165f;
-    private final float SHOOT_DELAY_MS = 200;
+    private final float SHOOT_DELAY_MS = 150f;
 
     private float shootElapsed = 0f;
 

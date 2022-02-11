@@ -76,6 +76,8 @@ public class SingleSpriteDemo extends PixelWindow {
 }
 ```
 
+> Looking for ECS support? Check [this built-in extension!](https://github.com/joafalves/pixel-community/wiki/E1.-ECS-(Entity-Component-System))
+
 ### Project structure ###
 
 The framework functionality is divided into multiple modules which can be imported individually as required.

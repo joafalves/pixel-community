@@ -13,7 +13,7 @@ public class DeltaTime {
     private float elapsedSeconds;
 
     /**
-     * Constructor
+     * Constructor.
      */
     public DeltaTime() {
         this.startTimestamp = System.currentTimeMillis();

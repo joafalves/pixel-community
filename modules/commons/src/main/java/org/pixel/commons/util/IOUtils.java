@@ -65,7 +65,7 @@ public class IOUtils {
     /**
      * Load file as byte buffer.
      *
-     * @param filepath The file path.
+     * @param filepath The file path (relative paths allowed).
      * @return The byte buffer.
      */
     public static ByteBuffer loadFile(String filepath) {

@@ -295,7 +295,7 @@ public class Color implements Serializable {
      * @param hex The hexadecimal color string.
      * @return The color.
      */
-    private static Color fromHex(String hex) {
+    public static Color fromHex(String hex) {
         if (!hex.startsWith("#")) {
             return null;
         }
@@ -362,7 +362,6 @@ public class Color implements Serializable {
                         Float.parseFloat(parts[2].trim()) / 255.f,
                         Float.parseFloat(parts[3].trim()));
             }
-
         }
 
         return null;

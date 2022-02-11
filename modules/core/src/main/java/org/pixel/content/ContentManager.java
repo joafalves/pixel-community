@@ -32,13 +32,23 @@ public class ContentManager implements Disposable {
     private DataPipeline<ByteBuffer> dataPipeline;
 
     /**
-     * Constructor
+     * Constructor. By default, includes all internal importers.
      */
     public ContentManager() {
         this.assetCache = new ConcurrentHashMap<>();
         this.importers = new ConcurrentHashMap<>();
+        this.addInternalImporters();
+    }
 
-        this.init();
+    /**
+     * Constructor. By default, it only includes the given importers.
+     *
+     * @param importers The importers to include.
+     */
+    public ContentManager(ContentImporter<?>... importers) {
+        this.assetCache = new ConcurrentHashMap<>();
+        this.importers = new ConcurrentHashMap<>();
+        addContentImporter(importers);
     }
 
     /**
@@ -64,14 +74,15 @@ public class ContentManager implements Disposable {
     /**
      * Init function
      */
-    private void init() {
+    private void addInternalImporters() {
         // default importers:
-        this.addContentImporter(new TextureImporter());
-        this.addContentImporter(new VorbisAudioImporter());
-        this.addContentImporter(new TextImporter());
-        this.addContentImporter(new TexturePackImporter());
-        this.addContentImporter(new FontImporter());
-        this.addContentImporter(new ByteBufferImporter());
+        this.addContentImporter(
+                new TextureImporter(),
+                new VorbisAudioImporter(),
+                new FontImporter(),
+                new TextImporter(),
+                new TexturePackImporter(),
+                new ByteBufferImporter());
     }
 
     /**
@@ -88,16 +99,20 @@ public class ContentManager implements Disposable {
     /**
      * Add a custom content importer to the content manager.
      *
-     * @param importer The importer to add.
+     * @param importers The importer(s) to add.
      */
-    public void addContentImporter(ContentImporter<?> importer) {
-        ContentImporterInfo importerDetails = importer.getClass().getAnnotation(ContentImporterInfo.class);
-        if (importerDetails == null) {
-            log.warn("Unable to add content importer without ContentImporter annotation.");
-            return;
-        }
+    public void addContentImporter(ContentImporter<?>... importers) {
+        for (ContentImporter<?> importer : importers) {
+            var importerDetails = importer.getClass().getAnnotation(ContentImporterInfo.class);
+            if (importerDetails == null) {
+                log.warn("Unable to add content importer without ContentImporter annotation.");
+                return;
+            }
 
-        this.importers.put(importerDetails.type(), importer);
+            log.trace("Adding content importer '{}' to ContentManager.", importer.getClass().getSimpleName());
+
+            this.importers.put(importerDetails.type(), importer);
+        }
     }
 
     /**

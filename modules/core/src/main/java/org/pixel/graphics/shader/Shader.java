@@ -157,7 +157,6 @@ public abstract class Shader implements Disposable {
         return attributeLocationMap.get(name);
     }
 
-
     @Override
     public void dispose() {
         glDeleteShader(vertId);
