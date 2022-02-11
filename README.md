@@ -95,7 +95,8 @@ The framework functionality is divided into multiple modules which can be import
         ├── commons                 # Common utility classes
         ├── core                    # Main module, contains principal classes
         ├── input                   # Input module (Keyboard, Gamepad, Mouse)
-        └── math                    # Math module (Vector, Matrix, etc)
+        ├── math                    # Math module (Vector, Matrix, etc)
+        └── pipeline                # Pipeline processing module
     .resources/
         └── images                  # Project resource images
     .build.gradle                   # Gradle build file
