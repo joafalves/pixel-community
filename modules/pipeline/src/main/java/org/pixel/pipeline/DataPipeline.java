@@ -40,6 +40,7 @@ public class DataPipeline<T> {
     public CompletableFuture<T> begin(T data) {
         var future = new CompletableFuture<T>();
         new PipelineContext<>(this, future).next(data);
+
         return future;
     }
 

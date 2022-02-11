@@ -70,14 +70,14 @@ public class ThreadPoolDataPipeline<T> extends DataPipeline<T> implements Dispos
     @Override
     public void dispose() {
         disposed = true;
-        if (this.threadPoolExecutor != null) {
-            this.threadPoolExecutor.shutdownNow();
-            this.threadPoolExecutor.purge();
+        if (threadPoolExecutor != null) {
+            threadPoolExecutor.shutdownNow();
+            threadPoolExecutor.purge();
         }
     }
 
     private void initThreadPool(int threadPoolCoreSize, int threadPoolMaxSize, String threadPrefix) {
-        this.threadPoolExecutor = new ThreadPoolExecutor(threadPoolCoreSize, threadPoolMaxSize, 1L,
+        threadPoolExecutor = new ThreadPoolExecutor(threadPoolCoreSize, threadPoolMaxSize, 1L,
                 TimeUnit.SECONDS, new SynchronousQueue<>(), new NamedThreadFactory(threadPrefix),
                 new ThreadPoolExecutor.CallerRunsPolicy());
     }
