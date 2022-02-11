@@ -1,3 +1,19 @@
+## 0.6.1
+
+### New
+
+* [extension] ECS extra new components (`pixel-ext-ecs-extra`).
+
+### Changes
+
+* [extension] ECS performance improvements.
+* Updated gradlew wrapper (7.0 -> 7.4).
+
+### Fixes
+
+* (#9) Spritebatch drawing counter bug.
+* SpaceShooter demo background texture native buffers.
+
 ## 0.6.0
 
 > **Note**: There is no link for tasks as up until now they were defined using an internal management tool (this is going to change from this version on).
