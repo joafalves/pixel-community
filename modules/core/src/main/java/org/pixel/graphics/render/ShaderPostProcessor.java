@@ -87,9 +87,9 @@ public class ShaderPostProcessor implements PostProcessor {
     /**
      * Constructor.
      *
-     * @param shader Shader to use.
-     * @param width  Width of the post-processed texture.
-     * @param height Height of the post-processed texture.
+     * @param shader The shader to use.
+     * @param width  The width of the post-processed texture.
+     * @param height The height of the post-processed texture.
      */
     public ShaderPostProcessor(Shader shader, int width, int height) {
         if (shader == null) {

@@ -38,8 +38,8 @@ public class NoiseEffectShader extends Shader {
     /**
      * Constructor.
      *
-     * @param amount  The amount of noise to apply.
-     * @param density The density of the noise.
+     * @param amount  The amount of noise to apply (0-1).
+     * @param density The density of the noise (0-1).
      */
     public NoiseEffectShader(float amount, float density) {
         super(vertSrc, fragSrc, attributes, uniforms);

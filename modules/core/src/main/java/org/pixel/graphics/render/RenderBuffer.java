@@ -173,7 +173,6 @@ public class RenderBuffer implements Disposable {
      */
     public void begin() {
         glBindFramebuffer(GL_FRAMEBUFFER, msfbo);
-        //glClearColor(0.0f, 0.0f, 0.5f, 1f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // clear the screen
     }
 
