@@ -11,3 +11,11 @@ plugins {
 dependencies {
     api project(":${rootProject.name}-core")
 }
+
+application {
+    mainClass = 'org.pixel.demo.kotlin.KotlinDemoKt'
+    if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
+        applicationDefaultJvmArgs = ["-XstartOnFirstThread"]
+    }
+}
+

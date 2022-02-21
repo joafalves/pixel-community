@@ -2,6 +2,7 @@
  * This software is available under Apache License
  * Copyright (c) 2020
  */
+import org.gradle.internal.os.OperatingSystem
 
 plugins {
     id 'application'
@@ -23,6 +24,9 @@ dependencies {
 
 application {
     mainClass = 'org.pixel.demo.concept.spaceshooter.SpaceShooterGame'
+    if (OperatingSystem.current().isMacOsX()) {
+        applicationDefaultJvmArgs = ["-XstartOnFirstThread"]
+    }
 }
 
 launch4j {

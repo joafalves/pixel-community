@@ -9,3 +9,10 @@ dependencies {
     implementation "io.github.spair:imgui-java-natives-macos:1.84.1.4"
     implementation "io.github.spair:imgui-java-natives-linux:1.84.1.3"
 }
+
+application {
+    mainClass = 'org.pixel.demo.imgui.ImGuiDemo'
+    if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
+        applicationDefaultJvmArgs = ["-XstartOnFirstThread"]
+    }
+}

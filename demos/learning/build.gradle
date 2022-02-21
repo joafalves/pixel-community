@@ -14,3 +14,10 @@ dependencies {
     api project(":${rootProject.name}-ext-ecs-extra");
     api project(":${rootProject.name}-math");
 }
+
+application {
+    mainClassName = 'org.pixel.demo.learning.sprite.SingleSpriteDemo'
+    if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
+        applicationDefaultJvmArgs = ["-XstartOnFirstThread"]
+    }
+}
