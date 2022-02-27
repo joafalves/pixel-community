@@ -8,7 +8,7 @@ import org.gradle.internal.os.OperatingSystem
 version = "0.7.0"
 
 // Lwjgl Version & Build Target(s)
-def lwjglVersion = "3.3.0"
+def lwjglVersion = "3.3.1"
 def buildTarget = System.properties["BUILD_TARGET"]
 def buildTargetList = []
 if (buildTarget == "all") {
