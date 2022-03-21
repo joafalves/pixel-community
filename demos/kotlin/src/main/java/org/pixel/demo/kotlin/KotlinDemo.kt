@@ -24,7 +24,7 @@ class KotlinDemo(settings: WindowSettings?) : PixelWindow(settings) {
         spriteTexture = content.load("images/earth-48x48.png", Texture::class.java)
     }
 
-    override fun draw(delta: DeltaTime?) {
+    override fun draw(delta: DeltaTime) {
         spriteBatch.begin(gameCamera.viewMatrix, BlendMode.NORMAL_BLEND)
         spriteBatch.draw(spriteTexture, Vector2.ZERO, Color.WHITE, Vector2.HALF, 3f)
         spriteBatch.end()
