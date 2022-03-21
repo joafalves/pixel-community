@@ -11,7 +11,7 @@ import org.pixel.graphics.render.BlendMode
 import org.pixel.graphics.render.SpriteBatch
 import org.pixel.math.Vector2
 
-class KotlinDemo(settings: WindowSettings?) : PixelWindow(settings) {
+class KotlinDemo(settings: WindowSettings) : PixelWindow(settings) {
     private val gameCamera = Camera2D(this)
     private val content = ContentManager()
 
@@ -21,7 +21,7 @@ class KotlinDemo(settings: WindowSettings?) : PixelWindow(settings) {
     override fun load() {
         backgroundColor = Color.BLACK
         spriteBatch = SpriteBatch()
-        spriteTexture = content.load("images/earth-48x48.png", Texture::class.java)
+        spriteTexture = content.loadTexture("images/earth-48x48.png")
     }
 
     override fun draw(delta: DeltaTime) {
@@ -39,7 +39,7 @@ class KotlinDemo(settings: WindowSettings?) : PixelWindow(settings) {
 
 fun main() {
     val settings = WindowSettings(800, 600)
-    settings.setVsync(true)
+    settings.isVsync = true
 
     val window = KotlinDemo(settings)
     window.start()
