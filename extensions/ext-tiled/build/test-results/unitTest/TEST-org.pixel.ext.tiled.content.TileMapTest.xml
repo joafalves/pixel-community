@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.pixel.ext.tiled.content.TileMapTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2022-03-22T10:39:45" hostname="nunoa-manjaro" time="0.038">
-  <properties/>
-  <testcase name="disposeTest()" classname="org.pixel.ext.tiled.content.TileMapTest" time="0.038"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

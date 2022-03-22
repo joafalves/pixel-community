@@ -26,5 +26,6 @@ hs_err_pid*
 .idea/
 .gradle/
 /modules/**/build/
+/extensions/**/build/
 /projects/**/build/
 /demos/**/build/

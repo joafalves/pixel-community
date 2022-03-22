@@ -1,1 +1,0 @@
-typeSearchIndex = [{"l":"All Classes","u":"allclasses-index.html"},{"p":"org.pixel.ext.log4j","l":"Log4j2Logger"},{"p":"org.pixel.ext.log4j","l":"Log4j2LoggerStrategy"}];updateSearchResults();

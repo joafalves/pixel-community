@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.pixel.ext.tiled.content.TileSetTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2022-03-22T10:39:45" hostname="nunoa-manjaro" time="0.053">
-  <properties/>
-  <testcase name="sourceAtFlips()" classname="org.pixel.ext.tiled.content.TileSetTest" time="0.018"/>
-  <testcase name="sourceAtFrame()" classname="org.pixel.ext.tiled.content.TileSetTest" time="0.033"/>
-  <testcase name="disposeTest()" classname="org.pixel.ext.tiled.content.TileSetTest" time="0.001"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

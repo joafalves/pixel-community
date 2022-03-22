@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.pixel.ext.tiled.content.importer.ObjectGroupCollectorTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2022-03-22T10:39:45" hostname="nunoa-manjaro" time="0.012">
-  <properties/>
-  <testcase name="processTopDown()" classname="org.pixel.ext.tiled.content.importer.ObjectGroupCollectorTest" time="0.003"/>
-  <testcase name="process()" classname="org.pixel.ext.tiled.content.importer.ObjectGroupCollectorTest" time="0.005"/>
-  <testcase name="processIndex()" classname="org.pixel.ext.tiled.content.importer.ObjectGroupCollectorTest" time="0.003"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
