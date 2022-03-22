@@ -20,10 +20,26 @@ public class Matrix3 implements Serializable {
     //region constructors
 
     /**
-     * Matrix with identity values
+     * Constructor. Matrix with identity values.
      */
     public Matrix3() {
         setIdentity();
+    }
+
+    /**
+     * Constructor.
+     * @param other The matrix to copy values from.
+     */
+    public Matrix3(Matrix3 other) {
+        this.m[0][0] = other.m[0][0];
+        this.m[0][1] = other.m[0][1];
+        this.m[0][2] = other.m[0][2];
+        this.m[1][0] = other.m[1][0];
+        this.m[1][1] = other.m[1][1];
+        this.m[1][2] = other.m[1][2];
+        this.m[2][0] = other.m[2][0];
+        this.m[2][1] = other.m[2][1];
+        this.m[2][2] = other.m[2][2];
     }
 
     //endregion
@@ -49,7 +65,7 @@ public class Matrix3 implements Serializable {
     //region public methods
 
     /**
-     * Sets the values to a identity matrix
+     * Sets the values to an identity matrix.
      */
     public void setIdentity() {
         m[0][0] = 1.0f;
@@ -64,7 +80,9 @@ public class Matrix3 implements Serializable {
     }
 
     /**
-     * @param matrix
+     * Matrix addition.
+     *
+     * @param matrix The matrix to add.
      */
     public void add(Matrix3 matrix) {
         for (int i = 0; i < m.length; ++i) {
@@ -75,7 +93,9 @@ public class Matrix3 implements Serializable {
     }
 
     /**
-     * @param matrix
+     * Matrix subtraction.
+     *
+     * @param matrix The matrix to subtract.
      */
     public void subtract(Matrix3 matrix) {
         for (int i = 0; i < m.length; ++i) {
@@ -86,7 +106,9 @@ public class Matrix3 implements Serializable {
     }
 
     /**
-     * @param matrix
+     * Matrix multiplication.
+     *
+     * @param matrix The matrix to multiply with.
      */
     public void multiply(Matrix3 matrix) {
         tmp[0][0] = m[0][0] * matrix.m[0][0] + m[0][1] * matrix.m[1][0] + m[0][2] * matrix.m[2][0];
@@ -105,7 +127,9 @@ public class Matrix3 implements Serializable {
     }
 
     /**
-     * @param scalar
+     * Multiplies the matrix by a scalar.
+     *
+     * @param scalar The scalar to multiply with.
      */
     public void multiply(float scalar) {
         for (int i = 0; i < m.length; ++i) {
@@ -116,21 +140,14 @@ public class Matrix3 implements Serializable {
     }
 
     /**
-     *
+     * Multiples each value on the matrix by -1.
      */
     public void negate() {
         multiply(-1.0f);
     }
 
     /**
-     *
-     */
-    public void invert() {
-        throw new RuntimeException("Not implemented");
-    }
-
-    /**
-     *
+     * Transposes the matrix.
      */
     public void transpose() {
         tmp[0][0] = m[0][0];
@@ -149,39 +166,27 @@ public class Matrix3 implements Serializable {
     }
 
     /**
-     * @return
-     */
-    public Matrix3 clone() {
-        Matrix3 matrix = new Matrix3();
-
-        // straight clone doesn't work here due to the array having multiple dimensions..
-        for (int i = 0; i < m.length; ++i) {
-            matrix.m[i] = m[i].clone();
-        }
-
-        return matrix;
-    }
-
-    /**
-     * Clones and returns the array value of the matrix
+     * Clones and returns the array value of the matrix.
      *
-     * @return
+     * @return The cloned array.
      */
     public float[][] toArray() {
         return m.clone();
     }
 
     /**
-     * Returns the original array value of the matrix
+     * Returns the original array value of the matrix.
      *
-     * @return
+     * @return The original array.
      */
     public float[][] toUnsafeArray() {
         return m;
     }
 
     /**
-     * @param buffer
+     * Write matrix values to given float buffer.
+     *
+     * @param buffer The float buffer to write to.
      */
     public void writeBuffer(FloatBuffer buffer) {
         buffer.put(m[0][0]).put(m[1][0]).put(m[2][0]);

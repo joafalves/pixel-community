@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.pixel.ext.tiled.view.TileMapViewTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2022-03-22T10:39:46" hostname="nunoa-manjaro" time="0.048">
+  <properties/>
+  <testcase name="drawImageLayer()" classname="org.pixel.ext.tiled.view.TileMapViewTest" time="0.04"/>
+  <testcase name="emptyConstructor()" classname="org.pixel.ext.tiled.view.TileMapViewTest" time="0.001"/>
+  <testcase name="drawTileLayer()" classname="org.pixel.ext.tiled.view.TileMapViewTest" time="0.001"/>
+  <testcase name="drawObjectGroupLayer()" classname="org.pixel.ext.tiled.view.TileMapViewTest" time="0.001"/>
+  <testcase name="draw()" classname="org.pixel.ext.tiled.view.TileMapViewTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

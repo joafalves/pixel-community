@@ -21,60 +21,54 @@ public class LoggerFactory {
 
     //endregion
 
-    //region Private Functions
-
-
-    //endregion
-
     //region Public Functions
 
     /**
-     * Get a logger associated to given class reference
+     * Get a logger associated to given class reference.
      *
-     * @param classRef
-     * @return
+     * @param classRef Class to be used as context.
+     * @return Logger instance.
      */
     public static Logger getLogger(Class<?> classRef) {
         return strategy.createLogger(classRef);
     }
 
     /**
-     * Get a logger associated to given class reference
+     * Get a logger associated to given class reference.
      *
-     * @param classRef
-     * @param strategy
-     * @return
+     * @param classRef Class to be used as context.
+     * @param strategy Logger strategy.
+     * @return Logger instance.
      */
     public static Logger getLogger(Class<?> classRef, LoggerStrategy strategy) {
         return strategy.createLogger(classRef);
     }
 
     /**
-     * Get a logger associated to given context
+     * Get a logger associated to given context.
      *
-     * @param context
-     * @return
+     * @param context Logger context.
+     * @return Logger instance.
      */
     public static Logger getLogger(String context) {
         return strategy.createLogger(context);
     }
 
-
     /**
-     * Get a logger associated to given context
+     * Get a logger associated to given context.
      *
-     * @param context
-     * @param strategy
-     * @return
+     * @param context Logger context.
+     * @param strategy Logger strategy.
+     * @return Logger instance.
      */
     public static Logger getLogger(String context, LoggerStrategy strategy) {
         return strategy.createLogger(context);
     }
 
     /**
-     * Set factory logger strategy
+     * Set factory logger strategy.
      *
-     * @param strategy
+     * @param strategy Logger strategy.
      */
     public static void setDefaultStrategy(LoggerStrategy strategy) {
         LoggerFactory.strategy = strategy;

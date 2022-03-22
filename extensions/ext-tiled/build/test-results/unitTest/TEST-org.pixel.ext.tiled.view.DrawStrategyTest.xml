@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.pixel.ext.tiled.view.DrawStrategyTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2022-03-22T10:39:46" hostname="nunoa-manjaro" time="0.098">
+  <properties/>
+  <testcase name="rightUpStrategy()" classname="org.pixel.ext.tiled.view.DrawStrategyTest" time="0.056"/>
+  <testcase name="rightDownStrategy()" classname="org.pixel.ext.tiled.view.DrawStrategyTest" time="0.012"/>
+  <testcase name="leftDownStrategy()" classname="org.pixel.ext.tiled.view.DrawStrategyTest" time="0.013"/>
+  <testcase name="leftUpStrategy()" classname="org.pixel.ext.tiled.view.DrawStrategyTest" time="0.015"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

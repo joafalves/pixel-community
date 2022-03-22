@@ -19,18 +19,18 @@ public class HashUtils {
     //region public static methods
 
     /**
-     * Generate a unique identification value
+     * Generate a unique identification value.
      *
-     * @return
+     * @return A unique identification value.
      */
     public static String generateUID() {
         return UID_PREFIX + uid.incrementAndGet();
     }
 
     /**
-     * Generate a numeric unique identification value
+     * Generate a numeric unique identification value.
      *
-     * @return
+     * @return A numeric unique identification value.
      */
     public static long generateNumericUID() {
         return uid.incrementAndGet();

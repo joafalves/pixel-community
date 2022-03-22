@@ -5,7 +5,7 @@
 
 package org.pixel.math;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class RectangleTest {
 
@@ -22,7 +22,7 @@ public class RectangleTest {
         Rectangle a = new Rectangle(10, 10, 10, 40);
         Rectangle b = new Rectangle(15, 15, 10, 10);
 
-        if (Rectangle.intersects(a, b)) {
+        if (Rectangle.overlaps(a, b)) {
             a.intersection(b);
         }
         System.out.println(a);

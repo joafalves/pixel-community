@@ -24,22 +24,22 @@ import java.util.stream.Collectors;
 import org.lwjgl.system.MemoryStack;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.commons.model.ImageData;
+import org.pixel.commons.data.ImageData;
 
 public class IOUtils {
 
-    private static final Logger LOG = LoggerFactory.getLogger(IOUtils.class);
+    private static final Logger log = LoggerFactory.getLogger(IOUtils.class);
 
     /**
-     * Load image file (stbi)
+     * Load image file.
      *
-     * @param filepath
-     * @return
+     * @param filepath The image file path.
+     * @return The image data.
      */
     public static ImageData loadImage(String filepath) {
         ByteBuffer rawBuffer = loadFile(filepath);
         if (rawBuffer == null) {
-            LOG.warn("Unable to load image due to IO failure (cannot read file from '%s')", filepath);
+            log.warn("Unable to load image due to IO failure (cannot read file from '{}').", filepath);
             return null;
         }
 
@@ -63,17 +63,17 @@ public class IOUtils {
     }
 
     /**
-     * Load file as byte buffer
+     * Load file as byte buffer.
      *
-     * @param filepath
-     * @return
+     * @param filepath The file path (relative paths allowed).
+     * @return The byte buffer.
      */
     public static ByteBuffer loadFile(String filepath) {
         Path path = Paths.get(filepath);
         if (!path.isAbsolute()) {
             InputStream in = FileUtils.class.getClassLoader().getResourceAsStream(filepath);
             if (in == null) {
-                LOG.warn("Unable to load local resource file %s", filepath);
+                log.warn("Unable to load local resource file '{}'.", filepath);
                 return null;
             }
 
@@ -83,7 +83,7 @@ public class IOUtils {
                 return buffer.put(bytes).flip();
 
             } catch (IOException e) {
-                LOG.error("Exception caught while loading relative path resource!", e);
+                log.error("Exception caught while loading relative path resource!", e);
             }
 
             return null;
@@ -97,7 +97,7 @@ public class IOUtils {
                 return buffer.flip();
 
             } catch (IOException e) {
-                LOG.error("Exception caught!", e);
+                log.error("Exception caught!", e);
             }
         }
 
@@ -105,10 +105,10 @@ public class IOUtils {
     }
 
     /**
-     * Load file as string
+     * Load file content.
      *
-     * @param filepath
-     * @return
+     * @param filepath The file path.
+     * @return The file content.
      */
     public static String loadFileString(String filepath) {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -116,8 +116,8 @@ public class IOUtils {
             return new BufferedReader(new InputStreamReader(Objects.requireNonNull(resourceStream)))
                     .lines().collect(Collectors.joining(System.lineSeparator()));
 
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        } catch (IOException e) {
+            log.error("Exception caught!", e);
         }
 
         return null;

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="2" height="2" tilewidth="16" tileheight="16" infinite="0" nextlayerid="4" nextobjectid="1">
+ <group id="2" name="Group 1" offsetx="5" offsety="3">
+  <properties>
+   <property name="1" value="hello"/>
+  </properties>
+  <layer id="1" name="Tile Layer 1" width="2" height="2" offsetx="0" offsety="2">
+   <data encoding="csv">
+0,0,
+0,0
+</data>
+  </layer>
+  <objectgroup id="3" name="Object Layer 1" offsetx="1" offsety="0"/>
+ </group>
+</map>

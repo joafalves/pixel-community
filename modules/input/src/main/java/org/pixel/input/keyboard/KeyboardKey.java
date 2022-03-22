@@ -123,7 +123,7 @@ public enum KeyboardKey {
     KP_8(GLFW_KEY_KP_8),
     KP_9(GLFW_KEY_KP_9),
     KP_DECIMAL(GLFW_KEY_KP_DECIMAL),
-    KP_DEVIDE(GLFW_KEY_KP_DIVIDE),
+    KP_DIVIDE(GLFW_KEY_KP_DIVIDE),
     KP_MULTIPLY(GLFW_KEY_KP_MULTIPLY),
     KP_SUBTRACT(GLFW_KEY_KP_SUBTRACT),
     KP_ADD(GLFW_KEY_KP_ADD),
@@ -142,21 +142,21 @@ public enum KeyboardKey {
 
     MENU(GLFW_KEY_MENU);
 
-    private int value;
+    private final int value;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param value
+     * @param value The key value.
      */
     KeyboardKey(int value) {
         this.value = value;
     }
 
     /**
-     * Get key value
+     * Get key value.
      *
-     * @return
+     * @return The key value.
      */
     public int getValue() {
         return this.value;

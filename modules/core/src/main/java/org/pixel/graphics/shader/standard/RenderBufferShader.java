@@ -24,15 +24,12 @@ public class RenderBufferShader extends Shader {
     }
 
     /**
-     * Constructor
+     * Constructor.
      */
     public RenderBufferShader() {
         super(vertSrc, fragSrc, attributes, uniforms);
     }
 
-    /**
-     * Apply shader values
-     */
     @Override
     public void apply() {
         // nothing to apply

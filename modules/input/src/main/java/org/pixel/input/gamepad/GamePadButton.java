@@ -28,17 +28,22 @@ public enum GamePadButton {
     DPAD_DOWN(GLFW_GAMEPAD_BUTTON_DPAD_DOWN),
     DPAD_LEFT(GLFW_GAMEPAD_BUTTON_DPAD_LEFT);
 
-    private int value;
+    private final int value;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param value
+     * @param value The value of the button.
      */
     GamePadButton(int value) {
         this.value = value;
     }
 
+    /**
+     * Get the value of the button.
+     *
+     * @return The value of the button.
+     */
     public int getValue() {
         return this.value;
     }

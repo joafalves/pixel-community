@@ -5,23 +5,33 @@
 
 package org.pixel.content;
 
+import static org.lwjgl.BufferUtils.createByteBuffer;
+import static org.lwjgl.opengl.GL11C.GL_LINEAR;
+import static org.lwjgl.opengl.GL11C.GL_RGBA;
+import static org.lwjgl.opengl.GL11C.GL_RGBA8;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MAG_FILTER;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MIN_FILTER;
+import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_BYTE;
+import static org.lwjgl.opengl.GL11C.glBindTexture;
+import static org.lwjgl.opengl.GL11C.glGenTextures;
+import static org.lwjgl.opengl.GL11C.glTexImage2D;
+import static org.lwjgl.opengl.GL11C.glTexParameteri;
+import static org.lwjgl.opengl.GL11C.glDeleteTextures;
+import static org.lwjgl.stb.STBImageWrite.stbi_write_bmp;
+import static org.lwjgl.stb.STBImageWrite.stbi_write_png;
+import static org.lwjgl.stb.STBTruetype.stbtt_PackBegin;
+import static org.lwjgl.stb.STBTruetype.stbtt_PackEnd;
+import static org.lwjgl.stb.STBTruetype.stbtt_PackFontRange;
+import static org.lwjgl.stb.STBTruetype.stbtt_PackSetOversampling;
+import static org.lwjgl.system.MemoryUtil.NULL;
+
+import java.nio.ByteBuffer;
+import java.util.concurrent.ConcurrentHashMap;
 import org.lwjgl.stb.STBTTPackContext;
 import org.lwjgl.stb.STBTTPackedchar;
 import org.pixel.commons.lifecycle.Disposable;
 
-import java.nio.ByteBuffer;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static org.lwjgl.BufferUtils.createByteBuffer;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.stb.STBImageWrite.stbi_write_bmp;
-import static org.lwjgl.stb.STBImageWrite.stbi_write_png;
-import static org.lwjgl.stb.STBTruetype.*;
-import static org.lwjgl.system.MemoryUtil.NULL;
-
-/**
- * @author João Filipe Alves
- */
 public class Font implements Disposable {
 
     //region Fields & Properties
@@ -46,9 +56,9 @@ public class Font implements Disposable {
     //region Constructors
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param fontData
+     * @param fontData The font data.
      */
     public Font(FontData fontData) {
         this.fontData = fontData;
@@ -60,7 +70,7 @@ public class Font implements Disposable {
     //region Private Functions
 
     private void init() {
-        this.fontSize = 16;
+        this.fontSize = 32;
         this.textureId = -1;
         this.horizontalSpacing = 0;
         this.verticalSpacing = 0;
@@ -119,7 +129,8 @@ public class Font implements Disposable {
 
         // bind char data to our texture:
         glBindTexture(GL_TEXTURE_2D, getTextureId());
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, this.textureWidth, this.textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, bitmap);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, this.textureWidth, this.textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                bitmap);
         //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -131,43 +142,45 @@ public class Font implements Disposable {
     //region Public Functions
 
     /**
-     * Save font texture as PNG to a given path
+     * Save font texture as PNG to a given path.
      *
-     * @param filepath
+     * @param filepath The path to save the PNG to.
      */
     public void saveAsPng(String filepath) {
         stbi_write_png(filepath, this.textureWidth, this.textureHeight, 4, bitmap, 0);
     }
 
     /**
-     * Save font texture as BMP to a given path
+     * Save font texture as BMP to a given path.
      *
-     * @param filepath
+     * @param filepath The path to save the BMP to.
      */
     public void saveAsBmp(String filepath) {
         stbi_write_bmp(filepath, this.textureWidth, this.textureHeight, 4, bitmap);
     }
 
     /**
-     * Get font size
+     * Get font size.
      *
-     * @return
+     * @return The font size.
      */
     public int getFontSize() {
         return fontSize;
     }
 
     /**
-     * @return
+     * Get the computed font texture width (font size * oversampling).
+     *
+     * @return The font size.
      */
     public int getComputedFontSize() {
         return fontSize * oversampling;
     }
 
     /**
-     * Set font size. Recommended value range: 4 up to 96
+     * Set font size. This call triggers a font data recompute to adjust the source texture.
      *
-     * @param fontSize
+     * @param fontSize The font size.
      */
     public void setFontSize(int fontSize) {
         if (fontSize != this.fontSize) {
@@ -177,17 +190,21 @@ public class Font implements Disposable {
     }
 
     /**
-     * @param text
-     * @return
+     * Compute the width (in pixels) of a given string.
+     *
+     * @param text The text to compute the size of.
+     * @return The width of the given text.
      */
     public int computeTextWidth(String text) {
         return computeTextWidth(text, fontSize);
     }
 
     /**
-     * @param text
-     * @param fontSize
-     * @return
+     * Compute the width (in pixels) of a given string with a given font size.
+     *
+     * @param text     The text to compute the size of.
+     * @param fontSize The font size to use.
+     * @return The width of the given text.
      */
     public int computeTextWidth(String text, float fontSize) {
         int width = 0;
@@ -195,7 +212,7 @@ public class Font implements Disposable {
         for (char ch : text.toCharArray()) {
             FontGlyph glyph = getGlyph(ch);
             if (glyph == null) {
-                continue; // cannot process this char data..
+                continue; // cannot process this char data...
             }
 
             width += glyph.getXAdvance() * scale + getHorizontalSpacing();
@@ -205,36 +222,37 @@ public class Font implements Disposable {
     }
 
     /**
-     * Get font texture id
+     * Get font native texture id.
      *
-     * @return
+     * @return The font native texture id.
      */
     public int getTextureId() {
         return textureId;
     }
 
     /**
-     * Get texture width
+     * Get the font texture width.
      *
-     * @return
+     * @return The texture width.
      */
     public int getTextureWidth() {
         return this.textureWidth;
     }
 
     /**
-     * Get texture height
+     * Get the font texture height.
      *
-     * @return
+     * @return The texture height.
      */
     public int getTextureHeight() {
         return this.textureHeight;
     }
 
     /**
-     * Get glyph data
+     * Get glyph data for a given character.
      *
-     * @param ch
+     * @param ch The character to get glyph data for.
+     * @return The glyph data for the given character.
      */
     public FontGlyph getGlyph(char ch) {
         FontGlyph glyph = this.glyphCache.get(ch);
@@ -255,26 +273,56 @@ public class Font implements Disposable {
         return glyph;
     }
 
+    /**
+     * Get the horizontal spacing between characters.
+     *
+     * @return The horizontal spacing between characters.
+     */
     public int getHorizontalSpacing() {
         return horizontalSpacing;
     }
 
+    /**
+     * Set the horizontal spacing between characters.
+     *
+     * @param horizontalSpacing The horizontal spacing between characters.
+     */
     public void setHorizontalSpacing(int horizontalSpacing) {
         this.horizontalSpacing = horizontalSpacing;
     }
 
+    /**
+     * Get the vertical spacing between lines.
+     *
+     * @return The vertical spacing between lines.
+     */
     public int getVerticalSpacing() {
         return verticalSpacing;
     }
 
+    /**
+     * Set the vertical spacing between lines.
+     *
+     * @param verticalSpacing The vertical spacing between lines.
+     */
     public void setVerticalSpacing(int verticalSpacing) {
         this.verticalSpacing = verticalSpacing;
     }
 
+    /**
+     * Get the font oversampling.
+     *
+     * @return The font oversampling.
+     */
     public int getOversampling() {
         return oversampling;
     }
 
+    /**
+     * Set the font oversampling.
+     *
+     * @param oversampling The font oversampling.
+     */
     public void setOversampling(int oversampling) {
         if (oversampling != this.oversampling) {
             this.oversampling = oversampling;
@@ -282,13 +330,23 @@ public class Font implements Disposable {
         }
     }
 
-    @Override
-    public void dispose() {
-
-    }
-
+    /**
+     * Get the font data.
+     *
+     * @return The font data.
+     */
     public FontData getFontData() {
         return fontData;
+    }
+
+    /**
+     * Dispose of the font.
+     */
+    @Override
+    public void dispose() {
+        if (this.textureId >= 0) {
+            glDeleteTextures(this.textureId);
+        }
     }
 
     //endregion

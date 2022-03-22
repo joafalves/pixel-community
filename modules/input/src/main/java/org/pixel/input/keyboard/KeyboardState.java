@@ -5,24 +5,25 @@
 
 package org.pixel.input.keyboard;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class KeyboardState {
+public class KeyboardState implements Serializable {
 
     //region properties
 
-    private HashMap<Integer, Integer> keys;
+    private final HashMap<Integer, Integer> keys;
 
     //endregion
 
     //region constructors
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param keys
+     * @param keys The snapshot of the keyboard state.
      */
     public KeyboardState(HashMap<Integer, Integer> keys) {
         this.keys = keys;
@@ -33,16 +34,20 @@ public class KeyboardState {
     //region public methods
 
     /**
-     * @param key
-     * @return
+     * Indicates whether the specified key is currently down.
+     *
+     * @param key The key to check.
+     * @return True if the key is down, false otherwise.
      */
     public boolean isKeyDown(KeyboardKey key) {
         return this.isKeyDown(key.getValue());
     }
 
     /**
-     * @param key
-     * @return
+     * Indicates whether the specified key is currently down.
+     *
+     * @param key The key to check.
+     * @return True if the key is down, false otherwise.
      */
     public boolean isKeyDown(int key) {
         Integer value = this.keys.get(key);
@@ -50,16 +55,20 @@ public class KeyboardState {
     }
 
     /**
-     * @param key
-     * @return
+     * Indicates whether the specified key is currently up.
+     *
+     * @param key The key to check.
+     * @return True if the key is up, false otherwise.
      */
     public boolean isKeyUp(KeyboardKey key) {
         return this.isKeyUp(key.getValue());
     }
 
     /**
-     * @param key
-     * @return
+     * Indicates whether the specified key is currently up.
+     *
+     * @param key The key to check.
+     * @return True if the key is up, false otherwise.
      */
     public boolean isKeyUp(int key) {
         Integer value = this.keys.get(key);
@@ -67,22 +76,24 @@ public class KeyboardState {
     }
 
     /**
-     * Returns an array of keys that are on a down state
+     * Returns an array of keys that are on a down state.
      *
-     * @return
+     * @return An array of keys that are on a down state
      */
     public List<Integer> downKeys() {
         List<Integer> downKeys = new ArrayList<>();
         this.keys.forEach((key, state) -> {
-            if (state != null && state > 0) downKeys.add(key);
+            if (state != null && state > 0) {
+                downKeys.add(key);
+            }
         });
         return downKeys;
     }
 
     /**
-     * Get keys
+     * Get the keys that are on the current snapshot.
      *
-     * @return
+     * @return The keys that are on the current snapshot.
      */
     public HashMap<Integer, Integer> getKeys() {
         return keys;

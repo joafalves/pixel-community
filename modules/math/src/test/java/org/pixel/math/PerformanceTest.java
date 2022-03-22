@@ -5,15 +5,16 @@
 
 package org.pixel.math;
 
-import org.junit.Test;
-
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class PerformanceTest {
 
     private static final int ITERATIONS = 100000;
 
     @Test
+    @Disabled
     public void matrix4MultiplyScalar() {
         Matrix4 mat = new Matrix4();
 
@@ -29,6 +30,7 @@ public class PerformanceTest {
     }
 
     @Test
+    @Disabled
     public void matrix4Multiply() {
         Matrix4 mat = new Matrix4();
         Matrix4 omat = new Matrix4();

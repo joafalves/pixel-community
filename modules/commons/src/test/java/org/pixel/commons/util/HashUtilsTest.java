@@ -5,17 +5,13 @@
 
 package org.pixel.commons.util;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-/**
- * @author João Filipe Alves
- */
 public class HashUtilsTest {
 
     @Test
-    public void uidTest() {
-        Assert.assertNotNull(HashUtils.generateUID());
-        Assert.assertNotNull(HashUtils.generateUID());
+    public void uniqueIdGenerationTest() {
+        Assertions.assertNotNull(HashUtils.generateUID());
     }
 }

@@ -1,0 +1,10 @@
+/*
+ * This software is available under Apache License
+ * Copyright (c) 2020
+ */
+
+project.ext.mavenPublish = true
+
+dependencies {
+    api project(":${rootProject.name}-commons")
+}

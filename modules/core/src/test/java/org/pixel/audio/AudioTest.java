@@ -5,24 +5,27 @@
 
 package org.pixel.audio;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.lwjgl.openal.ALC10.ALC_DEFAULT_DEVICE_SPECIFIER;
+import static org.lwjgl.openal.ALC10.alcCreateContext;
+import static org.lwjgl.openal.ALC10.alcGetString;
+import static org.lwjgl.openal.ALC10.alcMakeContextCurrent;
+import static org.lwjgl.openal.ALC10.alcOpenDevice;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.openal.ALCapabilities;
 
-import static org.lwjgl.openal.ALC10.*;
-
-/**
- * @author João Filipe Alves
- */
 public class AudioTest {
 
     @Test
+    @Disabled
     public void deviceTest() {
         String defaultDeviceName = alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER);
-        Assert.assertNotNull(defaultDeviceName);
+        Assertions.assertNotNull(defaultDeviceName);
 
         long device = alcOpenDevice(defaultDeviceName);
 
@@ -34,7 +37,7 @@ public class AudioTest {
         ALCCapabilities alcCapabilities = ALC.createCapabilities(device);
         ALCapabilities alCapabilities = AL.createCapabilities(alcCapabilities);
 
-        Assert.assertNotNull(alcCapabilities);
-        Assert.assertNotNull(alCapabilities);
+        Assertions.assertNotNull(alcCapabilities);
+        Assertions.assertNotNull(alCapabilities);
     }
 }

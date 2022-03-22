@@ -10,14 +10,11 @@ import org.pixel.content.ContentImporter;
 import org.pixel.content.ContentImporterInfo;
 import org.pixel.content.ImportContext;
 
-/**
- * @author João Filipe Alves
- */
-@ContentImporterInfo(type = String.class, extension = ".txt")
+@ContentImporterInfo(type = String.class, extension = "*")
 public class TextImporter implements ContentImporter<String> {
 
     @Override
     public String process(ImportContext ctx) {
-        return TextUtils.convertToString(ctx.getBuffer());
+        return TextUtils.convertBufferToString(ctx.getBuffer());
     }
 }

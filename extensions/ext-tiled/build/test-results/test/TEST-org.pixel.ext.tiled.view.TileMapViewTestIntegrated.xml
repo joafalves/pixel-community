@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.pixel.ext.tiled.view.TileMapViewTestIntegrated" tests="1" skipped="0" failures="0" errors="0" timestamp="2022-03-22T10:41:00" hostname="nunoa-manjaro" time="4.0">
+  <properties/>
+  <testcase name="processCase1Integrated()" classname="org.pixel.ext.tiled.view.TileMapViewTestIntegrated" time="4.0"/>
+  <system-out><![CDATA[DEBUG|PixelWindow|Windows focus changed: true.
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

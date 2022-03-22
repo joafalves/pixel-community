@@ -5,24 +5,26 @@
 
 package org.pixel.content.importer;
 
-import org.lwjgl.system.MemoryStack;
-import org.pixel.content.ContentImporter;
-import org.pixel.content.ContentImporterInfo;
-import org.pixel.content.ImportContext;
-import org.pixel.audio.Sound;
-import org.pixel.commons.logger.Logger;
-import org.pixel.commons.logger.LoggerFactory;
-
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
-
-import static org.lwjgl.openal.AL10.*;
+import static org.lwjgl.openal.AL10.AL_BUFFER;
+import static org.lwjgl.openal.AL10.AL_FORMAT_MONO16;
+import static org.lwjgl.openal.AL10.AL_FORMAT_STEREO16;
+import static org.lwjgl.openal.AL10.alBufferData;
+import static org.lwjgl.openal.AL10.alGenBuffers;
+import static org.lwjgl.openal.AL10.alGenSources;
+import static org.lwjgl.openal.AL10.alSourcei;
 import static org.lwjgl.stb.STBVorbis.stb_vorbis_decode_memory;
 import static org.lwjgl.system.libc.LibCStdlib.free;
 
-/**
- * @author João Filipe Alves
- */
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
+import org.lwjgl.system.MemoryStack;
+import org.pixel.content.Sound;
+import org.pixel.commons.logger.Logger;
+import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.content.ContentImporter;
+import org.pixel.content.ContentImporterInfo;
+import org.pixel.content.ImportContext;
+
 @ContentImporterInfo(type = Sound.class, extension = ".ogg")
 public class VorbisAudioImporter implements ContentImporter<Sound> {
 
@@ -40,7 +42,7 @@ public class VorbisAudioImporter implements ContentImporter<Sound> {
 
             rawAudioBuffer = stb_vorbis_decode_memory(ctx.getBuffer(), channelsBuffer, sampleRateBuffer);
             if (rawAudioBuffer == null) {
-                log.warn("Failed to load sound resource, invalid buffer");
+                log.warn("Failed to load sound resource, invalid buffer.");
                 return null;
             }
 
@@ -49,7 +51,7 @@ public class VorbisAudioImporter implements ContentImporter<Sound> {
             sampleRate = sampleRateBuffer.get(0);
 
         } catch (Exception e) {
-            log.error("Exception caught: %s", e);
+            log.error("Exception caught!", e);
             return null;
         }
 

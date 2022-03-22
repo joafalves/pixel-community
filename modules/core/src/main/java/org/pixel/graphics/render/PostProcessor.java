@@ -11,19 +11,19 @@ import org.pixel.commons.DeltaTime;
 public interface PostProcessor extends Disposable {
 
     /**
-     * Start the post processing phase
+     * Start the post-processing phase.
      */
     void begin();
 
     /**
-     * End the post processing phase
+     * End the post-processing phase.
      */
     void end();
 
     /**
-     * Apply post processing
+     * Apply post-processing (this function will execute end() automatically)
      *
-     * @param delta
+     * @param delta time since last frame
      */
     void apply(DeltaTime delta);
 

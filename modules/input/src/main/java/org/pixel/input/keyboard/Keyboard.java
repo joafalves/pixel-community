@@ -28,8 +28,10 @@ public class Keyboard {
     //region public methods
 
     /**
-     * @param key
-     * @return
+     * Static method to determine if a key is down.
+     *
+     * @param key The key to check.
+     * @return True if the key is down.
      */
     public static boolean isKeyDown(KeyboardKey key) {
         Integer value = keys.get(key.getValue());
@@ -37,14 +39,21 @@ public class Keyboard {
     }
 
     /**
-     * @param key
-     * @return
+     * Static method to determine if a key is up.
+     *
+     * @param key The key to check.
+     * @return True if the key is up.
      */
     public static boolean isKeyUp(KeyboardKey key) {
         Integer value = keys.get(key.getValue());
         return value != null && value == 0;
     }
 
+    /**
+     * Static method to get the current keyboard state.
+     *
+     * @return The current keyboard state.
+     */
     public static KeyboardState getState() {
         return new KeyboardState((HashMap<Integer, Integer>) keys.clone());
     }
@@ -53,9 +62,6 @@ public class Keyboard {
 
     //region internal classes
 
-    /**
-     * Keyboard Input Handler
-     */
     public static class KeyboardInputHandler extends GLFWKeyCallback {
 
         @Override

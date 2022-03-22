@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.pixel.gui.css.CssParserTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2022-03-21T12:28:33" hostname="nunoa-manjaro" time="0.114">
+  <properties/>
+  <testcase name="parseCss()" classname="org.pixel.gui.css.CssParserTest" time="0.114"/>
+  <system-out><![CDATA[TOOK 96ms
+]]></system-out>
+  <system-err><![CDATA[SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+]]></system-err>
+</testsuite>

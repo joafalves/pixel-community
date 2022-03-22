@@ -6,5 +6,5 @@
 package org.pixel.graphics.render;
 
 public enum BlendMode {
-    NORMAL_BLEND, ADDITIVE, MULTIPLY, INTERPOLATE
+    NORMAL_BLEND, ADDITIVE, MULTIPLY
 }

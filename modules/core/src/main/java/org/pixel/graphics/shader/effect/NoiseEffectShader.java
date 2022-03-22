@@ -5,16 +5,19 @@
 
 package org.pixel.graphics.shader.effect;
 
-import org.pixel.graphics.shader.Shader;
-import org.pixel.math.Vector2;
+import static org.lwjgl.opengl.GL20.glUniform1f;
+import static org.lwjgl.opengl.GL20.glUniform2f;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
+import org.pixel.graphics.shader.Shader;
+import org.pixel.math.Vector2;
 
-import static org.lwjgl.opengl.GL20.glUniform1f;
-import static org.lwjgl.opengl.GL20.glUniform2f;
-
+@Getter
+@Setter
 public class NoiseEffectShader extends Shader {
 
     private static final List<String> uniforms = Arrays.asList("uTextureImage", "uAmount", "uOffset", "uDensity");
@@ -33,7 +36,10 @@ public class NoiseEffectShader extends Shader {
     private Vector2 offset;
 
     /**
-     * Constructor
+     * Constructor.
+     *
+     * @param amount  The amount of noise to apply (0-1).
+     * @param density The density of the noise (0-1).
      */
     public NoiseEffectShader(float amount, float density) {
         super(vertSrc, fragSrc, attributes, uniforms);
@@ -42,38 +48,11 @@ public class NoiseEffectShader extends Shader {
         this.offset = Vector2.zero();
     }
 
-    /**
-     * Apply shader values
-     */
     @Override
     public void apply() {
         glUniform1f(getUniformLocation("uAmount"), amount);
         glUniform1f(getUniformLocation("uDensity"), density);
         glUniform2f(getUniformLocation("uOffset"), offset.getX(), offset.getY());
-    }
-
-    public Vector2 getOffset() {
-        return offset;
-    }
-
-    public void setOffset(Vector2 offset) {
-        this.offset = offset;
-    }
-
-    public float getAmount() {
-        return amount;
-    }
-
-    public void setAmount(float amount) {
-        this.amount = amount;
-    }
-
-    public float getDensity() {
-        return density;
-    }
-
-    public void setDensity(float density) {
-        this.density = density;
     }
 }
 

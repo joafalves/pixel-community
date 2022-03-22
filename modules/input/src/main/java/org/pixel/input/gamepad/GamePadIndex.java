@@ -25,21 +25,21 @@ public enum GamePadIndex {
     P15(GLFW.GLFW_JOYSTICK_15),
     P16(GLFW.GLFW_JOYSTICK_16);
 
-    private int value;
+    private final int value;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param value
+     * @param value The index value.
      */
     GamePadIndex(int value) {
         this.value = value;
     }
 
     /**
-     * Get index value
+     * Get index value.
      *
-     * @return
+     * @return The index value.
      */
     public int getValue() {
         return this.value;

@@ -16,7 +16,9 @@ public abstract class RenderEngine implements Disposable {
     protected float pixelRatio;
 
     /**
-     * Constructor
+     * Constructor.
+     *
+     * @param viewportDimensions Viewport dimensions.
      */
     public RenderEngine(Rectangle viewportDimensions) {
         this.viewportDimensions = viewportDimensions;
@@ -24,42 +26,58 @@ public abstract class RenderEngine implements Disposable {
     }
 
     /**
-     * @param viewport
+     * Set the viewport dimensions.
+     *
+     * @param viewport The viewport dimensions.
      */
     public void setViewport(Rectangle viewport) {
         setViewport(viewport.getX(), viewport.getY(), viewport.getWidth(), viewport.getHeight());
     }
 
     /**
-     * @param x
-     * @param y
-     * @param width
-     * @param height
+     * Set the viewport dimensions.
+     *
+     * @param x      Top left x coordinate.
+     * @param y      Top left y coordinate.
+     * @param width  The width.
+     * @param height The height.
      */
     public void setViewport(float x, float y, float width, float height) {
         this.viewportDimensions.set(x, y, width, height);
     }
 
     /**
-     * Begin render frame
+     * Begin render frame.
      */
     public abstract void begin();
 
     /**
-     * End render frame
+     * End render frame.
      */
     public abstract void end();
 
     /**
-     * @param fontData
-     * @param fontName
+     * Add font data to the engine.
+     *
+     * @param fontData The font data.
+     * @param fontName The font name.
      */
     public abstract void addFont(ByteBuffer fontData, String fontName);
 
+    /**
+     * Get the current pixel ratio.
+     *
+     * @return The pixel ratio.
+     */
     public float getPixelRatio() {
         return pixelRatio;
     }
 
+    /**
+     * Set the current pixel ratio.
+     *
+     * @param pixelRatio The pixel ratio.
+     */
     public void setPixelRatio(float pixelRatio) {
         this.pixelRatio = pixelRatio;
     }

@@ -2,6 +2,7 @@
  * This software is available under Apache License
  * Copyright (c) 2020
  */
+import org.gradle.internal.os.OperatingSystem
 
 plugins {
     id 'application'
@@ -11,16 +12,24 @@ plugins {
 dependencies {
     api project(":${rootProject.name}-core")
     api project(":${rootProject.name}-input")
-    api project(":${rootProject.name}-gui")
-    api project(":${rootProject.name}-physics");
-    api project(":${rootProject.name}-math");
+    api project(":${rootProject.name}-ext-ldtk")
+    api project(":${rootProject.name}-ext-gui")
+    api project(":${rootProject.name}-ext-physics")
+    api project(":${rootProject.name}-ext-ecs")
+    api project(":${rootProject.name}-ext-ecs-extra")
+    api project(":${rootProject.name}-math")
+
+    api project(":${rootProject.name}-ext-log4j2")
 }
 
 application {
-    mainClass = 'org.pixel.concept.spaceshooter.SpaceShooterGame'
+    mainClass = 'org.pixel.demo.concept.spaceshooter.SpaceShooterGame'
+    if (OperatingSystem.current().isMacOsX()) {
+        applicationDefaultJvmArgs = ["-XstartOnFirstThread"]
+    }
 }
 
 launch4j {
-    mainClassName = 'org.pixel.concept.spaceshooter.SpaceShooterGame'
+    mainClassName = 'org.pixel.demo.concept.spaceshooter.SpaceShooterGame'
     // icon = "${projectDir}/icons/myApp.ico"
 }

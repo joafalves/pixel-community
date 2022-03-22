@@ -18,10 +18,10 @@ public class ShaderManager {
     //region public static methods
 
     /**
-     * Changes the active shader program. If the given shader program is already in use, no binding is applied.
-     * Note that if glUseProgram() is called elsewhere it might cause conflicts and misbehaviour.
+     * Changes the active shader program. If the given shader program is already in use, no binding is applied. Note
+     * that if glUseProgram() is called elsewhere it might cause conflicts and misbehaviour.
      *
-     * @param shader
+     * @param shader The shader program to use.
      */
     public static void useShader(Shader shader) {
         // swap needed?
@@ -32,7 +32,7 @@ public class ShaderManager {
     }
 
     /**
-     *
+     * Clears the active shader program.
      */
     public static void clearActiveShader() {
         activeShader = null;

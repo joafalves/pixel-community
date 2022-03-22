@@ -5,9 +5,11 @@
 
 package org.pixel.graphics.shader;
 
-import org.pixel.commons.lifecycle.Disposable;
+import static org.lwjgl.opengl.GL30.glBindVertexArray;
+import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
+import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
-import static org.lwjgl.opengl.GL30.*;
+import org.pixel.commons.lifecycle.Disposable;
 
 public class VertexArrayObject implements Disposable {
 
@@ -20,7 +22,7 @@ public class VertexArrayObject implements Disposable {
     //region constructors
 
     /**
-     * Constructor
+     * Constructor.
      */
     public VertexArrayObject() {
         id = glGenVertexArrays();
@@ -31,29 +33,28 @@ public class VertexArrayObject implements Disposable {
     //region public methods
 
     /**
-     * @return
+     * Get VAO native id.
+     *
+     * @return The VAO native id.
      */
     public int getID() {
         return this.id;
     }
 
     /**
-     *
+     * Bind the VAO.
      */
     public void bind() {
         glBindVertexArray(id);
     }
 
     /**
-     *
+     * Unbind the VAO.
      */
     public void unbind() {
         glBindVertexArray(0);
     }
 
-    /**
-     *
-     */
     @Override
     public void dispose() {
         glDeleteVertexArrays(id);

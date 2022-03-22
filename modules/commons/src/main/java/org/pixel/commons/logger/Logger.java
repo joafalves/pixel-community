@@ -9,30 +9,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 public abstract class Logger {
-    //region Fields & Properties
-
-    protected LoggerContext context;
-
-    //endregion
-
-    //region Constructors
-
-    /**
-     * Constructor
-     *
-     * @param context
-     */
-    public Logger(LoggerContext context) {
-        this.context = context;
-    }
-
-    //endregion
 
     //region Internal Functions
 
     /**
-     * @param e
-     * @return
+     * @param e Exception instance.
+     * @return Exception message.
      */
     protected String toString(Exception e) {
         StringWriter sw = new StringWriter();
@@ -47,107 +29,79 @@ public abstract class Logger {
     //region Public Functions
 
     /**
-     * Checks if logger has TRACE enabled
+     * Checks if logger has TRACE enabled.
      *
-     * @return
+     * @return True if enabled.
      */
-    public boolean isTraceEnabled() {
-        return this.context.getLevel().getValue() <= LogLevel.TRACE.getValue();
-    }
+    public abstract boolean isTraceEnabled();
 
     /**
-     * Checks if logger has DEBUG enabled
+     * Checks if logger has DEBUG enabled.
      *
-     * @return
+     * @return True if enabled.
      */
-    public boolean isDebugEnabled() {
-        return this.context.getLevel().getValue() <= LogLevel.DEBUG.getValue();
-    }
+    public abstract boolean isDebugEnabled();
 
     /**
-     * Checks if logger has INFO enabled
+     * Checks if logger has INFO enabled.
      *
-     * @return
+     * @return True if enabled.
      */
-    public boolean isInfoEnabled() {
-        return this.context.getLevel().getValue() <= LogLevel.INFO.getValue();
-    }
+    public abstract boolean isInfoEnabled();
 
     /**
-     * Checks if logger has WARN enabled
+     * Checks if logger has WARN enabled.
      *
-     * @return
+     * @return True if enabled.
      */
-    public boolean isWarnEnabled() {
-        return this.context.getLevel().getValue() <= LogLevel.WARN.getValue();
-    }
+    public abstract boolean isWarnEnabled();
 
     /**
-     * Checks if logger has ERROR enabled
+     * Checks if logger has ERROR enabled.
      *
-     * @return
+     * @return True if enabled.
      */
-    public boolean isErrorEnabled() {
-        return this.context.getLevel().getValue() <= LogLevel.ERROR.getValue();
-    }
+    public abstract boolean isErrorEnabled();
 
     /**
-     * Log a TRACE level message
+     * Log a TRACE level message.
      *
-     * @param message
-     * @param params
+     * @param message Message to print.
+     * @param params  Parameters to print.
      */
     public abstract void trace(String message, Object... params);
 
     /**
-     * Log a DEBUG level message
+     * Log a DEBUG level message.
      *
-     * @param message
-     * @param params
+     * @param message Message to print.
+     * @param params  Parameters to print.
      */
     public abstract void debug(String message, Object... params);
 
     /**
-     * Log an INFO level message
+     * Log an INFO level message.
      *
-     * @param message
-     * @param params
+     * @param message Message to print.
+     * @param params  Parameters to print.
      */
     public abstract void info(String message, Object... params);
 
     /**
-     * Log an WARN level message
+     * Log an WARN level message.
      *
-     * @param message
-     * @param params
+     * @param message Message to print.
+     * @param params  Parameters to print.
      */
     public abstract void warn(String message, Object... params);
 
     /**
-     * Log an ERROR level message
+     * Log an ERROR level message.
      *
-     * @param message
-     * @param params
+     * @param message Message to print.
+     * @param params  Parameters to print.
      */
     public abstract void error(String message, Object... params);
-
-    /**
-     * Get logger context
-     *
-     * @return
-     */
-    public LoggerContext getContext() {
-        return context;
-    }
-
-    /**
-     * Set logger context
-     *
-     * @param context
-     */
-    public void setContext(LoggerContext context) {
-        this.context = context;
-    }
 
     //endregion
 

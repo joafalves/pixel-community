@@ -1,0 +1,14 @@
+apply plugin: "application"
+
+dependencies {
+    api project(":${rootProject.name}-core")
+    api project(":${rootProject.name}-input")
+    api project(":${rootProject.name}-ext-ldtk")
+}
+
+application {
+    mainClass = 'org.pixel.demo.ldtk.LdtkDemo'
+    if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
+        applicationDefaultJvmArgs = ["-XstartOnFirstThread"]
+    }
+}

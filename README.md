@@ -1,26 +1,30 @@
-![Pixel - Java Game Framework]()
+![Pixel - Java Game Framework](./.github/IMAGES/banner.png)
 
-![](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20MacOS-lightgrey) ![](https://img.shields.io/badge/java-%3E%3D%208-green)
+![](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20MacOS-lightgrey) ![](https://img.shields.io/badge/java-%3E%3D%2011-green)
 
-# README #
+## Pixel Framework ##
 
 ### What is this repository for? ###
 
-This repository contains the Pixel Java Framework and associated modules and dependencies. 
-**At the moment this software is in Development Stage and not ready for production use. Feel free to experiment and help this project grow.** 
+This repository contains the Pixel Java Framework and associated modules/dependencies.
 
 ### Description ###
 
-The Pixel Framework aims to provide a high performance and lightweight OpenGL (lwjgl-glfw) 2D game development workflow. 
-Directly inspired in existing frameworks such as XNA, this framework it's not strictly imposing and enables personal development workflows.
+The Pixel Framework aims to provide a high performance and lightweight OpenGL 2D game development workflow. It is
+influenced by the popular XNA framework and is built on top of the [LWJGL](https://www.lwjgl.org/)
+and [GLFW](https://www.glfw.org/) projects.
 
-:book: For practical details on how to use this framework, please check our [wiki page]()  (under construction) 
+> :book: For practical details on how to use this framework, please check the [wiki page](https://github.com/joafalves/pixel-community/wiki).
+
+Pixel is designed to be modular and easy to extend.
+Check [here](https://github.com/joafalves/pixel-community/wiki/E.-Extensions-Overview) for more details on how to use
+the available extensions (or how to create your own).
 
 ### Examples ##
 
-Check the :file_folder: demos folder for more examples and development approaches.
+Check the :file_folder: [demos folder](https://github.com/joafalves/pixel-community/tree/devel/demos) for examples.
 
-##### Drawing a Sprite #####
+##### Basic example (Drawing a Sprite) #####
 
 ```java
 public class SingleSpriteDemo extends PixelWindow {
@@ -30,28 +34,20 @@ public class SingleSpriteDemo extends PixelWindow {
     private SpriteBatch spriteBatch;
 
     private Texture spriteTex;
-    private Vector2 spritePos;
 
     public SingleSpriteDemo(GameSettings settings) {
         super(settings);
-        setBackgroundColor(Color.BLACK);
     }
 
     @Override
     public void load() {
-        // game related changes & definitions
+        // load up of resources and game managers/utilities
         gameCamera = new Camera2D(this);
-        gameCamera.setOrigin(Vector2.zero());
-
-        // general game instances
         content = new ContentManager();
         spriteBatch = new SpriteBatch();
 
-        // load texture into memory
-        spriteTex = content.load("images/earth-48x48.png", Texture.class);
-
-        // related sprite properties
-        spritePos = new Vector2(getVirtualWidth() / 2f, getVirtualHeight() / 2f);
+        // example of loading a texture into memory:
+        spriteTex = content.load("<texture_path>", Texture.class);
     }
 
     @Override
@@ -64,37 +60,51 @@ public class SingleSpriteDemo extends PixelWindow {
         // begin the spritebatch phase:
         spriteBatch.begin(gameCamera.getViewMatrix(), BlendMode.NORMAL_BLEND);
 
-        // sprite definition for this drawing phase:
-        spriteBatch.draw(spriteTex, spritePos, Color.WHITE, Vector2.HALF, 3f);
+        // sprite draw/put for this drawing phase:
+        spriteBatch.draw(spriteTex, Vector2.ZERO, Color.WHITE);
 
         // end and draw all sprites stored:
         spriteBatch.end();
     }
+
+    @Override
+    public void dispose() {
+        content.dispose();
+        spriteBatch.dispose();
+        super.dispose();
+    }
 }
 ```
 
-### Project Structure ###
+> Looking for ECS support? Check [this built-in extension!](https://github.com/joafalves/pixel-community/wiki/E1.-ECS-(Entity-Component-System))
+
+### Project structure ###
 
 The framework functionality is divided into multiple modules which can be imported individually as required.
 
-##### Root Directory Structure #####
+##### Root directory structure #####
 
     .build/                         # Bundle .jar files (run 'bundle' gradle task)
     .demos/                         # Feature showroom and learning examples
-    .modules/
+    .extensions/                    # Extensions for the framework (optional)
+        ├── ext-ecs                 # Entity component system extension
+        ├── ext-ecs-extra           # ECS utility components
+        ├── ext-gui                 # GUI extension *WIP*
+        ├── ext-ldtk                # LDTK extension
+        ├── ext-log4j2              # Log4j2 extension
+        └── ext-physics             # Physics extension *WIP*
+    .modules/                       # The principal modules of the framework
         ├── commons                 # Common utility classes
-        ├── content                 # Resource modules
         ├── core                    # Main module, contains principal classes
-        ├── gui                     # Graphical interface module
-        ├── input                   # Input module
-        ├── physics                 # Physics module
-        └── math                    # Math module
+        ├── input                   # Input module (Keyboard, Gamepad, Mouse)
+        ├── math                    # Math module (Vector, Matrix, etc)
+        └── pipeline                # Pipeline processing module
     .resources/
         └── images                  # Project resource images
     .build.gradle                   # Gradle build file
     .settings.gradle                # Gradle settings file
-    
-##### Inner Module Structure #####
+
+##### Inner module structure #####
 
     .modules/
         └── *module*                 # Presented file structure similar in all modules
@@ -104,26 +114,38 @@ The framework functionality is divided into multiple modules which can be import
             ├── src                  # Module Source folder
             │   ├── main             # Module Main Source classes
             │   └── test             # Module Test Source classes
-            └── build.gradle         # Module Gradle build file (contains inner dependency definitions)   
+            └── build.gradle         # Module Gradle build file (contains inner dependency definitions)
 
-### Third-party libs ###
+### Development requirements ###
 
-    lwjgl 3.x       (runtime)
-    org.json 2018+  (runtime)
-    junit 4.x       (test)
-   
-### Setup Requirements ###
+- Java 11+
+- Gradle 7.x+
 
-1. Java 8+ (tested up to version 15)
-2. Gradle 4.x+
+### Runtime OS compatibility ###
+
+Pretty much the same as the [LWJGL](https://www.lwjgl.org/) dependency, which includes:
+
+- Windows (x86, x64, arm64)
+- MacOS (x64, arm64)
+- Linux (x86, x64, arm64, arm32)
+
+> Requires OpenGL 3.3+ support.
 
 ### FAQ ###
 
-**I'm unable to run Pixel on MacOS due to system error**
-
-Add `-XstartOnFirstThread` as a java VM Option before running your project.
+1. I'm unable to run Pixel on MacOS due to system error
+    - Add `-XstartOnFirstThread` as a java VM Option before running your project.
+2. Is Pixel compatible with Kotlin?
+    - Yes, Pixel is fully compatible with Kotlin. Check
+      this [demo](https://github.com/joafalves/pixel-community/tree/devel/demos/kotlin) for an example.
+3. Is Pixel available as a Maven dependency?
+    - Yes, Pixel is available as a public Maven
+      dependency. [Click here](https://github.com/joafalves/pixel-community/wiki/1.-Getting-Started) for more details on
+      how to import using Maven or Gradle.
+4. Is Pixel free?
+    - Yes, Pixel is completely free to use and distribute as an application dependency.
 
 ### Who do I talk to? ###
 
-* Repo owner or admin
-* Other community or team contact
+* It's a bug or a feature request? [Please open an issue](https://github.com/joafalves/pixel-community/issues).
+* Repo owner or moderator.

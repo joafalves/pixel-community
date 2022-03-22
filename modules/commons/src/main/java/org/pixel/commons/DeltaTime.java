@@ -7,37 +7,57 @@ package org.pixel.commons;
 
 public class DeltaTime {
 
+    private final long startTimestamp;
     private long lastTimestamp;
     private long elapsedMilliseconds;
     private float elapsedSeconds;
 
     /**
-     * Constructor
+     * Constructor.
      */
     public DeltaTime() {
+        this.startTimestamp = System.currentTimeMillis();
         this.lastTimestamp = System.nanoTime() / 1000000;
     }
 
     /**
-     * Get the elapsed time in seconds
+     * Get the elapsed time since the last tick (in seconds).
      *
-     * @return seconds
+     * @return Elapsed time in seconds.
      */
     public float getElapsed() {
         return elapsedSeconds;
     }
 
     /**
-     * Get the elapsed time in milliseconds
+     * Get the elapsed time since the last tick (in milliseconds).
      *
-     * @return milliseconds
+     * @return Elapsed time in milliseconds.
      */
     public long getElapsedMs() {
         return elapsedMilliseconds;
     }
 
     /**
-     * Update elapsed time (calculates delta since last tick)
+     * Get the total time elapsed since the initialization of this instance (in seconds).
+     *
+     * @return Total time elapsed in seconds.
+     */
+    public float getTotalElapsed() {
+        return (System.currentTimeMillis() - startTimestamp) / 1000f;
+    }
+
+    /**
+     * Get the total time elapsed since the initialization of this instance (in milliseconds).
+     *
+     * @return Total time elapsed in milliseconds.
+     */
+    public float getTotalElapsedMs() {
+        return System.currentTimeMillis() - startTimestamp;
+    }
+
+    /**
+     * Update elapsed time (calculates delta since last tick).
      */
     public void tick() {
         long now = System.nanoTime() / 1000000;

@@ -5,8 +5,8 @@
 
 package org.pixel.math;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class PolygonTest {
 
@@ -31,15 +31,34 @@ public class PolygonTest {
                 new Vector2(10, 40));
 
         // triangle collision
-        Assert.assertTrue(triangle.overlapsWith(new Polygon(a.getVertices())));
-        Assert.assertFalse(triangle.overlapsWith(new Polygon(b.getVertices())));
+        Assertions.assertTrue(triangle.overlapsWith(new Polygon(a.getVertices())));
+        Assertions.assertFalse(triangle.overlapsWith(new Polygon(b.getVertices())));
 
         // small pentagon collision
-        Assert.assertTrue(smallPentagon.overlapsWith(new Polygon(a.getVertices())));
-        Assert.assertFalse(smallPentagon.overlapsWith(new Polygon(b.getVertices())));
+        Assertions.assertTrue(smallPentagon.overlapsWith(new Polygon(a.getVertices())));
+        Assertions.assertFalse(smallPentagon.overlapsWith(new Polygon(b.getVertices())));
 
         // large pentagon collision
-        Assert.assertTrue(largePentagon.overlapsWith(new Polygon(a.getVertices())));
-        Assert.assertTrue(largePentagon.overlapsWith(new Polygon(b.getVertices())));
+        Assertions.assertTrue(largePentagon.overlapsWith(new Polygon(a.getVertices())));
+        Assertions.assertTrue(largePentagon.overlapsWith(new Polygon(b.getVertices())));
+    }
+
+    @Test
+    public void equalsTest() {
+        Polygon polygonA = new Polygon(
+                new Vector2(0, 10),
+                new Vector2(10, 10),
+                new Vector2(5, 0));
+        Polygon polygonB = new Polygon(
+                new Vector2(0, 10),
+                new Vector2(10, 10),
+                new Vector2(5, 0));
+        Polygon polygonC = new Polygon(
+                new Vector2(10, 20),
+                new Vector2(20, 20),
+                new Vector2(15, 10));
+
+        Assertions.assertEquals(polygonA, polygonB);
+        Assertions.assertNotEquals(polygonA, polygonC);
     }
 }

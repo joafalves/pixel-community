@@ -8,12 +8,16 @@ package org.pixel.content;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-/**
- * @author João Filipe Alves
- */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ContentImporterInfo {
+
+    /**
+     * @return The output class type.
+     */
     Class type();
 
+    /**
+     * @return The associated file extensions.
+     */
     String[] extension();
 }

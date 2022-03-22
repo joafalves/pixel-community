@@ -2,32 +2,46 @@
  * This software is available under Apache License
  * Copyright (c) 2020
  */
+import org.gradle.internal.os.OperatingSystem
 
-version = "0.5.0"
+// Pixel Version:
+version = "0.7.1"
 
-def lwjglVersion = "3.2.3"
-def buildTarget = System.getenv("BUILD_TARGET")
-if (buildTarget == null) {
-    buildTarget = "all"
+// Lwjgl Version & Build Target(s)
+def lwjglVersion = "3.3.1"
+def buildTarget = System.properties["BUILD_TARGET"]
+def buildTargetList = []
+if (buildTarget == "all") {
+    // Use this build mode publishing:
+    buildTargetList.addAll([
+            "natives-windows", "natives-windows-x86", "natives-windows-arm64",
+            "natives-macos", "natives-macos-arm64",
+            "natives-linux", "natives-linux-arm64", "natives-linux-arm32"])
+} else if (buildTarget != null) {
+    // applies the build target based on the BUILD_TARGET environment variable:
+    buildTargetList.add(buildTarget)
+} else {
+    // no manual build type assigned, apply the classifier based on the current OS:
+    buildTargetList.add(getCurrentClassifier())
 }
 
-println "Build target: '${buildTarget}'"
+println("Build Targets: ${buildTargetList}")
 
 allprojects {
-    // plugins
     apply plugin: "java"
-    apply plugin: 'java-library'
+    apply plugin: "java-library"
+    apply plugin: "maven-publish"
+    apply plugin: "signing"
 
-    // project version
     version rootProject.version
 
     repositories {
         mavenCentral()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url "https://s01.oss.sonatype.org/content/repositories/releases/" }
     }
 
     dependencies {
-        // lwjgl-general
         api group: "org.lwjgl", name: "lwjgl", version: lwjglVersion
         api group: "org.lwjgl", name: "lwjgl-glfw", version: lwjglVersion
         api group: "org.lwjgl", name: "lwjgl-opengl", version: lwjglVersion
@@ -36,48 +50,29 @@ allprojects {
         api group: "org.lwjgl", name: "lwjgl-nanovg", version: lwjglVersion
         api group: "org.lwjgl", name: "lwjgl-yoga", version: lwjglVersion
 
-        // lwjgl-macos
-        if (buildTarget == "macos" || buildTarget == "all") {
-            api group: "org.lwjgl", name: "lwjgl", version: lwjglVersion, classifier: "natives-macos"
-            api group: "org.lwjgl", name: "lwjgl-opengl", version: lwjglVersion, classifier: "natives-macos"
-            api group: "org.lwjgl", name: "lwjgl-openal", version: lwjglVersion, classifier: "natives-macos"
-            api group: "org.lwjgl", name: "lwjgl-glfw", version: lwjglVersion, classifier: "natives-macos"
-            api group: "org.lwjgl", name: "lwjgl-stb", version: lwjglVersion, classifier: "natives-macos"
-            api group: "org.lwjgl", name: "lwjgl-nanovg", version: lwjglVersion, classifier: "natives-macos"
-            api group: "org.lwjgl", name: "lwjgl-yoga", version: lwjglVersion, classifier: "natives-macos"
-        }
-
-        // lwjgl-windows
-        if (buildTarget == "windows" || buildTarget == "all") {
-            api group: "org.lwjgl", name: "lwjgl", version: lwjglVersion, classifier: "natives-windows"
-            api group: "org.lwjgl", name: "lwjgl-opengl", version: lwjglVersion, classifier: "natives-windows"
-            api group: "org.lwjgl", name: "lwjgl-openal", version: lwjglVersion, classifier: "natives-windows"
-            api group: "org.lwjgl", name: "lwjgl-glfw", version: lwjglVersion, classifier: "natives-windows"
-            api group: "org.lwjgl", name: "lwjgl-stb", version: lwjglVersion, classifier: "natives-windows"
-            api group: "org.lwjgl", name: "lwjgl-nanovg", version: lwjglVersion, classifier: "natives-windows"
-            api group: "org.lwjgl", name: "lwjgl-yoga", version: lwjglVersion, classifier: "natives-windows"
-        }
-
-        // lwjgl-linux
-        if (buildTarget == "linux" || buildTarget == "all") {
-            api group: "org.lwjgl", name: "lwjgl", version: lwjglVersion, classifier: "natives-linux"
-            api group: "org.lwjgl", name: "lwjgl-opengl", version: lwjglVersion, classifier: "natives-linux"
-            api group: "org.lwjgl", name: "lwjgl-openal", version: lwjglVersion, classifier: "natives-linux"
-            api group: "org.lwjgl", name: "lwjgl-glfw", version: lwjglVersion, classifier: "natives-linux"
-            api group: "org.lwjgl", name: "lwjgl-stb", version: lwjglVersion, classifier: "natives-linux"
-            api group: "org.lwjgl", name: "lwjgl-nanovg", version: lwjglVersion, classifier: "natives-linux"
-            api group: "org.lwjgl", name: "lwjgl-yoga", version: lwjglVersion, classifier: "natives-linux"
-        }
+        buildTargetList.forEach(classifier -> {
+            runtimeOnly group: "org.lwjgl", name: "lwjgl", version: lwjglVersion, classifier: "$classifier"
+            runtimeOnly group: "org.lwjgl", name: "lwjgl-opengl", version: lwjglVersion, classifier: "$classifier"
+            runtimeOnly group: "org.lwjgl", name: "lwjgl-openal", version: lwjglVersion, classifier: "$classifier"
+            runtimeOnly group: "org.lwjgl", name: "lwjgl-glfw", version: lwjglVersion, classifier: "$classifier"
+            runtimeOnly group: "org.lwjgl", name: "lwjgl-stb", version: lwjglVersion, classifier: "$classifier"
+            runtimeOnly group: "org.lwjgl", name: "lwjgl-nanovg", version: lwjglVersion, classifier: "$classifier"
+            runtimeOnly group: "org.lwjgl", name: "lwjgl-yoga", version: lwjglVersion, classifier: "$classifier"
+        })
 
         // lombok
-        compileOnly 'org.projectlombok:lombok:1.18.20'
-        annotationProcessor 'org.projectlombok:lombok:1.18.20'
+        compileOnly "org.projectlombok:lombok:1.18.22"
+        annotationProcessor "org.projectlombok:lombok:1.18.22"
 
         // test:
-        testImplementation group: "junit", name: "junit", version: "4.12"
+        testImplementation 'org.mockito:mockito-core:4.2.0'
+        testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.2"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.2"
     }
 
-    // test.onlyIf { Boolean.getBoolean("build.runTests") }
+    test {
+        useJUnitPlatform()
+    }
 
     jar {
         manifest {
@@ -87,31 +82,114 @@ allprojects {
             )
         }
     }
+
+    task sourceJar(type: Jar) {
+        classifier "sources"
+        from sourceSets.main.allJava
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier "javadoc"
+        from javadoc.destinationDir
+    }
+
+    artifacts {
+        archives jar
+        archives sourceJar
+        archives javadocJar
+    }
+
+    signing {
+        if (rootProject.hasProperty("signing.keyId")) {
+            sign(publishing.publications) // sign everything to be published
+        }
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                groupId "io.github.joafalves"
+                artifactId project.name
+                version rootProject.version
+
+                from components.java
+
+                artifact(sourceJar) {
+                    classifier = "sources"
+                }
+
+                artifact(javadocJar) {
+                    classifier = "javadoc"
+                }
+
+                pom {
+                    name = "Pixel 2D Game Framework"
+                    description = "Java 2D Game Framework inspired on the popular XNA framework."
+                    url = "https://github.com/joafalves/pixel-community"
+                    licenses {
+                        license {
+                            name = "The Apache License, Version 2.0"
+                            url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = "jfalves"
+                            name = "João Alves"
+                            email = "joao.cpp.sca@gmail.com"
+                        }
+                    }
+                    scm {
+                        connection = "scm:git:git://github.com/joafalves/pixel-community.git"
+                        developerConnection = "scm:git:ssh://github.com/joafalves/pixel-community.git"
+                        url = "https://github.com/joafalves/pixel-community"
+                    }
+                }
+            }
+        }
+        repositories {
+            if (rootProject.hasProperty("sonatypeUsername") && rootProject.hasProperty("sonatypePassword")) {
+                maven {
+                    url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2"
+                    credentials {
+                        username sonatypeUsername
+                        password sonatypePassword
+                    }
+                }
+            }
+        }
+    }
+
+    tasks.withType(AbstractPublishToMaven).configureEach {
+        {
+            // only publish modules with "mavenPublish" set to "true"
+            it.enabled = (project.ext.has("mavenPublish") && project.ext.get("mavenPublish"))
+        }
+    }
+
+    tasks.withType(Javadoc) {
+        failOnError false
+        options.addStringOption("Xdoclint:none", "-quiet")
+        options.addStringOption("encoding", "UTF-8")
+        options.addStringOption("charSet", "UTF-8")
+    }
 }
 
-//def bundleList = rootProject.subprojects.collect { ":" + it.name } // kinda cool but not configurable
-def bundleList = [":pixel-commons", ":pixel-core", ":pixel-gui", ":pixel-input", ":pixel-math"]
-task bundle(type: Jar, dependsOn: bundleList.collect { it + ":compileJava" }) {
-    // bundle jar name
-    archivesBaseName = rootProject.name + "-bundle-" + buildTarget
-    group = "build"
-    // other settings
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    // bundle manifest
-    manifest {
-        attributes(
-                "Implementation-Title": getArchiveBaseName(),
-                "Implementation-Version": getArchiveVersion()
-        )
-    }
-    // module output files included in bundle
-    from files(bundleList.collect {
-        project(it).sourceSets.main.output
-    })
-    from {
-        // bundle all sub-dependencies in each project as well:
-        bundleList.collect {
-            project(it).configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-        }
+static def getCurrentClassifier() {
+    switch (OperatingSystem.current()) {
+        case OperatingSystem.LINUX:
+            def osArch = System.getProperty("os.arch")
+            return osArch.startsWith("arm") || osArch.startsWith("aarch64")
+                    ? "natives-linux-${osArch.contains("64") || osArch.startsWith("armv8") ? "arm64" : "arm32"}"
+                    : "natives-linux"
+
+        case OperatingSystem.MAC_OS:
+            return System.getProperty("os.arch").startsWith("aarch64") ? "natives-macos-arm64" : "natives-macos"
+
+        case OperatingSystem.WINDOWS:
+            def osArch = System.getProperty("os.arch")
+            return osArch.contains("64")
+                    ? "natives-windows${osArch.startsWith("aarch64") ? "-arm64" : ""}"
+                    : "natives-windows-x86"
     }
 }

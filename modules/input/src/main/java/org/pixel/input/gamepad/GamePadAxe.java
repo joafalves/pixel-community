@@ -15,17 +15,22 @@ public enum GamePadAxe {
     TRIGGER_LEFT(GLFW_GAMEPAD_AXIS_LEFT_TRIGGER),
     TRIGGER_RIGHT(GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER);
 
-    private int value;
+    private final int value;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param value
+     * @param value The value of the axe
      */
     GamePadAxe(int value) {
         this.value = value;
     }
 
+    /**
+     * Get the value of the axe.
+     *
+     * @return The value of the axe
+     */
     public int getValue() {
         return this.value;
     }

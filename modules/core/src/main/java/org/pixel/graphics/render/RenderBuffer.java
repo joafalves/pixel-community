@@ -5,28 +5,68 @@
 
 package org.pixel.graphics.render;
 
-import org.pixel.commons.lifecycle.Disposable;
-import org.pixel.commons.logger.Logger;
-import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.graphics.shader.Shader;
-import org.pixel.graphics.shader.ShaderManager;
-import org.pixel.graphics.shader.standard.RenderBufferShader;
-import org.pixel.content.Texture;
-import org.pixel.math.Rectangle;
-
-import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_STENCIL_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11C.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11C.GL_FLOAT;
 import static org.lwjgl.opengl.GL11C.GL_LINEAR;
 import static org.lwjgl.opengl.GL11C.GL_RGBA;
+import static org.lwjgl.opengl.GL11C.GL_RGBA8;
+import static org.lwjgl.opengl.GL11C.GL_STENCIL_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MAG_FILTER;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MIN_FILTER;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_S;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_T;
 import static org.lwjgl.opengl.GL11C.GL_TRIANGLES;
+import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_BYTE;
+import static org.lwjgl.opengl.GL11C.glBindTexture;
 import static org.lwjgl.opengl.GL11C.glClear;
 import static org.lwjgl.opengl.GL11C.glDrawArrays;
 import static org.lwjgl.opengl.GL11C.glGenTextures;
-import static org.lwjgl.opengl.GL30C.*;
+import static org.lwjgl.opengl.GL11C.glTexImage2D;
+import static org.lwjgl.opengl.GL11C.glTexParameteri;
+import static org.lwjgl.opengl.GL12C.GL_CLAMP_TO_EDGE;
+import static org.lwjgl.opengl.GL30C.GL_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL30C.GL_COLOR_ATTACHMENT0;
+import static org.lwjgl.opengl.GL30C.GL_DRAW_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30C.GL_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30C.GL_FRAMEBUFFER_COMPLETE;
+import static org.lwjgl.opengl.GL30C.GL_READ_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30C.GL_RENDERBUFFER;
+import static org.lwjgl.opengl.GL30C.GL_STATIC_DRAW;
+import static org.lwjgl.opengl.GL30C.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL30C.glActiveTexture;
+import static org.lwjgl.opengl.GL30C.glBindBuffer;
+import static org.lwjgl.opengl.GL30C.glBindFramebuffer;
+import static org.lwjgl.opengl.GL30C.glBindRenderbuffer;
+import static org.lwjgl.opengl.GL30C.glBindVertexArray;
+import static org.lwjgl.opengl.GL30C.glBlitFramebuffer;
+import static org.lwjgl.opengl.GL30C.glBufferData;
+import static org.lwjgl.opengl.GL30C.glCheckFramebufferStatus;
+import static org.lwjgl.opengl.GL30C.glDeleteBuffers;
+import static org.lwjgl.opengl.GL30C.glDeleteFramebuffers;
+import static org.lwjgl.opengl.GL30C.glDeleteRenderbuffers;
+import static org.lwjgl.opengl.GL30C.glDeleteVertexArrays;
+import static org.lwjgl.opengl.GL30C.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL30C.glFramebufferRenderbuffer;
+import static org.lwjgl.opengl.GL30C.glFramebufferTexture2D;
+import static org.lwjgl.opengl.GL30C.glGenBuffers;
+import static org.lwjgl.opengl.GL30C.glGenFramebuffers;
+import static org.lwjgl.opengl.GL30C.glGenRenderbuffers;
+import static org.lwjgl.opengl.GL30C.glGenVertexArrays;
+import static org.lwjgl.opengl.GL30C.glRenderbufferStorageMultisample;
+import static org.lwjgl.opengl.GL30C.glUniform1f;
+import static org.lwjgl.opengl.GL30C.glVertexAttribPointer;
+
+import java.nio.ByteBuffer;
+import org.pixel.commons.lifecycle.Disposable;
+import org.pixel.commons.logger.Logger;
+import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.content.Texture;
+import org.pixel.graphics.shader.Shader;
+import org.pixel.graphics.shader.ShaderManager;
+import org.pixel.graphics.shader.standard.RenderBufferShader;
+import org.pixel.math.Rectangle;
 
 public class RenderBuffer implements Disposable {
 
@@ -42,9 +82,9 @@ public class RenderBuffer implements Disposable {
     private int vbo;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param sourceArea
+     * @param sourceArea The area to capture
      */
     public RenderBuffer(Rectangle sourceArea) {
         this.sourceArea = sourceArea;
@@ -52,39 +92,43 @@ public class RenderBuffer implements Disposable {
     }
 
     /**
-     * Setup render buffer
+     * Setup render buffer.
      */
     private void setupRenderBuffer() {
         glBindFramebuffer(GL_FRAMEBUFFER, msfbo);
         glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGBA, (int) sourceArea.getWidth(), (int) sourceArea.getHeight());
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGBA, (int) sourceArea.getWidth(),
+                (int) sourceArea.getHeight());
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            LOG.error("Failed to initialize MSFBO");
+            LOG.error("Failed to initialize MSFBO.");
         }
 
         if (texture == null) {
             texture = new Texture(glGenTextures());
-            texture.bind();
-            texture.setTextureWrap(GL_CLAMP, GL_CLAMP);
-            texture.setTextureMinMag(GL_LINEAR, GL_LINEAR);
+            glBindTexture(GL_TEXTURE_2D, texture.getId());
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         } else {
-            texture.bind();
+            glBindTexture(GL_TEXTURE_2D, texture.getId());
         }
 
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        texture.setData(null, (int) sourceArea.getWidth(), (int) sourceArea.getHeight());
-        texture.unbind();
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, (int) sourceArea.getWidth(), (int) sourceArea.getHeight(), 0, GL_RGBA,
+                GL_UNSIGNED_BYTE, (ByteBuffer) null);
+        glBindTexture(GL_TEXTURE_2D, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.getId(), 0);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            LOG.error("Failed to initialize FBO");
+            LOG.error("Failed to initialize FBO.");
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0); // unbind any frame buffer
     }
 
     /**
-     * Initialize
+     * Initialize.
      */
     private void init() {
         this.shader = new RenderBufferShader();
@@ -125,16 +169,15 @@ public class RenderBuffer implements Disposable {
     }
 
     /**
-     * Start capturing render data
+     * Start capturing render data.
      */
     public void begin() {
         glBindFramebuffer(GL_FRAMEBUFFER, msfbo);
-        //glClearColor(0.0f, 0.0f, 0.5f, 1f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // clear the screen
     }
 
     /**
-     * Stop capturing render data
+     * Stop capturing render data.
      */
     public void end() {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, msfbo);
@@ -145,24 +188,26 @@ public class RenderBuffer implements Disposable {
     }
 
     /**
-     * Draw captured data
+     * Draw captured data.
      */
     public void draw() {
         ShaderManager.useShader(shader);
 
         // Render textured quad
         glActiveTexture(GL_TEXTURE0);
-        texture.bind();
+        glBindTexture(GL_TEXTURE_2D, texture.getId());
         glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
     }
 
     /**
-     * @param x
-     * @param y
-     * @param width
-     * @param height
+     * Set source area.
+     *
+     * @param x      Top left x coordinate.
+     * @param y      Top left y coordinate.
+     * @param width  Width.
+     * @param height Height.
      */
     public void setSourceArea(float x, float y, float width, float height) {
         if (sourceArea.getWidth() != width || sourceArea.getHeight() != height) {
@@ -171,9 +216,6 @@ public class RenderBuffer implements Disposable {
         }
     }
 
-    /**
-     * Dispose function
-     */
     @Override
     public void dispose() {
         glDeleteFramebuffers(this.fbo);

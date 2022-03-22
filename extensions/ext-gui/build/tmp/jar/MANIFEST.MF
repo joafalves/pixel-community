@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Implementation-Title: pixel-ext-gui
+Implementation-Version: 0.7.1
+
