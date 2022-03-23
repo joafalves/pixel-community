@@ -185,33 +185,7 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
             throw new RuntimeException("This game class has already been initialized");
         }
 
-        // Set up an error callback. The default implementation
-        // will print the error message in System.err.
-        GLFWErrorCallback.createPrint(System.err).set();
-
-        // Initialize GLFW. Most GLFW functions will not work before doing this.
-        if (!glfwInit()) {
-            throw new IllegalStateException("Unable to initialize GLFW");
-        }
-
-        // Configure GLFW
-        glfwDefaultWindowHints(); // optional, the current windowHnd hints are already the default
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the windowHnd will stay hidden after creation
-        glfwWindowHint(GLFW_RESIZABLE, windowResizable ? GLFW_TRUE : GLFW_FALSE); // the windowHnd will be resizable
-        glfwWindowHint(GLFW_SAMPLES, multisampling);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-        glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GL_TRUE);
-
-        if (windowMode != WindowMode.WINDOWED) {
-            glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
-        }
-
-        if (debugMode) {
-            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-        }
+        initializeGlfw();
 
         windowFocused = true;
 
@@ -244,13 +218,8 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
                     windowDimensions.getWindowWidth(), windowDimensions.getWindowHeight(), GLFW_DONT_CARE);
         }
 
-        // Make the OpenGL context current
-        glfwMakeContextCurrent(windowHandle);
-
-        // V-sync configurations
+        glfwMakeContextCurrent(windowHandle); // set current window context
         glfwSwapInterval(vsyncEnabled ? GLFW_TRUE : GLFW_FALSE);
-
-        // Make the windowHnd visible
         glfwShowWindow(windowHandle);
 
         // This line is critical for LWJGL's interoperation with GLFW's OpenGL context, or any context that is managed
@@ -271,48 +240,15 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
 
         Configuration.DISABLE_CHECKS.set(!debugMode);
 
-        // Set resize callback:
-        glfwSetWindowSizeCallback(windowHandle, (window, width, height) -> {
-            windowDimensions.setWindowWidth(width);
-            windowDimensions.setWindowHeight(height);
-            updateViewport();
-            triggerWindowSizeChangeEvent();
-        });
+        initializeWindowCallbacks();
+        initializeAudio();
 
-        glfwSetWindowFocusCallback(windowHandle, ((window, focused) -> {
-            log.debug("Windows focus changed: {}.", focused);
-            windowFocused = focused;
-        }));
-
-        try { // Attempt to initialize the audio device
-            audioDevice = alcOpenDevice((ByteBuffer) null);
-            if (audioDevice == NULL) {
-                throw new IllegalStateException("Failed to open the default OpenAL device.");
-            }
-
-            audioContext = alcCreateContext(audioDevice, audioAttributes);
-            if (audioContext == NULL) {
-                throw new IllegalStateException("Failed to create OpenAL context.");
-            }
-
-            alcMakeContextCurrent(audioContext);
-
-            ALCCapabilities alcCapabilities = ALC.createCapabilities(audioDevice);
-            AL.createCapabilities(alcCapabilities);
-
-        } catch (Exception e) {
-            log.error("Exception caught while initializing the audio device!", e);
-            return false;
-        }
-
-        // Call implementation loading method
         updateViewport();
         setWindowIcon(DEFAULT_WINDOW_ICON_PATH_64, DEFAULT_WINDOW_ICON_PATH_32);
+
         load();
 
-        initialized = true;
-
-        return true;
+        return initialized = true;
     }
 
     @Override
@@ -345,6 +281,88 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
      */
     public void clear() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // clear the screen
+    }
+
+    /**
+     * Initialize GLFW.
+     */
+    private void initializeGlfw() {
+        // Set up an error callback. The default implementation
+        // will print the error message in System.err.
+        GLFWErrorCallback.createPrint(System.err).set();
+
+        // Initialize GLFW. Most GLFW functions will not work before doing this.
+        if (!glfwInit()) {
+            throw new IllegalStateException("Unable to initialize GLFW");
+        }
+
+        // Configure GLFW
+        glfwDefaultWindowHints(); // optional, the current windowHnd hints are already the default
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the windowHnd will stay hidden after creation
+        glfwWindowHint(GLFW_RESIZABLE, windowResizable ? GLFW_TRUE : GLFW_FALSE); // the windowHnd will be resizable
+        glfwWindowHint(GLFW_SAMPLES, multisampling);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GL_TRUE);
+
+        if (windowMode != WindowMode.WINDOWED) {
+            glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+        }
+
+        if (debugMode) {
+            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+        }
+    }
+
+    /**
+     * Set the native window callbacks.
+     */
+    private void initializeWindowCallbacks() {
+        // Input handlers:
+        glfwSetKeyCallback(windowHandle, new Keyboard.KeyboardInputHandler());
+        glfwSetCursorPosCallback(windowHandle, new Mouse.CursorPositionHandler());
+        glfwSetMouseButtonCallback(windowHandle, new Mouse.MouseButtonHandler());
+
+        // Window resize callback:
+        glfwSetWindowSizeCallback(windowHandle, (window, width, height) -> {
+            windowDimensions.setWindowWidth(width);
+            windowDimensions.setWindowHeight(height);
+            updateViewport();
+            triggerWindowSizeChangeEvent();
+        });
+
+        // Window focus callback:
+        glfwSetWindowFocusCallback(windowHandle, ((window, focused) -> {
+            log.debug("Windows focus changed: {}.", focused);
+            windowFocused = focused;
+        }));
+    }
+
+    /**
+     * Initialize the audio context.
+     */
+    private void initializeAudio() {
+        try { // Attempt to initialize the audio device
+            audioDevice = alcOpenDevice((ByteBuffer) null);
+            if (audioDevice == NULL) {
+                throw new IllegalStateException("Failed to open the default OpenAL device.");
+            }
+
+            audioContext = alcCreateContext(audioDevice, audioAttributes);
+            if (audioContext == NULL) {
+                throw new IllegalStateException("Failed to create OpenAL context.");
+            }
+
+            alcMakeContextCurrent(audioContext);
+
+            ALCCapabilities alcCapabilities = ALC.createCapabilities(audioDevice);
+            AL.createCapabilities(alcCapabilities);
+
+        } catch (Exception e) {
+            log.error("Exception caught while initializing the audio device!", e);
+        }
     }
 
     /**
@@ -516,12 +534,6 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
                     (videoMode.width() - pWidth.get(0)) / 2,
                     (videoMode.height() - pHeight.get(0)) / 2
             );
-
-            // Set Input handlers:
-            glfwSetKeyCallback(windowHandle, new Keyboard.KeyboardInputHandler());
-            glfwSetCursorPosCallback(windowHandle, new Mouse.CursorPositionHandler());
-            glfwSetMouseButtonCallback(windowHandle, new Mouse.MouseButtonHandler());
-            //glfwSetCursor(windowHnd, glfwCreateStandardCursor(GLFW_ARROW_CURSOR));
         }
     }
 
@@ -801,7 +813,7 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
     /**
      * Get if the render window is automatically cleared before the rendering phase.
      *
-     * @return
+     * @return True if the render window is automatically cleared before the rendering phase.
      */
     public boolean isAutoWindowClear() {
         return autoWindowClear;
