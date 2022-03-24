@@ -13,7 +13,7 @@ import java.util.ListIterator;
 
 import static org.pixel.ext.tiled.content.TiledConstants.*;
 
-public abstract class DrawStrategy {
+public abstract class TiledDrawStrategy {
     private final Transform transform = new Transform();
     private final Vector2 position = new Vector2();
     private final Boundary tileBoundary = new Boundary(0, 0, 0, 0);

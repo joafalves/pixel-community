@@ -1,6 +1,6 @@
 package org.pixel.ext.tiled.content;
 
-import org.pixel.ext.tiled.view.GenericTileMapView;
+import org.pixel.ext.tiled.view.TiledGenericMapView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ public class TiledLayerGroup extends TiledLayer {
     }
 
     @Override
-    public void draw(GenericTileMapView view) {
+    public void draw(TiledGenericMapView view) {
         for (TiledLayer layer : layers) {
             layer.draw(view);
         }

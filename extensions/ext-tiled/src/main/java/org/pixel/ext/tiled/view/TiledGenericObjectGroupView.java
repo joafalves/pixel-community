@@ -2,7 +2,7 @@ package org.pixel.ext.tiled.view;
 
 import org.pixel.ext.tiled.content.*;
 
-public interface GenericObjectLayerView extends TiledView<TiledObjectGroup> {
+public interface TiledGenericObjectGroupView extends TiledView<TiledObjectGroup> {
     default void draw(TiledTileObject object, TiledObjectGroup group) {
 
     }

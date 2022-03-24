@@ -18,9 +18,9 @@ public class TiledMapViewTest {
         SpriteBatch spriteBatch = Mockito.mock(SpriteBatch.class);
         Camera2D camera2D = Mockito.mock(Camera2D.class);
 
-        TileMapView tileMapView = new TileMapView(spriteBatch, camera2D);
+        TiledMapView tileMapView = new TiledMapView(spriteBatch, camera2D);
 
-        Assertions.assertEquals(TileLayerView.class, tileMapView.layerView.getClass());
+        Assertions.assertEquals(TiledLayerView.class, tileMapView.layerView.getClass());
     }
 
     @Test
@@ -47,7 +47,7 @@ public class TiledMapViewTest {
 
         tileMap.setLayers(layerList);
 
-        TileMapView tileMapView = new TileMapView(layerTiledView, objectGroupTiledView, tiledImageLayerTiledView, camera2D);
+        TiledMapView tileMapView = new TiledMapView(layerTiledView, objectGroupTiledView, tiledImageLayerTiledView, camera2D);
         tileMapView.draw(tileMap, 10);
 
         InOrder inOrder = Mockito.inOrder(layer1, layer2, group, group2);
@@ -72,7 +72,7 @@ public class TiledMapViewTest {
 
         Camera2D camera2D = Mockito.mock(Camera2D.class);
 
-        TileMapView mapView = new TileMapView(layerTiledView, objectGroupTiledView, tiledImageLayerTiledView, camera2D);
+        TiledMapView mapView = new TiledMapView(layerTiledView, objectGroupTiledView, tiledImageLayerTiledView, camera2D);
         SpriteBatch spriteBatch = Mockito.mock(SpriteBatch.class);
         TiledTileLayer tileLayer = Mockito.mock(TiledTileLayer.class);
 
@@ -90,7 +90,7 @@ public class TiledMapViewTest {
 
         Camera2D camera2D = Mockito.mock(Camera2D.class);
 
-        TileMapView mapView = new TileMapView(layerTiledView, objectGroupTiledView, tiledImageLayerTiledView, camera2D);
+        TiledMapView mapView = new TiledMapView(layerTiledView, objectGroupTiledView, tiledImageLayerTiledView, camera2D);
         SpriteBatch spriteBatch = Mockito.mock(SpriteBatch.class);
         TiledObjectGroup group = Mockito.mock(TiledObjectGroup.class);
 
@@ -107,7 +107,7 @@ public class TiledMapViewTest {
 
         Camera2D camera2D = Mockito.mock(Camera2D.class);
 
-        TileMapView mapView = new TileMapView(layerTiledView, objectGroupTiledView, tiledImageLayerTiledView, camera2D);
+        TiledMapView mapView = new TiledMapView(layerTiledView, objectGroupTiledView, tiledImageLayerTiledView, camera2D);
         SpriteBatch spriteBatch = Mockito.mock(SpriteBatch.class);
         TiledImageLayer imageLayer = Mockito.mock(TiledImageLayer.class);
 

@@ -4,7 +4,7 @@ import org.pixel.ext.tiled.content.TiledTileLayer;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Boundary;
 
-public class LeftDownStrategy extends DrawStrategy {
+public class TiledLeftDownStrategy extends TiledDrawStrategy {
     @Override
     public void draw(SpriteBatch spriteBatch, Boundary boundary, TiledTileLayer layer, long frame) {
         for (int y = 0; y < layer.getHeight(); y++) {

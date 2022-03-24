@@ -39,7 +39,7 @@ public class TiledMapViewTestIntegrated {
          */
 
         TiledMap tileMap;
-        TileMapView tileMapView;
+        TiledMapView tileMapView;
         SpriteBatch spriteBatch;
         NvgRenderEngine nvg;
         Color fillColor;
@@ -60,7 +60,7 @@ public class TiledMapViewTestIntegrated {
 
             TileMapImporter importer = new TileMapImporter();
             TileSetImporter tileSetImporter = new TileSetImporter();
-            String tmxFileName = "animation.tmx";
+            String tmxFileName = "big.tmx";
 
             ContentManager contentManager = new ContentManager();
             contentManager.addContentImporter(importer);
@@ -70,7 +70,7 @@ public class TiledMapViewTestIntegrated {
 
             tileMap = contentManager.load(tmxFileName, TiledMap.class, tileMapImporterSettings);
             spriteBatch = new SpriteBatch();
-            tileMapView = new TileMapView(spriteBatch, gameCamera);
+            tileMapView = new TiledMapView(spriteBatch, gameCamera);
         }
 
         @Override

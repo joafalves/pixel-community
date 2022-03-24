@@ -6,8 +6,8 @@
 package org.pixel.ext.tiled.content;
 
 import org.pixel.commons.lifecycle.Disposable;
-import org.pixel.ext.tiled.view.DrawStrategy;
-import org.pixel.ext.tiled.view.RightDownStrategy;
+import org.pixel.ext.tiled.view.TiledDrawStrategy;
+import org.pixel.ext.tiled.view.TiledRightDownStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,13 +20,13 @@ public class TiledMap implements Disposable {
     private List<TiledTileSet> tileSets;
     private List<TiledLayer> layers;
     private String renderOrder;
-    private DrawStrategy drawStrategy; // This isn't very SOLID-like but it could improve performance
+    private TiledDrawStrategy drawStrategy; // This isn't very SOLID-like but it could improve performance
     private TiledCustomProperties customProperties;
 
     public TiledMap() {
         tileSets = new ArrayList<>();
         layers = new ArrayList<>();
-        drawStrategy = new RightDownStrategy();
+        drawStrategy = new TiledRightDownStrategy();
     }
 
     @Override
@@ -100,11 +100,11 @@ public class TiledMap implements Disposable {
         this.renderOrder = renderOrder;
     }
 
-    public DrawStrategy getDrawStrategy() {
+    public TiledDrawStrategy getDrawStrategy() {
         return drawStrategy;
     }
 
-    public void setDrawStrategy(DrawStrategy drawStrategy) {
+    public void setDrawStrategy(TiledDrawStrategy drawStrategy) {
         this.drawStrategy = drawStrategy;
     }
 

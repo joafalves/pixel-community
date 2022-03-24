@@ -1,6 +1,6 @@
 package org.pixel.ext.tiled.content;
 
-import org.pixel.ext.tiled.view.GenericObjectLayerView;
+import org.pixel.ext.tiled.view.TiledGenericObjectGroupView;
 import org.pixel.math.Vector2;
 
 public class TiledObject {
@@ -32,7 +32,7 @@ public class TiledObject {
         this.position = position;
     }
 
-    public void draw(TiledObjectGroup group, GenericObjectLayerView view) {
+    public void draw(TiledObjectGroup group, TiledGenericObjectGroupView view) {
 
     }
 }

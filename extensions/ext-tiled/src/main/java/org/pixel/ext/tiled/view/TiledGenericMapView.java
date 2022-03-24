@@ -5,7 +5,7 @@ import org.pixel.ext.tiled.content.TiledMap;
 import org.pixel.ext.tiled.content.TiledImageLayer;
 import org.pixel.ext.tiled.content.TiledObjectGroup;
 
-public interface GenericTileMapView extends TiledView<TiledMap> {
+public interface TiledGenericMapView extends TiledView<TiledMap> {
     default void draw(TiledTileLayer layer) {
 
     }

@@ -16,7 +16,7 @@ import java.util.ListIterator;
 import static org.pixel.ext.tiled.content.TiledConstants.HORIZONTAL_FLIP_FLAG;
 import static org.pixel.ext.tiled.content.TiledConstants.VERTICAL_FLIP_FLAG;
 
-public class TiledObjectGroupView implements GenericObjectLayerView {
+public class TiledObjectGroupView implements TiledGenericObjectGroupView {
     private final Vector2 position = new Vector2();
     private final SpriteBatch spriteBatch;
     private final Boundary boundary;

@@ -1,6 +1,6 @@
 package org.pixel.ext.tiled.content;
 
-import org.pixel.ext.tiled.view.GenericTileMapView;
+import org.pixel.ext.tiled.view.TiledGenericMapView;
 
 public abstract class TiledLayer {
     protected final TiledMap tileMap;
@@ -47,5 +47,5 @@ public abstract class TiledLayer {
         this.offsetY = offsetY;
     }
 
-    public abstract void draw(GenericTileMapView view);
+    public abstract void draw(TiledGenericMapView view);
 }

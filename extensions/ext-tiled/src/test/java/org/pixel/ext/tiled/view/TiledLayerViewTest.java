@@ -28,7 +28,7 @@ import java.util.List;
 
 import static org.lwjgl.BufferUtils.createByteBuffer;
 
-public class TileLayerViewTest {
+public class TiledLayerViewTest {
     Texture texture1, texture2;
     ImportContext ctx;
     ContentManager contentManager;
@@ -108,7 +108,7 @@ public class TileLayerViewTest {
 
         TiledMap tileMap = importer.process(ctx);
 
-        TileLayerView layerView = new TileLayerView(spriteBatch, boundary);
+        TiledLayerView layerView = new TiledLayerView(spriteBatch, boundary);
 
         InOrder inOrder = Mockito.inOrder(spriteBatch);
 
@@ -162,7 +162,7 @@ public class TileLayerViewTest {
 
         TiledMap tileMap = importer.process(ctx);
 
-        TileLayerView layerView = new TileLayerView(spriteBatch, boundary);
+        TiledLayerView layerView = new TiledLayerView(spriteBatch, boundary);
 
         InOrder inOrder = Mockito.inOrder(spriteBatch);
 
@@ -202,7 +202,7 @@ public class TileLayerViewTest {
 
         TiledMap tileMap = importer.process(ctx);
 
-        TileLayerView layerView = new TileLayerView(spriteBatch, boundary);
+        TiledLayerView layerView = new TiledLayerView(spriteBatch, boundary);
 
         InOrder inOrder = Mockito.inOrder(spriteBatch);
 
@@ -281,7 +281,7 @@ public class TileLayerViewTest {
                         argument.getTopRight().equals(boundary1.getTopRight())
         ))).thenReturn(false);
 
-        TileLayerView layerView = new TileLayerView(spriteBatch, boundary);
+        TiledLayerView layerView = new TiledLayerView(spriteBatch, boundary);
 
         InOrder inOrder = Mockito.inOrder(spriteBatch);
 

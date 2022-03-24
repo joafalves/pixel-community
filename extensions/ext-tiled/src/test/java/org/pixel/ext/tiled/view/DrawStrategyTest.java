@@ -27,7 +27,7 @@ class DrawStrategyTest {
 
     @Test
     void rightDownStrategy() {
-        RightDownStrategy rightDownStrategy = Mockito.spy(new RightDownStrategy());
+        TiledRightDownStrategy rightDownStrategy = Mockito.spy(new TiledRightDownStrategy());
         Mockito.doNothing().when(rightDownStrategy).drawTile(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyLong());
 
         InOrder inOrder = Mockito.inOrder(rightDownStrategy);
@@ -43,7 +43,7 @@ class DrawStrategyTest {
 
     @Test
     void leftDownStrategy() {
-        LeftDownStrategy strategy = Mockito.spy(new LeftDownStrategy());
+        TiledLeftDownStrategy strategy = Mockito.spy(new TiledLeftDownStrategy());
         Mockito.doNothing().when(strategy).drawTile(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyLong());
 
         InOrder inOrder = Mockito.inOrder(strategy);
@@ -60,7 +60,7 @@ class DrawStrategyTest {
 
     @Test
     void leftUpStrategy() {
-        LeftUpStrategy strategy = Mockito.spy(new LeftUpStrategy());
+        TiledLeftUpStrategy strategy = Mockito.spy(new TiledLeftUpStrategy());
         Mockito.doNothing().when(strategy).drawTile(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyLong());
 
         InOrder inOrder = Mockito.inOrder(strategy);
@@ -79,7 +79,7 @@ class DrawStrategyTest {
 
     @Test
     void rightUpStrategy() {
-        RightUpStrategy strategy = Mockito.spy(new RightUpStrategy());
+        TiledRightUpStrategy strategy = Mockito.spy(new TiledRightUpStrategy());
         Mockito.doNothing().when(strategy).drawTile(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyLong());
 
         InOrder inOrder = Mockito.inOrder(strategy);

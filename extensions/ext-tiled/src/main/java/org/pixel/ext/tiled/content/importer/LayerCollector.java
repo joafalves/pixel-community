@@ -4,7 +4,7 @@ import org.pixel.content.ImportContext;
 import org.pixel.ext.tiled.content.TiledLayer;
 import org.pixel.ext.tiled.content.TiledMap;
 import org.pixel.ext.tiled.content.TiledCustomProperties;
-import org.pixel.ext.tiled.view.GenericTileMapView;
+import org.pixel.ext.tiled.view.TiledGenericMapView;
 import org.w3c.dom.Element;
 
 public abstract class LayerCollector {
@@ -14,7 +14,7 @@ public abstract class LayerCollector {
         CustomPropertiesCollector collector = new CustomPropertiesCollector();
         TiledLayer layer = new TiledLayer(tileMap) {
             @Override
-            public void draw(GenericTileMapView view) {
+            public void draw(TiledGenericMapView view) {
 
             }
         };

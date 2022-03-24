@@ -6,7 +6,7 @@ import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Boundary;
 import org.pixel.math.Vector2;
 
-public class TileMapView implements GenericTileMapView {
+public class TiledMapView implements TiledGenericMapView {
     protected long frame;
     TiledView<TiledTileLayer> layerView;
     TiledView<TiledObjectGroup> groupView;
@@ -14,9 +14,9 @@ public class TileMapView implements GenericTileMapView {
     Camera2D camera2D;
     Boundary boundary;
 
-    public TileMapView(SpriteBatch spriteBatch, Camera2D camera2D) {
+    public TiledMapView(SpriteBatch spriteBatch, Camera2D camera2D) {
         this.boundary = new Boundary(0, 0, 0, 0);
-        this.layerView = new TileLayerView(spriteBatch, boundary);
+        this.layerView = new TiledLayerView(spriteBatch, boundary);
         this.groupView = new TiledObjectGroupView(spriteBatch, boundary);
         this.imageLayerView = new TiledImageLayerView(spriteBatch, boundary);
 
@@ -24,7 +24,7 @@ public class TileMapView implements GenericTileMapView {
         this.camera2D = camera2D;
     }
 
-    public TileMapView(TiledView<TiledTileLayer> layerView, TiledView<TiledObjectGroup> groupView, TiledView<TiledImageLayer> imageView, Camera2D camera2D) {
+    public TiledMapView(TiledView<TiledTileLayer> layerView, TiledView<TiledObjectGroup> groupView, TiledView<TiledImageLayer> imageView, Camera2D camera2D) {
         this.layerView = layerView;
         this.groupView = groupView;
         this.imageLayerView = imageView;

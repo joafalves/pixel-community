@@ -10,7 +10,7 @@ import org.pixel.content.ContentImporterInfo;
 import org.pixel.content.ImportContext;
 import org.pixel.ext.tiled.content.TiledMap;
 import org.pixel.ext.tiled.utils.XMLUtils;
-import org.pixel.ext.tiled.view.DrawStrategyFactory;
+import org.pixel.ext.tiled.view.TiledDrawStrategyFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -35,7 +35,7 @@ public class TileMapImporter implements ContentImporter<TiledMap> {
         tileMap.setTileWidth(Integer.parseInt(mapElement.getAttribute("tilewidth")));
         tileMap.setRenderOrder(mapElement.getAttribute("renderorder"));
 
-        DrawStrategyFactory drawStrategyFactory = new DrawStrategyFactory();
+        TiledDrawStrategyFactory drawStrategyFactory = new TiledDrawStrategyFactory();
 
         tileMap.setDrawStrategy(drawStrategyFactory.getDrawStrategy(tileMap));
 

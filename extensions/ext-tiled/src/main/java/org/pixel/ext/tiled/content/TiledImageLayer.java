@@ -1,7 +1,7 @@
 package org.pixel.ext.tiled.content;
 
 import org.pixel.content.Texture;
-import org.pixel.ext.tiled.view.GenericTileMapView;
+import org.pixel.ext.tiled.view.TiledGenericMapView;
 
 public class TiledImageLayer extends TiledLayer {
     Texture image;
@@ -23,7 +23,7 @@ public class TiledImageLayer extends TiledLayer {
     }
 
     @Override
-    public void draw(GenericTileMapView view) {
+    public void draw(TiledGenericMapView view) {
         view.draw(this);
     }
 }
