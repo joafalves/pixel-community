@@ -2,24 +2,24 @@ package org.pixel.ext.tiled.content;
 
 import org.pixel.ext.tiled.view.GenericTileMapView;
 
-public abstract class Layer {
-    protected final TileMap tileMap;
+public abstract class TiledLayer {
+    protected final TiledMap tileMap;
     private double offsetX;
     private double offsetY;
     private TiledCustomProperties customProperties;
 
-    public Layer(TileMap tileMap) {
+    public TiledLayer(TiledMap tileMap) {
         this.tileMap = tileMap;
     }
 
-    public Layer(Layer other) {
+    public TiledLayer(TiledLayer other) {
         this.tileMap = other.tileMap;
         this.offsetX = other.offsetX;
         this.offsetY = other.offsetY;
         this.customProperties = other.customProperties;
     }
 
-    public TileMap getTileMap() {
+    public TiledMap getTileMap() {
         return tileMap;
     }
 

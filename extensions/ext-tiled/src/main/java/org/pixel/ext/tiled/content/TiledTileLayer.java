@@ -2,12 +2,12 @@ package org.pixel.ext.tiled.content;
 
 import org.pixel.ext.tiled.view.GenericTileMapView;
 
-public class TileLayer extends Layer {
+public class TiledTileLayer extends TiledLayer {
     private final int width;
     private final int height;
     private final long[][] tiles;
 
-    public TileLayer(int width, int height, TileMap tileMap) {
+    public TiledTileLayer(int width, int height, TiledMap tileMap) {
         super(tileMap);
         this.width = width;
         this.height = height;
@@ -15,13 +15,12 @@ public class TileLayer extends Layer {
         tiles = new long[height][width];
     }
 
-    public TileLayer(Layer other, int width, int height) {
+    public TiledTileLayer(TiledLayer other, int width, int height) {
         super(other);
         this.width = width;
         this.height = height;
 
         tiles = new long[height][width];
-
     }
 
     public int getHeight() {

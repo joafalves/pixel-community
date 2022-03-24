@@ -3,13 +3,13 @@ package org.pixel.ext.tiled.view;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.pixel.ext.tiled.content.TileMap;
+import org.pixel.ext.tiled.content.TiledMap;
 
 class DrawStrategyFactoryTest {
     @Test
     public void createStrategy() {
         DrawStrategyFactory drawStrategyFactory = new DrawStrategyFactory();
-        TileMap tileMap = Mockito.mock(TileMap.class);
+        TiledMap tileMap = Mockito.mock(TiledMap.class);
 
         Mockito.when(tileMap.getRenderOrder()).thenReturn("right-down");
         Assertions.assertSame(RightDownStrategy.class, drawStrategyFactory.getDrawStrategy(tileMap).getClass());

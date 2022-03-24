@@ -12,18 +12,18 @@ import org.pixel.ext.tiled.view.RightDownStrategy;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TileMap implements Disposable {
+public class TiledMap implements Disposable {
     private int width;
     private int height;
     private int tileWidth;
     private int tileHeight;
-    private List<TileSet> tileSets;
-    private List<Layer> layers;
+    private List<TiledTileSet> tileSets;
+    private List<TiledLayer> layers;
     private String renderOrder;
     private DrawStrategy drawStrategy; // This isn't very SOLID-like but it could improve performance
     private TiledCustomProperties customProperties;
 
-    public TileMap() {
+    public TiledMap() {
         tileSets = new ArrayList<>();
         layers = new ArrayList<>();
         drawStrategy = new RightDownStrategy();
@@ -31,7 +31,7 @@ public class TileMap implements Disposable {
 
     @Override
     public void dispose() {
-        for (TileSet tileSet : tileSets) {
+        for (TiledTileSet tileSet : tileSets) {
             tileSet.dispose();
         }
     }
@@ -52,27 +52,27 @@ public class TileMap implements Disposable {
         this.height = height;
     }
 
-    public List<TileSet> getTileSets() {
+    public List<TiledTileSet> getTileSets() {
         return tileSets;
     }
 
-    public void setTileSets(List<TileSet> tileSets) {
+    public void setTileSets(List<TiledTileSet> tileSets) {
         this.tileSets = tileSets;
     }
 
-    public void addTileSet(TileSet tileSet) {
+    public void addTileSet(TiledTileSet tileSet) {
         tileSets.add(tileSet);
     }
 
-    public List<Layer> getLayers() {
+    public List<TiledLayer> getLayers() {
         return layers;
     }
 
-    public void setLayers(List<Layer> layers) {
+    public void setLayers(List<TiledLayer> layers) {
         this.layers = layers;
     }
 
-    public void addLayer(Layer layer) {
+    public void addLayer(TiledLayer layer) {
         this.layers.add(layer);
     }
 

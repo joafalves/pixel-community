@@ -7,13 +7,13 @@ import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.pixel.content.Texture;
-import org.pixel.ext.tiled.content.TileMap;
+import org.pixel.ext.tiled.content.TiledMap;
+import org.pixel.ext.tiled.content.TiledTileSet;
 import org.pixel.ext.tiled.content.TiledImageLayer;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Boundary;
 import org.pixel.math.Vector2;
-import org.pixel.ext.tiled.content.TileSet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +21,8 @@ import java.util.List;
 class TiledImageLayerViewTest {
     SpriteBatch spriteBatch;
     Boundary boundary;
-    TileSet tileSet;
-    TileMap tileMap;
+    TiledTileSet tileSet;
+    TiledMap tileMap;
     TiledImageLayer layer;
     Texture texture1;
     Texture texture2;
@@ -35,12 +35,12 @@ class TiledImageLayerViewTest {
         Mockito.when(boundary.overlaps(Mockito.any())).thenReturn(true);
         texture1 = Mockito.mock(Texture.class);
         texture2 = Mockito.mock(Texture.class);
-        tileSet = new TileSet(2, 3, 2, 1, texture1);
+        tileSet = new TiledTileSet(2, 3, 2, 1, texture1);
 
         Mockito.when(texture2.getHeight()).thenReturn(10f);
         Mockito.when(texture2.getWidth()).thenReturn(25f);
 
-        tileMap = new TileMap();
+        tileMap = new TiledMap();
         tileMap.addTileSet(tileSet);
         tileSet.setFirstGId(1);
 
@@ -81,7 +81,7 @@ class TiledImageLayerViewTest {
 
         inOrder.verifyNoMoreInteractions();
 
-        Assertions.assertEquals(new Vector2(0 + 2, 0+1), positions.get(0));
+        Assertions.assertEquals(new Vector2(0 + 2, 0 + 1), positions.get(0));
     }
 
     @Test

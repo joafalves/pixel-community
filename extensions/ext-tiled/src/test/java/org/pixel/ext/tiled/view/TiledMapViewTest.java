@@ -12,7 +12,7 @@ import org.pixel.math.Vector2;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TileMapViewTest {
+public class TiledMapViewTest {
     @Test
     public void emptyConstructor() {
         SpriteBatch spriteBatch = Mockito.mock(SpriteBatch.class);
@@ -25,15 +25,15 @@ public class TileMapViewTest {
 
     @Test
     public void draw() {
-        TileMap tileMap = new TileMap();
-        List<Layer> layerList = new ArrayList<>();
-        TileLayer layer1 = Mockito.mock(TileLayer.class);
-        TileLayer layer2 = Mockito.mock(TileLayer.class);
+        TiledMap tileMap = new TiledMap();
+        List<TiledLayer> layerList = new ArrayList<>();
+        TiledTileLayer layer1 = Mockito.mock(TiledTileLayer.class);
+        TiledTileLayer layer2 = Mockito.mock(TiledTileLayer.class);
         TiledObjectGroup group = Mockito.mock(TiledObjectGroup.class);
         TiledObjectGroup group2 = Mockito.mock(TiledObjectGroup.class);
         TiledImageLayer imageLayer = Mockito.mock(TiledImageLayer.class);
         Camera2D camera2D = Mockito.mock(Camera2D.class);
-        TiledView<TileLayer> layerTiledView = (TiledView<TileLayer>) Mockito.mock(TiledView.class);
+        TiledView<TiledTileLayer> layerTiledView = (TiledView<TiledTileLayer>) Mockito.mock(TiledView.class);
         TiledView<TiledObjectGroup> objectGroupTiledView = (TiledView<TiledObjectGroup>) Mockito.mock(TiledView.class);
         TiledView<TiledImageLayer> tiledImageLayerTiledView = (TiledView<TiledImageLayer>) Mockito.mock(TiledView.class);
 
@@ -47,7 +47,7 @@ public class TileMapViewTest {
 
         tileMap.setLayers(layerList);
 
-        TileMapView tileMapView = new TileMapView(layerTiledView, objectGroupTiledView,tiledImageLayerTiledView, camera2D);
+        TileMapView tileMapView = new TileMapView(layerTiledView, objectGroupTiledView, tiledImageLayerTiledView, camera2D);
         tileMapView.draw(tileMap, 10);
 
         InOrder inOrder = Mockito.inOrder(layer1, layer2, group, group2);
@@ -66,7 +66,7 @@ public class TileMapViewTest {
 
     @Test
     public void drawTileLayer() {
-        TiledView<TileLayer> layerTiledView = (TiledView<TileLayer>) Mockito.mock(TiledView.class);
+        TiledView<TiledTileLayer> layerTiledView = (TiledView<TiledTileLayer>) Mockito.mock(TiledView.class);
         TiledView<TiledObjectGroup> objectGroupTiledView = (TiledView<TiledObjectGroup>) Mockito.mock(TiledView.class);
         TiledView<TiledImageLayer> tiledImageLayerTiledView = (TiledView<TiledImageLayer>) Mockito.mock(TiledView.class);
 
@@ -74,7 +74,7 @@ public class TileMapViewTest {
 
         TileMapView mapView = new TileMapView(layerTiledView, objectGroupTiledView, tiledImageLayerTiledView, camera2D);
         SpriteBatch spriteBatch = Mockito.mock(SpriteBatch.class);
-        TileLayer tileLayer = Mockito.mock(TileLayer.class);
+        TiledTileLayer tileLayer = Mockito.mock(TiledTileLayer.class);
 
 
         mapView.draw(tileLayer);
@@ -84,7 +84,7 @@ public class TileMapViewTest {
 
     @Test
     public void drawObjectGroupLayer() {
-        TiledView<TileLayer> layerTiledView = (TiledView<TileLayer>) Mockito.mock(TiledView.class);
+        TiledView<TiledTileLayer> layerTiledView = (TiledView<TiledTileLayer>) Mockito.mock(TiledView.class);
         TiledView<TiledObjectGroup> objectGroupTiledView = (TiledView<TiledObjectGroup>) Mockito.mock(TiledView.class);
         TiledView<TiledImageLayer> tiledImageLayerTiledView = (TiledView<TiledImageLayer>) Mockito.mock(TiledView.class);
 
@@ -101,7 +101,7 @@ public class TileMapViewTest {
 
     @Test
     public void drawImageLayer() {
-        TiledView<TileLayer> layerTiledView = (TiledView<TileLayer>) Mockito.mock(TiledView.class);
+        TiledView<TiledTileLayer> layerTiledView = (TiledView<TiledTileLayer>) Mockito.mock(TiledView.class);
         TiledView<TiledObjectGroup> objectGroupTiledView = (TiledView<TiledObjectGroup>) Mockito.mock(TiledView.class);
         TiledView<TiledImageLayer> tiledImageLayerTiledView = (TiledView<TiledImageLayer>) Mockito.mock(TiledView.class);
 

@@ -1,8 +1,8 @@
 package org.pixel.ext.tiled.content.importer;
 
 import org.pixel.content.ImportContext;
-import org.pixel.ext.tiled.content.TileMap;
-import org.pixel.ext.tiled.content.Layer;
+import org.pixel.ext.tiled.content.TiledLayer;
+import org.pixel.ext.tiled.content.TiledMap;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -22,9 +22,9 @@ public class LayerProcessor implements TileMapProcessor {
         this.factory = factory;
     }
 
-    public List<Layer> processChildren(TileMap tileMap, Element element, ImportContext ctx) {
+    public List<TiledLayer> processChildren(TiledMap tileMap, Element element, ImportContext ctx) {
         NodeList mapChildren = element.getChildNodes();
-        List<Layer> layers = new ArrayList<>();
+        List<TiledLayer> layers = new ArrayList<>();
 
         for (int i = 0; i < mapChildren.getLength(); i++) {
             Node child = mapChildren.item(i);
@@ -34,7 +34,7 @@ public class LayerProcessor implements TileMapProcessor {
 
                 LayerCollector collector = factory.getLayerCollector(child.getNodeName());
 
-                Layer layer = collector.collect(tileMap, childElement, ctx);
+                TiledLayer layer = collector.collect(tileMap, childElement, ctx);
 
                 if (layer != null) {
                     layers.add(layer);
@@ -46,7 +46,7 @@ public class LayerProcessor implements TileMapProcessor {
     }
 
     @Override
-    public void process(TileMap tileMap, Document document, ImportContext ctx) {
+    public void process(TiledMap tileMap, Document document, ImportContext ctx) {
         Element mapElement = document.getDocumentElement();
 
         tileMap.setLayers(processChildren(tileMap, mapElement, ctx));

@@ -8,8 +8,8 @@ import org.pixel.graphics.render.SpriteBatch;
 class TileLayerTest {
     @Test
     void draw() {
-        TileMap map = Mockito.mock(TileMap.class);
-        TileLayer tileLayer = new TileLayer(10, 10, map);
+        TiledMap map = Mockito.mock(TiledMap.class);
+        TiledTileLayer tileLayer = new TiledTileLayer(10, 10, map);
         SpriteBatch spriteBatch = Mockito.mock(SpriteBatch.class);
         TileMapView view = Mockito.mock(TileMapView.class);
 

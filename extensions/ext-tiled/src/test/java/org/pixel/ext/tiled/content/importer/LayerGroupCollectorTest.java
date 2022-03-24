@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.pixel.content.ImportContext;
-import org.pixel.ext.tiled.content.TileLayer;
-import org.pixel.ext.tiled.content.LayerGroup;
-import org.pixel.ext.tiled.content.TileMap;
+import org.pixel.ext.tiled.content.TiledLayerGroup;
+import org.pixel.ext.tiled.content.TiledTileLayer;
+import org.pixel.ext.tiled.content.TiledMap;
 import org.pixel.ext.tiled.content.TiledObjectGroup;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -23,7 +23,7 @@ class LayerGroupCollectorTest {
     @Test
     void processCase1() throws ParserConfigurationException, IOException, SAXException {
         LayerGroupCollector processor = new LayerGroupCollector();
-        TileMap tileMap = Mockito.mock(TileMap.class);
+        TiledMap tileMap = Mockito.mock(TiledMap.class);
 
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
@@ -35,7 +35,7 @@ class LayerGroupCollectorTest {
 
         NodeList list = document.getElementsByTagName("group");
 
-        LayerGroup group = (LayerGroup) processor.collect(tileMap, (Element) list.item(0), Mockito.mock(ImportContext.class));
+        TiledLayerGroup group = (TiledLayerGroup) processor.collect(tileMap, (Element) list.item(0), Mockito.mock(ImportContext.class));
 
         Assertions.assertEquals(5, group.getOffsetX());
         Assertions.assertEquals(3, group.getOffsetY());
@@ -43,7 +43,7 @@ class LayerGroupCollectorTest {
         Assertions.assertEquals("hello", group.getCustomProperties().get("1"));
 
         Assertions.assertEquals(2, group.getLayers().size());
-        Assertions.assertTrue(group.getLayers().get(0) instanceof TileLayer);
+        Assertions.assertTrue(group.getLayers().get(0) instanceof TiledTileLayer);
         Assertions.assertEquals(2 + 3, group.getLayers().get(0).getOffsetY());
         Assertions.assertEquals(1 + 5, group.getLayers().get(1).getOffsetX());
         Assertions.assertTrue(group.getLayers().get(1) instanceof TiledObjectGroup);

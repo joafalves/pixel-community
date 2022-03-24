@@ -1,6 +1,6 @@
 package org.pixel.ext.tiled.view;
 
-import org.pixel.ext.tiled.content.TileMap;
+import org.pixel.ext.tiled.content.TiledMap;
 
 import java.util.HashMap;
 
@@ -14,7 +14,7 @@ public class DrawStrategyFactory {
         renderOrderToStrategy.put("left-up", new LeftUpStrategy());
     }
 
-    public DrawStrategy getDrawStrategy(TileMap tileMap) {
+    public DrawStrategy getDrawStrategy(TiledMap tileMap) {
         return renderOrderToStrategy.getOrDefault(tileMap.getRenderOrder(), new RightDownStrategy());
     }
 }

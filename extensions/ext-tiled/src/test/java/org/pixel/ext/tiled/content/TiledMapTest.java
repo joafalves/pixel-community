@@ -4,12 +4,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
-public class TileMapTest {
+public class TiledMapTest {
     @Test
     public void disposeTest() {
-        TileMap tileMap = new TileMap();
-        TileSet tileSet1 = Mockito.mock(TileSet.class);
-        TileSet tileSet2 = Mockito.mock(TileSet.class);
+        TiledMap tileMap = new TiledMap();
+        TiledTileSet tileSet1 = Mockito.mock(TiledTileSet.class);
+        TiledTileSet tileSet2 = Mockito.mock(TiledTileSet.class);
 
         tileMap.addTileSet(tileSet1);
         tileMap.addTileSet(tileSet2);

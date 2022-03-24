@@ -22,8 +22,8 @@ class TiledObjectGroupViewTest {
     SpriteBatch spriteBatch;
     Boundary boundary;
     Texture texture;
-    TileSet tileSet;
-    TileMap tileMap;
+    TiledTileSet tileSet;
+    TiledMap tileMap;
     TiledTileObject object1;
     TiledTileObject object2;
     TiledObjectGroup group;
@@ -35,15 +35,15 @@ class TiledObjectGroupViewTest {
         boundary = Mockito.mock(Boundary.class);
         Mockito.when(boundary.overlaps(Mockito.any())).thenReturn(true);
         texture = Mockito.mock(Texture.class);
-        tileSet = new TileSet(2, 3, 2, 1, texture);
+        tileSet = new TiledTileSet(2, 3, 2, 1, texture);
 
         group = Mockito.mock(TiledObjectGroup.class);
         object1 = Mockito.mock(TiledTileObject.class);
         object2 = Mockito.mock(TiledTileObject.class);
 
         LinkedHashMap<Integer, TiledObject> map = new LinkedHashMap<>();
-        tileMap = new TileMap();
-        List<TileSet> tileSetList = new ArrayList<>();
+        tileMap = new TiledMap();
+        List<TiledTileSet> tileSetList = new ArrayList<>();
         tileSetList.add(tileSet);
         tileMap.setTileSets(tileSetList);
         tileSet.setFirstGId(1);

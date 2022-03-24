@@ -8,7 +8,7 @@ import org.pixel.math.Vector2;
 
 public class TileMapView implements GenericTileMapView {
     protected long frame;
-    TiledView<TileLayer> layerView;
+    TiledView<TiledTileLayer> layerView;
     TiledView<TiledObjectGroup> groupView;
     TiledView<TiledImageLayer> imageLayerView;
     Camera2D camera2D;
@@ -24,7 +24,7 @@ public class TileMapView implements GenericTileMapView {
         this.camera2D = camera2D;
     }
 
-    public TileMapView(TiledView<TileLayer> layerView, TiledView<TiledObjectGroup> groupView, TiledView<TiledImageLayer> imageView, Camera2D camera2D) {
+    public TileMapView(TiledView<TiledTileLayer> layerView, TiledView<TiledObjectGroup> groupView, TiledView<TiledImageLayer> imageView, Camera2D camera2D) {
         this.layerView = layerView;
         this.groupView = groupView;
         this.imageLayerView = imageView;
@@ -35,7 +35,7 @@ public class TileMapView implements GenericTileMapView {
     }
 
     @Override
-    public void draw(TileLayer layer) {
+    public void draw(TiledTileLayer layer) {
         layerView.draw(layer, frame);
     }
 
@@ -50,14 +50,14 @@ public class TileMapView implements GenericTileMapView {
     }
 
     @Override
-    public void draw(TileMap tileMap, long frame) {
+    public void draw(TiledMap tileMap, long frame) {
         this.frame += frame;
         Vector2 topLeft = camera2D.screenToVirtualCoordinates(0, 0);
         Vector2 bottomRight = camera2D.screenToVirtualCoordinates(camera2D.getWidth(), camera2D.getHeight());
 
         boundary.set(topLeft.getX(), topLeft.getY(), bottomRight.getX() - topLeft.getX(), bottomRight.getY() - topLeft.getY());
 
-        for (Layer layer : tileMap.getLayers()) {
+        for (TiledLayer layer : tileMap.getLayers()) {
             layer.draw(this);
         }
     }

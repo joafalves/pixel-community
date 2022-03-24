@@ -1,9 +1,9 @@
 package org.pixel.ext.tiled.content.importer;
 
 import org.pixel.content.ImportContext;
-import org.pixel.ext.tiled.content.Layer;
-import org.pixel.ext.tiled.content.TileLayer;
-import org.pixel.ext.tiled.content.TileMap;
+import org.pixel.ext.tiled.content.TiledLayer;
+import org.pixel.ext.tiled.content.TiledTileLayer;
+import org.pixel.ext.tiled.content.TiledMap;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -12,11 +12,11 @@ import java.util.List;
 
 public class TileLayerCollector extends LayerCollector {
     @Override
-    public Layer collect(TileMap tileMap, Element tileLayerElement, ImportContext ctx) {
+    public TiledLayer collect(TiledMap tileMap, Element tileLayerElement, ImportContext ctx) {
         int width = Integer.parseInt(tileLayerElement.getAttribute("width"));
         int height = Integer.parseInt(tileLayerElement.getAttribute("height"));
 
-        TileLayer layer = new TileLayer(collectLayerData(tileMap, tileLayerElement), width, height);
+        TiledTileLayer layer = new TiledTileLayer(collectLayerData(tileMap, tileLayerElement), width, height);
 
         Node dataNode = tileLayerElement.getElementsByTagName("data").item(0);
 

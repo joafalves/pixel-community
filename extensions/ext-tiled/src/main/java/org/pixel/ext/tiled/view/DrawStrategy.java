@@ -1,12 +1,12 @@
 package org.pixel.ext.tiled.view;
 
-import org.pixel.ext.tiled.content.TileLayer;
+import org.pixel.ext.tiled.content.TiledTileLayer;
+import org.pixel.ext.tiled.content.TiledTileSet;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Boundary;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
-import org.pixel.ext.tiled.content.TileSet;
 
 import java.util.List;
 import java.util.ListIterator;
@@ -18,7 +18,7 @@ public abstract class DrawStrategy {
     private final Vector2 position = new Vector2();
     private final Boundary tileBoundary = new Boundary(0, 0, 0, 0);
 
-    private void getTileTransform(long gID, TileSet tileSet, long frame) {
+    private void getTileTransform(long gID, TiledTileSet tileSet, long frame) {
         boolean horizontalFlip = (gID & HORIZONTAL_FLIP_FLAG.getBits()) != 0;
         boolean verticalFlip = (gID & VERTICAL_FLIP_FLAG.getBits()) != 0;
         boolean diagonalFlip = (gID & DIAGONAL_FLIP_FLAG.getBits()) != 0;
@@ -34,11 +34,11 @@ public abstract class DrawStrategy {
         }
     }
 
-    protected void drawTile(SpriteBatch spriteBatch, Boundary boundary, TileLayer layer, int x, int y, long frame) {
-        List<TileSet> tileSets = layer.getTileMap().getTileSets();
+    protected void drawTile(SpriteBatch spriteBatch, Boundary boundary, TiledTileLayer layer, int x, int y, long frame) {
+        List<TiledTileSet> tileSets = layer.getTileMap().getTileSets();
         long gID = layer.getTiles()[y][x];
         long originalGID = gID;
-        ListIterator<TileSet> itr = tileSets.listIterator(tileSets.size());
+        ListIterator<TiledTileSet> itr = tileSets.listIterator(tileSets.size());
 
         gID &= ~(HORIZONTAL_FLIP_FLAG.getBits() | VERTICAL_FLIP_FLAG.getBits() | DIAGONAL_FLIP_FLAG.getBits());
 
@@ -47,7 +47,7 @@ public abstract class DrawStrategy {
         }
 
         while (itr.hasPrevious()) {
-            TileSet tileSet = itr.previous();
+            TiledTileSet tileSet = itr.previous();
 
             if (tileSet.getFirstGId() <= gID) {
                 position.setX(x * layer.getTileMap().getTileWidth() + (float) layer.getOffsetX() + 0.5f * tileSet.getTileWidth());
@@ -73,7 +73,7 @@ public abstract class DrawStrategy {
         }
     }
 
-    public abstract void draw(SpriteBatch spriteBatch, Boundary boundary, TileLayer layer, long frame);
+    public abstract void draw(SpriteBatch spriteBatch, Boundary boundary, TiledTileLayer layer, long frame);
 
     private static class Transform {
         private Rectangle rectangle = null;

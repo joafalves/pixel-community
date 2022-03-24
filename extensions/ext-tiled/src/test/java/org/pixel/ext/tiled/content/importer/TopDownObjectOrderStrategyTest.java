@@ -4,8 +4,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.pixel.commons.data.Pair;
-import org.pixel.math.Vector2;
 import org.pixel.ext.tiled.content.TiledObject;
+import org.pixel.math.Vector2;
 
 import java.util.ArrayList;
 import java.util.Iterator;

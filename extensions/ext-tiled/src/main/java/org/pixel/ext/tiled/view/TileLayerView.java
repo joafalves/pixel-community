@@ -1,10 +1,10 @@
 package org.pixel.ext.tiled.view;
 
-import org.pixel.ext.tiled.content.TileLayer;
+import org.pixel.ext.tiled.content.TiledTileLayer;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Boundary;
 
-public class TileLayerView implements TiledView<TileLayer> {
+public class TileLayerView implements TiledView<TiledTileLayer> {
     private final SpriteBatch spriteBatch;
     private final Boundary boundary;
 
@@ -14,7 +14,7 @@ public class TileLayerView implements TiledView<TileLayer> {
     }
 
     @Override
-    public void draw(TileLayer layer, long frame) {
+    public void draw(TiledTileLayer layer, long frame) {
         layer.getTileMap().getDrawStrategy().draw(spriteBatch, boundary, layer, frame);
     }
 }

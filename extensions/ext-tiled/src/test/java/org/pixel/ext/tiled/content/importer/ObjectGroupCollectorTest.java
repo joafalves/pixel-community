@@ -4,11 +4,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.pixel.content.ImportContext;
-import org.pixel.ext.tiled.content.TileMap;
-import org.pixel.math.MathHelper;
+import org.pixel.ext.tiled.content.TiledMap;
 import org.pixel.ext.tiled.content.TiledObject;
 import org.pixel.ext.tiled.content.TiledObjectGroup;
 import org.pixel.ext.tiled.content.TiledTileObject;
+import org.pixel.math.MathHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -25,7 +25,7 @@ class ObjectGroupCollectorTest {
     @Test
     void process() throws ParserConfigurationException, IOException, SAXException {
         ObjectGroupCollector processor = new ObjectGroupCollector();
-        TileMap tileMap = Mockito.mock(TileMap.class);
+        TiledMap tileMap = Mockito.mock(TiledMap.class);
 
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
@@ -64,7 +64,7 @@ class ObjectGroupCollectorTest {
     @Test
     void processIndex() throws ParserConfigurationException, IOException, SAXException {
         ObjectGroupCollector processor = new ObjectGroupCollector();
-        TileMap tileMap = Mockito.mock(TileMap.class);
+        TiledMap tileMap = Mockito.mock(TiledMap.class);
 
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
@@ -93,7 +93,7 @@ class ObjectGroupCollectorTest {
     @Test
     void processTopDown() throws ParserConfigurationException, IOException, SAXException {
         ObjectGroupCollector processor = new ObjectGroupCollector();
-        TileMap tileMap = Mockito.mock(TileMap.class);
+        TiledMap tileMap = Mockito.mock(TiledMap.class);
 
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);

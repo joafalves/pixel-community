@@ -4,14 +4,14 @@ import org.pixel.ext.tiled.view.GenericTileMapView;
 
 import java.util.LinkedHashMap;
 
-public class TiledObjectGroup extends Layer {
+public class TiledObjectGroup extends TiledLayer {
     private LinkedHashMap<Integer, TiledObject> objects;
 
-    public TiledObjectGroup(TileMap tileMap) {
+    public TiledObjectGroup(TiledMap tileMap) {
         super(tileMap);
     }
 
-    public TiledObjectGroup(Layer other) {
+    public TiledObjectGroup(TiledLayer other) {
         super(other);
     }
 

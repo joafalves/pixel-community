@@ -14,7 +14,7 @@ public class TileSetTest {
     @Test
     public void disposeTest() {
         Texture texture = Mockito.mock(Texture.class);
-        TileSet tileSet = new TileSet(10, 10, 10, 10, texture);
+        TiledTileSet tileSet = new TiledTileSet(10, 10, 10, 10, texture);
 
         tileSet.dispose();
 
@@ -24,7 +24,7 @@ public class TileSetTest {
     @Test
     public void sourceAtFlips() {
         Texture texture = Mockito.mock(Texture.class);
-        TileSet tileSet = new TileSet(10, 6, 4, 2, texture);
+        TiledTileSet tileSet = new TiledTileSet(10, 6, 4, 2, texture);
 
         Rectangle rectangle = tileSet.sourceAt(0, false, false, 0);
 
@@ -84,7 +84,7 @@ public class TileSetTest {
     @Test
     void sourceAtFrame() {
         Texture texture = Mockito.mock(Texture.class);
-        TileSet tileSet = new TileSet(10, 6, 6, 2, texture);
+        TiledTileSet tileSet = new TiledTileSet(10, 6, 6, 2, texture);
 
         TiledTile tile1 = Mockito.mock(TiledTile.class);
         TiledAnimation animation1 = new TiledAnimation();

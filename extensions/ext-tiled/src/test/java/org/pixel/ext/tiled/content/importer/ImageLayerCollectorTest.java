@@ -6,7 +6,7 @@ import org.mockito.Mockito;
 import org.pixel.content.ContentManager;
 import org.pixel.content.ImportContext;
 import org.pixel.content.Texture;
-import org.pixel.ext.tiled.content.TileMap;
+import org.pixel.ext.tiled.content.TiledMap;
 import org.pixel.ext.tiled.content.TiledImageLayer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -26,7 +26,7 @@ class ImageLayerCollectorTest {
         Texture texture = Mockito.mock(Texture.class);
         ImportContext ctx = Mockito.mock(ImportContext.class);
         ContentManager manager = Mockito.mock(ContentManager.class);
-        TileMap tileMap = Mockito.mock(TileMap.class);
+        TiledMap tileMap = Mockito.mock(TiledMap.class);
 
         Mockito.when(ctx.getContentManager()).thenReturn(manager);
         Mockito.when(manager.load(Mockito.anyString(), Mockito.eq(Texture.class), Mockito.any())).thenReturn(texture);

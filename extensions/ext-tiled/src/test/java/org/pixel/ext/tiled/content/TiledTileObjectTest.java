@@ -2,8 +2,8 @@ package org.pixel.ext.tiled.content;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.ext.tiled.view.TiledObjectGroupView;
+import org.pixel.graphics.render.SpriteBatch;
 
 class TiledTileObjectTest {
     @Test

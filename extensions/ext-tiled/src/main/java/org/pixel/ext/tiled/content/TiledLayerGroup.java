@@ -5,27 +5,27 @@ import org.pixel.ext.tiled.view.GenericTileMapView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LayerGroup extends Layer {
-    List<Layer> layers;
+public class TiledLayerGroup extends TiledLayer {
+    List<TiledLayer> layers;
 
-    public LayerGroup(TileMap tileMap) {
+    public TiledLayerGroup(TiledMap tileMap) {
         super(tileMap);
 
         layers = new ArrayList<>();
     }
 
-    public LayerGroup(Layer other) {
+    public TiledLayerGroup(TiledLayer other) {
         super(other);
     }
 
-    public List<Layer> getLayers() {
+    public List<TiledLayer> getLayers() {
         return layers;
     }
 
-    public void setLayers(List<Layer> layers) {
+    public void setLayers(List<TiledLayer> layers) {
         this.layers = layers;
 
-        for (Layer layer : layers) {
+        for (TiledLayer layer : layers) {
             layer.setOffsetX(layer.getOffsetX() + this.getOffsetX());
             layer.setOffsetY(layer.getOffsetY() + this.getOffsetY());
         }
@@ -33,7 +33,7 @@ public class LayerGroup extends Layer {
 
     @Override
     public void draw(GenericTileMapView view) {
-        for (Layer layer : layers) {
+        for (TiledLayer layer : layers) {
             layer.draw(view);
         }
     }

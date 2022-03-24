@@ -4,19 +4,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
-import org.pixel.ext.tiled.content.TileLayer;
+import org.pixel.ext.tiled.content.TiledTileLayer;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Boundary;
 
 class DrawStrategyTest {
-    TileLayer layer;
+    TiledTileLayer layer;
     SpriteBatch spriteBatch;
     Boundary boundary;
     long[][] tiles = new long[2][2];
 
     @BeforeEach
     void setup() {
-        layer = Mockito.mock(TileLayer.class);
+        layer = Mockito.mock(TiledTileLayer.class);
         spriteBatch = Mockito.mock(SpriteBatch.class);
         boundary = Mockito.mock(Boundary.class);
 

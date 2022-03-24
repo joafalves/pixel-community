@@ -7,7 +7,7 @@ import org.pixel.math.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TileSet implements Disposable {
+public class TiledTileSet implements Disposable {
     private final int tileWidth;
     private final int tileHeight;
     private final int tileCount;
@@ -17,7 +17,7 @@ public class TileSet implements Disposable {
     private int firstGId;
     private TiledCustomProperties customProperties;
 
-    public TileSet(int tileWidth, int tileHeight, int tileCount, int columns, Texture texture) {
+    public TiledTileSet(int tileWidth, int tileHeight, int tileCount, int columns, Texture texture) {
         this.tileCount = tileCount;
         this.tileHeight = tileHeight;
         this.tileWidth = tileWidth;

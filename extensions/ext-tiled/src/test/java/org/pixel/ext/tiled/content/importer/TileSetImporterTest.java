@@ -35,7 +35,7 @@ public class TileSetImporterTest {
         Mockito.doReturn(buffer).when(ctx).getBuffer();
         Mockito.when(ctx.getContentManager()).thenReturn(contentManager);
 
-        TileSet tileSet = importer.process(ctx);
+        TiledTileSet tileSet = importer.process(ctx);
 
         Assertions.assertEquals(16, tileSet.getTileHeight());
         Assertions.assertEquals(16, tileSet.getTileWidth());
@@ -113,7 +113,7 @@ public class TileSetImporterTest {
         Mockito.doReturn(buffer).when(ctx).getBuffer();
         Mockito.when(ctx.getContentManager()).thenReturn(contentManager);
 
-        TileSet tileSet = importer.process(ctx);
+        TiledTileSet tileSet = importer.process(ctx);
 
         Assertions.assertEquals(16, tileSet.getTileHeight());
         Assertions.assertEquals(16, tileSet.getTileWidth());
@@ -152,7 +152,7 @@ public class TileSetImporterTest {
         Mockito.doReturn(buffer).when(ctx).getBuffer();
         Mockito.when(ctx.getContentManager()).thenReturn(contentManager);
 
-        TileSet tileSet = importer.process(ctx);
+        TiledTileSet tileSet = importer.process(ctx);
 
         Assertions.assertNull(tileSet);
     }
@@ -182,7 +182,7 @@ public class TileSetImporterTest {
         Mockito.when(ctx.getContentManager()).thenReturn(contentManager);
         //Mockito.when(ctx.getSettings()).thenReturn(settings);
 
-        TileSet tileSet = importer.process(ctx);
+        TiledTileSet tileSet = importer.process(ctx);
 
         Mockito.verify(contentManager).load(Mockito.eq("Tileset.png"), Mockito.eq(Texture.class), Mockito.eq(null));
 

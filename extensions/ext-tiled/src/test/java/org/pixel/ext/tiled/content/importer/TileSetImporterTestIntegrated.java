@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.pixel.content.ContentManager;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
-import org.pixel.ext.tiled.content.TileSet;
+import org.pixel.ext.tiled.content.TiledTileSet;
 
 public class TileSetImporterTestIntegrated {
     @Test
@@ -37,7 +37,7 @@ public class TileSetImporterTestIntegrated {
             ContentManager contentManager = new ContentManager();
             contentManager.addContentImporter(importer);
 
-            TileSet tileSet = contentManager.load(tsxFileName, TileSet.class);
+            TiledTileSet tileSet = contentManager.load(tsxFileName, TiledTileSet.class);
 
             Assertions.assertEquals(16, tileSet.getTileHeight());
             Assertions.assertEquals(16, tileSet.getTileWidth());

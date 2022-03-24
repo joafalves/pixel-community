@@ -9,7 +9,7 @@ import org.mockito.Mockito;
 import java.util.ArrayList;
 import java.util.List;
 
-class TileMapImporterSettingsTest {
+class TiledMapImporterSettingsTest {
     @Test
     void constructor() {
         List<TileMapProcessor> processorList = new ArrayList<>();

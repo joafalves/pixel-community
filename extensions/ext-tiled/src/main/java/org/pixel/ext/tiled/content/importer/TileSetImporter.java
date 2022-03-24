@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-@ContentImporterInfo(type = TileSet.class, extension = ".tsx")
-public class TileSetImporter implements ContentImporter<TileSet> {
+@ContentImporterInfo(type = TiledTileSet.class, extension = ".tsx")
+public class TileSetImporter implements ContentImporter<TiledTileSet> {
     private static final Logger LOG = LoggerFactory.getLogger(TileSetImporter.class);
     private final ObjectCollector collector;
     private final CustomPropertiesCollector propertiesCollector;
@@ -35,7 +35,7 @@ public class TileSetImporter implements ContentImporter<TileSet> {
     }
 
     @Override
-    public TileSet process(ImportContext ctx) {
+    public TiledTileSet process(ImportContext ctx) {
         XMLUtils utils = new XMLUtils();
         Document tsxDoc = utils.openXMLDocument(ctx);
 
@@ -72,7 +72,7 @@ public class TileSetImporter implements ContentImporter<TileSet> {
 
         TiledCustomProperties customProperties = new CustomPropertiesCollector().collect(tilesetElement);
 
-        TileSet tileSet = new TileSet(tileWidth, tileHeight, tileCount, columns, tileSetImage);
+        TiledTileSet tileSet = new TiledTileSet(tileWidth, tileHeight, tileCount, columns, tileSetImage);
         tileSet.setCustomProperties(customProperties);
 
         NodeList tiles = tilesetElement.getElementsByTagName("tile");

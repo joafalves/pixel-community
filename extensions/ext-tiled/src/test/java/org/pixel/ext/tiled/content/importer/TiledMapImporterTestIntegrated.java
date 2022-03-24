@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.pixel.content.ContentManager;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
-import org.pixel.ext.tiled.content.TileMap;
+import org.pixel.ext.tiled.content.TiledMap;
 
-public class TileMapImporterTestIntegrated {
+public class TiledMapImporterTestIntegrated {
 
     @Test
     public void processCase1Integrated() {
@@ -40,7 +40,7 @@ public class TileMapImporterTestIntegrated {
             contentManager.addContentImporter(importer);
             contentManager.addContentImporter(tileSetImporter);
 
-            TileMap tileMap = contentManager.load(tmxFileName, TileMap.class);
+            TiledMap tileMap = contentManager.load(tmxFileName, TiledMap.class);
 
             Assertions.assertEquals(25, tileMap.getHeight());
             Assertions.assertEquals(51, tileMap.getWidth());

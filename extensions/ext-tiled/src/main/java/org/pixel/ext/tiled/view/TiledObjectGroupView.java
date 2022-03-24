@@ -1,5 +1,6 @@
 package org.pixel.ext.tiled.view;
 
+import org.pixel.ext.tiled.content.TiledTileSet;
 import org.pixel.ext.tiled.content.TiledObject;
 import org.pixel.ext.tiled.content.TiledObjectGroup;
 import org.pixel.ext.tiled.content.TiledTileObject;
@@ -8,7 +9,6 @@ import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Boundary;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
-import org.pixel.ext.tiled.content.TileSet;
 
 import java.util.List;
 import java.util.ListIterator;
@@ -29,10 +29,11 @@ public class TiledObjectGroupView implements GenericObjectLayerView {
         this.tileBoundary = new Boundary(0, 0, 0, 0);
     }
 
+    @Override
     public void draw(TiledTileObject tile, TiledObjectGroup group) {
-        List<TileSet> tileSets = group.getTileMap().getTileSets();
+        List<TiledTileSet> tileSets = group.getTileMap().getTileSets();
         long gID = tile.getgID();
-        ListIterator<TileSet> itr = tileSets.listIterator(tileSets.size());
+        ListIterator<TiledTileSet> itr = tileSets.listIterator(tileSets.size());
 
         boolean horizontalFlip = (gID & HORIZONTAL_FLIP_FLAG.getBits()) != 0;
         boolean verticalFlip = (gID & VERTICAL_FLIP_FLAG.getBits()) != 0;
@@ -40,7 +41,7 @@ public class TiledObjectGroupView implements GenericObjectLayerView {
         gID &= ~(HORIZONTAL_FLIP_FLAG.getBits() | VERTICAL_FLIP_FLAG.getBits());
 
         while (itr.hasPrevious()) {
-            TileSet tileSet = itr.previous();
+            TiledTileSet tileSet = itr.previous();
 
             if (tileSet.getFirstGId() <= gID) {
                 Rectangle source = tileSet.sourceAt(gID, horizontalFlip, verticalFlip, frame);

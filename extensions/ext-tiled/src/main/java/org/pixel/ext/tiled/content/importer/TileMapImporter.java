@@ -8,16 +8,16 @@ package org.pixel.ext.tiled.content.importer;
 import org.pixel.content.ContentImporter;
 import org.pixel.content.ContentImporterInfo;
 import org.pixel.content.ImportContext;
+import org.pixel.ext.tiled.content.TiledMap;
 import org.pixel.ext.tiled.utils.XMLUtils;
 import org.pixel.ext.tiled.view.DrawStrategyFactory;
-import org.pixel.ext.tiled.content.TileMap;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-@ContentImporterInfo(type = TileMap.class, extension = ".tmx")
-public class TileMapImporter implements ContentImporter<TileMap> {
+@ContentImporterInfo(type = TiledMap.class, extension = ".tmx")
+public class TileMapImporter implements ContentImporter<TiledMap> {
     @Override
-    public TileMap process(ImportContext ctx) {
+    public TiledMap process(ImportContext ctx) {
         XMLUtils utils = new XMLUtils();
         Document tmxDoc = utils.openXMLDocument(ctx);
 
@@ -27,7 +27,7 @@ public class TileMapImporter implements ContentImporter<TileMap> {
 
         Element mapElement = tmxDoc.getDocumentElement();
 
-        TileMap tileMap = new TileMap();
+        TiledMap tileMap = new TiledMap();
 
         tileMap.setHeight(Integer.parseInt(mapElement.getAttribute("height")));
         tileMap.setWidth(Integer.parseInt(mapElement.getAttribute("width")));

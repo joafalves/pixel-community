@@ -7,7 +7,7 @@ import org.pixel.content.importer.settings.ContentImporterSettings;
 import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
-import org.pixel.ext.tiled.content.TileMap;
+import org.pixel.ext.tiled.content.TiledMap;
 import org.pixel.ext.tiled.content.importer.TileMapImporter;
 import org.pixel.ext.tiled.content.importer.TileMapImporterSettings;
 import org.pixel.ext.tiled.content.importer.TileSetImporter;
@@ -19,7 +19,7 @@ import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 import org.pixel.math.Vector2;
 
-public class TileMapViewTestIntegrated {
+public class TiledMapViewTestIntegrated {
     @Test
     public void processCase1Integrated() {
         WindowSettings settings = new WindowSettings(600, 600);
@@ -38,7 +38,7 @@ public class TileMapViewTestIntegrated {
          * @param settings
          */
 
-        TileMap tileMap;
+        TiledMap tileMap;
         TileMapView tileMapView;
         SpriteBatch spriteBatch;
         NvgRenderEngine nvg;
@@ -68,7 +68,7 @@ public class TileMapViewTestIntegrated {
 
             ContentImporterSettings tileMapImporterSettings = new TileMapImporterSettings();
 
-            tileMap = contentManager.load(tmxFileName, TileMap.class, tileMapImporterSettings);
+            tileMap = contentManager.load(tmxFileName, TiledMap.class, tileMapImporterSettings);
             spriteBatch = new SpriteBatch();
             tileMapView = new TileMapView(spriteBatch, gameCamera);
         }

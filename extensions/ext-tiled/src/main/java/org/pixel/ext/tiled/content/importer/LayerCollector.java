@@ -1,18 +1,18 @@
 package org.pixel.ext.tiled.content.importer;
 
 import org.pixel.content.ImportContext;
-import org.pixel.ext.tiled.content.TileMap;
+import org.pixel.ext.tiled.content.TiledLayer;
+import org.pixel.ext.tiled.content.TiledMap;
 import org.pixel.ext.tiled.content.TiledCustomProperties;
 import org.pixel.ext.tiled.view.GenericTileMapView;
-import org.pixel.ext.tiled.content.Layer;
 import org.w3c.dom.Element;
 
 public abstract class LayerCollector {
-    abstract Layer collect(TileMap tileMap, Element tileLayerElement, ImportContext ctx);
+    abstract TiledLayer collect(TiledMap tileMap, Element tileLayerElement, ImportContext ctx);
 
-    Layer collectLayerData(TileMap tileMap, Element tileLayerElement) {
+    TiledLayer collectLayerData(TiledMap tileMap, Element tileLayerElement) {
         CustomPropertiesCollector collector = new CustomPropertiesCollector();
-        Layer layer = new Layer(tileMap) {
+        TiledLayer layer = new TiledLayer(tileMap) {
             @Override
             public void draw(GenericTileMapView view) {
 

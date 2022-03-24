@@ -1,9 +1,9 @@
 package org.pixel.ext.tiled.content.importer;
 
 import org.pixel.content.ImportContext;
-import org.pixel.ext.tiled.content.Layer;
-import org.pixel.ext.tiled.content.LayerGroup;
-import org.pixel.ext.tiled.content.TileMap;
+import org.pixel.ext.tiled.content.TiledLayer;
+import org.pixel.ext.tiled.content.TiledLayerGroup;
+import org.pixel.ext.tiled.content.TiledMap;
 import org.w3c.dom.Element;
 
 public class LayerGroupCollector extends LayerCollector {
@@ -18,8 +18,8 @@ public class LayerGroupCollector extends LayerCollector {
     }
 
     @Override
-    Layer collect(TileMap tileMap, Element tileLayerElement, ImportContext ctx) {
-        LayerGroup group = new LayerGroup(collectLayerData(tileMap, tileLayerElement));
+    TiledLayer collect(TiledMap tileMap, Element tileLayerElement, ImportContext ctx) {
+        TiledLayerGroup group = new TiledLayerGroup(collectLayerData(tileMap, tileLayerElement));
 
         group.setLayers(processor.processChildren(tileMap, tileLayerElement, ctx));
 
