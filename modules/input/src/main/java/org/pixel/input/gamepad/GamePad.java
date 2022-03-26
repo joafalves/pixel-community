@@ -23,6 +23,16 @@ public class GamePad {
     }
 
     /**
+     * Get the name of a GamePad.
+     *
+     * @param index The index of the GamePad to get the name of.
+     * @return The name of the GamePad.
+     */
+    public static String getName(GamePadIndex index) {
+        return GLFW.glfwGetJoystickName(index.getValue());
+    }
+
+    /**
      * Get current GamePad state.
      *
      * @param index The index of the GamePad to get the state of.
