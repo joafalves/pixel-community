@@ -26,7 +26,7 @@ public class GamePad {
      * Get the name of a GamePad.
      *
      * @param index The index of the GamePad to get the name of.
-     * @return The name of the GamePad.
+     * @return The name of the GamePad or null if the GamePad is not connected.
      */
     public static String getName(GamePadIndex index) {
         return GLFW.glfwGetJoystickName(index.getValue());
@@ -36,10 +36,10 @@ public class GamePad {
      * Get current GamePad state.
      *
      * @param index The index of the GamePad to get the state of.
-     * @return The current GamePad state.
+     * @return The current GamePad state or null if the GamePad is not connected.
      */
     public static GamePadState getState(GamePadIndex index) {
-        String name = GLFW.glfwGetJoystickName(index.getValue());
+        String name = getName(index);
         if (name != null) { // also checks if the controller is connected
             FloatBuffer axes = GLFW.glfwGetJoystickAxes(index.getValue());
             ByteBuffer buttons = GLFW.glfwGetJoystickButtons(index.getValue());
