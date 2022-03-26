@@ -108,6 +108,7 @@ public class KeyboardState implements Serializable {
      *
      * @return An array of keys that are on a down state
      */
+    @Deprecated
     public List<Integer> downKeys() {
         List<Integer> downKeys = new ArrayList<>();
         this.keys.forEach((key, state) -> {

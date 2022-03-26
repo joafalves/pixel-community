@@ -5,8 +5,6 @@
 
 package org.pixel.demo.learning.text;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
@@ -16,18 +14,20 @@ import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
-import org.pixel.math.MathHelper;
+import org.pixel.input.keyboard.Keyboard;
+import org.pixel.input.keyboard.KeyboardKey;
 import org.pixel.math.Vector2;
 
 public class TextDemo extends DemoGame {
 
-    private static final String TEXT = "The quick brown fox jumps over the lazy dog\nABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final String BASE_TEXT = "Type something on your keyboard:\n";
 
     private ContentManager content;
     private SpriteBatch spriteBatch;
 
     private Font font;
-    private List<TextDisplayDemo> textDisplayDemoList;
+    private String text = BASE_TEXT;
+    private Vector2 textPosition;
 
     public TextDemo(WindowSettings settings) {
         super(settings);
@@ -46,21 +46,22 @@ public class TextDemo extends DemoGame {
         font = content.load("fonts/gidole-regular.ttf", Font.class);
         font.setFontSize(32); // the base font-size (as it will be applied on the generated texture)
 
-        textDisplayDemoList = new ArrayList<>();
-        for (float verticalOffset = 10; verticalOffset < getVirtualHeight(); ) {
-            TextDisplayDemo textDisplayDemo = new TextDisplayDemo();
-            textDisplayDemo.fontSize = verticalOffset == 10 ? 32 : MathHelper.random(16, font.getFontSize());
-            textDisplayDemo.textColor = verticalOffset == 10 ? Color.WHITE : Color.random();
-            textDisplayDemo.verticalOffset = verticalOffset;
-            textDisplayDemoList.add(textDisplayDemo);
+        textPosition = new Vector2(10, 10);
 
-            verticalOffset += textDisplayDemo.fontSize * 2 + 10; // 2 lines + 5 pixels between each line
-        }
+        // bind keyboard direct input to add user text:
+        Keyboard.addCharListener(character -> text += character);
     }
 
     @Override
     public void update(DeltaTime delta) {
         super.update(delta);
+
+        if (Keyboard.isKeyPressed(KeyboardKey.ENTER)) {
+            text += "\n";
+
+        } else if (Keyboard.isKeyPressed(KeyboardKey.BACKSPACE) && text.length() > BASE_TEXT.length()) {
+            text = text.substring(0, text.length() - 1);
+        }
     }
 
     @Override
@@ -69,10 +70,7 @@ public class TextDemo extends DemoGame {
         spriteBatch.begin(gameCamera.getViewMatrix(), BlendMode.NORMAL_BLEND);
 
         // font definition for this drawing phase:
-        for (TextDisplayDemo textDisplayDemo : textDisplayDemoList) {
-            spriteBatch.drawText(font, TEXT, new Vector2(10, textDisplayDemo.verticalOffset),
-                    textDisplayDemo.textColor, textDisplayDemo.fontSize);
-        }
+        spriteBatch.drawText(font, text, textPosition, Color.WHITE, font.getFontSize());
 
         // end and draw all sprites stored:
         spriteBatch.end();
@@ -86,15 +84,8 @@ public class TextDemo extends DemoGame {
         font.dispose();
     }
 
-    private static class TextDisplayDemo {
-
-        private int fontSize;
-        private float verticalOffset;
-        private Color textColor;
-    }
-
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(900, 420);
+        WindowSettings settings = new WindowSettings(800, 600);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
