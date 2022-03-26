@@ -82,10 +82,11 @@ public class AnimatedSpriteDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        super.dispose();
         content.dispose();
         spriteBatch.dispose();
         spriteTex.dispose();
+
+        super.dispose();
     }
 
     public static void main(String[] args) {

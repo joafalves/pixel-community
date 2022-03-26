@@ -12,7 +12,6 @@ import org.pixel.ext.ecs.Sprite;
 public class EcsHierarchyDemo extends PixelWindow {
 
     private ContentManager contentManager;
-    private Camera2D gameCamera;
     private GameScene gameScene;
 
     public EcsHierarchyDemo(WindowSettings settings) {
@@ -22,7 +21,6 @@ public class EcsHierarchyDemo extends PixelWindow {
     @Override
     public void load() {
         contentManager = new ContentManager();
-        gameCamera = new Camera2D(this);
 
         Sprite parent = new Sprite("parent", contentManager.loadTexture("images/earth-48x48.png"));
         parent.getTransform().setScale(3f);
@@ -36,7 +34,7 @@ public class EcsHierarchyDemo extends PixelWindow {
         subChild.getTransform().setPosition(80, 0);
         subChild.getTransform().setScale(0.5f);
 
-        gameScene = new GameScene("SampleScene", gameCamera);
+        gameScene = new GameScene("SampleScene", new Camera2D(this));
         gameScene.addChild(parent);
         parent.addChild(child);
         child.addChild(subChild);
@@ -50,6 +48,12 @@ public class EcsHierarchyDemo extends PixelWindow {
     @Override
     public void draw(DeltaTime delta) {
         gameScene.draw(delta);
+    }
+
+    @Override
+    public void dispose() {
+        contentManager.dispose();
+        super.dispose();
     }
 
     private static class RotateComponent extends GameComponent {

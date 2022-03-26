@@ -76,6 +76,11 @@ public class KeyboardInputDemo extends DemoGame {
             gameCamera.setPosition(0, 0); // reset camera position
         }
 
+        // Note that 'isKeyPressed()' is also available:
+        if (Keyboard.isKeyPressed(KeyboardKey.ESCAPE)) {
+            dispose(); // quit the game...
+        }
+
         // Take into consideration that the 'getState()' causes volatile memory which can result in quicker GC cycles
         lastKeyboardState = Keyboard.getState();
     }
@@ -94,10 +99,11 @@ public class KeyboardInputDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        super.dispose();
         content.dispose();
         spriteBatch.dispose();
         spriteTex.dispose();
+
+        super.dispose();
     }
 
     public static void main(String[] args) {

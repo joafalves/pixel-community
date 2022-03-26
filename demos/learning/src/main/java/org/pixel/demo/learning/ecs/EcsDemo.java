@@ -16,7 +16,6 @@ import org.pixel.math.MathHelper;
 public class EcsDemo extends PixelWindow {
 
     private ContentManager contentManager;
-    private Camera2D gameCamera;
     private GameScene gameScene;
 
     public EcsDemo(WindowSettings settings) {
@@ -26,13 +25,12 @@ public class EcsDemo extends PixelWindow {
     @Override
     public void load() {
         contentManager = new ContentManager();
-        gameCamera = new Camera2D(this);
 
         Sprite sprite = new Sprite("earth", contentManager.loadTexture("images/earth-48x48.png"));
         sprite.getTransform().setScale(3f);
         sprite.addComponent(new MovementComponent());
 
-        gameScene = new GameScene("SampleScene", gameCamera);
+        gameScene = new GameScene("SampleScene", new Camera2D(this));
         gameScene.addChild(sprite);
     }
 
@@ -44,6 +42,12 @@ public class EcsDemo extends PixelWindow {
     @Override
     public void draw(DeltaTime delta) {
         gameScene.draw(delta);
+    }
+
+    @Override
+    public void dispose() {
+        contentManager.dispose();
+        super.dispose();
     }
 
     private static class MovementComponent extends GameComponent {

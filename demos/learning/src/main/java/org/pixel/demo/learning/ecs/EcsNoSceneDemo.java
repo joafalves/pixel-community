@@ -48,6 +48,12 @@ public class EcsNoSceneDemo extends PixelWindow {
         spriteBatch.end();
     }
 
+    @Override
+    public void dispose() {
+        contentManager.dispose();
+        super.dispose();
+    }
+
     private static class MovementComponent extends GameComponent {
 
         @Override

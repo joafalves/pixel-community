@@ -78,10 +78,11 @@ public class TextDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        super.dispose();
         content.dispose();
         spriteBatch.dispose();
         font.dispose();
+
+        super.dispose();
     }
 
     public static void main(String[] args) {

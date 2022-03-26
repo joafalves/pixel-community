@@ -12,11 +12,6 @@ public class SimpleWindowDemo extends DemoGame {
 
     private UIView view;
 
-    /**
-     * Constructor
-     *
-     * @param settings
-     */
     public SimpleWindowDemo(WindowSettings settings) {
         super(settings);
     }
@@ -52,6 +47,12 @@ public class SimpleWindowDemo extends DemoGame {
     @Override
     public void draw(DeltaTime delta) {
         view.draw(delta);
+    }
+
+    @Override
+    public void dispose() {
+        view.dispose();
+        super.dispose();
     }
 
     public static void main(String[] args) {

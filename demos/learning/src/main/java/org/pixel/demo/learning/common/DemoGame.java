@@ -19,11 +19,6 @@ public abstract class DemoGame extends PixelWindow {
     protected final Camera2D gameCamera;
     protected final FpsCounter fpsCounter;
 
-    /**
-     * Constructor
-     *
-     * @param settings
-     */
     public DemoGame(WindowSettings settings) {
         super(settings);
 
