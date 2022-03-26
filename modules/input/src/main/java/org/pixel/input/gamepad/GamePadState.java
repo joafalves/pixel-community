@@ -22,7 +22,7 @@ public class GamePadState implements Serializable {
      * @param buttonState The button state.
      * @param axeState    The axe state.
      */
-    public GamePadState(String name, ByteBuffer buttonState, FloatBuffer axeState) {
+    protected GamePadState(String name, ByteBuffer buttonState, FloatBuffer axeState) {
         this.name = name;
         this.buttonState = buttonState;
         this.axeState = axeState;

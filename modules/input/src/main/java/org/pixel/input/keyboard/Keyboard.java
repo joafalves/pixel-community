@@ -5,6 +5,10 @@
 
 package org.pixel.input.keyboard;
 
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
+import static org.lwjgl.glfw.GLFW.GLFW_REPEAT;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +21,7 @@ public class Keyboard {
 
     static {
         keys = new HashMap<>();
+        pressedKeys = new HashMap<>();
         charListeners = new ArrayList<>();
     }
 
@@ -24,7 +29,11 @@ public class Keyboard {
 
     //region properties
 
-    private static final HashMap<Integer, Integer> keys;
+    // NOTE: the pressed keys exist because it's must faster to consider that only pressed keys exist on that map
+    // than having to manually loop through the keys map to check if the key is pressed or not (end of frame clean).
+
+    private static final HashMap<Integer, Integer> pressedKeys;         // <Key, Action>
+    private static final HashMap<Integer, Integer> keys;                // <Key, Action>
     private static final List<KeyboardCharListener> charListeners;
 
     //endregion
@@ -38,8 +47,8 @@ public class Keyboard {
      * @return True if the key is down.
      */
     public static boolean isKeyDown(KeyboardKey key) {
-        Integer value = keys.get(key.getValue());
-        return value != null && value > 0;
+        var value = keys.get(key.getValue());
+        return value != null && (value == GLFW_PRESS || value == GLFW_REPEAT);
     }
 
     /**
@@ -49,8 +58,19 @@ public class Keyboard {
      * @return True if the key is up.
      */
     public static boolean isKeyUp(KeyboardKey key) {
-        Integer value = keys.get(key.getValue());
-        return value != null && value == 0;
+        var value = keys.get(key.getValue());
+        return value != null && value == GLFW_RELEASE;
+    }
+
+    /**
+     * Static method to determine if a key is pressed.
+     *
+     * @param key The key to check.
+     * @return True if the key is pressed.
+     */
+    public static boolean isKeyPressed(KeyboardKey key) {
+        var value = pressedKeys.get(key.getValue());
+        return (value != null && value == GLFW_PRESS);
     }
 
     /**
@@ -59,7 +79,8 @@ public class Keyboard {
      * @return The current keyboard state.
      */
     public static KeyboardState getState() {
-        return new KeyboardState((HashMap<Integer, Integer>) keys.clone());
+        return new KeyboardState((HashMap<Integer, Integer>) keys.clone(),
+                (HashMap<Integer, Integer>) pressedKeys.clone());
     }
 
     /**
@@ -83,6 +104,14 @@ public class Keyboard {
         return charListeners.remove(listener);
     }
 
+    /**
+     * Static method to clear all single-frame mapped keys. This function shall be called once at the end of the render
+     * frame (before native event polling).
+     */
+    public static void clear() {
+        pressedKeys.clear();
+    }
+
     //endregion
 
     //region internal classes
@@ -92,6 +121,9 @@ public class Keyboard {
         @Override
         public void invoke(long window, int key, int scanCode, int action, int mods) {
             keys.put(key, action);
+            if (action == GLFW_PRESS) {
+                pressedKeys.put(key, action);
+            }
         }
 
     }

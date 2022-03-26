@@ -444,6 +444,8 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
             update(delta);
             draw(delta);
 
+            Keyboard.clear();
+
             glfwSwapBuffers(windowHandle);
             glfwPollEvents();
 
