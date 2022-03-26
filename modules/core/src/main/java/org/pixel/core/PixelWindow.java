@@ -33,6 +33,7 @@ import static org.lwjgl.glfw.GLFW.glfwGetWindowSize;
 import static org.lwjgl.glfw.GLFW.glfwInit;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
+import static org.lwjgl.glfw.GLFW.glfwSetCharCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetCursorPosCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetInputMode;
 import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
@@ -322,6 +323,7 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
     private void initializeWindowCallbacks() {
         // Input handlers:
         glfwSetKeyCallback(windowHandle, new Keyboard.KeyboardInputHandler());
+        glfwSetCharCallback(windowHandle, new Keyboard.KeyboardCharacterHandler());
         glfwSetCursorPosCallback(windowHandle, new Mouse.CursorPositionHandler());
         glfwSetMouseButtonCallback(windowHandle, new Mouse.MouseButtonHandler());
 

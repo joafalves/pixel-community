@@ -5,9 +5,11 @@
 
 package org.pixel.input.keyboard;
 
-import org.lwjgl.glfw.GLFWKeyCallback;
-
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import org.lwjgl.glfw.GLFWCharCallback;
+import org.lwjgl.glfw.GLFWKeyCallback;
 
 public class Keyboard {
 
@@ -15,6 +17,7 @@ public class Keyboard {
 
     static {
         keys = new HashMap<>();
+        charListeners = new ArrayList<>();
     }
 
     //endregion
@@ -22,6 +25,7 @@ public class Keyboard {
     //region properties
 
     private static final HashMap<Integer, Integer> keys;
+    private static final List<KeyboardCharListener> charListeners;
 
     //endregion
 
@@ -58,6 +62,27 @@ public class Keyboard {
         return new KeyboardState((HashMap<Integer, Integer>) keys.clone());
     }
 
+    /**
+     * Static method to add a keyboard char listener.
+     *
+     * @param listener The listener to add.
+     */
+    public static void addCharListener(KeyboardCharListener listener) {
+        if (!charListeners.contains(listener)) {
+            charListeners.add(listener);
+        }
+    }
+
+    /**
+     * Static method to remove a keyboard char listener.
+     *
+     * @param listener The listener to remove.
+     * @return True if the listener was removed.
+     */
+    public static boolean removeCharListener(KeyboardCharListener listener) {
+        return charListeners.remove(listener);
+    }
+
     //endregion
 
     //region internal classes
@@ -67,6 +92,17 @@ public class Keyboard {
         @Override
         public void invoke(long window, int key, int scanCode, int action, int mods) {
             keys.put(key, action);
+        }
+
+    }
+
+    public static class KeyboardCharacterHandler extends GLFWCharCallback {
+
+        @Override
+        public void invoke(long window, int codepoint) {
+            for (KeyboardCharListener listener : charListeners) {
+                listener.onCharacter((char) codepoint);
+            }
         }
 
     }
