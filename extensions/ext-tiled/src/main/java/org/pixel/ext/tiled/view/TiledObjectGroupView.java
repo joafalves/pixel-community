@@ -50,12 +50,7 @@ public class TiledObjectGroupView implements TiledGenericObjectGroupView {
                 position.setX(tile.getPosition().getX() + (float) group.getOffsetX());
 
                 tileBoundary.set(position.getX(), (float) (position.getY() - tile.getHeight()), (float) tile.getWidth(), (float) tile.getHeight());
-//                spriteBatch.draw(
-//                        tileSet.getTexture(), position, source, Color.WHITE, Vector2.ZERO_ONE,
-//                        (float) tile.getWidth() / tileSet.getTileWidth(),
-//                        (float) tile.getHeight() / tileSet.getTileHeight(),
-//                        0f
-//                );
+                tileBoundary.rotate(new Vector2(position.getX(), position.getY()), tile.getRotation());
 
                 if (!boundary.overlaps(tileBoundary)) {
                     continue;

@@ -107,11 +107,11 @@ class TiledObjectGroupViewTest {
         inOrder.verify(spriteBatch).draw(Mockito.same(texture),
                 Mockito.any(), Mockito.eq(new Rectangle(2f, 3f, -2f, -3f)),
                 Mockito.same(Color.WHITE), Mockito.same(Vector2.ZERO_ONE),
-                Mockito.eq(1f / 2f), Mockito.eq(1f), Mockito.eq(-5f));
+                Mockito.eq(1f / 2f), Mockito.eq(1f), Mockito.eq(5f));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture),
                 Mockito.any(), Mockito.eq(new Rectangle(0f, 3f, 2f, 3f)),
                 Mockito.same(Color.WHITE), Mockito.same(Vector2.ZERO_ONE),
-                Mockito.eq(1f), Mockito.eq(1f), Mockito.eq(-0f));
+                Mockito.eq(1f), Mockito.eq(1f), Mockito.eq(0f));
 
         inOrder.verifyNoMoreInteractions();
 
@@ -121,7 +121,8 @@ class TiledObjectGroupViewTest {
 
     @Test
     void drawOutside() {
-        Boundary boundary1 = new Boundary(0 + 0.4f, 2 + 0.5f, 1, 3);
+        Boundary boundary1 = new Boundary(0 + 0.4f, 2 + 0.5f - 3 , 1, 3);
+        boundary1.rotate(new Vector2(0 + 0.4f, 2 + 0.5f), 5f);
         Mockito.when(boundary.overlaps(Mockito.argThat(argument ->
                 argument.getBottomLeft().equals(boundary1.getBottomLeft()) &&
                         argument.getBottomRight().equals(boundary1.getBottomRight()) &&
@@ -138,12 +139,12 @@ class TiledObjectGroupViewTest {
         inOrder.verify(spriteBatch, Mockito.times(0)).draw(Mockito.same(texture),
                 Mockito.any(), Mockito.eq(new Rectangle(2f, 3f, -2f, -3f)),
                 Mockito.same(Color.WHITE), Mockito.same(Vector2.ZERO_ONE),
-                Mockito.eq(1f / 2f), Mockito.eq(1f), Mockito.eq(-5f));
+                Mockito.eq(1f / 2f), Mockito.eq(1f), Mockito.eq(5f));
 
         inOrder.verify(spriteBatch).draw(Mockito.same(texture),
                 Mockito.any(), Mockito.eq(new Rectangle(0f, 3f, 2f, 3f)),
                 Mockito.same(Color.WHITE), Mockito.same(Vector2.ZERO_ONE),
-                Mockito.eq(1f), Mockito.eq(1f), Mockito.eq(-0f));
+                Mockito.eq(1f), Mockito.eq(1f), Mockito.eq(0f));
 
         inOrder.verifyNoMoreInteractions();
 
