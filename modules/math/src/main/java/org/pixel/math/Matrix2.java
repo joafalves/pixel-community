@@ -7,6 +7,7 @@ package org.pixel.math;
 
 import java.io.Serializable;
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 
 public class Matrix2 implements Serializable {
 
@@ -52,6 +53,22 @@ public class Matrix2 implements Serializable {
     //endregion
 
     //region public methods
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Matrix2)) {
+            return false;
+        }
+
+        var other = (Matrix2) obj;
+        for (var i = 0; i < m.length; i++) {
+            if (!Arrays.equals(m[i], other.m[i])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     /**
      * Sets the values to an identity matrix.
