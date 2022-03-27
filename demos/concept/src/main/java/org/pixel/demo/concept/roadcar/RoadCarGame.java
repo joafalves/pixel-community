@@ -1,7 +1,5 @@
 package org.pixel.demo.concept.roadcar;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.core.PixelWindow;
@@ -15,8 +13,11 @@ import org.pixel.graphics.render.RenderEngine2D;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 import org.pixel.math.MathHelper;
-import org.pixel.math.IntSize;
+import org.pixel.math.SizeInt;
 import org.pixel.math.Vector2;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class RoadCarGame extends PixelWindow {
 
@@ -108,7 +109,7 @@ public class RoadCarGame extends PixelWindow {
             var segment = getNearestRoadSegmentStarter(cameraPosition);
             var targetSegment = segment.getRandomNextSegment();
             var vehicle = Vehicle.builder()
-                    .intSize(new IntSize(75, 40))
+                    .sizeInt(new SizeInt(75, 40))
                     .color(Color.random())
                     .position(new Vector2(segment.getPosition()))
                     .orientation(MathHelper.direction(segment.getPosition(), targetSegment.getPosition()))
@@ -193,15 +194,15 @@ public class RoadCarGame extends PixelWindow {
 
             renderEngine.beginPath();
             renderEngine.rectangle(
-                    -vehicle.getIntSize().getHalfWidth(), -vehicle.getIntSize().getHalfHeight(),
-                    vehicle.getIntSize().getWidth(), vehicle.getIntSize().getHeight());
+                    -vehicle.getSizeInt().getHalfWidth(), -vehicle.getSizeInt().getHalfHeight(),
+                    vehicle.getSizeInt().getWidth(), vehicle.getSizeInt().getHeight());
             renderEngine.fillColor(vehicle.getColor());
             renderEngine.fill();
             renderEngine.endPath();
 
             renderEngine.beginPath();
             renderEngine.moveTo(0, 0);
-            renderEngine.lineTo(vehicle.getIntSize().getHalfWidth(), 0);
+            renderEngine.lineTo(vehicle.getSizeInt().getHalfWidth(), 0);
             renderEngine.strokeColor(Color.BLACK);
             renderEngine.stroke();
             renderEngine.endPath();

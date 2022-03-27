@@ -5,10 +5,11 @@
 
 package org.pixel.math;
 
-import java.io.Serializable;
 import lombok.Builder;
 
-public class IntSize implements Serializable {
+import java.io.Serializable;
+
+public class SizeInt implements Serializable {
 
     private int width;
     private int height;
@@ -20,7 +21,7 @@ public class IntSize implements Serializable {
      * @param height The height of the size.
      */
     @Builder
-    public IntSize(int width, int height) {
+    public SizeInt(int width, int height) {
         this.width = width;
         this.height = height;
     }
@@ -30,7 +31,7 @@ public class IntSize implements Serializable {
      *
      * @param other The other size.
      */
-    public IntSize(IntSize other) {
+    public SizeInt(SizeInt other) {
         this.width = other.width;
         this.height = other.height;
     }
@@ -102,8 +103,8 @@ public class IntSize implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof IntSize) {
-            return ((IntSize) obj).getWidth() == this.getWidth() && ((IntSize) obj).getHeight() == this.getHeight();
+        if (obj instanceof SizeInt) {
+            return ((SizeInt) obj).getWidth() == this.getWidth() && ((SizeInt) obj).getHeight() == this.getHeight();
         }
         return false;
     }

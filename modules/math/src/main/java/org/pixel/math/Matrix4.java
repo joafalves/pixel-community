@@ -12,8 +12,8 @@ public class Matrix4 implements Serializable {
 
     //region properties
 
-    private float[][] m = new float[4][4];
-    private float[][] tmp = new float[4][4];
+    private final float[][] m = new float[4][4];
+    private transient final float[][] tmp = new float[4][4];
 
     //endregion
 

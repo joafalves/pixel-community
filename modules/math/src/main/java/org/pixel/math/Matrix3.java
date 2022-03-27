@@ -12,8 +12,8 @@ public class Matrix3 implements Serializable {
 
     //region properties
 
-    private float[][] m = new float[3][3];
-    private float[][] tmp = new float[3][3];
+    private final float[][] m = new float[3][3];
+    private transient final float[][] tmp = new float[3][3];
 
     //endregion
 
