@@ -8,7 +8,7 @@ import org.pixel.ext.tiled.content.TiledMap;
 import org.pixel.ext.tiled.content.TiledImageLayer;
 import org.w3c.dom.Element;
 
-public class ImageLayerCollector extends LayerCollector {
+class ImageLayerCollector extends LayerCollector {
     @Override
     TiledLayer collect(TiledMap tileMap, Element tileLayerElement, ImportContext ctx) {
         TiledImageLayer layer = new TiledImageLayer(collectLayerData(tileMap, tileLayerElement));

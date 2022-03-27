@@ -80,19 +80,7 @@ public class TiledTileSet implements Disposable {
             TiledAnimation animation = tile.getAnimation();
 
             if (animation != null) {
-                long currentFrame = frame % animation.getTotalFrameCount();
-                currentFrame = Math.abs(currentFrame);
-                long frameSum = 0;
-
-                for (TiledFrame animFrame : animation.getFrameList()) {
-                    frameSum += animFrame.getDuration();
-
-                    if (frameSum > currentFrame) {
-                        gID = animFrame.getLocalId();
-
-                        break;
-                    }
-                }
+                return animation.getCurrentGID(frame, gID);
             }
         }
 

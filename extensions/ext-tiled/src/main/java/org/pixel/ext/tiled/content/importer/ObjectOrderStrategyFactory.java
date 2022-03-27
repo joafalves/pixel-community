@@ -2,7 +2,7 @@ package org.pixel.ext.tiled.content.importer;
 
 import java.util.HashMap;
 
-public class ObjectOrderStrategyFactory {
+class ObjectOrderStrategyFactory {
     private final static HashMap<String, ObjectOrderStrategy> objectOrderToStrategy = new HashMap<>();
 
     static {

@@ -6,7 +6,7 @@ import org.pixel.ext.tiled.content.TiledLayerGroup;
 import org.pixel.ext.tiled.content.TiledMap;
 import org.w3c.dom.Element;
 
-public class LayerGroupCollector extends LayerCollector {
+class LayerGroupCollector extends LayerCollector {
     LayerProcessor processor;
 
     public LayerGroupCollector() {

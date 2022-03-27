@@ -7,7 +7,7 @@ import org.pixel.ext.tiled.content.TiledCustomProperties;
 import org.pixel.ext.tiled.view.TiledGenericMapView;
 import org.w3c.dom.Element;
 
-public abstract class LayerCollector {
+abstract class LayerCollector {
     abstract TiledLayer collect(TiledMap tileMap, Element tileLayerElement, ImportContext ctx);
 
     TiledLayer collectLayerData(TiledMap tileMap, Element tileLayerElement) {

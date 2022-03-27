@@ -70,7 +70,7 @@ public class TileSetImporter implements ContentImporter<TiledTileSet> {
             return null;
         }
 
-        TiledCustomProperties customProperties = new CustomPropertiesCollector().collect(tilesetElement);
+        TiledCustomProperties customProperties = propertiesCollector.collect(tilesetElement);
 
         TiledTileSet tileSet = new TiledTileSet(tileWidth, tileHeight, tileCount, columns, tileSetImage);
         tileSet.setCustomProperties(customProperties);

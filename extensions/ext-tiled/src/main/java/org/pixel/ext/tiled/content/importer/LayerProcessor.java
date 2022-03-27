@@ -11,7 +11,7 @@ import org.w3c.dom.NodeList;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LayerProcessor implements TileMapProcessor {
+class LayerProcessor implements TileMapProcessor {
     private final LayerCollectorFactory factory;
 
     public LayerProcessor() {

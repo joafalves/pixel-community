@@ -27,6 +27,6 @@ class TiledAnimationTest {
 
         tiledAnimation.setFrameList(frames);
 
-        Assertions.assertEquals(10L + 25L + 7L, tiledAnimation.getTotalFrameCount());
+        Assertions.assertEquals(10L + 25L + 7L, tiledAnimation.getTotalMsCount());
     }
 }

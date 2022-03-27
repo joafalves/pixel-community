@@ -10,7 +10,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class TileSetProcessor implements TileMapProcessor {
+class TileSetProcessor implements TileMapProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(TileMapImporter.class);
 
     @Override

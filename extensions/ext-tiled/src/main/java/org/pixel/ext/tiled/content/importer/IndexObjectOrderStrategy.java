@@ -6,7 +6,7 @@ import org.pixel.ext.tiled.content.TiledObject;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-public class IndexObjectOrderStrategy extends ObjectOrderStrategy {
+class IndexObjectOrderStrategy extends ObjectOrderStrategy {
     @Override
     public LinkedHashMap<Integer, TiledObject> getMap(List<Pair<Integer, TiledObject>> list) {
         LinkedHashMap<Integer, TiledObject> objectMap = new LinkedHashMap<>();

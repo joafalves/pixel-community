@@ -7,7 +7,7 @@ import org.w3c.dom.NodeList;
 
 import java.util.Objects;
 
-public class CustomPropertiesCollector {
+class CustomPropertiesCollector {
     public TiledCustomProperties collect(Element xmlDoc) {
         NodeList properties = xmlDoc.getElementsByTagName("properties");
 

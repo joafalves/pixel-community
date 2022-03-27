@@ -2,7 +2,7 @@ package org.pixel.ext.tiled.content.importer;
 
 import java.util.HashMap;
 
-public class LayerCollectorFactory {
+class LayerCollectorFactory {
     private final static HashMap<String, LayerCollector> nameToStrategy = new HashMap<>();
 
     static {

@@ -10,7 +10,7 @@ import org.w3c.dom.Node;
 import java.util.Arrays;
 import java.util.List;
 
-public class TileLayerCollector extends LayerCollector {
+class TileLayerCollector extends LayerCollector {
     @Override
     public TiledLayer collect(TiledMap tileMap, Element tileLayerElement, ImportContext ctx) {
         int width = Integer.parseInt(tileLayerElement.getAttribute("width"));

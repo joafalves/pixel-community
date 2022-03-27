@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class ObjectCollector {
+class ObjectCollector {
     public Pair<Integer, TiledObject> collect(Element objectElement) {
         CustomPropertiesCollector collector = new CustomPropertiesCollector();
 
