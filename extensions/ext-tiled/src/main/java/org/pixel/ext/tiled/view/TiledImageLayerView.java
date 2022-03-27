@@ -24,6 +24,10 @@ public class TiledImageLayerView implements TiledView<TiledImageLayer> {
     public void draw(TiledImageLayer layer, long frame) {
         position.set((float) layer.getOffsetX(), (float) layer.getOffsetY());
 
+        if(layer.getImage() == null) {
+            return;
+        }
+
         imageBoundary.set(position.getX(), position.getY(), layer.getImage().getWidth(), layer.getImage().getHeight());
 
         if (!boundary.overlaps(imageBoundary)) {

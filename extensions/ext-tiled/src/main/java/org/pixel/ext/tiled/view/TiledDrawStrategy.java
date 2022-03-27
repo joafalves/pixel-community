@@ -11,7 +11,8 @@ import org.pixel.math.Vector2;
 import java.util.List;
 import java.util.ListIterator;
 
-import static org.pixel.ext.tiled.content.TiledConstants.*;
+import static org.pixel.ext.tiled.content.TiledConstants.PIXEL_EPSILON;
+import static org.pixel.ext.tiled.content.TiledFlipMasks.*;
 
 public abstract class TiledDrawStrategy {
     private final Transform transform = new Transform();
@@ -27,7 +28,7 @@ public abstract class TiledDrawStrategy {
         gID &= ~(HORIZONTAL_FLIP_FLAG.getBits() | VERTICAL_FLIP_FLAG.getBits() | DIAGONAL_FLIP_FLAG.getBits());
 
         if (diagonalFlip) {
-            transform.rotation = (float) Math.PI / 2;
+            transform.rotation = -(float) Math.PI / 2;
             transform.rectangle = tileSet.sourceAt(gID, !verticalFlip, horizontalFlip, frame);
         } else {
             transform.rectangle = tileSet.sourceAt(gID, horizontalFlip, verticalFlip, frame);
@@ -50,8 +51,8 @@ public abstract class TiledDrawStrategy {
             TiledTileSet tileSet = itr.previous();
 
             if (tileSet.getFirstGId() <= gID) {
-                position.setX(x * layer.getTileMap().getTileWidth() + (float) layer.getOffsetX() + 0.5f * tileSet.getTileWidth());
-                position.setY(y * layer.getTileMap().getTileHeight() + (float) layer.getOffsetY() + 0.5f * tileSet.getTileHeight());
+                position.setX((float) Math.floor(x * layer.getTileMap().getTileWidth() + layer.getOffsetX() + 0.5 * tileSet.getTileWidth() + PIXEL_EPSILON.getValue()));
+                position.setY((float) Math.floor(y * layer.getTileMap().getTileHeight() + layer.getOffsetY() + 0.5 * tileSet.getTileHeight() + PIXEL_EPSILON.getValue()));
 
                 tileBoundary.set(
                         position.getX() - 0.5f * tileSet.getTileWidth(),

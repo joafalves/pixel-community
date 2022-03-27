@@ -1,17 +1,14 @@
 package org.pixel.ext.tiled.content;
 
 public enum TiledConstants {
-    HORIZONTAL_FLIP_FLAG(0x80000000),
-    VERTICAL_FLIP_FLAG(0x40000000),
-    DIAGONAL_FLIP_FLAG(0x20000000);
+    PIXEL_EPSILON(0.005f);
+    float value;
 
-    long bits;
-
-    TiledConstants(long bits) {
-        this.bits = bits;
+    TiledConstants(float value) {
+        this.value = value;
     }
 
-    public long getBits() {
-        return bits;
+    public float getValue() {
+        return value;
     }
 }

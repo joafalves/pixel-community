@@ -15,6 +15,10 @@ public class ImageLayerCollector extends LayerCollector {
 
         Element image = (Element) tileLayerElement.getElementsByTagName("image").item(0);
 
+        if(image == null) {
+            return null;
+        }
+
         String textureFilePath = image.getAttribute("source");
 
         ContentImporterSettings settings;

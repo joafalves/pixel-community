@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-down" width="13" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="2" nextobjectid="1">
+<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-down" width="13" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="4" nextobjectid="2">
  <tileset firstgid="1" source="AnimTileset.tsx"/>
  <layer id="1" name="Tile Layer 1" width="13" height="20">
   <data encoding="csv">
@@ -25,4 +25,8 @@
 0,0,0,0,0,0,2684354563,2684354563,2684354563,2684354563,0,0,0
 </data>
  </layer>
+ <objectgroup id="2" name="Object Layer 1">
+  <object id="1" name="a" gid="1" x="42.8404" y="197.007" width="16" height="16" rotation="46"/>
+ </objectgroup>
+ <imagelayer id="3" name="Image Layer 1"/>
 </map>

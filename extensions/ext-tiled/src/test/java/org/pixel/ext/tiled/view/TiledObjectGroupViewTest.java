@@ -58,7 +58,7 @@ class TiledObjectGroupViewTest {
         Mockito.when(object1.getHeight()).thenReturn(3d);
         Mockito.when(object1.getWidth()).thenReturn(1d);
         Mockito.when(object1.getRotation()).thenReturn(5f);
-        Mockito.when(object1.getgID()).thenReturn((long) 1 + TiledConstants.VERTICAL_FLIP_FLAG.getBits() + TiledConstants.HORIZONTAL_FLIP_FLAG.getBits());
+        Mockito.when(object1.getgID()).thenReturn((long) 1 + TiledFlipMasks.VERTICAL_FLIP_FLAG.getBits() + TiledFlipMasks.HORIZONTAL_FLIP_FLAG.getBits());
 
         Mockito.when(object2.getPosition()).thenReturn(new Vector2(3, 4));
         Mockito.when(object2.getHeight()).thenReturn(3d);

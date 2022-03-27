@@ -183,7 +183,7 @@ public class TiledLayerViewTest {
                 Mockito.eq(0f));
 
         Assertions.assertEquals(new Vector2(0 + 8, 0 + 8), positions.get(0));
-        Assertions.assertEquals(new Vector2(0f + 1.5f + 8, 16f - 2f + 8), positions.get(1));
+        Assertions.assertEquals(new Vector2((float) Math.floor(0f + 1.5f + 8), 16f - 2f + 8), positions.get(1));
     }
 
     @Test
@@ -232,22 +232,22 @@ public class TiledLayerViewTest {
                 Mockito.eq(new Rectangle(32, 16, -16, -16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
                 Mockito.eq(1f),
                 Mockito.eq(1f),
-                Mockito.eq((float) Math.PI / 2));
+                Mockito.eq(-(float) Math.PI / 2));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture2), Mockito.any(),
                 Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
                 Mockito.eq(1f),
                 Mockito.eq(1f),
-                Mockito.eq((float) Math.PI / 2));
+                Mockito.eq(-(float) Math.PI / 2));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
                 Mockito.eq(new Rectangle(32, 0, -16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
                 Mockito.eq(1f),
                 Mockito.eq(1f),
-                Mockito.eq((float) Math.PI / 2));
+                Mockito.eq(-(float) Math.PI / 2));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture2), Mockito.any(),
                 Mockito.eq(new Rectangle(16, 16, 16, -16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
                 Mockito.eq(1f),
                 Mockito.eq(1f),
-                Mockito.eq((float) Math.PI / 2));
+                Mockito.eq(-(float) Math.PI / 2));
 
         Assertions.assertEquals(new Vector2(0 + 8, 0 + 8), positions.get(0));
         Assertions.assertEquals(new Vector2(16 + 8, 0 + 8), positions.get(1));

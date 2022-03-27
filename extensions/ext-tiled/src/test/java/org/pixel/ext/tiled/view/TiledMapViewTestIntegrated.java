@@ -43,6 +43,7 @@ public class TiledMapViewTestIntegrated {
         SpriteBatch spriteBatch;
         NvgRenderEngine nvg;
         Color fillColor;
+        float posX, posY;
 
         public MockWindow(WindowSettings settings) {
             super(settings);
@@ -54,9 +55,11 @@ public class TiledMapViewTestIntegrated {
         public void load() {
             nvg = new NvgRenderEngine(getViewportWidth(), getViewportHeight());
             fillColor = Color.BLACK;
-            gameCamera.setOrigin(new Vector2(0.5f, 0.5f));
+            gameCamera.setOrigin(new Vector2(0f, 0f));
             //gameCamera.translate(500, 180);
             gameCamera.setZoom(3f);
+            posX = 0;
+            posY = 0;
 
             TileMapImporter importer = new TileMapImporter();
             TileSetImporter tileSetImporter = new TileSetImporter();
@@ -78,18 +81,21 @@ public class TiledMapViewTestIntegrated {
             super.update(delta);
             int speed = 50;
 
+
             // Keyboard direct state access for org.pixel.input detection:
             if (Keyboard.isKeyDown(KeyboardKey.UP) || Keyboard.isKeyDown(KeyboardKey.W)) {
-                gameCamera.translate(0, -speed * delta.getElapsed()); // translate camera vertically
+                posY -= speed * delta.getElapsed();
             } else if (Keyboard.isKeyDown(KeyboardKey.DOWN) || Keyboard.isKeyDown(KeyboardKey.S)) {
-                gameCamera.translate(0, speed * delta.getElapsed()); // translate camera vertically
+                posY += speed * delta.getElapsed();
             }
 
             if (Keyboard.isKeyDown(KeyboardKey.LEFT)) {
-                gameCamera.translate(-speed * delta.getElapsed(), 0);
+                posX -= speed * delta.getElapsed();
             } else if (Keyboard.isKeyDown(KeyboardKey.RIGHT)) {
-                gameCamera.translate(speed * delta.getElapsed(), 0);
+                posX += speed * delta.getElapsed();
             }
+
+            gameCamera.setPosition((float) Math.floor(posX), (float) Math.floor(posY));
 
             if (Keyboard.isKeyDown(KeyboardKey.P)) {
                 gameCamera.setZoom(gameCamera.getZoom() + 0.1f);
