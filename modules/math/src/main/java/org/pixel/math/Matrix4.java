@@ -7,6 +7,7 @@ package org.pixel.math;
 
 import java.io.Serializable;
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 
 public class Matrix4 implements Serializable {
 
@@ -147,6 +148,22 @@ public class Matrix4 implements Serializable {
     //endregion
 
     //region public methods
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Matrix4)) {
+            return false;
+        }
+
+        var other = (Matrix4) obj;
+        for (var i = 0; i < m.length; i++) {
+            if (!Arrays.equals(m[i], other.m[i])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     /**
      * Clears all matrix values (sets all values to zero).
