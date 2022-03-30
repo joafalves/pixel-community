@@ -7,10 +7,10 @@ import java.util.List;
  */
 public class TiledAnimation {
     List<TiledFrame> frameList;
-    private int totalMsCount;
+    private int totalDuration;
 
     public TiledAnimation() {
-        this.totalMsCount = 0;
+        this.totalDuration = 0;
     }
 
     public List<TiledFrame> getFrameList() {
@@ -20,34 +20,34 @@ public class TiledAnimation {
     /**
      * Sets the list of frames for this animation. Frames must be ordered by order of appearance.
      *
-     * @param frameList the list of ordered frames.
+     * @param frameList The list of ordered frames.
      */
     public void setFrameList(List<TiledFrame> frameList) {
         this.frameList = frameList;
-        this.totalMsCount = 0;
+        this.totalDuration = 0;
 
         for (TiledFrame frame : frameList) {
-            totalMsCount += frame.getDuration();
+            totalDuration += frame.getDuration();
         }
     }
 
     /**
-     * @return the total number of milliseconds for a full animation cycle.
+     * @return The total number of milliseconds for a full animation cycle.
      */
-    public int getTotalMsCount() {
-        return totalMsCount;
+    public int getTotalDuration() {
+        return totalDuration;
     }
 
     /**
      * Gets the gID of the current animation frame given the number of milliseconds that have passed since the 
      * animation has started.
      *
-     * @param currentMs the number of milliseconds that have passed since the animation has started
-     * @param defaultGID the gID to be returned if the animation has no frames.
-     * @return the gID of the current animation frame
+     * @param currentMs The number of milliseconds that have passed since the animation has started
+     * @param defaultGID The gID to be returned if the animation has no frames.
+     * @return The gID of the current animation frame
      */
     public long getCurrentGID(long currentMs, long defaultGID) {
-        long currentFrame = currentMs % this.totalMsCount;
+        long currentFrame = currentMs % this.totalDuration;
         currentFrame = Math.abs(currentFrame);
         long frameSum = 0;
 

@@ -2,6 +2,9 @@ package org.pixel.ext.tiled.content;
 
 import org.pixel.ext.tiled.view.TiledGenericMapView;
 
+/**
+ * A TiledTileLayer is a TiledLayer that contains tiles.
+ */
 public class TiledTileLayer extends TiledLayer {
     private final int width;
     private final int height;

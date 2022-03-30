@@ -14,6 +14,9 @@ import java.util.ListIterator;
 import static org.pixel.ext.tiled.content.TiledConstants.PIXEL_EPSILON;
 import static org.pixel.ext.tiled.content.TiledFlipMasks.*;
 
+/**
+ * A strategy for drawing a TiledTileLayer.
+ */
 public abstract class TiledDrawStrategy {
     private final Transform transform = new Transform();
     private final Vector2 position = new Vector2();
@@ -74,7 +77,14 @@ public abstract class TiledDrawStrategy {
         }
     }
 
-    public abstract void draw(SpriteBatch spriteBatch, Boundary boundary, TiledTileLayer layer, long frame);
+    /**
+     * Draws a TiledTileLayer.
+     * @param spriteBatch The SpriteBatch to draw with.
+     * @param boundary The boundary to draw within.
+     * @param layer The layer to draw.
+     * @param currentMs The current time in milliseconds.
+     */
+    public abstract void draw(SpriteBatch spriteBatch, Boundary boundary, TiledTileLayer layer, long currentMs);
 
     private static class Transform {
         private Rectangle rectangle = null;

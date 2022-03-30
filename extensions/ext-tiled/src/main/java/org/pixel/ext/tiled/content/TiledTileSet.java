@@ -7,6 +7,9 @@ import org.pixel.math.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A Tiled tile set.
+ */
 public class TiledTileSet implements Disposable {
     private final int tileWidth;
     private final int tileHeight;
@@ -17,6 +20,14 @@ public class TiledTileSet implements Disposable {
     private int firstGId;
     private TiledCustomProperties customProperties;
 
+    /**
+     * Creates a new TiledTileSet.
+     * @param tileWidth The width of a tile in pixels.
+     * @param tileHeight The height of a tile in pixels.
+     * @param tileCount The number of tiles in the set.
+     * @param columns The number of columns in the set.
+     * @param texture The tile set texture atlas.
+     */
     public TiledTileSet(int tileWidth, int tileHeight, int tileCount, int columns, Texture texture) {
         this.tileCount = tileCount;
         this.tileHeight = tileHeight;
@@ -30,10 +41,18 @@ public class TiledTileSet implements Disposable {
         }
     }
 
+    /**
+     * @return The list of TiledTiles in the tile set.
+     */
     public List<TiledTile> getTiles() {
         return tiles;
     }
 
+    /**
+     * Sets the tile at the specified index.
+     * @param index The index of the tile.
+     * @param tile The TiledTile.
+     */
     public void setTile(int index, TiledTile tile) {
         tiles.set(index, tile);
     }
@@ -74,27 +93,42 @@ public class TiledTileSet implements Disposable {
         return texture;
     }
 
-    private long getIDFromAnim(long gID, long frame) {
+    /**
+     * Gets the ID of the tile frame from the tile's animation.
+     * @param gID The tile's global ID.
+     * @param currentMs The current time in milliseconds.
+     * @return The ID of the tile frame.
+     */
+    private long getIDFromAnim(long gID, long currentMs) {
         TiledTile tile = tiles.get((int) gID);
         if (tile != null) {
             TiledAnimation animation = tile.getAnimation();
 
             if (animation != null) {
-                return animation.getCurrentGID(frame, gID);
+                return animation.getCurrentGID(currentMs, gID);
             }
         }
 
         return gID;
     }
 
-    public Rectangle sourceAt(long gID, boolean horizontalFlip, boolean verticalFlip, long frame) {
+    /**
+     * Gets the tile's texture region.
+     *
+     * @param gID The tile's global ID.
+     * @param horizontalFlip Whether the tile is flipped horizontally.
+     * @param verticalFlip Whether the tile is flipped vertically.
+     * @param currentMs The current time in milliseconds.
+     * @return The tile's texture region.
+     */
+    public Rectangle sourceAt(long gID, boolean horizontalFlip, boolean verticalFlip, long currentMs) {
         gID = gID - firstGId;
 
         if (gID >= tileCount) {
             return new Rectangle(0, 0, 0, 0);
         }
 
-        gID = getIDFromAnim(gID, frame);
+        gID = getIDFromAnim(gID, currentMs);
 
         float x = (gID % columns) * tileWidth;
         float y = (gID / columns) * tileHeight;

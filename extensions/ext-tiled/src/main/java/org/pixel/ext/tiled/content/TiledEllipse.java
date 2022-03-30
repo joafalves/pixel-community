@@ -1,5 +1,9 @@
 package org.pixel.ext.tiled.content;
 
+
+/**
+ * A TiledEllipse is a TiledObject that represents an ellipse.
+ */
 public class TiledEllipse extends TiledObject {
     private double width;
     private double height;

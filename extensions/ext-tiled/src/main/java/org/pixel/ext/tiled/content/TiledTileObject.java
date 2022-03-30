@@ -2,6 +2,9 @@ package org.pixel.ext.tiled.content;
 
 import org.pixel.ext.tiled.view.TiledGenericObjectGroupView;
 
+/**
+ * A TiledObject that is tile.
+ */
 public class TiledTileObject extends TiledObject {
     private long gID;
     private double height;

@@ -1,5 +1,8 @@
 package org.pixel.ext.tiled.content;
 
+/**
+ * A Rectangle TiledObject.
+ */
 public class TiledRectangle extends TiledObject {
     private double width;
     private double height;

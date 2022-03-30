@@ -63,7 +63,7 @@ public class TiledMapViewTestIntegrated {
 
             TileMapImporter importer = new TileMapImporter();
             TileSetImporter tileSetImporter = new TileSetImporter();
-            String tmxFileName = "animation.tmx";
+            String tmxFileName = "big.tmx";
 
             ContentManager contentManager = new ContentManager();
             contentManager.addContentImporter(importer);

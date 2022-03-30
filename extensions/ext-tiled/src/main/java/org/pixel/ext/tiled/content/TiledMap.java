@@ -12,6 +12,9 @@ import org.pixel.ext.tiled.view.TiledRightDownStrategy;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A Tiled TileMap.
+ */
 public class TiledMap implements Disposable {
     private int width;
     private int height;

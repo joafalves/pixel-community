@@ -16,6 +16,9 @@ import java.util.ListIterator;
 import static org.pixel.ext.tiled.content.TiledFlipMasks.HORIZONTAL_FLIP_FLAG;
 import static org.pixel.ext.tiled.content.TiledFlipMasks.VERTICAL_FLIP_FLAG;
 
+/**
+ * A view for a TiledObjectGroup.
+ */
 public class TiledObjectGroupView implements TiledGenericObjectGroupView {
     private final Vector2 position = new Vector2();
     private final SpriteBatch spriteBatch;
@@ -23,12 +26,22 @@ public class TiledObjectGroupView implements TiledGenericObjectGroupView {
     private final Boundary tileBoundary;
     private long frame;
 
+    /**
+     * Creates a new TiledObjectGroupView.
+     * @param spriteBatch The SpriteBatch to use.
+     * @param boundary The boundary to draw within.
+     */
     public TiledObjectGroupView(SpriteBatch spriteBatch, Boundary boundary) {
         this.spriteBatch = spriteBatch;
         this.boundary = boundary;
         this.tileBoundary = new Boundary(0, 0, 0, 0);
     }
 
+    /**
+     * Draws a TiledTileObject.
+     * @param tile The TiledTileObject to draw.
+     * @param group The TiledObjectGroup that contains the object.
+     */
     @Override
     public void draw(TiledTileObject tile, TiledObjectGroup group) {
         List<TiledTileSet> tileSets = group.getTileMap().getTileSets();
@@ -68,9 +81,14 @@ public class TiledObjectGroupView implements TiledGenericObjectGroupView {
         }
     }
 
+    /**
+     * Draws a TiledObjectGroup.
+     * @param element The TiledObjectGroup to draw.
+     * @param currentMs The current time in milliseconds.
+     */
     @Override
-    public void draw(TiledObjectGroup element, long frame) {
-        this.frame = frame;
+    public void draw(TiledObjectGroup element, long currentMs) {
+        this.frame = currentMs;
 
         for (TiledObject object : element.getObjects().values()) {
             object.draw(element, this);
