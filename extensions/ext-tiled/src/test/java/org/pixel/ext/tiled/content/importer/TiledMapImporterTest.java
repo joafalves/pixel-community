@@ -23,7 +23,7 @@ public class TiledMapImporterTest {
 
     @Test
     public void processCase1Isolated() throws IOException {
-        TileMapImporter importer = new TileMapImporter();
+        TiledMapImporter importer = new TiledMapImporter();
         String tmxFileName = "untitled.tmx";
         ImportContext ctx = Mockito.mock(ImportContext.class);
         ContentManager contentManager = Mockito.mock(ContentManager.class);
@@ -64,7 +64,7 @@ public class TiledMapImporterTest {
 
     @Test
     public void processCase2() throws IOException {
-        TileMapImporter importer = new TileMapImporter();
+        TiledMapImporter importer = new TiledMapImporter();
         String tmxFileName = "case2.tmx";
         ImportContext ctx = Mockito.mock(ImportContext.class);
         ContentManager contentManager = Mockito.mock(ContentManager.class);
@@ -114,7 +114,7 @@ public class TiledMapImporterTest {
 
     @Test
     public void processCase3() throws IOException {
-        TileMapImporter importer = new TileMapImporter();
+        TiledMapImporter importer = new TiledMapImporter();
         String tmxFileName = "case3.tmx";
         ImportContext ctx = Mockito.mock(ImportContext.class);
         ContentManager contentManager = Mockito.mock(ContentManager.class);
@@ -122,7 +122,7 @@ public class TiledMapImporterTest {
         TileMapProcessor tileMapProcessor = Mockito.mock(TileMapProcessor.class);
         processors.add(tileMapProcessor);
         TextureImporterSettings textureImporterSettings = Mockito.mock(TextureImporterSettings.class);
-        TileMapImporterSettings tileMapImporterSettings = Mockito.mock(TileMapImporterSettings.class);
+        TiledMapImporterSettings tileMapImporterSettings = Mockito.mock(TiledMapImporterSettings.class);
         Mockito.when(tileMapImporterSettings.getTextureImporterSettings()).thenReturn(textureImporterSettings);
         Mockito.when(tileMapImporterSettings.getProcessors()).thenReturn(processors);
 
@@ -149,7 +149,7 @@ public class TiledMapImporterTest {
 
     @Test
     public void failRead() throws IOException {
-        TileMapImporter importer = new TileMapImporter();
+        TiledMapImporter importer = new TiledMapImporter();
         String tsxFileName = "caseFail.tmx";
         ImportContext ctx = Mockito.mock(ImportContext.class);
         ContentManager contentManager = Mockito.mock(ContentManager.class);

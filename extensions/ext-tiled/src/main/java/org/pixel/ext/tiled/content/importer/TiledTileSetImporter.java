@@ -19,17 +19,17 @@ import java.util.HashMap;
 import java.util.List;
 
 @ContentImporterInfo(type = TiledTileSet.class, extension = ".tsx")
-public class TileSetImporter implements ContentImporter<TiledTileSet> {
-    private static final Logger LOG = LoggerFactory.getLogger(TileSetImporter.class);
+public class TiledTileSetImporter implements ContentImporter<TiledTileSet> {
+    private static final Logger LOG = LoggerFactory.getLogger(TiledTileSetImporter.class);
     private final ObjectCollector collector;
     private final CustomPropertiesCollector propertiesCollector;
 
-    public TileSetImporter() {
+    public TiledTileSetImporter() {
         collector = new ObjectCollector();
         propertiesCollector = new CustomPropertiesCollector();
     }
 
-    public TileSetImporter(ObjectCollector collector, CustomPropertiesCollector propertiesCollector) {
+    public TiledTileSetImporter(ObjectCollector collector, CustomPropertiesCollector propertiesCollector) {
         this.collector = collector;
         this.propertiesCollector = propertiesCollector;
     }
@@ -56,8 +56,8 @@ public class TileSetImporter implements ContentImporter<TiledTileSet> {
 
         ContentImporterSettings settings;
 
-        if (ctx.getSettings() instanceof TileMapImporterSettings) {
-            settings = ((TileMapImporterSettings) ctx.getSettings()).getTextureImporterSettings();
+        if (ctx.getSettings() instanceof TiledMapImporterSettings) {
+            settings = ((TiledMapImporterSettings) ctx.getSettings()).getTextureImporterSettings();
         } else {
             settings = ctx.getSettings();
         }

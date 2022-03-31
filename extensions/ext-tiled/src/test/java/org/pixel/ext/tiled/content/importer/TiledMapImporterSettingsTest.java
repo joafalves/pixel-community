@@ -14,7 +14,7 @@ class TiledMapImporterSettingsTest {
     void constructor() {
         List<TileMapProcessor> processorList = new ArrayList<>();
         processorList.add(Mockito.mock(TileMapProcessor.class));
-        TileMapImporterSettings settings = new TileMapImporterSettings(processorList);
+        TiledMapImporterSettings settings = new TiledMapImporterSettings(processorList);
 
         Assertions.assertEquals(GL12.GL_CLAMP_TO_EDGE, settings.getTextureImporterSettings().getWrapSMode());
         Assertions.assertEquals(GL12.GL_CLAMP_TO_EDGE, settings.getTextureImporterSettings().getWrapTMode());

@@ -18,7 +18,7 @@ import static org.lwjgl.BufferUtils.createByteBuffer;
 public class TileSetImporterTest {
     @Test
     public void processCase1Isolated() throws IOException {
-        TileSetImporter importer = new TileSetImporter();
+        TiledTileSetImporter importer = new TiledTileSetImporter();
         String tsxFileName = "Tileset.tsx";
         ImportContext ctx = Mockito.mock(ImportContext.class);
         ContentManager contentManager = Mockito.mock(ContentManager.class);
@@ -95,7 +95,7 @@ public class TileSetImporterTest {
 
     @Test
     public void processCase2Isolated() throws IOException {
-        TileSetImporter importer = new TileSetImporter();
+        TiledTileSetImporter importer = new TiledTileSetImporter();
         String tsxFileName = "AnimTileset.tsx";
         ImportContext ctx = Mockito.mock(ImportContext.class);
         ContentManager contentManager = Mockito.mock(ContentManager.class);
@@ -136,7 +136,7 @@ public class TileSetImporterTest {
 
     @Test
     public void failTexture() throws IOException {
-        TileSetImporter importer = new TileSetImporter();
+        TiledTileSetImporter importer = new TiledTileSetImporter();
         String tsxFileName = "Tileset.tsx";
         ImportContext ctx = Mockito.mock(ImportContext.class);
         ContentManager contentManager = Mockito.mock(ContentManager.class);
@@ -159,12 +159,12 @@ public class TileSetImporterTest {
 
     @Test
     public void importerSettings() throws IOException {
-        TileSetImporter importer = new TileSetImporter();
+        TiledTileSetImporter importer = new TiledTileSetImporter();
         String tsxFileName = "Tileset.tsx";
         ImportContext ctx = Mockito.mock(ImportContext.class);
         ContentManager contentManager = Mockito.mock(ContentManager.class);
         Texture texture = Mockito.mock(Texture.class);
-        TileMapImporterSettings settings = Mockito.mock(TileMapImporterSettings.class);
+        TiledMapImporterSettings settings = Mockito.mock(TiledMapImporterSettings.class);
         TextureImporterSettings textureImporterSettings = Mockito.mock(TextureImporterSettings.class);
 
         Mockito.when(settings.getTextureImporterSettings()).thenReturn(textureImporterSettings);

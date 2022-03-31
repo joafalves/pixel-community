@@ -12,8 +12,8 @@ import org.pixel.content.Texture;
 import org.pixel.ext.tiled.content.TiledTileLayer;
 import org.pixel.ext.tiled.content.TiledMap;
 import org.pixel.ext.tiled.content.TiledTileSet;
-import org.pixel.ext.tiled.content.importer.TileMapImporter;
-import org.pixel.ext.tiled.content.importer.TileSetImporter;
+import org.pixel.ext.tiled.content.importer.TiledMapImporter;
+import org.pixel.ext.tiled.content.importer.TiledTileSetImporter;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Boundary;
@@ -39,7 +39,7 @@ public class TiledLayerViewTest {
 
     @BeforeEach
     void setup() throws IOException {
-        TileSetImporter tileSetImporter = new TileSetImporter();
+        TiledTileSetImporter tileSetImporter = new TiledTileSetImporter();
         texture1 = Mockito.mock(Texture.class);
         texture2 = Mockito.mock(Texture.class);
         positions = new ArrayList<>();
@@ -94,7 +94,7 @@ public class TiledLayerViewTest {
 
     @Test
     public void drawCase2() throws IOException {
-        TileMapImporter importer = new TileMapImporter();
+        TiledMapImporter importer = new TiledMapImporter();
 
         String tmxFileName = "case2.tmx";
 
@@ -148,7 +148,7 @@ public class TiledLayerViewTest {
 
     @Test
     void drawCase4() throws IOException {
-        TileMapImporter importer = new TileMapImporter();
+        TiledMapImporter importer = new TiledMapImporter();
 
         String tmxFileName = "case4.tmx";
 
@@ -188,7 +188,7 @@ public class TiledLayerViewTest {
 
     @Test
     void drawRotations() throws IOException {
-        TileMapImporter importer = new TileMapImporter();
+        TiledMapImporter importer = new TiledMapImporter();
 
         String tmxFileName = "rotations.tmx";
 

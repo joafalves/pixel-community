@@ -23,8 +23,8 @@ class ImageLayerCollector extends LayerCollector {
 
         ContentImporterSettings settings;
 
-        if (ctx.getSettings() instanceof TileMapImporterSettings) {
-            settings = ((TileMapImporterSettings) ctx.getSettings()).getTextureImporterSettings();
+        if (ctx.getSettings() instanceof TiledMapImporterSettings) {
+            settings = ((TiledMapImporterSettings) ctx.getSettings()).getTextureImporterSettings();
         } else {
             settings = ctx.getSettings();
         }

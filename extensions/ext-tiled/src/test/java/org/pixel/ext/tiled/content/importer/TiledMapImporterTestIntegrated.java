@@ -32,8 +32,8 @@ public class TiledMapImporterTestIntegrated {
 
         @Override
         public void load() {
-            TileMapImporter importer = new TileMapImporter();
-            TileSetImporter tileSetImporter = new TileSetImporter();
+            TiledMapImporter importer = new TiledMapImporter();
+            TiledTileSetImporter tileSetImporter = new TiledTileSetImporter();
             String tmxFileName = "untitled.tmx";
 
             ContentManager contentManager = new ContentManager();

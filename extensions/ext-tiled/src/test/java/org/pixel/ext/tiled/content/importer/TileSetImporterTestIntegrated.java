@@ -31,7 +31,7 @@ public class TileSetImporterTestIntegrated {
 
         @Override
         public void load() {
-            TileSetImporter importer = new TileSetImporter();
+            TiledTileSetImporter importer = new TiledTileSetImporter();
             String tsxFileName = "Tileset.tsx";
 
             ContentManager contentManager = new ContentManager();

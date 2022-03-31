@@ -8,9 +8,9 @@ import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.ext.tiled.content.TiledMap;
-import org.pixel.ext.tiled.content.importer.TileMapImporter;
-import org.pixel.ext.tiled.content.importer.TileMapImporterSettings;
-import org.pixel.ext.tiled.content.importer.TileSetImporter;
+import org.pixel.ext.tiled.content.importer.TiledMapImporter;
+import org.pixel.ext.tiled.content.importer.TiledMapImporterSettings;
+import org.pixel.ext.tiled.content.importer.TiledTileSetImporter;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.NvgRenderEngine;
@@ -61,15 +61,15 @@ public class TiledMapViewTestIntegrated {
             posX = 0;
             posY = 0;
 
-            TileMapImporter importer = new TileMapImporter();
-            TileSetImporter tileSetImporter = new TileSetImporter();
+            TiledMapImporter importer = new TiledMapImporter();
+            TiledTileSetImporter tileSetImporter = new TiledTileSetImporter();
             String tmxFileName = "big.tmx";
 
             ContentManager contentManager = new ContentManager();
             contentManager.addContentImporter(importer);
             contentManager.addContentImporter(tileSetImporter);
 
-            ContentImporterSettings tileMapImporterSettings = new TileMapImporterSettings();
+            ContentImporterSettings tileMapImporterSettings = new TiledMapImporterSettings();
 
             tileMap = contentManager.load(tmxFileName, TiledMap.class, tileMapImporterSettings);
             spriteBatch = new SpriteBatch();

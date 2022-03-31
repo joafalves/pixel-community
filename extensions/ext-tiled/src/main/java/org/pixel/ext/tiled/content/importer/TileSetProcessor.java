@@ -11,7 +11,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 class TileSetProcessor implements TileMapProcessor {
-    private static final Logger LOG = LoggerFactory.getLogger(TileMapImporter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TiledMapImporter.class);
 
     @Override
     public void process(TiledMap tileMap, Document tmxDoc, ImportContext ctx) {

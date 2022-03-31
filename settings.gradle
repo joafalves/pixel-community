@@ -14,7 +14,7 @@ include "extensions/ext-log4j2", "extensions/ext-ldtk", "extensions/ext-physics"
    "extensions/ext-ecs", "extensions/ext-ecs-extra", "extensions/ext-tiled"
 
 // demos:
-include "demos/learning", "demos/concept", "demos/imgui", "demos/kotlin", "demos/ldtk"
+include "demos/learning", "demos/concept", "demos/imgui", "demos/kotlin", "demos/ldtk", "demos/tiled"
 
 rootProject.children.each {
     def parts = it.name.split("/")

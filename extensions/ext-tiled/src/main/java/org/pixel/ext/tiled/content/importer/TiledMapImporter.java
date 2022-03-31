@@ -15,7 +15,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 @ContentImporterInfo(type = TiledMap.class, extension = ".tmx")
-public class TileMapImporter implements ContentImporter<TiledMap> {
+public class TiledMapImporter implements ContentImporter<TiledMap> {
     @Override
     public TiledMap process(ImportContext ctx) {
         XMLUtils utils = new XMLUtils();
@@ -41,12 +41,12 @@ public class TileMapImporter implements ContentImporter<TiledMap> {
 
         tileMap.setCustomProperties(new CustomPropertiesCollector().collect(mapElement));
 
-        TileMapImporterSettings importerSettings;
+        TiledMapImporterSettings importerSettings;
 
-        if (ctx.getSettings() instanceof TileMapImporterSettings) {
-            importerSettings = (TileMapImporterSettings) ctx.getSettings();
+        if (ctx.getSettings() instanceof TiledMapImporterSettings) {
+            importerSettings = (TiledMapImporterSettings) ctx.getSettings();
         } else {
-            importerSettings = new TileMapImporterSettings();
+            importerSettings = new TiledMapImporterSettings();
 
             ctx = new ImportContext(ctx.getContentManager(), ctx.getBuffer(), ctx.getFilepath(), importerSettings);
         }
