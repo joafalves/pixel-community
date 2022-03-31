@@ -12,7 +12,7 @@ dependencies {
     api project(":${rootProject.name}-ext-physics");
     api project(":${rootProject.name}-ext-ecs");
     api project(":${rootProject.name}-ext-ecs-extra");
-    api project(":${rootProject.name}-math");
+    api project(":${rootProject.name}-ext-tween");
 }
 
 application {
