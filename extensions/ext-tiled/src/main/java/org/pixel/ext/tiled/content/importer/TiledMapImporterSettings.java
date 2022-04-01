@@ -17,7 +17,7 @@ public class TiledMapImporterSettings implements ContentImporterSettings {
     private final List<TileMapProcessor> processors;
 
     /**
-     * Creates new settings for the Tiled Map Importer using default texture importer setting and TMX file processors.
+     * Creates new settings for the Tiled Map Importer using default texture importer settings and TMX file processors.
      */
     public TiledMapImporterSettings() {
         this(new TextureImporterSettings(GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST));
