@@ -5,11 +5,12 @@
 
 package org.pixel.math;
 
+import lombok.Builder;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import lombok.Builder;
 
 public class Rectangle implements Serializable {
     //region Fields & Properties
@@ -464,7 +465,8 @@ public class Rectangle implements Serializable {
         if (this == o) return true;
         if (!(o instanceof Rectangle)) return false;
         Rectangle rectangle = (Rectangle) o;
-        return Float.compare(rectangle.x, x) == 0 && Float.compare(rectangle.y, y) == 0 && Float.compare(rectangle.width, width) == 0 && Float.compare(rectangle.height, height) == 0;
+        return rectangle.getX() == getX() && rectangle.getY() == getY()
+                && rectangle.getWidth() == getWidth() && rectangle.getHeight() == getHeight();
     }
 
     @Override

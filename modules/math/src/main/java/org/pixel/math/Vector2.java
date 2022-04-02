@@ -5,9 +5,10 @@
 
 package org.pixel.math;
 
+import lombok.Builder;
+
 import java.io.Serializable;
 import java.util.Objects;
-import lombok.Builder;
 
 public class Vector2 implements Serializable {
 
@@ -460,7 +461,7 @@ public class Vector2 implements Serializable {
         if (this == o) return true;
         if (!(o instanceof Vector2)) return false;
         Vector2 vector2 = (Vector2) o;
-        return Float.compare(vector2.x, x) == 0 && Float.compare(vector2.y, y) == 0;
+        return vector2.getX() == this.getX() && vector2.getY() == this.getY();
     }
     //endregion
 
