@@ -6,8 +6,8 @@ import org.mockito.Mockito;
 import org.pixel.content.ContentManager;
 import org.pixel.content.ImportContext;
 import org.pixel.content.importer.settings.TextureImporterSettings;
-import org.pixel.ext.tiled.content.TiledTileLayer;
 import org.pixel.ext.tiled.content.TiledMap;
+import org.pixel.ext.tiled.content.TiledTileLayer;
 import org.pixel.ext.tiled.content.TiledTileSet;
 import org.w3c.dom.Document;
 

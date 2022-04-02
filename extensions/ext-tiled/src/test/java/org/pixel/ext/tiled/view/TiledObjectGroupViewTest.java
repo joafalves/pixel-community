@@ -121,7 +121,7 @@ class TiledObjectGroupViewTest {
 
     @Test
     void drawOutside() {
-        Boundary boundary1 = new Boundary(0 + 0.4f, 2 + 0.5f - 3 , 1, 3);
+        Boundary boundary1 = new Boundary(0 + 0.4f, 2 + 0.5f - 3, 1, 3);
         boundary1.rotate(new Vector2(0 + 0.4f, 2 + 0.5f), 5f);
         Mockito.when(boundary.overlaps(Mockito.argThat(argument ->
                 argument.getBottomLeft().equals(boundary1.getBottomLeft()) &&

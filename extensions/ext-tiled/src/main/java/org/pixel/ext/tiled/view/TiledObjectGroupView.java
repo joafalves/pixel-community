@@ -1,9 +1,9 @@
 package org.pixel.ext.tiled.view;
 
-import org.pixel.ext.tiled.content.TiledTileSet;
 import org.pixel.ext.tiled.content.TiledObject;
 import org.pixel.ext.tiled.content.TiledObjectGroup;
 import org.pixel.ext.tiled.content.TiledTileObject;
+import org.pixel.ext.tiled.content.TiledTileSet;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Boundary;
@@ -28,8 +28,9 @@ public class TiledObjectGroupView implements TiledGenericObjectGroupView {
 
     /**
      * Creates a new TiledObjectGroupView.
+     *
      * @param spriteBatch The SpriteBatch to use.
-     * @param boundary The boundary to draw within.
+     * @param boundary    The boundary to draw within.
      */
     public TiledObjectGroupView(SpriteBatch spriteBatch, Boundary boundary) {
         this.spriteBatch = spriteBatch;
@@ -39,7 +40,8 @@ public class TiledObjectGroupView implements TiledGenericObjectGroupView {
 
     /**
      * Draws a TiledTileObject.
-     * @param tile The TiledTileObject to draw.
+     *
+     * @param tile  The TiledTileObject to draw.
      * @param group The TiledObjectGroup that contains the object.
      */
     @Override
@@ -83,7 +85,8 @@ public class TiledObjectGroupView implements TiledGenericObjectGroupView {
 
     /**
      * Draws a TiledObjectGroup.
-     * @param element The TiledObjectGroup to draw.
+     *
+     * @param element   The TiledObjectGroup to draw.
      * @param currentMs The current time in milliseconds.
      */
     @Override

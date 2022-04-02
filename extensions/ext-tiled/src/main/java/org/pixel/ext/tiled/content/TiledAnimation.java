@@ -39,10 +39,10 @@ public class TiledAnimation {
     }
 
     /**
-     * Gets the gID of the current animation frame given the number of milliseconds that have passed since the 
+     * Gets the gID of the current animation frame given the number of milliseconds that have passed since the
      * animation has started.
      *
-     * @param currentMs The number of milliseconds that have passed since the animation has started
+     * @param currentMs  The number of milliseconds that have passed since the animation has started
      * @param defaultGID The gID to be returned if the animation has no frames.
      * @return The gID of the current animation frame
      */

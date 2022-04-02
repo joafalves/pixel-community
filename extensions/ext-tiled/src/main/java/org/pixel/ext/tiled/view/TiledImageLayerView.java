@@ -12,13 +12,14 @@ import org.pixel.math.Vector2;
 public class TiledImageLayerView implements TiledView<TiledImageLayer> {
     private final Boundary imageBoundary;
     private final Vector2 position;
-    SpriteBatch spriteBatch;
-    Boundary boundary;
+    private final SpriteBatch spriteBatch;
+    private final Boundary boundary;
 
     /**
      * Creates a new tiled image layer view.
-     * @param spriteBatch  The sprite batch to use.
-     * @param boundary The boundary to draw within.
+     *
+     * @param spriteBatch The sprite batch to use.
+     * @param boundary    The boundary to draw within.
      */
     public TiledImageLayerView(SpriteBatch spriteBatch, Boundary boundary) {
         this.spriteBatch = spriteBatch;
@@ -30,14 +31,15 @@ public class TiledImageLayerView implements TiledView<TiledImageLayer> {
 
     /**
      * Draws the layer.
-     * @param layer The layer to draw.
+     *
+     * @param layer     The layer to draw.
      * @param currentMs The current time in milliseconds.
      */
     @Override
     public void draw(TiledImageLayer layer, long currentMs) {
         position.set((float) layer.getOffsetX(), (float) layer.getOffsetY());
 
-        if(layer.getImage() == null) {
+        if (layer.getImage() == null) {
             return;
         }
 

@@ -9,7 +9,7 @@ import org.pixel.content.ContentImporter;
 import org.pixel.content.ContentImporterInfo;
 import org.pixel.content.ImportContext;
 import org.pixel.ext.tiled.content.TiledMap;
-import org.pixel.ext.tiled.utils.XMLUtils;
+import org.pixel.ext.tiled.utils.TiledXmlUtils;
 import org.pixel.ext.tiled.view.TiledDrawStrategyFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -18,7 +18,7 @@ import org.w3c.dom.Element;
 public class TiledMapImporter implements ContentImporter<TiledMap> {
     @Override
     public TiledMap process(ImportContext ctx) {
-        XMLUtils utils = new XMLUtils();
+        TiledXmlUtils utils = new TiledXmlUtils();
         Document tmxDoc = utils.openXMLDocument(ctx);
 
         if (tmxDoc == null) {

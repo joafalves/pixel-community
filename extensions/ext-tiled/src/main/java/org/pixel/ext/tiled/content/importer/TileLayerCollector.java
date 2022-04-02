@@ -2,8 +2,8 @@ package org.pixel.ext.tiled.content.importer;
 
 import org.pixel.content.ImportContext;
 import org.pixel.ext.tiled.content.TiledLayer;
-import org.pixel.ext.tiled.content.TiledTileLayer;
 import org.pixel.ext.tiled.content.TiledMap;
+import org.pixel.ext.tiled.content.TiledTileLayer;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 

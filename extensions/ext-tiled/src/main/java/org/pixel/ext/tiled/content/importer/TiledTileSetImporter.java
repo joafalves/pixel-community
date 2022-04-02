@@ -9,7 +9,7 @@ import org.pixel.content.ImportContext;
 import org.pixel.content.Texture;
 import org.pixel.content.importer.settings.ContentImporterSettings;
 import org.pixel.ext.tiled.content.*;
-import org.pixel.ext.tiled.utils.XMLUtils;
+import org.pixel.ext.tiled.utils.TiledXmlUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -36,7 +36,7 @@ public class TiledTileSetImporter implements ContentImporter<TiledTileSet> {
 
     @Override
     public TiledTileSet process(ImportContext ctx) {
-        XMLUtils utils = new XMLUtils();
+        TiledXmlUtils utils = new TiledXmlUtils();
         Document tsxDoc = utils.openXMLDocument(ctx);
 
         if (tsxDoc == null) {
@@ -87,7 +87,6 @@ public class TiledTileSetImporter implements ContentImporter<TiledTileSet> {
             if (groups.getLength() > 0) {
                 NodeList objects = ((Element) groups.item(0)).getElementsByTagName("object");
                 HashMap<Integer, TiledObject> map = new HashMap<>();
-
 
                 for (int j = 0; j < objects.getLength(); j++) {
                     Element object = (Element) objects.item(j);

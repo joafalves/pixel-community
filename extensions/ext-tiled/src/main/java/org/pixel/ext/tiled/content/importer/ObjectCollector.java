@@ -20,7 +20,6 @@ class ObjectCollector {
         TiledObject object;
 
         long gID;
-
         double width, height;
 
         try {

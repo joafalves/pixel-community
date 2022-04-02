@@ -13,8 +13,9 @@ public class TiledLayerView implements TiledView<TiledTileLayer> {
 
     /**
      * Creates a new tiled layer view.
+     *
      * @param spriteBatch The sprite batch to use.
-     * @param boundary The boundary to draw within.
+     * @param boundary    The boundary to draw within.
      */
     public TiledLayerView(SpriteBatch spriteBatch, Boundary boundary) {
         this.spriteBatch = spriteBatch;
@@ -23,7 +24,8 @@ public class TiledLayerView implements TiledView<TiledTileLayer> {
 
     /**
      * Draws the layer.
-     * @param layer The layer to draw.
+     *
+     * @param layer     The layer to draw.
      * @param currentMs The current time in milliseconds.
      */
     @Override

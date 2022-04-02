@@ -79,10 +79,11 @@ public abstract class TiledDrawStrategy {
 
     /**
      * Draws a TiledTileLayer.
+     *
      * @param spriteBatch The SpriteBatch to draw with.
-     * @param boundary The boundary to draw within.
-     * @param layer The layer to draw.
-     * @param currentMs The current time in milliseconds.
+     * @param boundary    The boundary to draw within.
+     * @param layer       The layer to draw.
+     * @param currentMs   The current time in milliseconds.
      */
     public abstract void draw(SpriteBatch spriteBatch, Boundary boundary, TiledTileLayer layer, long currentMs);
 

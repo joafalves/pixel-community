@@ -19,8 +19,9 @@ public class TiledMapView implements TiledGenericMapView {
 
     /**
      * Creates a new tile map view.
+     *
      * @param spriteBatch The sprite batch to use.
-     * @param camera2D The camera that defines the boundaries of the view.
+     * @param camera2D    The camera that defines the boundaries of the view.
      */
     public TiledMapView(SpriteBatch spriteBatch, Camera2D camera2D) {
         this.boundary = new Boundary(0, 0, 0, 0);
@@ -59,7 +60,8 @@ public class TiledMapView implements TiledGenericMapView {
 
     /**
      * Draws the map.
-     * @param tileMap The map to draw.
+     *
+     * @param tileMap   The map to draw.
      * @param currentMs The current time in milliseconds.
      */
     @Override

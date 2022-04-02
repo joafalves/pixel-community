@@ -37,8 +37,9 @@ public class TiledObject {
 
     /**
      * Accepts the TiledGenericObjectGroupView Visitor to draw the object.
+     *
      * @param group The group this object belongs to.
-     * @param view The view visitor that draws the object.
+     * @param view  The view visitor that draws the object.
      */
     public void draw(TiledObjectGroup group, TiledGenericObjectGroupView view) {
 

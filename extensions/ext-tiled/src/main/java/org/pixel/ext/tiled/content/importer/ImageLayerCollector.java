@@ -3,9 +3,9 @@ package org.pixel.ext.tiled.content.importer;
 import org.pixel.content.ImportContext;
 import org.pixel.content.Texture;
 import org.pixel.content.importer.settings.ContentImporterSettings;
+import org.pixel.ext.tiled.content.TiledImageLayer;
 import org.pixel.ext.tiled.content.TiledLayer;
 import org.pixel.ext.tiled.content.TiledMap;
-import org.pixel.ext.tiled.content.TiledImageLayer;
 import org.w3c.dom.Element;
 
 class ImageLayerCollector extends LayerCollector {
@@ -15,7 +15,7 @@ class ImageLayerCollector extends LayerCollector {
 
         Element image = (Element) tileLayerElement.getElementsByTagName("image").item(0);
 
-        if(image == null) {
+        if (image == null) {
             return null;
         }
 

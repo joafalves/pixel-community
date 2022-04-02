@@ -12,6 +12,7 @@ public class TiledObjectGroup extends TiledLayer {
 
     /**
      * Creates a new TiledObjectGroup.
+     *
      * @param tileMap The tile map this layer belongs to.
      */
     public TiledObjectGroup(TiledMap tileMap) {
@@ -20,6 +21,7 @@ public class TiledObjectGroup extends TiledLayer {
 
     /**
      * Creates a new TiledObjectGroup, copying all the properties from the given layer.
+     *
      * @param other The layer to copy.
      */
     public TiledObjectGroup(TiledLayer other) {
@@ -33,6 +35,7 @@ public class TiledObjectGroup extends TiledLayer {
 
     /**
      * Gets the objects in this layer.
+     *
      * @return The objects in this layer.
      */
     public LinkedHashMap<Integer, TiledObject> getObjects() {
@@ -41,6 +44,7 @@ public class TiledObjectGroup extends TiledLayer {
 
     /**
      * Sets the objects in this layer.
+     *
      * @param objects The objects in this layer.
      */
     public void setObjects(LinkedHashMap<Integer, TiledObject> objects) {

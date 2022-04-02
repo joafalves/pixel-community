@@ -1,5 +1,7 @@
 package org.pixel.ext.tiled.utils;
 
+import org.pixel.commons.logger.Logger;
+import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ImportContext;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -12,7 +14,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public class XMLUtils {
+public class TiledXmlUtils {
+    private static final Logger LOG = LoggerFactory.getLogger(TiledXmlUtils.class);
+
     public Document openXMLDocument(ImportContext ctx) {
         Document doc;
 
@@ -29,7 +33,7 @@ public class XMLUtils {
             doc = documentBuilder.parse(new ByteArrayInputStream(array, bb.position(), bb.limit()));
 
         } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace();
+            LOG.error("Exception caught!", e);
 
             return null;
         }

@@ -13,6 +13,7 @@ public abstract class TiledLayer {
 
     /**
      * Creates a new TiledLayer.
+     *
      * @param tileMap The map this layer belongs to
      */
     public TiledLayer(TiledMap tileMap) {
@@ -21,6 +22,7 @@ public abstract class TiledLayer {
 
     /**
      * Creates a new TiledLayer copy.
+     *
      * @param other The layer to copy.
      */
     public TiledLayer(TiledLayer other) {
@@ -75,6 +77,7 @@ public abstract class TiledLayer {
 
     /**
      * Accepts the GenericMapView Visitor to draw the layer.
+     *
      * @param view The view to draw the layer with.
      */
     public abstract void draw(TiledGenericMapView view);

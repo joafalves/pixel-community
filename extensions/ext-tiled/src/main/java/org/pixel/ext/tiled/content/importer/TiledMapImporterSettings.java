@@ -29,6 +29,7 @@ public class TiledMapImporterSettings implements ContentImporterSettings {
 
     /**
      * Creates new settings for the Tiled Map Importer given the settings for the texture atlases importer.
+     *
      * @param settings The settings for the texture importer.
      */
     public TiledMapImporterSettings(TextureImporterSettings settings) {

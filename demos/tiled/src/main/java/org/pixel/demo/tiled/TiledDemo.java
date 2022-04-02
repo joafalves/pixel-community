@@ -41,6 +41,23 @@ public class TiledDemo extends PixelWindow {
         super(settings);
     }
 
+    public static void main(String[] args) {
+        final int width = 1280;
+        final int height = 720;
+        WindowSettings settings = new WindowSettings(width, height);
+        settings.setWindowTitle("Tiled Demo");
+        settings.setWindowResizable(true);
+        settings.setVsync(true);
+        settings.setDebugMode(false);
+        settings.setWindowWidth(width);
+        settings.setWindowHeight(height);
+
+        ConsoleLogger.setLogLevel(LogLevel.TRACE);
+
+        PixelWindow window = new TiledDemo(settings);
+        window.start();
+    }
+
     @Override
     public void load() {
         titleFpsCounter = new TitleFpsCounter(this);
@@ -110,22 +127,5 @@ public class TiledDemo extends PixelWindow {
         tileMap.dispose();
 
         super.dispose();
-    }
-
-    public static void main(String[] args) {
-        final int width = 1280;
-        final int height = 720;
-        WindowSettings settings = new WindowSettings(width, height);
-        settings.setWindowTitle("Tiled Demo");
-        settings.setWindowResizable(true);
-        settings.setVsync(true);
-        settings.setDebugMode(false);
-        settings.setWindowWidth(width);
-        settings.setWindowHeight(height);
-
-        ConsoleLogger.setLogLevel(LogLevel.TRACE);
-
-        PixelWindow window = new TiledDemo(settings);
-        window.start();
     }
 }

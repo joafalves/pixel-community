@@ -13,6 +13,7 @@ public class TiledLayerGroup extends TiledLayer {
 
     /**
      * Creates a new TiledLayerGroup.
+     *
      * @param tileMap The tile map this layer belongs to.
      */
     public TiledLayerGroup(TiledMap tileMap) {
@@ -23,6 +24,7 @@ public class TiledLayerGroup extends TiledLayer {
 
     /**
      * Creates a new TiledLayerGroup, copying all properties from the given layer.
+     *
      * @param other The layer to copy.
      */
     public TiledLayerGroup(TiledLayer other) {
@@ -31,6 +33,7 @@ public class TiledLayerGroup extends TiledLayer {
 
     /**
      * Returns the layers in this group.
+     *
      * @return The layers in this group.
      */
     public List<TiledLayer> getLayers() {
@@ -39,6 +42,7 @@ public class TiledLayerGroup extends TiledLayer {
 
     /**
      * Sets the layers in this group.
+     *
      * @param layers The layers to set.
      */
     public void setLayers(List<TiledLayer> layers) {

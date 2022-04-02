@@ -22,11 +22,12 @@ public class TiledTileSet implements Disposable {
 
     /**
      * Creates a new TiledTileSet.
-     * @param tileWidth The width of a tile in pixels.
+     *
+     * @param tileWidth  The width of a tile in pixels.
      * @param tileHeight The height of a tile in pixels.
-     * @param tileCount The number of tiles in the set.
-     * @param columns The number of columns in the set.
-     * @param texture The tile set texture atlas.
+     * @param tileCount  The number of tiles in the set.
+     * @param columns    The number of columns in the set.
+     * @param texture    The tile set texture atlas.
      */
     public TiledTileSet(int tileWidth, int tileHeight, int tileCount, int columns, Texture texture) {
         this.tileCount = tileCount;
@@ -50,8 +51,9 @@ public class TiledTileSet implements Disposable {
 
     /**
      * Sets the tile at the specified index.
+     *
      * @param index The index of the tile.
-     * @param tile The TiledTile.
+     * @param tile  The TiledTile.
      */
     public void setTile(int index, TiledTile tile) {
         tiles.set(index, tile);
@@ -95,7 +97,8 @@ public class TiledTileSet implements Disposable {
 
     /**
      * Gets the ID of the tile frame from the tile's animation.
-     * @param gID The tile's global ID.
+     *
+     * @param gID       The tile's global ID.
      * @param currentMs The current time in milliseconds.
      * @return The ID of the tile frame.
      */
@@ -115,10 +118,10 @@ public class TiledTileSet implements Disposable {
     /**
      * Gets the tile's texture region.
      *
-     * @param gID The tile's global ID.
+     * @param gID            The tile's global ID.
      * @param horizontalFlip Whether the tile is flipped horizontally.
-     * @param verticalFlip Whether the tile is flipped vertically.
-     * @param currentMs The current time in milliseconds.
+     * @param verticalFlip   Whether the tile is flipped vertically.
+     * @param currentMs      The current time in milliseconds.
      * @return The tile's texture region.
      */
     public Rectangle sourceAt(long gID, boolean horizontalFlip, boolean verticalFlip, long currentMs) {

@@ -11,6 +11,7 @@ public class TiledImageLayer extends TiledLayer {
 
     /**
      * Creates a new TiledImageLayer.
+     *
      * @param tileMap The tile map this layer belongs to.
      */
     public TiledImageLayer(TiledMap tileMap) {
@@ -19,6 +20,7 @@ public class TiledImageLayer extends TiledLayer {
 
     /**
      * Creates a new TiledImageLayer, copying all the properties from the given layer.
+     *
      * @param other The layer to copy.
      */
     public TiledImageLayer(TiledLayer other) {
