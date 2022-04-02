@@ -21,8 +21,8 @@ import static org.lwjgl.opengl.GL13C.glDrawArrays;
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glUniformMatrix4fv;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
+import static org.lwjgl.opengl.GL20C.glUniformMatrix4fv;
 
 import java.nio.FloatBuffer;
 import java.util.Arrays;
@@ -31,6 +31,7 @@ import org.pixel.content.Font;
 import org.pixel.content.FontGlyph;
 import org.pixel.content.Texture;
 import org.pixel.graphics.Color;
+import org.pixel.graphics.shader.Shader;
 import org.pixel.graphics.shader.ShaderManager;
 import org.pixel.graphics.shader.VertexArrayObject;
 import org.pixel.graphics.shader.VertexBufferObject;
@@ -59,12 +60,13 @@ public class SpriteBatch extends DrawBatch {
 
     private final VertexBufferObject vbo;
     private final VertexArrayObject vao;
-    private final TextureShader textureShader;
     private final FloatBuffer dataBuffer;
     private final FloatBuffer matrixBuffer;
     private final SpriteData[] spriteData;
     private final Vector2 anchorZero = Vector2.zero();
     private final int bufferMaxSize;
+
+    private Shader shader;
     private int bufferCount;
     private int lastTextureId;
     private int lastDepthLevel;
@@ -92,7 +94,7 @@ public class SpriteBatch extends DrawBatch {
         }
 
         this.vbo = new VertexBufferObject();
-        this.textureShader = new TextureShader();
+        this.shader = new TextureShader();
         this.matrixBuffer = MemoryUtil.memAllocFloat(4 * 4);
         this.spriteData = new SpriteData[bufferMaxSize];
         this.bufferMaxSize = bufferMaxSize;
@@ -115,9 +117,9 @@ public class SpriteBatch extends DrawBatch {
         vbo.bind(GL_ARRAY_BUFFER);
 
         // setup attributes:
-        int aVertexPosition = this.textureShader.getAttributeLocation("aVertexPosition");
-        int aTextureCoordinates = this.textureShader.getAttributeLocation("aTextureCoordinates");
-        int aVertexColor = this.textureShader.getAttributeLocation("aVertexColor");
+        int aVertexPosition = this.shader.getAttributeLocation("aVertexPosition");
+        int aTextureCoordinates = this.shader.getAttributeLocation("aTextureCoordinates");
+        int aVertexColor = this.shader.getAttributeLocation("aVertexColor");
 
         glEnableVertexAttribArray(aVertexPosition);
         glVertexAttribPointer(aVertexPosition, 2, GL_FLOAT, false, ATTRIBUTE_STRIDE, 0);
@@ -576,6 +578,38 @@ public class SpriteBatch extends DrawBatch {
     }
 
     /**
+     * Get the active shader.
+     *
+     * @return The active shader.
+     */
+    public Shader getShader() {
+        return shader;
+    }
+
+    /**
+     * Set the active shader (automatically disposes the previous active shader).
+     *
+     * @param shader The new active shader.
+     */
+    public void setShader(Shader shader) {
+        this.setShader(shader, true);
+    }
+
+    /**
+     * Set the active shader.
+     *
+     * @param shader                The new active shader.
+     * @param disposePreviousShader If true, the previous active shader will be disposed.
+     */
+    public void setShader(Shader shader, boolean disposePreviousShader) {
+        if (disposePreviousShader && this.shader != null) {
+            this.shader.dispose();
+        }
+
+        this.shader = shader;
+    }
+
+    /**
      * Begin drawing phase.
      *
      * @param viewMatrix The view matrix.
@@ -607,7 +641,7 @@ public class SpriteBatch extends DrawBatch {
         }
 
         // use shader
-        ShaderManager.useShader(textureShader);
+        ShaderManager.useShader(shader);
 
         // bind buffers
         vao.bind();
@@ -616,7 +650,7 @@ public class SpriteBatch extends DrawBatch {
         // apply camera matrix
         matrixBuffer.clear();
         viewMatrix.writeBuffer(matrixBuffer);
-        glUniformMatrix4fv(textureShader.getUniformLocation("uMatrix"), false, matrixBuffer);
+        glUniformMatrix4fv(shader.getUniformLocation("uMatrix"), false, matrixBuffer);
     }
 
     /**
@@ -634,7 +668,7 @@ public class SpriteBatch extends DrawBatch {
 
     @Override
     public void dispose() {
-        textureShader.dispose();
+        shader.dispose();
         vbo.dispose();
         vao.dispose();
     }
