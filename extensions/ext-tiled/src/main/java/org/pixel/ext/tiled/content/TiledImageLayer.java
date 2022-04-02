@@ -7,7 +7,7 @@ import org.pixel.ext.tiled.view.TiledGenericMapView;
  * A TileMap layer that displays an image.
  */
 public class TiledImageLayer extends TiledLayer {
-    Texture image;
+    private Texture image;
 
     /**
      * Creates a new TiledImageLayer.

@@ -6,7 +6,7 @@ import java.util.List;
  * An animation for a TiledTile of a TiledTileSet. Uses an ordered list of TiledFrames to store animation frames.
  */
 public class TiledAnimation {
-    List<TiledFrame> frameList;
+    private List<TiledFrame> frameList;
     private int totalDuration;
 
     public TiledAnimation() {

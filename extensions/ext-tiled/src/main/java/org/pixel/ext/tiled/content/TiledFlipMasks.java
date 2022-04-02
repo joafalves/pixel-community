@@ -5,7 +5,7 @@ public enum TiledFlipMasks {
     VERTICAL_FLIP_FLAG(0x40000000),
     DIAGONAL_FLIP_FLAG(0x20000000);
 
-    long bits;
+    private long bits;
 
     TiledFlipMasks(long bits) {
         this.bits = bits;

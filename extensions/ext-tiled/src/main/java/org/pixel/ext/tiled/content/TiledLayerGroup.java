@@ -9,7 +9,7 @@ import java.util.List;
  * A group of TiledLayers.
  */
 public class TiledLayerGroup extends TiledLayer {
-    List<TiledLayer> layers;
+    private List<TiledLayer> layers;
 
     /**
      * Creates a new TiledLayerGroup.

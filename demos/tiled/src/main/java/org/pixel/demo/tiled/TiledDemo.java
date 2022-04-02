@@ -25,8 +25,7 @@ public class TiledDemo extends PixelWindow {
     private SpriteBatch spriteBatch;
     private ContentManager contentManager;
     private Camera2D gameCamera;
-    private static Color fillColor;
-    float posX, posY;
+    private float posX, posY;
 
     private TiledMap tileMap;
     private TiledMapView tileMapView;
@@ -46,24 +45,25 @@ public class TiledDemo extends PixelWindow {
     public void load() {
         titleFpsCounter = new TitleFpsCounter(this);
         gameCamera = new Camera2D(this);
+        spriteBatch = new SpriteBatch();
+        contentManager = new ContentManager();
+
         gameCamera.setOrigin(0.5f, 0.5f);
         gameCamera.setZoom(3f);
         posX = 8 * 16;
         posY = 5 * 16 + 1;
 
+        setBackgroundColor(Color.BLACK);
+
         TiledTileSetImporter tileSetImporter = new TiledTileSetImporter();
         TiledMapImporter importer = new TiledMapImporter();
 
-        spriteBatch = new SpriteBatch();
-        contentManager = new ContentManager();
         contentManager.addContentImporter(importer);
         contentManager.addContentImporter(tileSetImporter);
 
         ContentImporterSettings tileMapImporterSettings = new TiledMapImporterSettings();
-
         tileMap = contentManager.load("map.tmx", TiledMap.class, tileMapImporterSettings);
         tileMapView = new TiledMapView(spriteBatch, gameCamera);
-        fillColor = Color.BLACK;
     }
 
     @Override
@@ -96,8 +96,6 @@ public class TiledDemo extends PixelWindow {
 
     @Override
     public void draw(DeltaTime delta) {
-        setBackgroundColor(fillColor);
-
         spriteBatch.begin(gameCamera.getViewMatrix());
 
         tileMapView.draw(tileMap, delta.getElapsedMs());
@@ -107,9 +105,11 @@ public class TiledDemo extends PixelWindow {
 
     @Override
     public void dispose() {
-        super.dispose();
         spriteBatch.dispose();
         contentManager.dispose();
+        tileMap.dispose();
+
+        super.dispose();
     }
 
     public static void main(String[] args) {

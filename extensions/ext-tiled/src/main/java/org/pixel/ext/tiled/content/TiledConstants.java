@@ -2,7 +2,7 @@ package org.pixel.ext.tiled.content;
 
 public enum TiledConstants {
     PIXEL_EPSILON(0.005f);
-    float value;
+    private final float value;
 
     TiledConstants(float value) {
         this.value = value;

@@ -8,7 +8,7 @@ import org.pixel.graphics.render.SpriteBatch;
 class TiledObjectTest {
     @Test
     void draw() {
-        TiledObject tiledObject = new TiledObject();
+        TiledObject tiledObject = Mockito.mock(TiledObject.class);
         TiledObjectGroup group = Mockito.mock(TiledObjectGroup.class);
         SpriteBatch spriteBatch = Mockito.mock(SpriteBatch.class);
         TiledObjectGroupView view = Mockito.mock(TiledObjectGroupView.class);
