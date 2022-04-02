@@ -28,7 +28,7 @@ sonatypeUsername=<sonatype-username>
 sonatypePassword=<sonatype-password>
 ```
 
-All published artifacts will be signed with the GPG key (more info [here](/Users/jfalves/Workspace/keys/secret-keys.gpg))
+All published artifacts will be signed with the GPG key (more info [here](https://central.sonatype.org/publish/requirements/gpg/))
 
 #### Local publish ####
 

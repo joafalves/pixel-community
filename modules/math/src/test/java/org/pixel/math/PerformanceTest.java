@@ -33,13 +33,13 @@ public class PerformanceTest {
     @Disabled
     public void matrix4Multiply() {
         Matrix4 mat = new Matrix4();
-        Matrix4 omat = new Matrix4();
+        Matrix4 otherMat = new Matrix4();
 
         long start = System.nanoTime();
         long elapsed;
 
         for (int i = 0; i < ITERATIONS; ++i) {
-            mat.multiply(omat);
+            mat.multiply(otherMat);
         }
 
         elapsed = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);

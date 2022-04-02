@@ -6,11 +6,11 @@
 package org.pixel.demo.learning.input;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
+import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
@@ -52,6 +52,9 @@ public class KeyboardInputDemo extends DemoGame {
         // related org.pixel.learning.sprite properties
         spriteAnchor = Vector2.half();
         spritePos = new Vector2(getVirtualWidth() / 2f, getVirtualHeight() / 2f);
+
+        // character listener example:
+        Keyboard.addCharListener(System.out::print);
     }
 
     @Override
@@ -73,6 +76,11 @@ public class KeyboardInputDemo extends DemoGame {
             gameCamera.setPosition(0, 0); // reset camera position
         }
 
+        // Note that 'isKeyPressed()' is also available:
+        if (Keyboard.isKeyPressed(KeyboardKey.ESCAPE)) {
+            dispose(); // quit the game...
+        }
+
         // Take into consideration that the 'getState()' causes volatile memory which can result in quicker GC cycles
         lastKeyboardState = Keyboard.getState();
     }
@@ -91,10 +99,11 @@ public class KeyboardInputDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        super.dispose();
         content.dispose();
         spriteBatch.dispose();
         spriteTex.dispose();
+
+        super.dispose();
     }
 
     public static void main(String[] args) {

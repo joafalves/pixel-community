@@ -23,7 +23,7 @@ public class MouseState implements Serializable {
      *
      * @param buttons The snapshot of the mouse state.
      */
-    public MouseState(HashMap<Integer, Integer> buttons) {
+    protected MouseState(HashMap<Integer, Integer> buttons) {
         this.buttons = buttons;
     }
 

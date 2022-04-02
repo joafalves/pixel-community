@@ -4,14 +4,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.pixel.graphics.Color;
-import org.pixel.math.IntSize;
+import org.pixel.math.SizeInt;
 import org.pixel.math.Vector2;
 
 @Builder
 @Getter
 @Setter
 public class Vehicle {
-    private final IntSize intSize;
+    private final SizeInt sizeInt;
     private final Vector2 position;
     private final Color color;
     private final float speed;

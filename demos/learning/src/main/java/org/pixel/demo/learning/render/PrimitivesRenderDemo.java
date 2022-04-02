@@ -101,8 +101,8 @@ public class PrimitivesRenderDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        super.dispose();
         re.dispose();
+        super.dispose();
     }
 
     public static void main(String[] args) {

@@ -35,9 +35,9 @@ public class AudioDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        super.dispose();
         content.dispose();
         sound.dispose();
+        super.dispose();
     }
 
     public static void main(String[] args) {

@@ -70,8 +70,6 @@ public class Camera2D implements Serializable {
 
     /**
      * Always calculates a view matrix regardless of the existing cache.
-     *
-     * @return The view matrix.
      */
     private void computeMatrix() {
         if (matrixCache == null) {

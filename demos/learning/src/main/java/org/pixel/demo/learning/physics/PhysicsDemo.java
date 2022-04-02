@@ -28,11 +28,6 @@ public class PhysicsDemo extends DemoGame {
     private ContentManager content;
     private Texture earthTexture;
 
-    /**
-     * Constructor
-     *
-     * @param settings
-     */
     public PhysicsDemo(WindowSettings settings) {
         super(settings);
     }
@@ -105,6 +100,12 @@ public class PhysicsDemo extends DemoGame {
             re.endPath();
         });
         re.end();
+    }
+
+    @Override
+    public void dispose() {
+        content.dispose();
+        super.dispose();
     }
 
     public static void main(String[] args) {

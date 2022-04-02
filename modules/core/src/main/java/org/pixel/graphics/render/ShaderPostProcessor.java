@@ -5,69 +5,29 @@
 
 package org.pixel.graphics.render;
 
-import static org.lwjgl.opengl.GL11C.GL_ONE;
-import static org.lwjgl.opengl.GL11C.GL_ONE_MINUS_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11C.GL_RGBA;
-import static org.lwjgl.opengl.GL11C.GL_RGBA8;
-import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MAG_FILTER;
-import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MIN_FILTER;
-import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_S;
-import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_T;
-import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_BYTE;
-import static org.lwjgl.opengl.GL11C.glBindTexture;
-import static org.lwjgl.opengl.GL11C.glBlendFunc;
-import static org.lwjgl.opengl.GL11C.glTexImage2D;
-import static org.lwjgl.opengl.GL11C.glTexParameteri;
-import static org.lwjgl.opengl.GL12C.GL_CLAMP_TO_EDGE;
-import static org.lwjgl.opengl.GL15C.glDeleteBuffers;
-import static org.lwjgl.opengl.GL30C.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL30C.GL_COLOR_ATTACHMENT0;
-import static org.lwjgl.opengl.GL30C.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL30C.GL_DRAW_FRAMEBUFFER;
-import static org.lwjgl.opengl.GL30C.GL_FLOAT;
-import static org.lwjgl.opengl.GL30C.GL_FRAMEBUFFER;
-import static org.lwjgl.opengl.GL30C.GL_FRAMEBUFFER_COMPLETE;
-import static org.lwjgl.opengl.GL30C.GL_NEAREST;
-import static org.lwjgl.opengl.GL30C.GL_READ_FRAMEBUFFER;
-import static org.lwjgl.opengl.GL30C.GL_RENDERBUFFER;
-import static org.lwjgl.opengl.GL30C.GL_RGB;
-import static org.lwjgl.opengl.GL30C.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL30C.GL_TEXTURE0;
-import static org.lwjgl.opengl.GL30C.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL30C.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL30C.glActiveTexture;
-import static org.lwjgl.opengl.GL30C.glBindBuffer;
-import static org.lwjgl.opengl.GL30C.glBindFramebuffer;
-import static org.lwjgl.opengl.GL30C.glBindRenderbuffer;
-import static org.lwjgl.opengl.GL30C.glBindVertexArray;
-import static org.lwjgl.opengl.GL30C.glBlitFramebuffer;
-import static org.lwjgl.opengl.GL30C.glBufferData;
-import static org.lwjgl.opengl.GL30C.glCheckFramebufferStatus;
-import static org.lwjgl.opengl.GL30C.glClear;
-import static org.lwjgl.opengl.GL30C.glDeleteFramebuffers;
-import static org.lwjgl.opengl.GL30C.glDeleteRenderbuffers;
-import static org.lwjgl.opengl.GL30C.glDeleteVertexArrays;
-import static org.lwjgl.opengl.GL30C.glDrawArrays;
-import static org.lwjgl.opengl.GL30C.glEnableVertexAttribArray;
-import static org.lwjgl.opengl.GL30C.glFramebufferRenderbuffer;
-import static org.lwjgl.opengl.GL30C.glFramebufferTexture2D;
-import static org.lwjgl.opengl.GL30C.glGenBuffers;
-import static org.lwjgl.opengl.GL30C.glGenFramebuffers;
-import static org.lwjgl.opengl.GL30C.glGenRenderbuffers;
-import static org.lwjgl.opengl.GL30C.glGenTextures;
-import static org.lwjgl.opengl.GL30C.glGenVertexArrays;
-import static org.lwjgl.opengl.GL30C.glRenderbufferStorageMultisample;
-import static org.lwjgl.opengl.GL30C.glUniform1f;
-import static org.lwjgl.opengl.GL30C.glVertexAttribPointer;
-
-import java.nio.ByteBuffer;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.Texture;
 import org.pixel.graphics.shader.Shader;
 import org.pixel.graphics.shader.ShaderManager;
-import org.pixel.math.IntSize;
+import org.pixel.math.SizeInt;
+
+import java.nio.ByteBuffer;
+
+import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL12C.GL_CLAMP_TO_EDGE;
+import static org.lwjgl.opengl.GL15C.glDeleteBuffers;
+import static org.lwjgl.opengl.GL30C.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL30C.GL_FLOAT;
+import static org.lwjgl.opengl.GL30C.GL_NEAREST;
+import static org.lwjgl.opengl.GL30C.GL_RGB;
+import static org.lwjgl.opengl.GL30C.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL30C.GL_TRIANGLES;
+import static org.lwjgl.opengl.GL30C.glClear;
+import static org.lwjgl.opengl.GL30C.glDrawArrays;
+import static org.lwjgl.opengl.GL30C.glGenTextures;
+import static org.lwjgl.opengl.GL30C.*;
 
 public class ShaderPostProcessor implements PostProcessor {
 
@@ -75,7 +35,7 @@ public class ShaderPostProcessor implements PostProcessor {
 
     private Shader shader;
     private Texture texture;
-    private final IntSize intSize;
+    private final SizeInt sizeInt;
     private final int msfbo;
     private final int fbo;
     private final int rbo;
@@ -102,7 +62,7 @@ public class ShaderPostProcessor implements PostProcessor {
         this.rbo = glGenRenderbuffers(); // render buffer
         this.vao = glGenVertexArrays();
         this.vbo = glGenBuffers();
-        this.intSize = new IntSize(width, height);
+        this.sizeInt = new SizeInt(width, height);
         this.setupBuffers();
         this.setupRenderData();
         this.setupShader();
@@ -115,7 +75,7 @@ public class ShaderPostProcessor implements PostProcessor {
         // initialize render buffer with a multi sampled fbo
         glBindFramebuffer(GL_FRAMEBUFFER, msfbo);
         glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, 8, GL_RGB, intSize.getWidth(), intSize.getHeight());
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, 8, GL_RGB, sizeInt.getWidth(), sizeInt.getHeight());
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             LOG.error("Failed to initialize MSFBO.");
@@ -135,7 +95,7 @@ public class ShaderPostProcessor implements PostProcessor {
 
         // initialize fbo/texture for shader operations
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, intSize.getWidth(), intSize.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, sizeInt.getWidth(), sizeInt.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
                 (ByteBuffer) null);
         glBindTexture(GL_TEXTURE_2D, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.getId(), 0);
@@ -196,8 +156,8 @@ public class ShaderPostProcessor implements PostProcessor {
     public void end() {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, msfbo);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
-        glBlitFramebuffer(0, 0, intSize.getWidth(), intSize.getHeight(), 0, 0, intSize.getWidth(),
-                intSize.getHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBlitFramebuffer(0, 0, sizeInt.getWidth(), sizeInt.getHeight(), 0, 0, sizeInt.getWidth(),
+                sizeInt.getHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
         glBindFramebuffer(GL_FRAMEBUFFER, 0); // unbinds both buffers
         stage = 2;
     }
@@ -253,9 +213,9 @@ public class ShaderPostProcessor implements PostProcessor {
      * @param height Height.
      */
     public void setSize(int width, int height) {
-        if (width != this.intSize.getWidth() || height != this.intSize.getHeight()) {
-            this.intSize.setWidth(width);
-            this.intSize.setHeight(height);
+        if (width != this.sizeInt.getWidth() || height != this.sizeInt.getHeight()) {
+            this.sizeInt.setWidth(width);
+            this.sizeInt.setHeight(height);
             this.setupBuffers();
         }
     }
@@ -266,7 +226,7 @@ public class ShaderPostProcessor implements PostProcessor {
      * @return Width.
      */
     public int getWidth() {
-        return intSize.getWidth();
+        return sizeInt.getWidth();
     }
 
     /**
@@ -275,7 +235,7 @@ public class ShaderPostProcessor implements PostProcessor {
      * @return Height.
      */
     public int getHeight() {
-        return intSize.getHeight();
+        return sizeInt.getHeight();
     }
 
     /**

@@ -26,9 +26,9 @@ public class Mouse {
 
     //region properties
 
-    private static HashMap<Integer, Integer> buttons;
-    private static Vector2 position;
-    private static Rectangle positionBox;
+    private static final HashMap<Integer, Integer> buttons;
+    private static final Vector2 position;
+    private static final Rectangle positionBox;
 
     //endregion
 
