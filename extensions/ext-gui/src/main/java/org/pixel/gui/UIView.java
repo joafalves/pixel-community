@@ -29,7 +29,7 @@ import org.pixel.gui.component.UIComponent;
 import org.pixel.gui.style.Style;
 import org.pixel.gui.style.StyleFactory;
 import org.pixel.math.Rectangle;
-import org.pixel.math.IntSize;
+import org.pixel.math.SizeInt;
 
 public class UIView implements Updatable, Loadable, Disposable, WindowEventListener {
 
@@ -141,8 +141,8 @@ public class UIView implements Updatable, Loadable, Disposable, WindowEventListe
         if (scene != null && elapsed > 1.0 / targetFps) {
             elapsed = 0;
             // capture the GUI drawing data to the render buffer:
-            //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
-            //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            // glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+            // glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
             renderBuffer.begin();
             scene.draw(delta);
             renderBuffer.end();
@@ -160,7 +160,7 @@ public class UIView implements Updatable, Loadable, Disposable, WindowEventListe
     /**
      * @return
      */
-    public IntSize getViewportSize() {
+    public SizeInt getViewportSize() {
         return window.getViewportSize();
     }
 

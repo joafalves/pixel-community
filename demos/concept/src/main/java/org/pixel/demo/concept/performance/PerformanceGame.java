@@ -1,0 +1,83 @@
+/*
+ * This software is available under Apache License
+ * Copyright (c)
+ */
+
+package org.pixel.demo.concept.performance;
+
+import org.pixel.commons.DeltaTime;
+import org.pixel.content.ContentManager;
+import org.pixel.core.Camera2D;
+import org.pixel.core.PixelWindow;
+import org.pixel.core.WindowSettings;
+import org.pixel.demo.concept.commons.TitleFpsCounter;
+import org.pixel.demo.concept.performance.component.ConstantVelocityBoundComponent;
+import org.pixel.ext.ecs.GameScene;
+import org.pixel.ext.ecs.Sprite;
+import org.pixel.math.Boundary;
+import org.pixel.math.MathHelper;
+import org.pixel.math.Vector2;
+
+public class PerformanceGame extends PixelWindow {
+
+    private static final int SPRITE_COUNT = 1000;
+    private static final float SPRITE_MOVEMENT_SPEED = 100f;
+
+    private ContentManager contentManager;
+    private TitleFpsCounter fpsCounter;
+    private GameScene gameScene;
+
+    public PerformanceGame(WindowSettings settings) {
+        super(settings);
+    }
+
+    @Override
+    public void load() {
+        fpsCounter = new TitleFpsCounter(this);
+        contentManager = new ContentManager();
+        gameScene = new GameScene("GameScene01", new Camera2D(this, Vector2.zero()));
+
+        var screenBoundary = new Boundary(0, 0, getVirtualWidth(), getVirtualHeight());
+        var spriteTex = contentManager.loadTexture("images/earth-48x48.png");
+        for (int i = 0; i < SPRITE_COUNT; i++) {
+            var velocity = new Vector2(MathHelper.random(-SPRITE_MOVEMENT_SPEED, SPRITE_MOVEMENT_SPEED),
+                    MathHelper.random(-SPRITE_MOVEMENT_SPEED, SPRITE_MOVEMENT_SPEED));
+            var sprite = new Sprite("Sprite_" + i, spriteTex);
+            sprite.getTransform().setPosition(
+                    MathHelper.random(0, getVirtualWidth()), MathHelper.random(0, getVirtualHeight()));
+            sprite.addComponent(
+                    new ConstantVelocityBoundComponent(velocity, screenBoundary));
+
+            gameScene.addChild(sprite);
+        }
+    }
+
+    @Override
+    public void update(DeltaTime delta) {
+        fpsCounter.update(delta);
+        gameScene.update(delta);
+    }
+
+    @Override
+    public void draw(DeltaTime delta) {
+        clear();
+        gameScene.draw(delta);
+    }
+
+    @Override
+    public void dispose() {
+        contentManager.dispose();
+        gameScene.dispose();
+        super.dispose();
+    }
+
+    public static void main(String[] args) {
+        WindowSettings settings = new WindowSettings("Performance", 1024, 768);
+        settings.setVsync(false);
+        settings.setIdleThrottle(false);
+        settings.setAutoWindowClear(false);
+
+        PerformanceGame game = new PerformanceGame(settings);
+        game.start();
+    }
+}

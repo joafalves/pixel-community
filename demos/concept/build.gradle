@@ -23,7 +23,7 @@ dependencies {
 }
 
 application {
-    mainClass = 'org.pixel.demo.concept.spaceshooter.SpaceShooterGame'
+    mainClass = 'org.pixel.demo.concept.performance.PerformanceGame'
     if (OperatingSystem.current().isMacOsX()) {
         applicationDefaultJvmArgs = ["-XstartOnFirstThread"]
     }

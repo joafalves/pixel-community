@@ -41,7 +41,18 @@ public class WindowSettings {
      * @param virtualHeight The virtual height of the window.
      */
     public WindowSettings(int virtualWidth, int virtualHeight) {
-        this.windowTitle = "Pixel Window";
+        this("Pixel Window", virtualWidth, virtualHeight);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param windowTitle The title of the window.
+     * @param virtualWidth The virtual width of the window.
+     * @param virtualHeight The virtual height of the window.
+     */
+    public WindowSettings(String windowTitle, int virtualWidth, int virtualHeight) {
+        this.windowTitle = windowTitle;
         this.virtualWidth = virtualWidth;
         this.virtualHeight = virtualHeight;
         this.windowWidth = virtualWidth;
