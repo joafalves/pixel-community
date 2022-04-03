@@ -6,6 +6,7 @@
 package org.pixel.graphics.shader;
 
 import static org.lwjgl.opengl.GL11C.GL_TRUE;
+import static org.lwjgl.opengl.GL20.glUseProgram;
 import static org.lwjgl.opengl.GL20C.GL_COMPILE_STATUS;
 import static org.lwjgl.opengl.GL20C.GL_FRAGMENT_SHADER;
 import static org.lwjgl.opengl.GL20C.GL_LINK_STATUS;
@@ -136,6 +137,13 @@ public abstract class Shader implements Disposable {
      * Apply shader values.
      */
     public abstract void apply();
+
+    /**
+     * Sets this shader as the current program.
+     */
+    public void use() {
+        glUseProgram(programId);
+    }
 
     /**
      * Get shader uniform location.
