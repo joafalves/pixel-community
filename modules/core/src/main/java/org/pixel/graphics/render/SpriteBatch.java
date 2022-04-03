@@ -32,7 +32,6 @@ import org.pixel.content.FontGlyph;
 import org.pixel.content.Texture;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.shader.Shader;
-import org.pixel.graphics.shader.ShaderManager;
 import org.pixel.graphics.shader.VertexArrayObject;
 import org.pixel.graphics.shader.VertexBufferObject;
 import org.pixel.graphics.shader.standard.TextureShader;
@@ -641,7 +640,7 @@ public class SpriteBatch extends DrawBatch {
         }
 
         // use shader
-        ShaderManager.useShader(shader);
+        shader.use();
 
         // bind buffers
         vao.bind();

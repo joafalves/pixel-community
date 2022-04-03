@@ -23,7 +23,6 @@ import org.pixel.core.WindowEventListener;
 import org.pixel.core.WindowMode;
 import org.pixel.graphics.render.NvgRenderEngine;
 import org.pixel.graphics.render.RenderBuffer;
-import org.pixel.graphics.shader.ShaderManager;
 import org.pixel.gui.common.UIContext;
 import org.pixel.gui.component.UIComponent;
 import org.pixel.gui.style.Style;
@@ -148,7 +147,6 @@ public class UIView implements Updatable, Loadable, Disposable, WindowEventListe
             renderBuffer.end();
 
             if (context.getRenderEngine() instanceof NvgRenderEngine) {
-                ShaderManager.clearActiveShader();
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             }
         }
