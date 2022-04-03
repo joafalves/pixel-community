@@ -7,6 +7,7 @@ package org.pixel.demo.concept.performance;
 
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
+import org.pixel.content.Texture;
 import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
@@ -14,14 +15,16 @@ import org.pixel.demo.concept.commons.TitleFpsCounter;
 import org.pixel.demo.concept.performance.component.ConstantVelocityBoundComponent;
 import org.pixel.ext.ecs.GameScene;
 import org.pixel.ext.ecs.Sprite;
+import org.pixel.graphics.Color;
 import org.pixel.math.Boundary;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
 
 public class PerformanceGame extends PixelWindow {
 
-    private static final int SPRITE_COUNT = 1000;
+    private static final int SPRITE_COUNT = 500;
     private static final float SPRITE_MOVEMENT_SPEED = 100f;
+    private static final boolean ALTERNATE_TEXTURE = false;
 
     private ContentManager contentManager;
     private TitleFpsCounter fpsCounter;
@@ -39,10 +42,12 @@ public class PerformanceGame extends PixelWindow {
 
         var screenBoundary = new Boundary(0, 0, getVirtualWidth(), getVirtualHeight());
         var spriteTex = contentManager.loadTexture("images/earth-48x48.png");
+        var spriteTexAlt = contentManager.load("images/earth-48x48.png", Texture.class, null, false);
         for (int i = 0; i < SPRITE_COUNT; i++) {
             var velocity = new Vector2(MathHelper.random(-SPRITE_MOVEMENT_SPEED, SPRITE_MOVEMENT_SPEED),
                     MathHelper.random(-SPRITE_MOVEMENT_SPEED, SPRITE_MOVEMENT_SPEED));
-            var sprite = new Sprite("Sprite_" + i, spriteTex);
+            var sprite = new Sprite("Sprite_" + i, ALTERNATE_TEXTURE ? i % 2 == 0 ? spriteTex : spriteTexAlt : spriteTex);
+            sprite.setOverlayColor(ALTERNATE_TEXTURE ? i % 2 == 0 ? Color.WHITE : Color.random() : Color.WHITE);
             sprite.getTransform().setPosition(
                     MathHelper.random(0, getVirtualWidth()), MathHelper.random(0, getVirtualHeight()));
             sprite.addComponent(
@@ -60,7 +65,6 @@ public class PerformanceGame extends PixelWindow {
 
     @Override
     public void draw(DeltaTime delta) {
-        clear();
         gameScene.draw(delta);
     }
 
@@ -75,7 +79,6 @@ public class PerformanceGame extends PixelWindow {
         WindowSettings settings = new WindowSettings("Performance", 1024, 768);
         settings.setVsync(false);
         settings.setIdleThrottle(false);
-        settings.setAutoWindowClear(false);
 
         PerformanceGame game = new PerformanceGame(settings);
         game.start();
