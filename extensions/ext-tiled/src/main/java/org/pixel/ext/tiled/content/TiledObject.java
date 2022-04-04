@@ -6,7 +6,7 @@ import org.pixel.math.Vector2;
 /**
  * This class represents a Tiled object.
  */
-public class TiledObject {
+public abstract class TiledObject {
     private Vector2 position;
     private float rotation;
     private TiledCustomProperties customProperties;
@@ -41,7 +41,5 @@ public class TiledObject {
      * @param group The group this object belongs to.
      * @param view  The view visitor that draws the object.
      */
-    public void draw(TiledObjectGroup group, TiledGenericObjectGroupView view) {
-
-    }
+    public abstract void draw(TiledObjectGroup group, TiledGenericObjectGroupView view);
 }
