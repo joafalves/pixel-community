@@ -33,7 +33,7 @@ public class TiledLayerViewTest {
     ImportContext ctx;
     ContentManager contentManager;
     TiledTileSet tileSet1, tileSet2;
-    List<Vector2> positions;
+    List<Rectangle> displayAreas;
     SpriteBatch spriteBatch;
     Boundary boundary;
 
@@ -42,16 +42,16 @@ public class TiledLayerViewTest {
         TiledTileSetImporter tileSetImporter = new TiledTileSetImporter();
         texture1 = Mockito.mock(Texture.class);
         texture2 = Mockito.mock(Texture.class);
-        positions = new ArrayList<>();
+        displayAreas = new ArrayList<>();
         spriteBatch = Mockito.mock(SpriteBatch.class);
         boundary = Mockito.mock(Boundary.class);
 
         Mockito.when(boundary.overlaps(Mockito.any(Boundary.class))).thenReturn(true);
 
         Answer getPosition = invocation -> {
-            Vector2 position = invocation.getArgument(1);
+            Rectangle displayArea = invocation.getArgument(1);
 
-            positions.add(new Vector2(position.getX(), position.getY()));
+            displayAreas.add(new Rectangle(displayArea.getX(), displayArea.getY(), displayArea.getWidth(), displayArea.getHeight()));
 
             return invocation.getMock();
         };
@@ -63,9 +63,8 @@ public class TiledLayerViewTest {
         Mockito.when(contentManager.load(Mockito.eq("Tilese2t.png"), Mockito.eq(Texture.class), Mockito.any())).thenReturn(texture2);
         Mockito.when(ctx.getContentManager()).thenReturn(contentManager);
         Mockito.doAnswer(getPosition).when(spriteBatch).draw(Mockito.any(Texture.class),
-                Mockito.any(Vector2.class), Mockito.any(Rectangle.class),
-                Mockito.any(Color.class), Mockito.any(Vector2.class),
-                Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat());
+                Mockito.any(Rectangle.class), Mockito.any(Rectangle.class),
+                Mockito.any(Color.class), Mockito.any(Vector2.class), Mockito.anyFloat());
 
         InputStream in = this.getClass().getClassLoader().getResourceAsStream("Tileset.tsx");
 
@@ -116,34 +115,26 @@ public class TiledLayerViewTest {
 
         inOrder.verify(spriteBatch, Mockito.times(2)).draw(Mockito.same(texture2), Mockito.any(),
                 Mockito.eq(new Rectangle(0, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(1f),
-                Mockito.eq(1f),
                 Mockito.eq(0f));
 
         layerView.draw((TiledTileLayer) tileMap.getLayers().get(1), 0);
 
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
                 Mockito.eq(new Rectangle(0, 16, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(1f),
-                Mockito.eq(1f),
                 Mockito.eq(0f));
         inOrder.verify(spriteBatch, Mockito.times(2)).draw(Mockito.same(texture1), Mockito.any(),
                 Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(1f),
-                Mockito.eq(1f),
                 Mockito.eq(0f));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
                 Mockito.eq(new Rectangle(0, 16, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(1f),
-                Mockito.eq(1f),
                 Mockito.eq(0f));
 
-        Assertions.assertEquals(new Vector2(0 + 8, 8 + 8), positions.get(0));
-        Assertions.assertEquals(new Vector2(16 + 8, 8 + 8), positions.get(1));
-        Assertions.assertEquals(new Vector2(0 + 8, 0 + 8), positions.get(2));
-        Assertions.assertEquals(new Vector2(16 + 8, 8 + 8), positions.get(3));
-        Assertions.assertEquals(new Vector2(0 + 8, 16 + 8), positions.get(4));
-        Assertions.assertEquals(new Vector2(16 + 8, 16 + 8), positions.get(5));
+        Assertions.assertEquals(new Rectangle(0 + 8, 8 + 8, 16, 16), displayAreas.get(0));
+        Assertions.assertEquals(new Rectangle(16 + 8, 8 + 8, 16, 16), displayAreas.get(1));
+        Assertions.assertEquals(new Rectangle(0 + 8, 0 + 8, 16, 16), displayAreas.get(2));
+        Assertions.assertEquals(new Rectangle(16 + 8, 8 + 8, 16, 16), displayAreas.get(3));
+        Assertions.assertEquals(new Rectangle(0 + 8, 16 + 8, 16, 16), displayAreas.get(4));
+        Assertions.assertEquals(new Rectangle(16 + 8, 16 + 8, 16, 16), displayAreas.get(5));
     }
 
     @Test
@@ -170,20 +161,16 @@ public class TiledLayerViewTest {
 
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
                 Mockito.eq(new Rectangle(0, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(1f),
-                Mockito.eq(1f),
                 Mockito.eq(0f));
 
         layerView.draw((TiledTileLayer) tileMap.getLayers().get(1), 0);
 
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
                 Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(1f),
-                Mockito.eq(1f),
                 Mockito.eq(0f));
 
-        Assertions.assertEquals(new Vector2(0 + 8, 0 + 8), positions.get(0));
-        Assertions.assertEquals(new Vector2((float) Math.floor(0f + 1.5f + 8), 16f - 2f + 8), positions.get(1));
+        Assertions.assertEquals(new Rectangle(0 + 8, 0 + 8, 16, 16), displayAreas.get(0));
+        Assertions.assertEquals(new Rectangle((float) Math.floor(0f + 1.5f + 8), 16f - 2f + 8, 16, 16), displayAreas.get(1));
     }
 
     @Test
@@ -210,53 +197,37 @@ public class TiledLayerViewTest {
 
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
                 Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(1f),
-                Mockito.eq(1f),
                 Mockito.eq(0f));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
                 Mockito.eq(new Rectangle(16, 16, 16, -16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(1f),
-                Mockito.eq(1f),
                 Mockito.eq(0f));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
                 Mockito.eq(new Rectangle(32, 0, -16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(1f),
-                Mockito.eq(1f),
                 Mockito.eq(0f));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
                 Mockito.eq(new Rectangle(32, 16, -16, -16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(1f),
-                Mockito.eq(1f),
                 Mockito.eq(0f));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
                 Mockito.eq(new Rectangle(32, 16, -16, -16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(1f),
-                Mockito.eq(1f),
                 Mockito.eq(-(float) Math.PI / 2));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture2), Mockito.any(),
                 Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(1f),
-                Mockito.eq(1f),
                 Mockito.eq(-(float) Math.PI / 2));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
                 Mockito.eq(new Rectangle(32, 0, -16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(1f),
-                Mockito.eq(1f),
                 Mockito.eq(-(float) Math.PI / 2));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture2), Mockito.any(),
                 Mockito.eq(new Rectangle(16, 16, 16, -16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(1f),
-                Mockito.eq(1f),
                 Mockito.eq(-(float) Math.PI / 2));
 
-        Assertions.assertEquals(new Vector2(0 + 8, 0 + 8), positions.get(0));
-        Assertions.assertEquals(new Vector2(16 + 8, 0 + 8), positions.get(1));
-        Assertions.assertEquals(new Vector2(0 + 8, 16 + 8), positions.get(2));
-        Assertions.assertEquals(new Vector2(16 + 8, 16 + 8), positions.get(3));
-        Assertions.assertEquals(new Vector2(0 + 8, 32 + 8), positions.get(4));
-        Assertions.assertEquals(new Vector2(16 + 8, 32 + 8), positions.get(5));
-        Assertions.assertEquals(new Vector2(0 + 8, 48 + 8), positions.get(6));
-        Assertions.assertEquals(new Vector2(16 + 8, 48 + 8), positions.get(7));
+        Assertions.assertEquals(new Rectangle(0 + 8, 0 + 8, 16, 16), displayAreas.get(0));
+        Assertions.assertEquals(new Rectangle(16 + 8, 0 + 8, 16, 16), displayAreas.get(1));
+        Assertions.assertEquals(new Rectangle(0 + 8, 16 + 8, 16, 16), displayAreas.get(2));
+        Assertions.assertEquals(new Rectangle(16 + 8, 16 + 8, 16, 16), displayAreas.get(3));
+        Assertions.assertEquals(new Rectangle(0 + 8, 32 + 8, 16, 16), displayAreas.get(4));
+        Assertions.assertEquals(new Rectangle(16 + 8, 32 + 8, 16, 16), displayAreas.get(5));
+        Assertions.assertEquals(new Rectangle(0 + 8, 48 + 8, 16, 16), displayAreas.get(6));
+        Assertions.assertEquals(new Rectangle(16 + 8, 48 + 8, 16, 16), displayAreas.get(7));
     }
 
     @Test
@@ -289,16 +260,12 @@ public class TiledLayerViewTest {
 
         inOrder.verify(spriteBatch, Mockito.times(0)).draw(Mockito.same(texture1), Mockito.any(),
                 Mockito.eq(new Rectangle(0, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(1f),
-                Mockito.eq(1f),
                 Mockito.eq(0f));
 
         inOrder.verify(spriteBatch).draw(Mockito.same(texture1), Mockito.any(),
                 Mockito.eq(new Rectangle(16, 0, 16, 16)), Mockito.same(Color.WHITE), Mockito.eq(Vector2.HALF),
-                Mockito.eq(1f),
-                Mockito.eq(1f),
                 Mockito.eq(0f));
 
-        Assertions.assertEquals(new Vector2(16 + 8, 0 + 8), positions.get(0));
+        Assertions.assertEquals(new Rectangle(16 + 8, 0 + 8, 16, 16), displayAreas.get(0));
     }
 }

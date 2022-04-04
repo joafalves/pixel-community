@@ -19,7 +19,7 @@ import static org.pixel.ext.tiled.content.TiledFlipMasks.*;
  */
 public abstract class TiledDrawStrategy {
     private final Transform transform = new Transform();
-    private final Vector2 position = new Vector2();
+    private final Rectangle displayArea = new Rectangle();
     private final Boundary tileBoundary = new Boundary(0, 0, 0, 0);
 
     private void getTileTransform(long gID, TiledTileSet tileSet, long frame) {
@@ -54,12 +54,15 @@ public abstract class TiledDrawStrategy {
             TiledTileSet tileSet = itr.previous();
 
             if (tileSet.getFirstGId() <= gID) {
-                position.setX((float) Math.floor(x * layer.getTileMap().getTileWidth() + layer.getOffsetX() + 0.5 * tileSet.getTileWidth() + PIXEL_EPSILON.getValue()));
-                position.setY((float) Math.floor(y * layer.getTileMap().getTileHeight() + layer.getOffsetY() + 0.5 * tileSet.getTileHeight() + PIXEL_EPSILON.getValue()));
+                displayArea.set(
+                        (float) Math.floor(x * layer.getTileMap().getTileWidth() + layer.getOffsetX() + 0.5 * tileSet.getTileWidth() + PIXEL_EPSILON.getValue()),
+                        (float) Math.floor(y * layer.getTileMap().getTileHeight() + layer.getOffsetY() + 0.5 * tileSet.getTileHeight() + PIXEL_EPSILON.getValue()),
+                        tileSet.getTileWidth(),
+                        tileSet.getTileHeight());
 
                 tileBoundary.set(
-                        position.getX() - 0.5f * tileSet.getTileWidth(),
-                        position.getY() - 0.5f * tileSet.getTileHeight(),
+                        displayArea.getX() - 0.5f * tileSet.getTileWidth(),
+                        displayArea.getY() - 0.5f * tileSet.getTileHeight(),
                         tileSet.getTileWidth(), tileSet.getTileHeight()
                 );
 
@@ -69,8 +72,7 @@ public abstract class TiledDrawStrategy {
 
                 getTileTransform(originalGID, tileSet, frame);
 
-                spriteBatch.draw(tileSet.getTexture(), position, transform.rectangle, Color.WHITE, Vector2.HALF,
-                        1f, 1f, transform.rotation);
+                spriteBatch.draw(tileSet.getTexture(), displayArea, transform.rectangle, Color.WHITE, Vector2.HALF, transform.rotation);
 
                 break;
             }

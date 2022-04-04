@@ -5,6 +5,22 @@
 
 package org.pixel.graphics.render;
 
+import org.lwjgl.system.MemoryUtil;
+import org.pixel.content.Font;
+import org.pixel.content.FontGlyph;
+import org.pixel.content.Texture;
+import org.pixel.graphics.Color;
+import org.pixel.graphics.shader.ShaderManager;
+import org.pixel.graphics.shader.VertexArrayObject;
+import org.pixel.graphics.shader.VertexBufferObject;
+import org.pixel.graphics.shader.standard.TextureShader;
+import org.pixel.math.Matrix4;
+import org.pixel.math.Rectangle;
+import org.pixel.math.Vector2;
+
+import java.nio.FloatBuffer;
+import java.util.Arrays;
+
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL13C.GL_DST_COLOR;
 import static org.lwjgl.opengl.GL13C.GL_FLOAT;
@@ -20,24 +36,7 @@ import static org.lwjgl.opengl.GL13C.glBlendFunc;
 import static org.lwjgl.opengl.GL13C.glDrawArrays;
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glUniformMatrix4fv;
-import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
-
-import java.nio.FloatBuffer;
-import java.util.Arrays;
-import org.lwjgl.system.MemoryUtil;
-import org.pixel.content.Font;
-import org.pixel.content.FontGlyph;
-import org.pixel.content.Texture;
-import org.pixel.graphics.Color;
-import org.pixel.graphics.shader.ShaderManager;
-import org.pixel.graphics.shader.VertexArrayObject;
-import org.pixel.graphics.shader.VertexBufferObject;
-import org.pixel.graphics.shader.standard.TextureShader;
-import org.pixel.math.Matrix4;
-import org.pixel.math.Rectangle;
-import org.pixel.math.Vector2;
+import static org.lwjgl.opengl.GL20.*;
 
 public class SpriteBatch extends DrawBatch {
 
@@ -404,9 +403,9 @@ public class SpriteBatch extends DrawBatch {
         spriteData.x = position.getX();
         spriteData.y = position.getY();
         spriteData.width =
-                texture.getWidth() * (source != null ? Math.abs(source.getWidth()) / texture.getWidth() * scaleX : scaleX);
+                texture.getWidth() * (source != null ? source.getWidth() / texture.getWidth() * scaleX : scaleX);
         spriteData.height =
-                texture.getHeight() * (source != null ? Math.abs(source.getHeight()) / texture.getHeight() * scaleY : scaleY);
+                texture.getHeight() * (source != null ? source.getHeight() / texture.getHeight() * scaleY : scaleY);
         spriteData.anchor = anchor;
         spriteData.color = color;
         spriteData.source = source;
