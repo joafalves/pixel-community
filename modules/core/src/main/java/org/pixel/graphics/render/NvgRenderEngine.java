@@ -61,7 +61,6 @@ import org.pixel.commons.attribute.HorizontalAlignment;
 import org.pixel.commons.attribute.Solidity;
 import org.pixel.commons.attribute.VerticalAlignment;
 import org.pixel.graphics.Color;
-import org.pixel.graphics.shader.ShaderManager;
 import org.pixel.math.Matrix4;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Size;
@@ -102,9 +101,6 @@ public class NvgRenderEngine extends RenderEngine2D {
     @Override
     public void end() {
         nvgEndFrame(ctx);
-
-        // NanoVG uses a specific shader while drawing the frames, therefore we need to clear the shader cache
-        ShaderManager.clearActiveShader();
     }
 
     @Override

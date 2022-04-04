@@ -23,13 +23,12 @@ import org.pixel.core.WindowEventListener;
 import org.pixel.core.WindowMode;
 import org.pixel.graphics.render.NvgRenderEngine;
 import org.pixel.graphics.render.RenderBuffer;
-import org.pixel.graphics.shader.ShaderManager;
 import org.pixel.gui.common.UIContext;
 import org.pixel.gui.component.UIComponent;
 import org.pixel.gui.style.Style;
 import org.pixel.gui.style.StyleFactory;
 import org.pixel.math.Rectangle;
-import org.pixel.math.IntSize;
+import org.pixel.math.SizeInt;
 
 public class UIView implements Updatable, Loadable, Disposable, WindowEventListener {
 
@@ -141,14 +140,13 @@ public class UIView implements Updatable, Loadable, Disposable, WindowEventListe
         if (scene != null && elapsed > 1.0 / targetFps) {
             elapsed = 0;
             // capture the GUI drawing data to the render buffer:
-            //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
-            //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            // glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+            // glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
             renderBuffer.begin();
             scene.draw(delta);
             renderBuffer.end();
 
             if (context.getRenderEngine() instanceof NvgRenderEngine) {
-                ShaderManager.clearActiveShader();
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             }
         }
@@ -160,7 +158,7 @@ public class UIView implements Updatable, Loadable, Disposable, WindowEventListe
     /**
      * @return
      */
-    public IntSize getViewportSize() {
+    public SizeInt getViewportSize() {
         return window.getViewportSize();
     }
 

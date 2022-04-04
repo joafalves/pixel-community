@@ -248,6 +248,7 @@ public class ContentManager implements Disposable {
      * @param <T>      The type of the resource.
      * @return The loaded resource or null if the resource could not be loaded.
      */
+    @SuppressWarnings("unchecked")
     public <T> T load(String filepath, Class<T> type, @Nullable ContentImporterSettings settings, boolean useCache) {
         String assetRef = getCacheReference(filepath, type);
         if (useCache && assetCache.containsKey(assetRef)) {

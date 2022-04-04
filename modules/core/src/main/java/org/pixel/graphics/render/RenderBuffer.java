@@ -64,7 +64,6 @@ import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.Texture;
 import org.pixel.graphics.shader.Shader;
-import org.pixel.graphics.shader.ShaderManager;
 import org.pixel.graphics.shader.standard.RenderBufferShader;
 import org.pixel.math.Rectangle;
 
@@ -164,7 +163,7 @@ public class RenderBuffer implements Disposable {
         glBindVertexArray(0); // unbind
 
         // setup shader
-        ShaderManager.useShader(shader);
+        shader.use();
         glUniform1f(shader.getUniformLocation("uTextureImage"), 0);
     }
 
@@ -191,7 +190,7 @@ public class RenderBuffer implements Disposable {
      * Draw captured data.
      */
     public void draw() {
-        ShaderManager.useShader(shader);
+        shader.use();
 
         // Render textured quad
         glActiveTexture(GL_TEXTURE0);

@@ -5,29 +5,68 @@
 
 package org.pixel.graphics.render;
 
+import static org.lwjgl.opengl.GL11C.GL_ONE;
+import static org.lwjgl.opengl.GL11C.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11C.GL_RGBA;
+import static org.lwjgl.opengl.GL11C.GL_RGBA8;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MAG_FILTER;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MIN_FILTER;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_S;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_T;
+import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_BYTE;
+import static org.lwjgl.opengl.GL11C.glBindTexture;
+import static org.lwjgl.opengl.GL11C.glBlendFunc;
+import static org.lwjgl.opengl.GL11C.glTexImage2D;
+import static org.lwjgl.opengl.GL11C.glTexParameteri;
+import static org.lwjgl.opengl.GL12C.GL_CLAMP_TO_EDGE;
+import static org.lwjgl.opengl.GL15C.glDeleteBuffers;
+import static org.lwjgl.opengl.GL30C.GL_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL30C.GL_COLOR_ATTACHMENT0;
+import static org.lwjgl.opengl.GL30C.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL30C.GL_DRAW_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30C.GL_FLOAT;
+import static org.lwjgl.opengl.GL30C.GL_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30C.GL_FRAMEBUFFER_COMPLETE;
+import static org.lwjgl.opengl.GL30C.GL_NEAREST;
+import static org.lwjgl.opengl.GL30C.GL_READ_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30C.GL_RENDERBUFFER;
+import static org.lwjgl.opengl.GL30C.GL_RGB;
+import static org.lwjgl.opengl.GL30C.GL_STATIC_DRAW;
+import static org.lwjgl.opengl.GL30C.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL30C.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL30C.GL_TRIANGLES;
+import static org.lwjgl.opengl.GL30C.glActiveTexture;
+import static org.lwjgl.opengl.GL30C.glBindBuffer;
+import static org.lwjgl.opengl.GL30C.glBindFramebuffer;
+import static org.lwjgl.opengl.GL30C.glBindRenderbuffer;
+import static org.lwjgl.opengl.GL30C.glBindVertexArray;
+import static org.lwjgl.opengl.GL30C.glBlitFramebuffer;
+import static org.lwjgl.opengl.GL30C.glBufferData;
+import static org.lwjgl.opengl.GL30C.glCheckFramebufferStatus;
+import static org.lwjgl.opengl.GL30C.glClear;
+import static org.lwjgl.opengl.GL30C.glDeleteFramebuffers;
+import static org.lwjgl.opengl.GL30C.glDeleteRenderbuffers;
+import static org.lwjgl.opengl.GL30C.glDeleteVertexArrays;
+import static org.lwjgl.opengl.GL30C.glDrawArrays;
+import static org.lwjgl.opengl.GL30C.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL30C.glFramebufferRenderbuffer;
+import static org.lwjgl.opengl.GL30C.glFramebufferTexture2D;
+import static org.lwjgl.opengl.GL30C.glGenBuffers;
+import static org.lwjgl.opengl.GL30C.glGenFramebuffers;
+import static org.lwjgl.opengl.GL30C.glGenRenderbuffers;
+import static org.lwjgl.opengl.GL30C.glGenTextures;
+import static org.lwjgl.opengl.GL30C.glGenVertexArrays;
+import static org.lwjgl.opengl.GL30C.glRenderbufferStorageMultisample;
+import static org.lwjgl.opengl.GL30C.glUniform1f;
+import static org.lwjgl.opengl.GL30C.glVertexAttribPointer;
+
+import java.nio.ByteBuffer;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.Texture;
 import org.pixel.graphics.shader.Shader;
-import org.pixel.graphics.shader.ShaderManager;
 import org.pixel.math.SizeInt;
-
-import java.nio.ByteBuffer;
-
-import static org.lwjgl.opengl.GL11C.*;
-import static org.lwjgl.opengl.GL12C.GL_CLAMP_TO_EDGE;
-import static org.lwjgl.opengl.GL15C.glDeleteBuffers;
-import static org.lwjgl.opengl.GL30C.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL30C.GL_FLOAT;
-import static org.lwjgl.opengl.GL30C.GL_NEAREST;
-import static org.lwjgl.opengl.GL30C.GL_RGB;
-import static org.lwjgl.opengl.GL30C.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL30C.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL30C.glClear;
-import static org.lwjgl.opengl.GL30C.glDrawArrays;
-import static org.lwjgl.opengl.GL30C.glGenTextures;
-import static org.lwjgl.opengl.GL30C.*;
 
 public class ShaderPostProcessor implements PostProcessor {
 
@@ -134,7 +173,7 @@ public class ShaderPostProcessor implements PostProcessor {
      * Setup shader.
      */
     private void setupShader() {
-        ShaderManager.useShader(shader);
+        shader.use();
         glUniform1f(shader.getUniformLocation("uTextureImage"), 0);
     }
 
@@ -179,7 +218,7 @@ public class ShaderPostProcessor implements PostProcessor {
         }
 
         uTime += delta.getElapsed();
-        ShaderManager.useShader(shader);
+        shader.use();
         shader.apply();
         if (shader.getUniformLocation("uTime") != null) {
             glUniform1f(shader.getUniformLocation("uTime"), uTime);

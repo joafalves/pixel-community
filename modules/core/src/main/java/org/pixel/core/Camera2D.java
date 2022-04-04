@@ -35,6 +35,16 @@ public class Camera2D implements Serializable {
     }
 
     /**
+     * Constructor. Sets the camera properties based on the given window virtual size.
+     *
+     * @param window The window instance.
+     * @param origin The camera view origin.
+     */
+    public Camera2D(PixelWindow window, Vector2 origin) {
+        this(0, 0, window.getVirtualWidth(), window.getVirtualHeight(), 1.0f, origin);
+    }
+
+    /**
      * Constructor.
      *
      * @param x      The x position of the camera.
@@ -62,6 +72,25 @@ public class Camera2D implements Serializable {
         this.zoom = zoom;
         this.dirty = true;
         this.origin = new Vector2(0.5f);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param x      The x position of the camera.
+     * @param y      The y position of the camera.
+     * @param width  The viewport width of the camera.
+     * @param height The viewport height of the camera.
+     * @param zoom   The zoom factor of the camera.
+     * @param origin The camera view origin.
+     */
+    public Camera2D(float x, float y, float width, float height, float zoom, Vector2 origin) {
+        this.position = new Vector2(x, y);
+        this.width = width;
+        this.height = height;
+        this.zoom = zoom;
+        this.dirty = true;
+        this.origin = origin;
     }
 
     //endregion
@@ -186,7 +215,7 @@ public class Camera2D implements Serializable {
     }
 
     /**
-     * Set camera origin to the given values.
+     * Set camera origin view to the given values.
      *
      * @param xy The new origin of the camera (both axis).
      */
