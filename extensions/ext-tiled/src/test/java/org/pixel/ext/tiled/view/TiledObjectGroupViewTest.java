@@ -27,7 +27,7 @@ class TiledObjectGroupViewTest {
     TiledTileObject object1;
     TiledTileObject object2;
     TiledObjectGroup group;
-    List<Vector2> positions;
+    List<Rectangle> displayAreas;
 
     @BeforeEach
     public void setup() {
@@ -69,7 +69,7 @@ class TiledObjectGroupViewTest {
         Mockito.when(group.getOffsetX()).thenReturn(0.4);
         Mockito.when(group.getOffsetY()).thenReturn(0.5);
 
-        positions = new ArrayList<>();
+        displayAreas = new ArrayList<>();
 
         Answer answer = invocation -> {
             TiledObjectGroup group1 = invocation.getArgument(0);
@@ -81,9 +81,9 @@ class TiledObjectGroupViewTest {
         };
 
         Answer getPosition = invocation -> {
-            Vector2 position = invocation.getArgument(1);
+            Rectangle displayArea = invocation.getArgument(1);
 
-            positions.add(new Vector2(position.getX(), position.getY()));
+            displayAreas.add(new Rectangle(displayArea.getX(), displayArea.getY(), displayArea.getWidth(), displayArea.getHeight()));
 
             return invocation.getMock();
         };
@@ -91,9 +91,8 @@ class TiledObjectGroupViewTest {
         Mockito.doAnswer(answer).when(object1).draw(Mockito.any(), Mockito.any());
         Mockito.doAnswer(answer).when(object2).draw(Mockito.any(), Mockito.any());
         Mockito.doAnswer(getPosition).when(spriteBatch).draw(Mockito.any(Texture.class),
-                Mockito.any(Vector2.class), Mockito.any(Rectangle.class),
-                Mockito.any(Color.class), Mockito.any(Vector2.class),
-                Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat());
+                Mockito.any(Rectangle.class), Mockito.any(Rectangle.class),
+                Mockito.any(Color.class), Mockito.any(Vector2.class), Mockito.anyFloat());
     }
 
     @Test
@@ -106,17 +105,15 @@ class TiledObjectGroupViewTest {
 
         inOrder.verify(spriteBatch).draw(Mockito.same(texture),
                 Mockito.any(), Mockito.eq(new Rectangle(2f, 3f, -2f, -3f)),
-                Mockito.same(Color.WHITE), Mockito.same(Vector2.ZERO_ONE),
-                Mockito.eq(1f / 2f), Mockito.eq(1f), Mockito.eq(5f));
+                Mockito.same(Color.WHITE), Mockito.same(Vector2.ZERO_ONE), Mockito.eq(5f));
         inOrder.verify(spriteBatch).draw(Mockito.same(texture),
                 Mockito.any(), Mockito.eq(new Rectangle(0f, 3f, 2f, 3f)),
-                Mockito.same(Color.WHITE), Mockito.same(Vector2.ZERO_ONE),
-                Mockito.eq(1f), Mockito.eq(1f), Mockito.eq(0f));
+                Mockito.same(Color.WHITE), Mockito.same(Vector2.ZERO_ONE), Mockito.eq(0f));
 
         inOrder.verifyNoMoreInteractions();
 
-        Assertions.assertEquals(new Vector2(0 + 0.4f, 2 + 0.5f), positions.get(0));
-        Assertions.assertEquals(new Vector2(3 + 0.4f, 4 + 0.5f), positions.get(1));
+        Assertions.assertEquals(new Rectangle(0 + 0.4f, 2 + 0.5f, 1, 3), displayAreas.get(0));
+        Assertions.assertEquals(new Rectangle(3 + 0.4f, 4 + 0.5f, 2, 3), displayAreas.get(1));
     }
 
     @Test
@@ -138,16 +135,14 @@ class TiledObjectGroupViewTest {
 
         inOrder.verify(spriteBatch, Mockito.times(0)).draw(Mockito.same(texture),
                 Mockito.any(), Mockito.eq(new Rectangle(2f, 3f, -2f, -3f)),
-                Mockito.same(Color.WHITE), Mockito.same(Vector2.ZERO_ONE),
-                Mockito.eq(1f / 2f), Mockito.eq(1f), Mockito.eq(5f));
+                Mockito.same(Color.WHITE), Mockito.same(Vector2.ZERO_ONE), Mockito.eq(5f));
 
         inOrder.verify(spriteBatch).draw(Mockito.same(texture),
                 Mockito.any(), Mockito.eq(new Rectangle(0f, 3f, 2f, 3f)),
-                Mockito.same(Color.WHITE), Mockito.same(Vector2.ZERO_ONE),
-                Mockito.eq(1f), Mockito.eq(1f), Mockito.eq(0f));
+                Mockito.same(Color.WHITE), Mockito.same(Vector2.ZERO_ONE), Mockito.eq(0f));
 
         inOrder.verifyNoMoreInteractions();
 
-        Assertions.assertEquals(new Vector2(3 + 0.4f, 4 + 0.5f), positions.get(0));
+        Assertions.assertEquals(new Rectangle(3 + 0.4f, 4 + 0.5f, 2, 3), displayAreas.get(0));
     }
 }

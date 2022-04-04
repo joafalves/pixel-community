@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="2" height="4" tilewidth="64" tileheight="64" infinite="0" nextlayerid="3" nextobjectid="1">
+<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-down" width="2" height="4" tilewidth="64" tileheight="64" infinite="0" nextlayerid="4" nextobjectid="11">
  <tileset firstgid="1" source="Tileset.tsx"/>
  <tileset firstgid="5" source="test.tsx"/>
  <layer id="1" name="Tile Layer 1" width="2" height="4">
@@ -10,4 +10,14 @@
 1610612741,3758096389
 </data>
  </layer>
+ <objectgroup id="3" name="Object Layer 1">
+  <object id="1" gid="5" x="134.787" y="64.6729" width="64" height="64"/>
+  <object id="3" gid="2147483653" x="199.2" y="64.9841" width="64" height="64"/>
+  <object id="4" gid="3221225477" x="198.889" y="130.33" width="64" height="64"/>
+  <object id="5" gid="1073741829" x="134.787" y="129.708" width="64" height="64"/>
+  <object id="6" gid="1073741829" x="265.479" y="251.998" width="64" height="64" rotation="-90"/>
+  <object id="7" gid="3221225477" x="198.577" y="195.365" width="64" height="64" rotation="-90"/>
+  <object id="9" gid="5" x="198.577" y="261.333" width="64" height="64" rotation="-90"/>
+  <object id="10" gid="1073741829" x="266.101" y="119.128" width="120" height="32" rotation="90"/>
+ </objectgroup>
 </map>

@@ -20,7 +20,7 @@ import static org.pixel.ext.tiled.content.TiledFlipMasks.VERTICAL_FLIP_FLAG;
  * A view for a TiledObjectGroup.
  */
 public class TiledObjectGroupView implements TiledGenericObjectGroupView {
-    private final Vector2 position = new Vector2();
+    private final Rectangle displayArea = new Rectangle();
     private final SpriteBatch spriteBatch;
     private final Boundary boundary;
     private final Boundary tileBoundary;
@@ -61,20 +61,21 @@ public class TiledObjectGroupView implements TiledGenericObjectGroupView {
             if (tileSet.getFirstGId() <= gID) {
                 Rectangle source = tileSet.sourceAt(gID, horizontalFlip, verticalFlip, frame);
 
-                position.setY(tile.getPosition().getY() + (float) group.getOffsetY());
-                position.setX(tile.getPosition().getX() + (float) group.getOffsetX());
+                displayArea.set(
+                        tile.getPosition().getX() + (float) group.getOffsetX(),
+                        tile.getPosition().getY() + (float) group.getOffsetY(),
+                        (float) tile.getWidth(),
+                        (float) tile.getHeight());
 
-                tileBoundary.set(position.getX(), (float) (position.getY() - tile.getHeight()), (float) tile.getWidth(), (float) tile.getHeight());
-                tileBoundary.rotate(new Vector2(position.getX(), position.getY()), tile.getRotation());
+                tileBoundary.set(displayArea.getX(), (float) (displayArea.getY() - tile.getHeight()), (float) tile.getWidth(), (float) tile.getHeight());
+                tileBoundary.rotate(new Vector2(displayArea.getX(), displayArea.getY()), tile.getRotation());
 
                 if (!boundary.overlaps(tileBoundary)) {
                     continue;
                 }
 
                 spriteBatch.draw(
-                        tileSet.getTexture(), position, source, Color.WHITE, Vector2.ZERO_ONE,
-                        (float) tile.getWidth() / tileSet.getTileWidth(),
-                        (float) tile.getHeight() / tileSet.getTileHeight(),
+                        tileSet.getTexture(), displayArea, source, Color.WHITE, Vector2.ZERO_ONE,
                         (tile.getRotation())
                 );
 
