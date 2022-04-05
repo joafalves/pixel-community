@@ -5,10 +5,11 @@
 
 package org.pixel.math;
 
+import lombok.Builder;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.Builder;
 
 public class Boundary implements Serializable {
 

@@ -14,6 +14,7 @@ import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
 
 public class SingleSpriteDemo extends DemoGame {
@@ -37,6 +38,7 @@ public class SingleSpriteDemo extends DemoGame {
         spriteBatch = new SpriteBatch();
 
         // load texture into memory
+
         spriteTex = content.load("images/screenshot-600x320.png", Texture.class);
     }
 

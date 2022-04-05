@@ -5,8 +5,10 @@
 
 package org.pixel.math;
 
-import java.io.Serializable;
 import lombok.Builder;
+
+import java.io.Serializable;
+import java.util.Objects;
 
 public class Vector2 implements Serializable {
 
@@ -455,13 +457,12 @@ public class Vector2 implements Serializable {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof Vector2) {
-            return ((Vector2) obj).getX() == this.getX() && ((Vector2) obj).getY() == this.getY();
-        }
-        return false;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Vector2)) return false;
+        Vector2 vector2 = (Vector2) o;
+        return vector2.getX() == this.getX() && vector2.getY() == this.getY();
     }
-
     //endregion
 
     //region public static methods
@@ -624,4 +625,9 @@ public class Vector2 implements Serializable {
     }
 
     //endregion
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
+    }
 }

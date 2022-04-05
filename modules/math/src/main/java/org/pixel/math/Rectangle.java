@@ -5,10 +5,12 @@
 
 package org.pixel.math;
 
+import lombok.Builder;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.Builder;
+import java.util.Objects;
 
 public class Rectangle implements Serializable {
     //region Fields & Properties
@@ -459,18 +461,22 @@ public class Rectangle implements Serializable {
     }
 
     @Override
-    public String toString() {
-        return String.format("%s: [x: %f, y: %f, w: %f, h: %f]",
-                this.getClass().getSimpleName(), getX(), getY(), getWidth(), getHeight());
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Rectangle)) return false;
+        Rectangle rectangle = (Rectangle) o;
+        return rectangle.getX() == getX() && rectangle.getY() == getY()
+                && rectangle.getWidth() == getWidth() && rectangle.getHeight() == getHeight();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof Rectangle) {
-            return ((Rectangle) obj).getX() == getX() && ((Rectangle) obj).getY() == getY()
-                    && ((Rectangle) obj).getWidth() == getWidth() && ((Rectangle) obj).getHeight() == getHeight();
-        }
-        return false;
+    public int hashCode() {
+        return Objects.hash(x, y, width, height);
+    }
+
+    public String toString() {
+        return String.format("%s: [x: %f, y: %f, w: %f, h: %f]",
+                this.getClass().getSimpleName(), getX(), getY(), getWidth(), getHeight());
     }
 
     //endregion
