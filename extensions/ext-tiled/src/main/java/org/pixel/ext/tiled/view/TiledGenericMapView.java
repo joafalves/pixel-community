@@ -15,6 +15,7 @@ public interface TiledGenericMapView extends TiledView<TiledMap> {
      * @param layer The layer to draw.
      */
     void draw(TiledTileLayer layer);
+
     /**
      * Draws an object group layer.
      *

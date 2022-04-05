@@ -23,6 +23,11 @@ public class TiledMapImporterSettings implements ContentImporterSettings {
         this(new TextureImporterSettings(GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST));
     }
 
+    /**
+     * Creates new settings for the Tiled Map Importer using the given TMX file processors.
+     *
+     * @param processors The TMX file processors.
+     */
     public TiledMapImporterSettings(List<TileMapProcessor> processors) {
         this(new TextureImporterSettings(GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE, GL_NEAREST, GL_NEAREST), processors);
     }
@@ -39,6 +44,13 @@ public class TiledMapImporterSettings implements ContentImporterSettings {
         processors.add(new LayerProcessor());
     }
 
+    /**
+     * Creates new settings for the Tiled Map Importer given the settings for the texture atlases importer
+     * and the TMX file processors.
+     *
+     * @param settings   The settings for the texture importer.
+     * @param processors The TMX file processors.
+     */
     public TiledMapImporterSettings(TextureImporterSettings settings, List<TileMapProcessor> processors) {
         this.textureImporterSettings = settings;
         this.processors = processors;

@@ -33,6 +33,14 @@ public class TiledMapView implements TiledGenericMapView {
         this.camera2D = camera2D;
     }
 
+    /**
+     * Creates a new tile map view.
+     *
+     * @param layerView The layer view to use when drawing tile layers.
+     * @param groupView The group view to use when drawing object groups.
+     * @param imageView The image view to use when drawing image layers.
+     * @param camera2D  The camera that defines the boundaries of the view.
+     */
     public TiledMapView(TiledView<TiledTileLayer> layerView, TiledView<TiledObjectGroup> groupView, TiledView<TiledImageLayer> imageView, Camera2D camera2D) {
         this.layerView = layerView;
         this.groupView = groupView;
