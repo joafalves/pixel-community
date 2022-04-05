@@ -20,7 +20,6 @@ import static org.lwjgl.opengl.GL13C.glBlendFunc;
 import static org.lwjgl.opengl.GL13C.glDrawArrays;
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
-
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL20C.glUniformMatrix4fv;
