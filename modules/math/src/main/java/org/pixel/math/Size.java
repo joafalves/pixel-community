@@ -5,8 +5,9 @@
 
 package org.pixel.math;
 
-import java.io.Serializable;
 import lombok.Builder;
+
+import java.io.Serializable;
 
 public class Size implements Serializable {
 
@@ -131,6 +132,17 @@ public class Size implements Serializable {
      */
     public void setWidth(float width) {
         this.width = width;
+    }
+
+    /**
+     * Set the width and height of the size.
+     *
+     * @param width  The width of the size.
+     * @param height The height of the size.
+     */
+    public void set(float width, float height) {
+        this.width = width;
+        this.height = height;
     }
 
     @Override

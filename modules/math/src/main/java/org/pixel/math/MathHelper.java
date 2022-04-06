@@ -26,6 +26,27 @@ public class MathHelper {
     //region public static methods
 
     /**
+     * Returns the value of the first argument raised to the power of the second argument.
+     *
+     * @param value The base value.
+     * @param power The exponent.
+     * @return The value of the base raised to the power of the exponent.
+     */
+    public static float pow(float value, float power) {
+        return (float) Math.pow(value, power);
+    }
+
+    /**
+     * Returns the correctly rounded positive square root of a float value.
+     *
+     * @param value The value.
+     * @return The square root of the value.
+     */
+    public static float sqrt(float value) {
+        return (float) Math.sqrt(value);
+    }
+
+    /**
      * Returns the largest (closest to positive infinity) double value that is less than or equal to the argument and is
      * equal to a mathematical integer. Special cases:
      *
@@ -253,25 +274,37 @@ public class MathHelper {
     /**
      * Linear interpolation between two points.
      *
-     * @param a The first point.
-     * @param b The second point.
-     * @param t The interpolation value.
+     * @param start    The first point.
+     * @param end      The second point.
+     * @param position The interpolation position value [0-1].
      * @return The interpolated value.
      */
-    public static byte linearInterpolation(byte a, byte b, float t) {
-        return (byte) (a + (b - a) * t);
+    public static byte linearInterpolation(byte start, byte end, float position) {
+        return (byte) (start + (end - start) * position);
     }
 
     /**
      * Linear interpolation between two points.
      *
-     * @param a The first point.
-     * @param b The second point.
-     * @param t The interpolation value.
+     * @param start    The first point.
+     * @param end      The second point.
+     * @param position The interpolation position value [0-1].
      * @return The interpolated value.
      */
-    public static float linearInterpolation(float a, float b, float t) {
-        return a + (b - a) * t;
+    public static float linearInterpolation(float start, float end, float position) {
+        return start + (end - start) * position;
+    }
+
+    /**
+     * Linear interpolation between two points.
+     *
+     * @param start    The first point.
+     * @param end      The second point.
+     * @param position The interpolation position value [0-1].
+     * @return The interpolated value.
+     */
+    public static int linearInterpolation(int start, int end, int position) {
+        return start + (end - start) * position;
     }
 
     /**
@@ -440,7 +473,7 @@ public class MathHelper {
      * @return The intersection point if any.
      */
     public static Vector2 intersect(float p1x1, float p1y1, float p1x2, float p1y2,
-            float p2x1, float p2y1, float p2x2, float p2y2) {
+                                    float p2x1, float p2y1, float p2x2, float p2y2) {
         float d = (p1x1 - p1x2) * (p2y1 - p2y2) - (p1y1 - p1y2) * (p2x1 - p2x2);
         if (d == 0) {
             return null;
