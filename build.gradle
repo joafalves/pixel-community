@@ -29,6 +29,7 @@ if (buildTarget == "all") {
 }
 
 println("Build Targets: ${buildTargetList}")
+println("Version: ${version}")
 
 allprojects {
     apply plugin: "java"
