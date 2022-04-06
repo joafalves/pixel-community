@@ -20,7 +20,6 @@ class ImageLayerCollector extends LayerCollector {
         }
 
         String textureFilePath = image.getAttribute("source");
-
         ContentImporterSettings settings;
 
         if (ctx.getSettings() instanceof TiledMapImporterSettings) {

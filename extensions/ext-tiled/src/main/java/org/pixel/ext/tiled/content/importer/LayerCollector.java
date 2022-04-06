@@ -23,12 +23,14 @@ abstract class LayerCollector {
 
         try {
             layer.setOffsetX(Float.parseFloat(tileLayerElement.getAttribute("offsetx")));
+
         } catch (NumberFormatException e) {
             layer.setOffsetX(0);
         }
 
         try {
             layer.setOffsetY(Float.parseFloat(tileLayerElement.getAttribute("offsety")));
+
         } catch (NumberFormatException e) {
             layer.setOffsetY(0);
         }

@@ -8,7 +8,7 @@ plugins {
     id 'application'
     id 'info.solidsoft.pitest' version '1.6.0'
 }
-project.ext.mavenPublish = false
+project.ext.mavenPublish = true
 
 pitest {
     threads = 4
@@ -19,11 +19,8 @@ pitest {
 
 dependencies {
     api project(":${rootProject.name}-core")
-    implementation 'org.junit.jupiter:junit-jupiter:5.7.0'
-    implementation 'org.mockito:mockito-core:3.12.4'
+
     testImplementation('org.mockito:mockito-core:3.7.7')
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 }
 
 task unitTest(type: Test) {
