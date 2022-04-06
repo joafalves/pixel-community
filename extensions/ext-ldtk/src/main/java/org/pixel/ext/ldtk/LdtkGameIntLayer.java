@@ -1,19 +1,20 @@
 package org.pixel.ext.ldtk;
 
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Setter
 @Getter
 public class LdtkGameIntLayer extends LdtkGameLayer {
 
-    private List<Coordinate> coordinateList;
+    private List<LayerCoordinate> layerCoordinateList;
 
     @Getter
     @AllArgsConstructor
-    public static class Coordinate {
+    public static class LayerCoordinate {
         private int id;
         private int x;
         private int y;

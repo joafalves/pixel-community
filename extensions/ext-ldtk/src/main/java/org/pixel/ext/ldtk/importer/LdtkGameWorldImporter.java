@@ -1,35 +1,22 @@
 package org.pixel.ext.ldtk.importer;
 
 import io.github.joafalves.ldtk.LdtkConverter;
-import io.github.joafalves.ldtk.model.EntityInstance;
-import io.github.joafalves.ldtk.model.IntGridValueInstance;
-import io.github.joafalves.ldtk.model.LayerInstance;
-import io.github.joafalves.ldtk.model.Level;
-import io.github.joafalves.ldtk.model.Project;
-import io.github.joafalves.ldtk.model.TileInstance;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import io.github.joafalves.ldtk.model.*;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.commons.util.TextUtils;
-import org.pixel.content.ContentImporter;
-import org.pixel.content.ContentImporterInfo;
-import org.pixel.content.ContentManager;
-import org.pixel.content.ImportContext;
-import org.pixel.content.Texture;
-import org.pixel.ext.ldtk.LdtkGameEntity;
-import org.pixel.ext.ldtk.LdtkGameIntLayer;
-import org.pixel.ext.ldtk.LdtkGameIntLayer.Coordinate;
-import org.pixel.ext.ldtk.LdtkGameLayer;
-import org.pixel.ext.ldtk.LdtkGameLayerTile;
-import org.pixel.ext.ldtk.LdtkGameLevel;
-import org.pixel.ext.ldtk.LdtkGameWorld;
+import org.pixel.content.*;
+import org.pixel.ext.ldtk.*;
+import org.pixel.ext.ldtk.LdtkGameIntLayer.LayerCoordinate;
 import org.pixel.graphics.Color;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 @ContentImporterInfo(type = LdtkGameWorld.class, extension = {".json", ".ldtk"})
 public class LdtkGameWorldImporter implements ContentImporter<LdtkGameWorld> {
@@ -52,13 +39,13 @@ public class LdtkGameWorldImporter implements ContentImporter<LdtkGameWorld> {
     /**
      * Creates a new world based on the given LDTK Project.
      *
-     * @param project        The LDTK Project.
+     * @param coordinate     The LDTK project coordinate.
      * @param contentManager The content manager to load the assets.
      * @return The new world.
      */
-    private LdtkGameWorld processData(Project project, ContentManager contentManager) {
+    private LdtkGameWorld processData(Coordinate coordinate, ContentManager contentManager) {
         HashMap<String, LdtkGameLevel> levels = new HashMap<>();
-        for (Level level : project.getLevels()) {
+        for (Level level : coordinate.getLevels()) {
             log.trace("Processing level: '{}'.", level.getIdentifier());
 
             LdtkGameLevel.LdtkGameLevelBuilder gameLevelBuilder = LdtkGameLevel.builder();
@@ -84,7 +71,7 @@ public class LdtkGameWorldImporter implements ContentImporter<LdtkGameWorld> {
      * @param contentManager The content manager to load the assets.
      */
     private void processLevelBackground(LdtkGameLevel.LdtkGameLevelBuilder builder, Level level,
-            ContentManager contentManager) {
+                                        ContentManager contentManager) {
 
         Texture backgroundTexture = null;
         if (level.getBgRelPath() != null) {
@@ -95,14 +82,14 @@ public class LdtkGameWorldImporter implements ContentImporter<LdtkGameWorld> {
         Rectangle backgroundDisplayArea = null;
         if (backgroundTexture != null && level.getBgPos() != null) {
             var bgPos = level.getBgPos();
-            backgroundCropArea = new Rectangle(bgPos.getCropRect().get(0).floatValue(),
-                    bgPos.getCropRect().get(1).floatValue(), bgPos.getCropRect().get(2).floatValue(),
-                    bgPos.getCropRect().get(3).floatValue());
+            backgroundCropArea = new Rectangle((float) bgPos.getCropRect()[0],
+                    (float) bgPos.getCropRect()[1], (float) bgPos.getCropRect()[2],
+                    (float) bgPos.getCropRect()[3]);
             backgroundDisplayArea = new Rectangle(
-                    level.getWorldX() + bgPos.getTopLeftPx().get(0).floatValue(),
-                    level.getWorldY() + bgPos.getTopLeftPx().get(1).floatValue(),
-                    backgroundTexture.getWidth() * bgPos.getScale().get(0).floatValue(),
-                    backgroundTexture.getHeight() * bgPos.getScale().get(1).floatValue());
+                    (float) (level.getWorldX() + bgPos.getTopLeftPx()[0]),
+                    (float) (level.getWorldY() + bgPos.getTopLeftPx()[1]),
+                    (float) (backgroundTexture.getWidth() * bgPos.getScale()[0]),
+                    (float) (backgroundTexture.getHeight() * bgPos.getScale()[1]));
         }
 
         builder.backgroundColor(Color.fromString(level.getBgColor()))
@@ -119,7 +106,7 @@ public class LdtkGameWorldImporter implements ContentImporter<LdtkGameWorld> {
      * @param contentManager The content manager to load the assets.
      */
     private void processLevelLayers(LdtkGameLevel.LdtkGameLevelBuilder builder, Level level,
-            ContentManager contentManager) {
+                                    ContentManager contentManager) {
         if (level.getLayerInstances() == null) {
             return; // no layers
         }
@@ -138,11 +125,11 @@ public class LdtkGameWorldImporter implements ContentImporter<LdtkGameWorld> {
             // tiles
             List<TileInstance> tileList = new ArrayList<>(); // to grab all visible tiles
             List<LdtkGameLayerTile> ldtkGameLayerTileList = new ArrayList<>();
-            if (layerInstance.getGridTiles() != null && !layerInstance.getGridTiles().isEmpty()) {
-                tileList.addAll(layerInstance.getGridTiles()); // get grid-tiles instances
+            if (layerInstance.getGridTiles() != null && layerInstance.getGridTiles().length > 0) {
+                tileList.addAll(List.of(layerInstance.getGridTiles())); // get grid-tiles instances
             }
-            if (layerInstance.getAutoLayerTiles() != null && !layerInstance.getAutoLayerTiles().isEmpty()) {
-                tileList.addAll(layerInstance.getAutoLayerTiles()); // get auto-tiles instances
+            if (layerInstance.getAutoLayerTiles() != null && layerInstance.getAutoLayerTiles().length > 0) {
+                tileList.addAll(List.of(layerInstance.getAutoLayerTiles())); // get auto-tiles instances
             }
             for (TileInstance gridTile : tileList) { // convert data tiles to game tiles
                 ldtkGameLayerTileList.add(processTileInstance(gridTile, layerInstance, level));
@@ -156,27 +143,27 @@ public class LdtkGameWorldImporter implements ContentImporter<LdtkGameWorld> {
 
             // "IntGrid" specific:
             if (layer instanceof LdtkGameIntLayer && layerInstance.getIntGrid() != null
-                    && !layerInstance.getIntGrid().isEmpty()) {
+                    && layerInstance.getIntGrid().length > 0) {
                 var intLayer = (LdtkGameIntLayer) layer;
                 var intGrid = layerInstance.getIntGrid();
 
-                var coordinateList = new ArrayList<Coordinate>();
+                var coordinateList = new ArrayList<LayerCoordinate>();
                 for (IntGridValueInstance intGridValueInstance : intGrid) {
                     var gridY = (int) MathHelper.floor(
-                            intGridValueInstance.getCoordID() / (float) layerInstance.getCWid());
-                    var gridX = (int) (intGridValueInstance.getCoordID() - gridY * layerInstance.getCWid());
+                            intGridValueInstance.getCoordId() / (float) layerInstance.getCWid());
+                    var gridX = (int) (intGridValueInstance.getCoordId() - gridY * layerInstance.getCWid());
 
-                    coordinateList.add(new Coordinate((int) intGridValueInstance.getCoordID(), gridX, gridY, 1));
+                    coordinateList.add(new LayerCoordinate((int) intGridValueInstance.getCoordId(), gridX, gridY, 1));
                 }
 
-                intLayer.setCoordinateList(coordinateList);
+                intLayer.setLayerCoordinateList(coordinateList);
             }
 
             layerList.add(layer);
 
             // entities (attached directly to the level instance)
-            if (layerInstance.getEntityInstances() != null && !layerInstance.getEntityInstances().isEmpty()) {
-                processLevelInstances(entityList, layerInstance.getEntityInstances(), level); // process entities
+            if (layerInstance.getEntityInstances() != null && layerInstance.getEntityInstances().length > 0) {
+                processLevelInstances(entityList, List.of(layerInstance.getEntityInstances()), level); // process entities
             }
         }
 
@@ -197,15 +184,15 @@ public class LdtkGameWorldImporter implements ContentImporter<LdtkGameWorld> {
      * @param level              The level to process.
      */
     private void processLevelInstances(List<LdtkGameEntity> entityList, List<EntityInstance> entityInstanceList,
-            Level level) {
+                                       Level level) {
         for (EntityInstance entityInstance : entityInstanceList) {
             entityList.add(
                     LdtkGameEntity.builder()
                             .identifier(entityInstance.getIdentifier())
-                            .position(new Vector2(level.getWorldX() + entityInstance.getPx().get(0).floatValue(),
-                                    level.getWorldY() + entityInstance.getPx().get(1).floatValue()))
-                            .pivot(new Vector2(entityInstance.getPivot().get(0).floatValue(),
-                                    entityInstance.getPivot().get(1).floatValue()))
+                            .position(new Vector2(level.getWorldX() + entityInstance.getPx()[0],
+                                    level.getWorldY() + entityInstance.getPx()[1]))
+                            .pivot(new Vector2((float) entityInstance.getPivot()[0],
+                                    (float) entityInstance.getPivot()[1]))
                             .width((int) entityInstance.getWidth())
                             .height((int) entityInstance.getHeight())
                             .build()
@@ -222,17 +209,17 @@ public class LdtkGameWorldImporter implements ContentImporter<LdtkGameWorld> {
      * @return The processed tile instance.
      */
     private LdtkGameLayerTile processTileInstance(TileInstance tileInstance, LayerInstance layerInstance,
-            Level level) {
+                                                  Level level) {
         return LdtkGameLayerTile.builder()
                 .tilesetSource(processTileSourceArea(tileInstance, layerInstance))
                 .displayArea(
-                        new Rectangle(level.getWorldX() + tileInstance.getPx().get(0).floatValue(),
-                                level.getWorldY() + tileInstance.getPx().get(1).floatValue(),
+                        new Rectangle(level.getWorldX() + tileInstance.getPx()[0],
+                                level.getWorldY() + tileInstance.getPx()[1],
                                 layerInstance.getGridSize(),
                                 layerInstance.getGridSize()))
                 .position(
-                        new Vector2(level.getWorldX() + tileInstance.getPx().get(0).floatValue(),
-                                level.getWorldY() + tileInstance.getPx().get(1).floatValue()))
+                        new Vector2(level.getWorldX() + tileInstance.getPx()[0],
+                                level.getWorldY() + tileInstance.getPx()[1]))
                 .build();
     }
 
@@ -244,8 +231,8 @@ public class LdtkGameWorldImporter implements ContentImporter<LdtkGameWorld> {
      * @return The processed source area.
      */
     private Rectangle processTileSourceArea(TileInstance tileInstance, LayerInstance layerInstance) {
-        float sx = tileInstance.getSrc().get(0).floatValue();
-        float sy = tileInstance.getSrc().get(1).floatValue();
+        float sx = tileInstance.getSrc()[0];
+        float sy = tileInstance.getSrc()[1];
         float gridSize = layerInstance.getGridSize();
 
         switch ((int) tileInstance.getF()) {

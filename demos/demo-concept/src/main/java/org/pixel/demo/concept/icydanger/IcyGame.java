@@ -1,7 +1,5 @@
 package org.pixel.demo.concept.icydanger;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
@@ -20,7 +18,6 @@ import org.pixel.ext.ecs.Sprite;
 import org.pixel.ext.ecs.Text;
 import org.pixel.ext.ecs.Text.Alignment;
 import org.pixel.ext.ldtk.LdtkGameIntLayer;
-import org.pixel.ext.ldtk.LdtkGameIntLayer.Coordinate;
 import org.pixel.ext.ldtk.LdtkGameLevel;
 import org.pixel.ext.ldtk.LdtkGameWorld;
 import org.pixel.ext.ldtk.importer.LdtkGameWorldImporter;
@@ -28,6 +25,9 @@ import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Boundary;
 import org.pixel.math.Rectangle;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class IcyGame extends PixelWindow {
 
@@ -162,10 +162,10 @@ public class IcyGame extends PixelWindow {
         level.getGameLayerList().forEach(layer -> {
             if (layer.getIdentifier().equalsIgnoreCase("collision") && layer instanceof LdtkGameIntLayer) {
                 LdtkGameIntLayer intLayer = (LdtkGameIntLayer) layer;
-                for (Coordinate coordinate : intLayer.getCoordinateList()) {
+                for (LdtkGameIntLayer.LayerCoordinate layerCoordinate : intLayer.getLayerCoordinateList()) {
                     var rect = Rectangle.builder()
-                            .x(coordinate.getX() * intLayer.getGridWidth() + level.getWorldPosition().getX())
-                            .y(coordinate.getY() * intLayer.getGridHeight() + level.getWorldPosition().getY())
+                            .x(layerCoordinate.getX() * intLayer.getGridWidth() + level.getWorldPosition().getX())
+                            .y(layerCoordinate.getY() * intLayer.getGridHeight() + level.getWorldPosition().getY())
                             .width(intLayer.getGridWidth())
                             .height(intLayer.getGridHeight())
                             .build();
