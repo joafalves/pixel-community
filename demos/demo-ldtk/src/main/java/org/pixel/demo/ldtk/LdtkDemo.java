@@ -4,12 +4,15 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.ConsoleLogger;
 import org.pixel.commons.logger.LogLevel;
 import org.pixel.content.ContentManager;
+import org.pixel.content.Font;
 import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
+import org.pixel.ext.ldtk.LdtkGameEntity;
 import org.pixel.ext.ldtk.LdtkGameLevel;
 import org.pixel.ext.ldtk.LdtkGameWorld;
 import org.pixel.ext.ldtk.importer.LdtkGameWorldImporter;
+import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
@@ -26,6 +29,7 @@ public class LdtkDemo extends PixelWindow {
     private LdtkGameLevel activeLevel;
 
     private TitleFpsCounter titleFpsCounter;
+    private Font font;
 
     /**
      * Constructor.
@@ -47,8 +51,11 @@ public class LdtkDemo extends PixelWindow {
         contentManager = new ContentManager();
         contentManager.addContentImporter(new LdtkGameWorldImporter());
 
-        ldtkGameWorld = contentManager.load("pixel-demo-advanced.ldtk", LdtkGameWorld.class);
-        activeLevel = ldtkGameWorld.getLevel("Level_0");
+        ldtkGameWorld = contentManager.load("ldtk-example.ldtk", LdtkGameWorld.class);
+        activeLevel = ldtkGameWorld.getLevel("Your_typical_2D_platformer");
+
+        font = contentManager.loadFont("font/8-bit-pusab.ttf");
+        font.setFontSize(16);
     }
 
     @Override
@@ -90,9 +97,12 @@ public class LdtkDemo extends PixelWindow {
 
         spriteBatch.begin(gameCamera.getViewMatrix());
 
-
         for (LdtkGameLevel level : ldtkGameWorld.getLevels()) {
             level.draw(delta, spriteBatch); // for demonstration purposes, draw all levels
+
+            for (LdtkGameEntity entity : level.getGameEntityList()) {
+                spriteBatch.drawText(font, entity.getIdentifier(), entity.getPosition(), Color.WHITE);
+            }
         }
 
         spriteBatch.end();
