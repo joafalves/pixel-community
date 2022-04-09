@@ -5,16 +5,17 @@
 
 package org.pixel.graphics.shader.effect;
 
-import static org.lwjgl.opengl.GL20.glUniform1f;
-import static org.lwjgl.opengl.GL20.glUniform4f;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.shader.Shader;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static org.lwjgl.opengl.GL20.glUniform1f;
+import static org.lwjgl.opengl.GL20.glUniform4f;
 
 @Getter
 @Setter
@@ -47,6 +48,7 @@ public class BorderEffectShader extends Shader {
         this.vertical = vertical;
         this.horizontal = horizontal;
         this.color = Color.BLACK;
+        this.setup();
     }
 
     /**

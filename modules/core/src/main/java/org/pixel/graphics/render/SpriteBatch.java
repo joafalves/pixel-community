@@ -5,6 +5,23 @@
 
 package org.pixel.graphics.render;
 
+import org.lwjgl.system.MemoryUtil;
+import org.pixel.content.Font;
+import org.pixel.content.FontGlyph;
+import org.pixel.content.Texture;
+import org.pixel.graphics.Color;
+import org.pixel.graphics.shader.Shader;
+import org.pixel.graphics.shader.VertexArrayObject;
+import org.pixel.graphics.shader.VertexBufferObject;
+import org.pixel.graphics.shader.standard.MultiTextureShader;
+import org.pixel.math.Matrix4;
+import org.pixel.math.Rectangle;
+import org.pixel.math.Vector2;
+
+import java.nio.FloatBuffer;
+import java.util.Arrays;
+import java.util.HashMap;
+
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL13C.GL_DST_COLOR;
 import static org.lwjgl.opengl.GL13C.GL_FLOAT;
@@ -20,32 +37,17 @@ import static org.lwjgl.opengl.GL13C.glBlendFunc;
 import static org.lwjgl.opengl.GL13C.glDrawArrays;
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
+import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL20C.glUniformMatrix4fv;
-
-import java.nio.FloatBuffer;
-import java.util.Arrays;
-import org.lwjgl.system.MemoryUtil;
-import org.pixel.content.Font;
-import org.pixel.content.FontGlyph;
-import org.pixel.content.Texture;
-import org.pixel.graphics.Color;
-import org.pixel.graphics.shader.Shader;
-import org.pixel.graphics.shader.VertexArrayObject;
-import org.pixel.graphics.shader.VertexBufferObject;
-import org.pixel.graphics.shader.standard.TextureShader;
-import org.pixel.math.Matrix4;
-import org.pixel.math.Rectangle;
-import org.pixel.math.Vector2;
 
 public class SpriteBatch extends DrawBatch {
 
     //region private properties
 
     private static final int BUFFER_UNIT_LENGTH = 256; // maximum sprites per batch
-    private static final int SPRITE_UNIT_LENGTH = 48; // number of attributes information units per sprite
-    private static final int ATTRIBUTE_STRIDE = 32; // attribute stride (bytes) between each vertex info
+    private static final int SPRITE_UNIT_LENGTH = 54; // number of attributes information units per sprite (uploadBufferData * each inner put)
+    private static final int ATTRIBUTE_STRIDE = 36; // attribute stride (bytes) between each vertex info
+    private static final int DEFAULT_SHADER_TEXTURE_SIZE = 8;
 
     private static final Matrix4 spriteViewMatrix = new Matrix4();
     private static final Vector2 tTopLeft = new Vector2();
@@ -57,6 +59,7 @@ public class SpriteBatch extends DrawBatch {
     private static final Vector2 topLeft = new Vector2();
     private static final Vector2 topRight = new Vector2();
 
+    private final HashMap<Integer, Integer> shaderTextureMap = new HashMap<>();
     private final VertexBufferObject vbo;
     private final VertexArrayObject vao;
     private final FloatBuffer dataBuffer;
@@ -64,6 +67,7 @@ public class SpriteBatch extends DrawBatch {
     private final SpriteData[] spriteData;
     private final Vector2 anchorZero = Vector2.zero();
     private final int bufferMaxSize;
+    private final int shaderTextureCount;
 
     private Shader shader;
     private int bufferCount;
@@ -85,15 +89,30 @@ public class SpriteBatch extends DrawBatch {
     /**
      * Constructor.
      *
-     * @param bufferMaxSize Maximum sprites per batch.
+     * @param bufferMaxSize The maximum number of sprites that can be drawn in one batch.
      */
     public SpriteBatch(int bufferMaxSize) {
+        this(bufferMaxSize, DEFAULT_SHADER_TEXTURE_SIZE);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param bufferMaxSize      The maximum number of sprites that can be drawn in one batch.
+     * @param shaderTextureCount The number of textures to be used by the shader (not recommended beyond 16).
+     */
+    public SpriteBatch(int bufferMaxSize, int shaderTextureCount) {
         if (bufferMaxSize <= 0) {
             throw new RuntimeException("Invalid buffer size, must be greater than zero");
         }
 
+        if (shaderTextureCount <= 0) {
+            throw new RuntimeException("Invalid shader texture count, must be greater than zero");
+        }
+
         this.vbo = new VertexBufferObject();
-        this.shader = new TextureShader();
+        this.shaderTextureCount = shaderTextureCount;
+        this.shader = new MultiTextureShader(shaderTextureCount);
         this.matrixBuffer = MemoryUtil.memAllocFloat(4 * 4);
         this.spriteData = new SpriteData[bufferMaxSize];
         this.bufferMaxSize = bufferMaxSize;
@@ -119,6 +138,7 @@ public class SpriteBatch extends DrawBatch {
         int aVertexPosition = this.shader.getAttributeLocation("aVertexPosition");
         int aTextureCoordinates = this.shader.getAttributeLocation("aTextureCoordinates");
         int aVertexColor = this.shader.getAttributeLocation("aVertexColor");
+        int aTextureId = this.shader.getAttributeLocation("aTextureIndex");
 
         glEnableVertexAttribArray(aVertexPosition);
         glVertexAttribPointer(aVertexPosition, 2, GL_FLOAT, false, ATTRIBUTE_STRIDE, 0);
@@ -129,14 +149,33 @@ public class SpriteBatch extends DrawBatch {
         glEnableVertexAttribArray(aVertexColor);
         glVertexAttribPointer(aVertexColor, 4, GL_FLOAT, false, ATTRIBUTE_STRIDE, 4 * Float.BYTES);
 
+        glEnableVertexAttribArray(aTextureId);
+        glVertexAttribPointer(aTextureId, 1, GL_FLOAT, false, ATTRIBUTE_STRIDE, 8 * Float.BYTES);
+
         // initialize sprite data objects
-        for (int i = 0; i < BUFFER_UNIT_LENGTH; i++) {
+        for (int i = 0; i < bufferMaxSize; i++) {
             this.spriteData[i] = new SpriteData();
         }
+
+        // since the base texture is always TEXTURE0, this can be done only once (for the 'shaderTextureCount' amount)
+        int[] textureRefArray = new int[shaderTextureCount];
+        for (int i = 0; i < shaderTextureCount; i++) {
+            textureRefArray[i] = i;
+        }
+
+        shader.use();
+        glUniform1iv(shader.getUniformLocation("uTextureImage"), textureRefArray);
     }
 
     private SpriteData getNextSpriteDataObject() {
         return this.spriteData[this.bufferCount++];
+    }
+
+    private void putTexture(SpriteData spriteData) {
+        int offset = shaderTextureMap.size();
+        glActiveTexture(GL_TEXTURE0 + offset);
+        glBindTexture(GL_TEXTURE_2D, spriteData.textureId);
+        shaderTextureMap.put(spriteData.textureId, offset);
     }
 
     private void flushBatch(int count) {
@@ -157,25 +196,23 @@ public class SpriteBatch extends DrawBatch {
         }
 
         // draw the sprite data..
-        for (int i = 0, count = 0; i < bufferCount; i++) {
+        for (int i = 0, count = 0; i < bufferCount; ++i) {
             SpriteData spriteData = this.spriteData[i];
             if (!spriteData.active) {
                 continue; // skip inactive sprites
             }
 
-            // texture checkup:
             if (lastTextureId != spriteData.textureId) {
-                // is there any previous texture id?
-                if (lastTextureId >= 0) {
-                    // yes, which means we have something to render..
-                    flushBatch(count);
-                    count = 0;
-                    dataBuffer.clear();
+                if (!shaderTextureMap.containsKey(spriteData.textureId)) {
+                    if (shaderTextureMap.size() >= shaderTextureCount) {
+                        flushBatch(count);
+                        count = 0;
+                        dataBuffer.clear();
+                        shaderTextureMap.clear();
+                    }
+                    putTexture(spriteData);
                 }
 
-                // bind the new texture:
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, spriteData.textureId);
                 lastTextureId = spriteData.textureId;
             }
 
@@ -183,7 +220,7 @@ public class SpriteBatch extends DrawBatch {
             count++;
             spriteData.active = false;
 
-            if (i == bufferCount - 1) {
+            if (i >= bufferCount - 1) {
                 flushBatch(count);
                 dataBuffer.clear();
             }
@@ -236,21 +273,26 @@ public class SpriteBatch extends DrawBatch {
                     ((sprite.source.getY() + sprite.source.getHeight()) / sprite.textureHeight));
         }
 
+        int textureId = shaderTextureMap.get(sprite.textureId);
+
         // upload data to the buffer:
         // triangle A
         this.uploadBufferData(bottomLeft.getX(), bottomLeft.getY(), tBottomLeft.getX(), tBottomLeft.getY(),
-                sprite.color);
+                sprite.color, textureId);
         this.uploadBufferData(bottomRight.getX(), bottomRight.getY(), tBottomRight.getX(), tBottomRight.getY(),
-                sprite.color);
-        this.uploadBufferData(topLeft.getX(), topLeft.getY(), tTopLeft.getX(), tTopLeft.getY(), sprite.color);
+                sprite.color, textureId);
+        this.uploadBufferData(topLeft.getX(), topLeft.getY(), tTopLeft.getX(), tTopLeft.getY(), sprite.color,
+                textureId);
         // triangle B
-        this.uploadBufferData(topLeft.getX(), topLeft.getY(), tTopLeft.getX(), tTopLeft.getY(), sprite.color);
+        this.uploadBufferData(topLeft.getX(), topLeft.getY(), tTopLeft.getX(), tTopLeft.getY(), sprite.color,
+                textureId);
         this.uploadBufferData(bottomRight.getX(), bottomRight.getY(), tBottomRight.getX(), tBottomRight.getY(),
-                sprite.color);
-        this.uploadBufferData(topRight.getX(), topRight.getY(), tTopRight.getX(), tTopRight.getY(), sprite.color);
+                sprite.color, textureId);
+        this.uploadBufferData(topRight.getX(), topRight.getY(), tTopRight.getX(), tTopRight.getY(), sprite.color,
+                textureId);
     }
 
-    private void uploadBufferData(float x, float y, float px, float py, Color color) {
+    private void uploadBufferData(float x, float y, float px, float py, Color color, int textureId) {
         this.dataBuffer.put(x);
         this.dataBuffer.put(y);
         this.dataBuffer.put(px);
@@ -259,6 +301,7 @@ public class SpriteBatch extends DrawBatch {
         this.dataBuffer.put(color.getGreen());
         this.dataBuffer.put(color.getBlue());
         this.dataBuffer.put(color.getAlpha());
+        this.dataBuffer.put(textureId);
     }
 
     private void spriteDataAdded() {
@@ -329,7 +372,7 @@ public class SpriteBatch extends DrawBatch {
      * @param rotation The rotation of the sprite.
      */
     public void draw(Texture texture, Vector2 position, Color color, Vector2 anchor, float scaleX, float scaleY,
-            float rotation) {
+                     float rotation) {
         this.draw(texture, position, null, color, anchor, scaleX, scaleY, rotation, 0);
     }
 
@@ -357,7 +400,7 @@ public class SpriteBatch extends DrawBatch {
      * @param rotation The rotation of the sprite.
      */
     public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scale,
-            float rotation) {
+                     float rotation) {
         this.draw(texture, position, source, color, anchor, scale, scale, rotation, 0);
     }
 
@@ -374,7 +417,7 @@ public class SpriteBatch extends DrawBatch {
      * @param rotation The rotation of the sprite.
      */
     public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scaleX,
-            float scaleY, float rotation) {
+                     float scaleY, float rotation) {
         this.draw(texture, position, source, color, anchor, scaleX, scaleY, rotation, 0);
     }
 
@@ -392,7 +435,7 @@ public class SpriteBatch extends DrawBatch {
      * @param depth    The drawing depth of the sprite (lower numbers are drawn first).
      */
     public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scaleX,
-            float scaleY, float rotation, int depth) {
+                     float scaleY, float rotation, int depth) {
         if (lastDepthLevel >= 0 && depth != lastDepthLevel) {
             hasDifferentDepthLevels = true;
         }
@@ -476,7 +519,7 @@ public class SpriteBatch extends DrawBatch {
      * @param rotation    The rotation of the sprite.
      */
     public void draw(Texture texture, Rectangle displayArea, Rectangle source, Color color, Vector2 anchor,
-            float rotation) {
+                     float rotation) {
         this.draw(texture, displayArea, source, color, anchor, rotation, 0);
     }
 
@@ -492,7 +535,7 @@ public class SpriteBatch extends DrawBatch {
      * @param depth       The drawing depth of the sprite (lower numbers are drawn first).
      */
     public void draw(Texture texture, Rectangle displayArea, Rectangle source, Color color, Vector2 anchor,
-            float rotation, int depth) {
+                     float rotation, int depth) {
         if (lastDepthLevel >= 0 && depth != lastDepthLevel) {
             hasDifferentDepthLevels = true;
         }
@@ -626,6 +669,7 @@ public class SpriteBatch extends DrawBatch {
      */
     public void begin(Matrix4 viewMatrix, BlendMode blendMode) {
         dataBuffer.clear();
+        shaderTextureMap.clear();
         bufferCount = 0;
         lastTextureId = -1;
         lastDepthLevel = -1;

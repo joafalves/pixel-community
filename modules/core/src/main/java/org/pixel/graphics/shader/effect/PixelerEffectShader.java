@@ -5,14 +5,15 @@
 
 package org.pixel.graphics.shader.effect;
 
-import static org.lwjgl.opengl.GL20.glUniform1f;
-import static org.lwjgl.opengl.GL20C.glUniform1i;
-
-import java.util.Arrays;
-import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import org.pixel.graphics.shader.Shader;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static org.lwjgl.opengl.GL20.glUniform1f;
+import static org.lwjgl.opengl.GL20C.glUniform1i;
 
 @Getter
 @Setter
@@ -45,6 +46,7 @@ public class PixelerEffectShader extends Shader {
         this.horizontalBlockSize = horizontalBlockSize;
         this.verticalBlockSize = verticalBlockSize;
         this.animated = false;
+        this.setup();
     }
 
     @Override

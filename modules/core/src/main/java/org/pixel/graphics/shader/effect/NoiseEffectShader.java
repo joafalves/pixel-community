@@ -5,16 +5,17 @@
 
 package org.pixel.graphics.shader.effect;
 
-import static org.lwjgl.opengl.GL20.glUniform1f;
-import static org.lwjgl.opengl.GL20.glUniform2f;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import org.pixel.graphics.shader.Shader;
 import org.pixel.math.Vector2;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static org.lwjgl.opengl.GL20.glUniform1f;
+import static org.lwjgl.opengl.GL20.glUniform2f;
 
 @Getter
 @Setter
@@ -46,6 +47,7 @@ public class NoiseEffectShader extends Shader {
         this.amount = amount;
         this.density = density;
         this.offset = Vector2.zero();
+        this.setup();
     }
 
     @Override

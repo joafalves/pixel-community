@@ -5,14 +5,15 @@
 
 package org.pixel.graphics.shader.effect;
 
-import static org.lwjgl.opengl.GL20.glUniform1f;
+import lombok.Getter;
+import lombok.Setter;
+import org.pixel.graphics.shader.Shader;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
-import org.pixel.graphics.shader.Shader;
+
+import static org.lwjgl.opengl.GL20.glUniform1f;
 
 @Getter
 @Setter
@@ -39,6 +40,7 @@ public class SepiaEffectShader extends Shader {
     public SepiaEffectShader(float amount) {
         super(vertSrc, fragSrc, attributes, uniforms);
         this.amount = amount;
+        this.setup();
     }
 
     @Override
