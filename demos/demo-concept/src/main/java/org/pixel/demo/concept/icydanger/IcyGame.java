@@ -159,7 +159,7 @@ public class IcyGame extends PixelWindow {
     private void initializeCollisions() {
         // create rectangle collision data based of tile data (LDTK)
         staticCollisionList = new ArrayList<>();
-        level.getGameLayerList().forEach(layer -> {
+        level.getLayers().forEach(layer -> {
             if (layer.getIdentifier().equalsIgnoreCase("collision") && layer instanceof LdtkGameIntLayer) {
                 LdtkGameIntLayer intLayer = (LdtkGameIntLayer) layer;
                 for (LdtkGameIntLayer.LayerCoordinate layerCoordinate : intLayer.getLayerCoordinateList()) {

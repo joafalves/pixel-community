@@ -168,11 +168,11 @@ public class LdtkGameWorldImporter implements ContentImporter<LdtkGameWorld> {
         }
 
         if (!layerList.isEmpty()) {
-            builder.gameLayerList(layerList);
+            builder.layers(layerList);
         }
 
         if (!entityList.isEmpty()) {
-            builder.gameEntityList(entityList);
+            builder.entities(entityList);
         }
     }
 

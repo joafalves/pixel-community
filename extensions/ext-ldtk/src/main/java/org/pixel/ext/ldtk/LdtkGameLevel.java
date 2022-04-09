@@ -1,6 +1,5 @@
 package org.pixel.ext.ldtk;
 
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,6 +10,8 @@ import org.pixel.graphics.SpriteDrawable;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
+
+import java.util.List;
 
 @Getter
 @Builder(access = AccessLevel.PUBLIC)
@@ -24,8 +25,8 @@ public class LdtkGameLevel implements SpriteDrawable {
     private Rectangle backgroundCropArea;
     private Rectangle backgroundDisplayArea;
 
-    private List<LdtkGameLayer> gameLayerList;
-    private List<LdtkGameEntity> gameEntityList;
+    private List<LdtkGameLayer> layers;
+    private List<LdtkGameEntity> entities;
 
     @Override
     public void draw(DeltaTime delta, SpriteBatch spriteBatch) {
@@ -42,11 +43,11 @@ public class LdtkGameLevel implements SpriteDrawable {
     }
 
     private void drawLayers(DeltaTime delta, SpriteBatch spriteBatch) {
-        if (gameLayerList == null || gameLayerList.isEmpty()) {
+        if (layers == null || layers.isEmpty()) {
             return; // nothing to do...
         }
 
-        for (LdtkGameLayer gameLayer : gameLayerList) {
+        for (LdtkGameLayer gameLayer : layers) {
             gameLayer.draw(delta, spriteBatch);
         }
     }

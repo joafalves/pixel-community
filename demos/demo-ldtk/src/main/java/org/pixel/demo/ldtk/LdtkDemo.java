@@ -100,7 +100,7 @@ public class LdtkDemo extends PixelWindow {
         for (LdtkGameLevel level : ldtkGameWorld.getLevels()) {
             level.draw(delta, spriteBatch); // for demonstration purposes, draw all levels
 
-            for (LdtkGameEntity entity : level.getGameEntityList()) {
+            for (LdtkGameEntity entity : level.getEntities()) {
                 spriteBatch.drawText(font, entity.getIdentifier(), entity.getPosition(), Color.WHITE);
             }
         }
@@ -122,7 +122,7 @@ public class LdtkDemo extends PixelWindow {
         settings.setWindowTitle("LDTK Demo");
         settings.setWindowResizable(true);
         settings.setMultisampling(2);
-        settings.setVsync(true);
+        settings.setVsync(false);
         settings.setDebugMode(false);
         settings.setWindowWidth(width);
         settings.setWindowHeight(height);
