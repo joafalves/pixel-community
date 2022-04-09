@@ -16,19 +16,21 @@ import org.pixel.demo.concept.performance.component.ConstantVelocityBoundCompone
 import org.pixel.ext.ecs.GameScene;
 import org.pixel.ext.ecs.Sprite;
 import org.pixel.graphics.Color;
+import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Boundary;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
 
 public class PerformanceGame extends PixelWindow {
 
-    private static final int SPRITE_COUNT = 500;
+    private static final int SPRITE_COUNT = 2048;
     private static final float SPRITE_MOVEMENT_SPEED = 100f;
-    private static final boolean ALTERNATE_TEXTURE = false;
+    private static final boolean ALTERNATE_TEXTURE = true;
 
     private ContentManager contentManager;
     private TitleFpsCounter fpsCounter;
     private GameScene gameScene;
+    private SpriteBatch spriteBatch;
 
     public PerformanceGame(WindowSettings settings) {
         super(settings);
@@ -38,7 +40,8 @@ public class PerformanceGame extends PixelWindow {
     public void load() {
         fpsCounter = new TitleFpsCounter(this);
         contentManager = new ContentManager();
-        gameScene = new GameScene("GameScene01", new Camera2D(this, Vector2.zero()));
+        spriteBatch = new SpriteBatch(512, 2);
+        gameScene = new GameScene("GameScene01", new Camera2D(this, Vector2.zero()), spriteBatch);
 
         var screenBoundary = new Boundary(0, 0, getVirtualWidth(), getVirtualHeight());
         var spriteTex = contentManager.loadTexture("images/earth-48x48.png");
@@ -70,15 +73,17 @@ public class PerformanceGame extends PixelWindow {
 
     @Override
     public void dispose() {
+        spriteBatch.dispose();
         contentManager.dispose();
         gameScene.dispose();
         super.dispose();
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings("Performance", 1024, 768);
+        WindowSettings settings = new WindowSettings("Performance", 1280, 720);
         settings.setVsync(false);
         settings.setIdleThrottle(false);
+        settings.setWindowResizable(true);
 
         PerformanceGame game = new PerformanceGame(settings);
         game.start();

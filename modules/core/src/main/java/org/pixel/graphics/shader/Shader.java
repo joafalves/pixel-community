@@ -5,26 +5,9 @@
 
 package org.pixel.graphics.shader;
 
-import static org.lwjgl.opengl.GL11C.GL_TRUE;
-import static org.lwjgl.opengl.GL20.glUseProgram;
-import static org.lwjgl.opengl.GL20C.GL_COMPILE_STATUS;
-import static org.lwjgl.opengl.GL20C.GL_FRAGMENT_SHADER;
-import static org.lwjgl.opengl.GL20C.GL_LINK_STATUS;
-import static org.lwjgl.opengl.GL20C.GL_VERTEX_SHADER;
-import static org.lwjgl.opengl.GL20C.glAttachShader;
-import static org.lwjgl.opengl.GL20C.glCompileShader;
-import static org.lwjgl.opengl.GL20C.glCreateProgram;
-import static org.lwjgl.opengl.GL20C.glCreateShader;
-import static org.lwjgl.opengl.GL20C.glDeleteProgram;
-import static org.lwjgl.opengl.GL20C.glDeleteShader;
-import static org.lwjgl.opengl.GL20C.glGetAttribLocation;
-import static org.lwjgl.opengl.GL20C.glGetProgramInfoLog;
-import static org.lwjgl.opengl.GL20C.glGetProgrami;
-import static org.lwjgl.opengl.GL20C.glGetShaderInfoLog;
-import static org.lwjgl.opengl.GL20C.glGetShaderi;
-import static org.lwjgl.opengl.GL20C.glGetUniformLocation;
-import static org.lwjgl.opengl.GL20C.glLinkProgram;
-import static org.lwjgl.opengl.GL20C.glShaderSource;
+import org.pixel.commons.lifecycle.Disposable;
+import org.pixel.commons.logger.Logger;
+import org.pixel.commons.logger.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,9 +16,10 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.pixel.commons.lifecycle.Disposable;
-import org.pixel.commons.logger.Logger;
-import org.pixel.commons.logger.LoggerFactory;
+
+import static org.lwjgl.opengl.GL11C.GL_TRUE;
+import static org.lwjgl.opengl.GL20.glUseProgram;
+import static org.lwjgl.opengl.GL20C.*;
 
 public abstract class Shader implements Disposable {
 
@@ -74,15 +58,13 @@ public abstract class Shader implements Disposable {
         this.uniforms = uniforms;
         this.attributeLocationMap = new HashMap<>();
         this.uniformLocationMap = new HashMap<>();
-
-        this.setup();
     }
 
     //endregion
 
     //region private methods
 
-    private void setup() {
+    protected void setup() {
         // create and put vertex/fragment shader:
         vertId = glCreateShader(GL_VERTEX_SHADER);
         fragId = glCreateShader(GL_FRAGMENT_SHADER);
