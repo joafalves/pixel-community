@@ -28,7 +28,7 @@ public class PerformanceGame extends PixelWindow {
 
     private static final int SPRITE_COUNT = 1024;
     private static final float SPRITE_MOVEMENT_SPEED = 100f;
-    private static final boolean ALTERNATE_TEXTURE = true;
+    private static final boolean MULTI_TEXTURE = true;
 
     private ContentManager contentManager;
     private TitleFpsCounter fpsCounter;
@@ -57,14 +57,14 @@ public class PerformanceGame extends PixelWindow {
         for (int i = 0; i < SPRITE_COUNT; i++) {
             var velocity = new Vector2(MathHelper.random(-SPRITE_MOVEMENT_SPEED, SPRITE_MOVEMENT_SPEED),
                     MathHelper.random(-SPRITE_MOVEMENT_SPEED, SPRITE_MOVEMENT_SPEED));
-            var sprite = new Sprite("Sprite_" + i, ALTERNATE_TEXTURE ? textureArray[i % textureArray.length] : textureArray[0]);
-            sprite.setOverlayColor(ALTERNATE_TEXTURE ? Color.random() : Color.WHITE);
+            var sprite = new Sprite("Sprite_" + i, MULTI_TEXTURE ? textureArray[i % textureArray.length] : textureArray[0]);
+            sprite.setOverlayColor(Color.random());
             sprite.getTransform().setPosition(
                     MathHelper.random(0, getVirtualWidth()), MathHelper.random(0, getVirtualHeight()));
             sprite.addComponent(
                     new ConstantVelocityBoundComponent(velocity, screenBoundary));
             sprite.addComponent(
-                    new ConstantRotationComponent(MathHelper.random(1f, 4f)));
+                    new ConstantRotationComponent(MathHelper.random(-5f, 5f)));
 
             gameScene.addChild(sprite);
         }
