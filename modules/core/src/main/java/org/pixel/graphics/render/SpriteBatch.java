@@ -136,8 +136,8 @@ public class SpriteBatch extends DrawBatch {
         } else {
             this.shaderTextureCount = shaderTextureCount;
             if (this.shaderTextureCount > 1 && DeviceInfo.isAmd()) {
-                log.warn("Shader texture count set to 1 on a AMD GPU. This is not recommended as its bound to " +
-                        "generate rendering glitches due to driver issues.");
+                log.warn("Shader texture count set to more than '1' on an AMD GPU. " +
+                        "This is not recommended as its bound to create rendering glitches due to driver issues.");
             }
         }
 
