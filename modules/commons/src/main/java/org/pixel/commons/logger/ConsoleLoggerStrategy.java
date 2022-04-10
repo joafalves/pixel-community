@@ -10,6 +10,7 @@ public class ConsoleLoggerStrategy implements LoggerStrategy {
     /**
      * Creates a logger object.
      *
+     * @param classRef The class reference.
      * @return Logger instance.
      */
     @Override

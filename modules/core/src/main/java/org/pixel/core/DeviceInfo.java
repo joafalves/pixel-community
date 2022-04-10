@@ -67,7 +67,7 @@ public class DeviceInfo {
     /**
      * Determines if the current device is an Apple device. This can only be called after the GL context has been created.
      *
-     * @return True if the device is an Apple device.
+     * @return True if the device is Apple based.
      */
     public static boolean isApple() {
         return getVendor().toLowerCase(Locale.ROOT).contains("apple");
