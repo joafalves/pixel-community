@@ -48,9 +48,11 @@ public class PerformanceGame extends PixelWindow {
 
         var screenBoundary = new Boundary(0, 0, getVirtualWidth(), getVirtualHeight());
         var textureArray = new Texture[] {
-                contentManager.loadTexture("images/square.png"),
                 contentManager.loadTexture("images/circle.png"),
-                contentManager.loadTexture("images/triangle.png")
+                contentManager.loadTexture("images/triangle.png"),
+                contentManager.loadTexture("images/rounded_square.png"),
+                contentManager.loadTexture("images/heart.png"),
+                contentManager.loadTexture("images/star.png"),
         };
         for (int i = 0; i < SPRITE_COUNT; i++) {
             var velocity = new Vector2(MathHelper.random(-SPRITE_MOVEMENT_SPEED, SPRITE_MOVEMENT_SPEED),
