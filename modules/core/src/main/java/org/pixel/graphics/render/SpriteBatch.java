@@ -131,7 +131,7 @@ public class SpriteBatch extends DrawBatch {
 
                 int[] textureUnits = new int[1];
                 glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, textureUnits);
-                this.shaderTextureCount = textureUnits[0];
+                this.shaderTextureCount = textureUnits[0] > 0 ? textureUnits[0] : 1;
             }
         } else {
             this.shaderTextureCount = shaderTextureCount;
