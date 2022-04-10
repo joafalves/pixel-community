@@ -62,10 +62,10 @@ public class ConsoleLogger extends Logger {
      * @param params  The parameters to format.
      */
     private String formatMessage(String message, Object... params) {
-        int paramIndex = 0;
-        while (message.contains("{}")) {
-            message = message.replaceFirst("\\{}",
-                    paramIndex < params.length ? params[paramIndex++].toString() : "");
+        for (int i = 0, paramIndex = 0; i < message.length() - 1; i++) {
+            if (message.charAt(i) == '{' && message.charAt(i + 1) == '}') {
+                message = message.substring(0, i) + params[paramIndex++] + message.substring(i + 2);
+            }
         }
 
         return message;
