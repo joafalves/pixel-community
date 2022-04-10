@@ -5,22 +5,18 @@
 
 package org.pixel.content;
 
-import java.nio.ByteBuffer;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import org.pixel.commons.annotations.Nullable;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.commons.util.IOUtils;
-import org.pixel.content.importer.ByteBufferImporter;
-import org.pixel.content.importer.FontImporter;
-import org.pixel.content.importer.TextImporter;
-import org.pixel.content.importer.TextureImporter;
-import org.pixel.content.importer.TexturePackImporter;
-import org.pixel.content.importer.VorbisAudioImporter;
+import org.pixel.content.importer.*;
 import org.pixel.content.importer.settings.ContentImporterSettings;
 import org.pixel.pipeline.DataPipeline;
+
+import java.nio.ByteBuffer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 public class ContentManager implements Disposable {
 
@@ -109,7 +105,7 @@ public class ContentManager implements Disposable {
                 return;
             }
 
-            log.trace("Adding content importer '{}' to ContentManager.", importer.getClass().getSimpleName());
+            log.trace("Adding content importer '{}'.", importer.getClass().getSimpleName());
 
             this.importers.put(importerDetails.type(), importer);
         }

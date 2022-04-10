@@ -6,6 +6,8 @@
 package org.pixel.demo.concept.performance;
 
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.logger.ConsoleLogger;
+import org.pixel.commons.logger.LogLevel;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.core.Camera2D;
@@ -15,6 +17,7 @@ import org.pixel.demo.concept.commons.TitleFpsCounter;
 import org.pixel.demo.concept.performance.component.ConstantVelocityBoundComponent;
 import org.pixel.ext.ecs.GameScene;
 import org.pixel.ext.ecs.Sprite;
+import org.pixel.ext.ecs.component.ConstantRotationComponent;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Boundary;
@@ -23,7 +26,7 @@ import org.pixel.math.Vector2;
 
 public class PerformanceGame extends PixelWindow {
 
-    private static final int SPRITE_COUNT = 2048;
+    private static final int SPRITE_COUNT = 1024;
     private static final float SPRITE_MOVEMENT_SPEED = 100f;
     private static final boolean ALTERNATE_TEXTURE = true;
 
@@ -40,21 +43,26 @@ public class PerformanceGame extends PixelWindow {
     public void load() {
         fpsCounter = new TitleFpsCounter(this);
         contentManager = new ContentManager();
-        spriteBatch = new SpriteBatch(512, 2);
+        spriteBatch = new SpriteBatch();
         gameScene = new GameScene("GameScene01", new Camera2D(this, Vector2.zero()), spriteBatch);
 
         var screenBoundary = new Boundary(0, 0, getVirtualWidth(), getVirtualHeight());
-        var spriteTex = contentManager.loadTexture("images/earth-48x48.png");
-        var spriteTexAlt = contentManager.load("images/earth-48x48.png", Texture.class, null, false);
+        var textureArray = new Texture[] {
+                contentManager.loadTexture("images/square.png"),
+                contentManager.loadTexture("images/circle.png"),
+                contentManager.loadTexture("images/triangle.png")
+        };
         for (int i = 0; i < SPRITE_COUNT; i++) {
             var velocity = new Vector2(MathHelper.random(-SPRITE_MOVEMENT_SPEED, SPRITE_MOVEMENT_SPEED),
                     MathHelper.random(-SPRITE_MOVEMENT_SPEED, SPRITE_MOVEMENT_SPEED));
-            var sprite = new Sprite("Sprite_" + i, ALTERNATE_TEXTURE ? i % 2 == 0 ? spriteTex : spriteTexAlt : spriteTex);
-            sprite.setOverlayColor(ALTERNATE_TEXTURE ? i % 2 == 0 ? Color.WHITE : Color.random() : Color.WHITE);
+            var sprite = new Sprite("Sprite_" + i, ALTERNATE_TEXTURE ? textureArray[i % textureArray.length] : textureArray[0]);
+            sprite.setOverlayColor(ALTERNATE_TEXTURE ? Color.random() : Color.WHITE);
             sprite.getTransform().setPosition(
                     MathHelper.random(0, getVirtualWidth()), MathHelper.random(0, getVirtualHeight()));
             sprite.addComponent(
                     new ConstantVelocityBoundComponent(velocity, screenBoundary));
+            sprite.addComponent(
+                    new ConstantRotationComponent(MathHelper.random(1f, 4f)));
 
             gameScene.addChild(sprite);
         }
@@ -84,6 +92,8 @@ public class PerformanceGame extends PixelWindow {
         settings.setVsync(false);
         settings.setIdleThrottle(false);
         settings.setWindowResizable(true);
+
+        ConsoleLogger.setLogLevel(LogLevel.TRACE);
 
         PerformanceGame game = new PerformanceGame(settings);
         game.start();

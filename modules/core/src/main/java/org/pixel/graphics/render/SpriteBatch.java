@@ -6,9 +6,12 @@
 package org.pixel.graphics.render;
 
 import org.lwjgl.system.MemoryUtil;
+import org.pixel.commons.logger.Logger;
+import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.Font;
 import org.pixel.content.FontGlyph;
 import org.pixel.content.Texture;
+import org.pixel.core.DeviceInfo;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.shader.Shader;
 import org.pixel.graphics.shader.VertexArrayObject;
@@ -37,6 +40,7 @@ import static org.lwjgl.opengl.GL13C.glBlendFunc;
 import static org.lwjgl.opengl.GL13C.glDrawArrays;
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
+import static org.lwjgl.opengl.GL20.glGetIntegerv;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL20C.glUniformMatrix4fv;
 
@@ -44,10 +48,11 @@ public class SpriteBatch extends DrawBatch {
 
     //region private properties
 
+    private static final Logger log = LoggerFactory.getLogger(SpriteBatch.class);
+
     private static final int BUFFER_UNIT_LENGTH = 256; // maximum sprites per batch
     private static final int SPRITE_UNIT_LENGTH = 54; // number of attributes information units per sprite (uploadBufferData * each inner put)
     private static final int ATTRIBUTE_STRIDE = 36; // attribute stride (bytes) between each vertex info
-    private static final int DEFAULT_SHADER_TEXTURE_SIZE = 8;
 
     private static final Matrix4 spriteViewMatrix = new Matrix4();
     private static final Vector2 tTopLeft = new Vector2();
@@ -92,33 +97,53 @@ public class SpriteBatch extends DrawBatch {
      * @param bufferMaxSize The maximum number of sprites that can be drawn in one batch.
      */
     public SpriteBatch(int bufferMaxSize) {
-        this(bufferMaxSize, DEFAULT_SHADER_TEXTURE_SIZE);
+        this(bufferMaxSize, 0);
     }
 
     /**
      * Constructor.
      *
      * @param bufferMaxSize      The maximum number of sprites that can be drawn in one batch.
-     * @param shaderTextureCount The number of textures to be used by the shader (not recommended beyond 16).
+     * @param shaderTextureCount The number of textures to be used by the shader (if the parameter is set to '0', the value will be set based on the device maximum capacity).
      */
     public SpriteBatch(int bufferMaxSize, int shaderTextureCount) {
         if (bufferMaxSize <= 0) {
             throw new RuntimeException("Invalid buffer size, must be greater than zero");
         }
 
-        if (shaderTextureCount <= 0) {
-            throw new RuntimeException("Invalid shader texture count, must be greater than zero");
-        }
-
         this.vbo = new VertexBufferObject();
-        this.shaderTextureCount = shaderTextureCount;
-        this.shader = new MultiTextureShader(shaderTextureCount);
         this.matrixBuffer = MemoryUtil.memAllocFloat(4 * 4);
         this.spriteData = new SpriteData[bufferMaxSize];
         this.bufferMaxSize = bufferMaxSize;
         this.dataBuffer = MemoryUtil.memAllocFloat(SPRITE_UNIT_LENGTH * bufferMaxSize);
         this.vao = new VertexArrayObject();
         this.bufferCount = 0;
+
+        if (shaderTextureCount <= 0) {
+            // AMD GPUs can't handle this multi-texturing properly, so we'll just use one texture.
+            // https://community.amd.com/t5/opengl-vulkan/bug-with-glsl-sampler-array/td-p/340662
+            // https://community.amd.com/t5/opengl-vulkan/amd-radeon-hd-5700-series-opengl-driver-issues/m-p/67760
+            if (DeviceInfo.isAmd()) {
+                this.shaderTextureCount = 1;
+
+            } else {
+                log.trace("Setting max number of textures based on 'GL_MAX_TEXTURE_IMAGE_UNITS'.");
+
+                int[] textureUnits = new int[1];
+                glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, textureUnits);
+                this.shaderTextureCount = textureUnits[0];
+            }
+        } else {
+            this.shaderTextureCount = shaderTextureCount;
+            if (this.shaderTextureCount > 1 && DeviceInfo.isAmd()) {
+                log.warn("Shader texture count set to 1 on a AMD GPU. This is not recommended as its bound to " +
+                        "generate rendering glitches due to driver issues.");
+            }
+        }
+
+        log.trace("Buffer max size: '{}'.", bufferMaxSize);
+        log.trace("Shader texture count: '{}'.", this.shaderTextureCount);
+        log.trace("Data buffer capacity: '{}'.", dataBuffer.capacity());
 
         this.init();
     }
@@ -128,17 +153,24 @@ public class SpriteBatch extends DrawBatch {
     //region private methods
 
     private void init() {
-        // bind vao
-        vao.bind();
+        shader = new MultiTextureShader(shaderTextureCount);
+        shader.use();
 
-        // bind buffer
-        vbo.bind(GL_ARRAY_BUFFER);
+        // since the base texture is always TEXTURE0, this can be done only once (for the 'shaderTextureCount' amount)
+        int[] textureRefArray = new int[shaderTextureCount];
+        for (int i = 0; i < shaderTextureCount; i++) {
+            textureRefArray[i] = i;
+        }
+        glUniform1iv(shader.getUniformLocation("uTextureImage"), textureRefArray);
 
         // setup attributes:
         int aVertexPosition = this.shader.getAttributeLocation("aVertexPosition");
         int aTextureCoordinates = this.shader.getAttributeLocation("aTextureCoordinates");
         int aVertexColor = this.shader.getAttributeLocation("aVertexColor");
         int aTextureId = this.shader.getAttributeLocation("aTextureIndex");
+
+        vao.bind();
+        vbo.bind(GL_ARRAY_BUFFER);
 
         glEnableVertexAttribArray(aVertexPosition);
         glVertexAttribPointer(aVertexPosition, 2, GL_FLOAT, false, ATTRIBUTE_STRIDE, 0);
@@ -156,15 +188,6 @@ public class SpriteBatch extends DrawBatch {
         for (int i = 0; i < bufferMaxSize; i++) {
             this.spriteData[i] = new SpriteData();
         }
-
-        // since the base texture is always TEXTURE0, this can be done only once (for the 'shaderTextureCount' amount)
-        int[] textureRefArray = new int[shaderTextureCount];
-        for (int i = 0; i < shaderTextureCount; i++) {
-            textureRefArray[i] = i;
-        }
-
-        shader.use();
-        glUniform1iv(shader.getUniformLocation("uTextureImage"), textureRefArray);
     }
 
     private SpriteData getNextSpriteDataObject() {
@@ -181,7 +204,7 @@ public class SpriteBatch extends DrawBatch {
     private void flushBatch(int count) {
         dataBuffer.flip();
         vbo.uploadData(GL_ARRAY_BUFFER, dataBuffer, GL_STATIC_DRAW);
-        glDrawArrays(GL_TRIANGLES, 0, 6 * ((count * SPRITE_UNIT_LENGTH) / SPRITE_UNIT_LENGTH));
+        glDrawArrays(GL_TRIANGLES, 0, 6 * count);
     }
 
     private void flush() {
@@ -196,7 +219,8 @@ public class SpriteBatch extends DrawBatch {
         }
 
         // draw the sprite data..
-        for (int i = 0, count = 0; i < bufferCount; ++i) {
+        int count = 0;
+        for (int i = 0; i < bufferCount; ++i) {
             SpriteData spriteData = this.spriteData[i];
             if (!spriteData.active) {
                 continue; // skip inactive sprites
@@ -219,12 +243,10 @@ public class SpriteBatch extends DrawBatch {
             processSpriteData(spriteData);
             count++;
             spriteData.active = false;
-
-            if (i >= bufferCount - 1) {
-                flushBatch(count);
-                dataBuffer.clear();
-            }
         }
+
+        flushBatch(count);
+        dataBuffer.clear();
 
         hasDifferentDepthLevels = false;
         lastDepthLevel = -1;
@@ -236,7 +258,7 @@ public class SpriteBatch extends DrawBatch {
         sprite.computeViewMatrix();
 
         // note that both position and source data have the following coordinate orientation:
-        // (this depends on how the texture is loaded into memory, ResourceManager will read topLeft to bottomRight)
+        // (this depends on how the texture is loaded into memory, TextureImporter will read topLeft to bottomRight)
         // ##############
         // #(0,0)..(1,0)#
         // #....\.......#
@@ -273,7 +295,7 @@ public class SpriteBatch extends DrawBatch {
                     ((sprite.source.getY() + sprite.source.getHeight()) / sprite.textureHeight));
         }
 
-        int textureId = shaderTextureMap.get(sprite.textureId);
+        int textureId = shaderTextureCount == 1 ? 0 : shaderTextureMap.get(sprite.textureId);
 
         // upload data to the buffer:
         // triangle A
@@ -626,29 +648,6 @@ public class SpriteBatch extends DrawBatch {
      */
     public Shader getShader() {
         return shader;
-    }
-
-    /**
-     * Set the active shader (automatically disposes the previous active shader).
-     *
-     * @param shader The new active shader.
-     */
-    public void setShader(Shader shader) {
-        this.setShader(shader, true);
-    }
-
-    /**
-     * Set the active shader.
-     *
-     * @param shader                The new active shader.
-     * @param disposePreviousShader If true, the previous active shader will be disposed.
-     */
-    public void setShader(Shader shader, boolean disposePreviousShader) {
-        if (disposePreviousShader && this.shader != null) {
-            this.shader.dispose();
-        }
-
-        this.shader = shader;
     }
 
     /**

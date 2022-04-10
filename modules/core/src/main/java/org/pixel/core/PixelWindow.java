@@ -169,6 +169,10 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
 
         Configuration.DISABLE_CHECKS.set(!debugMode);
 
+        log.trace("GL Vendor: '{}'.", glGetString(GL_VENDOR));
+        log.trace("GL Renderer: '{}'.", glGetString(GL_RENDERER));
+        log.trace("GL Version: '{}'.", glGetString(GL_VERSION));
+
         initializeWindowCallbacks();
         initializeAudio();
 
@@ -265,7 +269,7 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
 
         // Window focus callback:
         glfwSetWindowFocusCallback(windowHandle, ((window, focused) -> {
-            log.debug("Windows focus changed: {}.", focused);
+            log.debug("Windows focus changed: '{}'.", focused);
             windowFocused = focused;
         }));
     }
