@@ -141,7 +141,7 @@ public class SpriteBatch extends DrawBatch {
             }
         }
 
-        log.trace("Buffer max size: '{}'.", bufferMaxSize);
+        log.trace("Buffer max size: '{}'.", this.bufferMaxSize);
         log.trace("Shader texture count: '{}'.", this.shaderTextureCount);
         log.trace("Data buffer capacity: '{}'.", dataBuffer.capacity());
 
