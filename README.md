@@ -92,7 +92,9 @@ The framework functionality is divided into multiple modules which can be import
         ├── ext-gui                 # GUI extension *WIP*
         ├── ext-ldtk                # LDTK extension
         ├── ext-log4j2              # Log4j2 extension
-        └── ext-physics             # Physics extension *WIP*
+        ├── ext-physics             # Physics extension *WIP*
+        ├── ext-tiled               # TileD extension
+        └── ext-tween               # Tween extension
     .modules/                       # The principal modules of the framework
         ├── commons                 # Common utility classes
         ├── core                    # Main module, contains principal classes
