@@ -11,6 +11,6 @@ dependencies {
     api project(":${rootProject.name}-math")
     api project(":${rootProject.name}-pipeline")
 
-    api "org.json:json:20211205"
+    api 'org.json:json:20220320'
 }
 

@@ -6,9 +6,14 @@
 project.ext.mavenPublish = false
 
 dependencies {
-    implementation project(":${rootProject.name}-commons")
-    implementation project(":${rootProject.name}-core")
-    implementation project(":${rootProject.name}-math")
+    api project(":${rootProject.name}-commons")
+    api project(":${rootProject.name}-core")
+    api project(":${rootProject.name}-math")
 
-    implementation 'net.sf.cssbox:jstyleparser:3.5'
+    api group: "org.lwjgl", name: "lwjgl-yoga", version: rootProject.ext.dependencyMap["lwjgl"]
+    rootProject.ext.buildTargetList.forEach(classifier -> {
+        runtimeOnly group: "org.lwjgl", name: "lwjgl-yoga", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
+    })
+
+    implementation 'net.sf.cssbox:jstyleparser:4.0.0'
 }

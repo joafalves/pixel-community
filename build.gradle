@@ -10,25 +10,30 @@ if (version == null) {
     version = "SNAPSHOT";
 }
 
-// Lwjgl Version & Build Target(s)
-def lwjglVersion = "3.3.1"
+project.ext.dependencyMap = [
+        lwjgl: "3.3.1",
+        lombok: "1.18.22",
+        junit: "5.8.2",
+        mockito: "4.3.1"
+]
+project.ext.buildTargetList = []
+
 def buildTarget = System.properties["BUILD_TARGET"]
-def buildTargetList = []
 if (buildTarget == "all") {
     // Use this build mode publishing:
-    buildTargetList.addAll([
+    project.ext.buildTargetList.addAll([
             "natives-windows", "natives-windows-x86", "natives-windows-arm64",
             "natives-macos", "natives-macos-arm64",
             "natives-linux", "natives-linux-arm64", "natives-linux-arm32"])
 } else if (buildTarget != null) {
     // applies the build target based on the BUILD_TARGET environment variable:
-    buildTargetList.add(buildTarget)
+    project.ext.buildTargetList.add(buildTarget)
 } else {
     // no manual build type assigned, apply the classifier based on the current OS:
-    buildTargetList.add(getCurrentClassifier())
+    project.ext.buildTargetList.add(getCurrentClassifier())
 }
 
-println("Build Targets: ${buildTargetList}")
+println("Build Targets: ${project.ext.buildTargetList}")
 println("Version: ${version}")
 
 allprojects {
@@ -51,32 +56,30 @@ allprojects {
     }
 
     dependencies {
-        api group: "org.lwjgl", name: "lwjgl", version: lwjglVersion
-        api group: "org.lwjgl", name: "lwjgl-glfw", version: lwjglVersion
-        api group: "org.lwjgl", name: "lwjgl-opengl", version: lwjglVersion
-        api group: "org.lwjgl", name: "lwjgl-openal", version: lwjglVersion
-        api group: "org.lwjgl", name: "lwjgl-stb", version: lwjglVersion
-        api group: "org.lwjgl", name: "lwjgl-nanovg", version: lwjglVersion
-        api group: "org.lwjgl", name: "lwjgl-yoga", version: lwjglVersion
+        api group: "org.lwjgl", name: "lwjgl", version: rootProject.ext.dependencyMap["lwjgl"]
+        api group: "org.lwjgl", name: "lwjgl-glfw", version: rootProject.ext.dependencyMap["lwjgl"]
+        api group: "org.lwjgl", name: "lwjgl-opengl", version: rootProject.ext.dependencyMap["lwjgl"]
+        api group: "org.lwjgl", name: "lwjgl-openal", version: rootProject.ext.dependencyMap["lwjgl"]
+        api group: "org.lwjgl", name: "lwjgl-stb", version: rootProject.ext.dependencyMap["lwjgl"]
+        api group: "org.lwjgl", name: "lwjgl-nanovg", version: rootProject.ext.dependencyMap["lwjgl"]
 
-        buildTargetList.forEach(classifier -> {
-            runtimeOnly group: "org.lwjgl", name: "lwjgl", version: lwjglVersion, classifier: "$classifier"
-            runtimeOnly group: "org.lwjgl", name: "lwjgl-opengl", version: lwjglVersion, classifier: "$classifier"
-            runtimeOnly group: "org.lwjgl", name: "lwjgl-openal", version: lwjglVersion, classifier: "$classifier"
-            runtimeOnly group: "org.lwjgl", name: "lwjgl-glfw", version: lwjglVersion, classifier: "$classifier"
-            runtimeOnly group: "org.lwjgl", name: "lwjgl-stb", version: lwjglVersion, classifier: "$classifier"
-            runtimeOnly group: "org.lwjgl", name: "lwjgl-nanovg", version: lwjglVersion, classifier: "$classifier"
-            runtimeOnly group: "org.lwjgl", name: "lwjgl-yoga", version: lwjglVersion, classifier: "$classifier"
+        rootProject.ext.buildTargetList.forEach(classifier -> {
+            runtimeOnly group: "org.lwjgl", name: "lwjgl", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
+            runtimeOnly group: "org.lwjgl", name: "lwjgl-opengl", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
+            runtimeOnly group: "org.lwjgl", name: "lwjgl-openal", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
+            runtimeOnly group: "org.lwjgl", name: "lwjgl-glfw", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
+            runtimeOnly group: "org.lwjgl", name: "lwjgl-stb", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
+            runtimeOnly group: "org.lwjgl", name: "lwjgl-nanovg", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
         })
 
         // lombok
-        compileOnly "org.projectlombok:lombok:1.18.22"
-        annotationProcessor "org.projectlombok:lombok:1.18.22"
+        compileOnly "org.projectlombok:lombok:${rootProject.ext.dependencyMap["lombok"]}"
+        annotationProcessor "org.projectlombok:lombok:${rootProject.ext.dependencyMap["lombok"]}"
 
         // test:
-        testImplementation 'org.mockito:mockito-core:4.3.1'
-        testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.2"
-        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.2"
+        testImplementation "org.mockito:mockito-core:${rootProject.ext.dependencyMap["mockito"]}"
+        testImplementation "org.junit.jupiter:junit-jupiter-api:${rootProject.ext.dependencyMap["junit"]}"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${rootProject.ext.dependencyMap["junit"]}"
     }
 
     test {
@@ -133,7 +136,7 @@ allprojects {
 
                 pom {
                     name = "Pixel 2D Game Framework"
-                    description = "Java 2D Game Framework inspired on the popular XNA framework."
+                    description = "Modular Java/Kotlin 2D Game Framework."
                     url = "https://github.com/joafalves/pixel-community"
                     licenses {
                         license {
