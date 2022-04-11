@@ -11,7 +11,6 @@ import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.Font;
 import org.pixel.content.FontGlyph;
 import org.pixel.content.Texture;
-import org.pixel.core.DeviceInfo;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.shader.Shader;
 import org.pixel.graphics.shader.VertexArrayObject;
@@ -120,28 +119,17 @@ public class SpriteBatch extends DrawBatch {
         this.bufferCount = 0;
 
         if (shaderTextureCount <= 0) {
-            // AMD GPUs can't handle this multi-texturing properly, so we'll just use one texture.
-            // https://community.amd.com/t5/opengl-vulkan/bug-with-glsl-sampler-array/td-p/340662
-            // https://community.amd.com/t5/opengl-vulkan/amd-radeon-hd-5700-series-opengl-driver-issues/m-p/67760
-            if (DeviceInfo.isAmd()) {
-                this.shaderTextureCount = 1;
+            log.trace("Setting max number of textures based on 'GL_MAX_TEXTURE_IMAGE_UNITS'.");
 
-            } else {
-                log.trace("Setting max number of textures based on 'GL_MAX_TEXTURE_IMAGE_UNITS'.");
+            int[] textureUnits = new int[1];
+            glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, textureUnits);
+            this.shaderTextureCount = textureUnits[0] > 0 ? textureUnits[0] : 1;
 
-                int[] textureUnits = new int[1];
-                glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, textureUnits);
-                this.shaderTextureCount = textureUnits[0] > 0 ? textureUnits[0] : 1;
-            }
         } else {
             this.shaderTextureCount = shaderTextureCount;
-            if (this.shaderTextureCount > 1 && DeviceInfo.isAmd()) {
-                log.warn("Shader texture count set to more than '1' on an AMD GPU. " +
-                        "This is not recommended as its bound to create rendering glitches due to driver issues.");
-            }
         }
 
-        log.trace("Buffer max size: '{}'.", this.bufferMaxSize);
+        log.trace("Buffer max size (units): '{}'.", this.bufferMaxSize);
         log.trace("Shader texture count: '{}'.", this.shaderTextureCount);
         log.trace("Data buffer capacity: '{}'.", dataBuffer.capacity());
 
