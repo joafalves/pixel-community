@@ -162,7 +162,7 @@ public class IcyGame extends PixelWindow {
         level.getLayers().forEach(layer -> {
             if (layer.getIdentifier().equalsIgnoreCase("collision") && layer instanceof LdtkGameIntLayer) {
                 LdtkGameIntLayer intLayer = (LdtkGameIntLayer) layer;
-                for (LdtkGameIntLayer.LayerCoordinate layerCoordinate : intLayer.getLayerCoordinateList()) {
+                for (LdtkGameIntLayer.LayerCoordinate layerCoordinate : intLayer.getCoordinates()) {
                     var rect = Rectangle.builder()
                             .x(layerCoordinate.getX() * intLayer.getGridWidth() + level.getWorldPosition().getX())
                             .y(layerCoordinate.getY() * intLayer.getGridHeight() + level.getWorldPosition().getY())

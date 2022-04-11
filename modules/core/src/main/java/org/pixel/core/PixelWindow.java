@@ -169,9 +169,9 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
 
         Configuration.DISABLE_CHECKS.set(!debugMode);
 
-        log.trace("GL Vendor: '{}'.", glGetString(GL_VENDOR));
-        log.trace("GL Renderer: '{}'.", glGetString(GL_RENDERER));
-        log.trace("GL Version: '{}'.", glGetString(GL_VERSION));
+        log.debug("OpenGL Vendor: '{}'.", glGetString(GL_VENDOR));
+        log.debug("OpenGL Renderer: '{}'.", glGetString(GL_RENDERER));
+        log.debug("OpenGL Version: '{}'.", glGetString(GL_VERSION));
 
         initializeWindowCallbacks();
         initializeAudio();

@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 public class LdtkGameIntLayer extends LdtkGameLayer {
 
-    private List<LayerCoordinate> layerCoordinateList;
+    private List<LayerCoordinate> coordinates;
 
     @Getter
     @AllArgsConstructor

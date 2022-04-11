@@ -134,7 +134,7 @@ public class LdtkGameWorldImporter implements ContentImporter<LdtkGameWorld> {
             for (TileInstance gridTile : tileList) { // convert data tiles to game tiles
                 ldtkGameLayerTileList.add(processTileInstance(gridTile, layerInstance, level));
             }
-            layer.setTileList(ldtkGameLayerTileList);
+            layer.setTiles(ldtkGameLayerTileList);
 
             // texture
             if (layerInstance.getTilesetRelPath() != null) {
@@ -156,7 +156,7 @@ public class LdtkGameWorldImporter implements ContentImporter<LdtkGameWorld> {
                     coordinateList.add(new LayerCoordinate((int) intGridValueInstance.getCoordId(), gridX, gridY, 1));
                 }
 
-                intLayer.setLayerCoordinateList(coordinateList);
+                intLayer.setCoordinates(coordinateList);
             }
 
             layerList.add(layer);
