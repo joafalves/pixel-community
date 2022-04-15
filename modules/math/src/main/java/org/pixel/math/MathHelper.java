@@ -33,7 +33,7 @@ public class MathHelper {
      * @return The value of the base raised to the power of the exponent.
      */
     public static float pow(float value, float power) {
-        return (float) Math.pow(value, power);
+        return (float) StrictMath.pow(value, power);
     }
 
     /**
@@ -43,7 +43,7 @@ public class MathHelper {
      * @return The square root of the value.
      */
     public static float sqrt(float value) {
-        return (float) Math.sqrt(value);
+        return (float) StrictMath.sqrt(value);
     }
 
     /**
@@ -54,7 +54,7 @@ public class MathHelper {
      * @return The largest integer less than or equal to the argument.
      */
     public static float floor(float value) {
-        return (float) Math.floor(value);
+        return (float) StrictMath.floor(value);
     }
 
     /**
@@ -65,7 +65,7 @@ public class MathHelper {
      * @return The smallest integer greater than or equal to the argument.
      */
     public static float ceil(float value) {
-        return (float) Math.ceil(value);
+        return (float) StrictMath.ceil(value);
     }
 
     /**
@@ -75,48 +75,48 @@ public class MathHelper {
      * @return The tangent of the value.
      */
     public static float tan(float value) {
-        return (float) Math.tan(value);
+        return (float) StrictMath.tan(value);
     }
 
     /**
      * Sinus function.
      *
-     * @param value The value to calculate the sinus of.
+     * @param value The value to calculate the sinus of (in radians).
      * @return The sinus of the value.
      */
     public static float sin(float value) {
-        return (float) Math.sin(value);
+        return (float) StrictMath.sin(value);
     }
 
     /**
      * Cosine function.
      *
-     * @param value The value to calculate the cosine of.
+     * @param value The value to calculate the cosine of (in radians).
      * @return The cosine of the value.
      */
     public static float cos(float value) {
-        return (float) Math.cos(value);
+        return (float) StrictMath.cos(value);
     }
 
     /**
      * Arc cosine function.
      *
-     * @param value The value to calculate the arc cosine of.
+     * @param value The value to calculate the arc cosine of (in radians).
      * @return The arc cosine of the value.
      */
     public static float acos(float value) {
-        return (float) Math.acos(value);
+        return (float) StrictMath.acos(value);
     }
 
     /**
      * Arc Tangent function (inverted).
      *
-     * @param y The y value.
-     * @param x The x value.
+     * @param y The y value (in radians).
+     * @param x The x value (in radians).
      * @return The arc tangent of the x and y value.
      */
     public static float atan2(float y, float x) {
-        return (float) Math.atan2(y, x);
+        return (float) StrictMath.atan2(y, x);
     }
 
     /**
@@ -127,7 +127,7 @@ public class MathHelper {
      * @return The absolute value of the argument.
      */
     public static float abs(float value) {
-        return Math.abs(value);
+        return StrictMath.abs(value);
     }
 
     /**
@@ -473,7 +473,7 @@ public class MathHelper {
      * @return The intersection point if any.
      */
     public static Vector2 intersect(float p1x1, float p1y1, float p1x2, float p1y2,
-                                    float p2x1, float p2y1, float p2x2, float p2y2) {
+            float p2x1, float p2y1, float p2x2, float p2y2) {
         float d = (p1x1 - p1x2) * (p2y1 - p2y2) - (p1y1 - p1y2) * (p2x1 - p2x2);
         if (d == 0) {
             return null;

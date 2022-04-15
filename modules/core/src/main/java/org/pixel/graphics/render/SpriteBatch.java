@@ -103,7 +103,8 @@ public class SpriteBatch extends DrawBatch {
      * Constructor.
      *
      * @param bufferMaxSize      The maximum number of sprites that can be drawn in one batch.
-     * @param shaderTextureCount The number of textures to be used by the shader (if the parameter is set to '0', the value will be set based on the device maximum capacity).
+     * @param shaderTextureCount The number of textures to be used by the shader (if the parameter is set to '0', the
+     *                           value will be set based on the device maximum capacity).
      */
     public SpriteBatch(int bufferMaxSize, int shaderTextureCount) {
         if (bufferMaxSize <= 0) {
@@ -242,7 +243,7 @@ public class SpriteBatch extends DrawBatch {
     }
 
     private void processSpriteData(SpriteData sprite) {
-        // bind the sprite matrix with the current sprite data
+        // compute the sprite visualization matrix (transform the vertices according to the sprite characteristics)
         sprite.computeViewMatrix();
 
         // note that both position and source data have the following coordinate orientation:
@@ -255,7 +256,7 @@ public class SpriteBatch extends DrawBatch {
         // #(0,1)..(1,1)#
         // ##############
 
-        // prepare data:
+        // vertex data:
         bottomLeft.set(0, 1);
         bottomLeft.transformMatrix4(spriteViewMatrix);
         bottomRight.set(1);
@@ -285,21 +286,18 @@ public class SpriteBatch extends DrawBatch {
 
         int textureId = shaderTextureCount == 1 ? 0 : shaderTextureMap.get(sprite.textureId);
 
-        // upload data to the buffer:
-        // triangle A
-        this.uploadBufferData(bottomLeft.getX(), bottomLeft.getY(), tBottomLeft.getX(), tBottomLeft.getY(),
-                sprite.color, textureId);
-        this.uploadBufferData(bottomRight.getX(), bottomRight.getY(), tBottomRight.getX(), tBottomRight.getY(),
-                sprite.color, textureId);
-        this.uploadBufferData(topLeft.getX(), topLeft.getY(), tTopLeft.getX(), tTopLeft.getY(), sprite.color,
+        // put the drawing data on the buffer:
+        this.uploadTriangleData(bottomLeft, bottomRight, topLeft, tBottomLeft, tBottomRight, tTopLeft, sprite.color,
                 textureId);
-        // triangle B
-        this.uploadBufferData(topLeft.getX(), topLeft.getY(), tTopLeft.getX(), tTopLeft.getY(), sprite.color,
+        this.uploadTriangleData(topLeft, bottomRight, topRight, tTopLeft, tBottomRight, tTopRight, sprite.color,
                 textureId);
-        this.uploadBufferData(bottomRight.getX(), bottomRight.getY(), tBottomRight.getX(), tBottomRight.getY(),
-                sprite.color, textureId);
-        this.uploadBufferData(topRight.getX(), topRight.getY(), tTopRight.getX(), tTopRight.getY(), sprite.color,
-                textureId);
+    }
+
+    private void uploadTriangleData(Vector2 v1, Vector2 v2, Vector2 v3, Vector2 t1, Vector2 t2, Vector2 t3, Color color,
+            int textureId) {
+        this.uploadBufferData(v1.getX(), v1.getY(), t1.getX(), t1.getY(), color, textureId);
+        this.uploadBufferData(v2.getX(), v2.getY(), t2.getX(), t2.getY(), color, textureId);
+        this.uploadBufferData(v3.getX(), v3.getY(), t3.getX(), t3.getY(), color, textureId);
     }
 
     private void uploadBufferData(float x, float y, float px, float py, Color color, int textureId) {
@@ -382,7 +380,7 @@ public class SpriteBatch extends DrawBatch {
      * @param rotation The rotation of the sprite.
      */
     public void draw(Texture texture, Vector2 position, Color color, Vector2 anchor, float scaleX, float scaleY,
-                     float rotation) {
+            float rotation) {
         this.draw(texture, position, null, color, anchor, scaleX, scaleY, rotation, 0);
     }
 
@@ -410,7 +408,7 @@ public class SpriteBatch extends DrawBatch {
      * @param rotation The rotation of the sprite.
      */
     public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scale,
-                     float rotation) {
+            float rotation) {
         this.draw(texture, position, source, color, anchor, scale, scale, rotation, 0);
     }
 
@@ -427,7 +425,7 @@ public class SpriteBatch extends DrawBatch {
      * @param rotation The rotation of the sprite.
      */
     public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scaleX,
-                     float scaleY, float rotation) {
+            float scaleY, float rotation) {
         this.draw(texture, position, source, color, anchor, scaleX, scaleY, rotation, 0);
     }
 
@@ -445,7 +443,7 @@ public class SpriteBatch extends DrawBatch {
      * @param depth    The drawing depth of the sprite (lower numbers are drawn first).
      */
     public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scaleX,
-                     float scaleY, float rotation, int depth) {
+            float scaleY, float rotation, int depth) {
         if (lastDepthLevel >= 0 && depth != lastDepthLevel) {
             hasDifferentDepthLevels = true;
         }
@@ -529,7 +527,7 @@ public class SpriteBatch extends DrawBatch {
      * @param rotation    The rotation of the sprite.
      */
     public void draw(Texture texture, Rectangle displayArea, Rectangle source, Color color, Vector2 anchor,
-                     float rotation) {
+            float rotation) {
         this.draw(texture, displayArea, source, color, anchor, rotation, 0);
     }
 
@@ -545,7 +543,7 @@ public class SpriteBatch extends DrawBatch {
      * @param depth       The drawing depth of the sprite (lower numbers are drawn first).
      */
     public void draw(Texture texture, Rectangle displayArea, Rectangle source, Color color, Vector2 anchor,
-                     float rotation, int depth) {
+            float rotation, int depth) {
         if (lastDepthLevel >= 0 && depth != lastDepthLevel) {
             hasDifferentDepthLevels = true;
         }

@@ -294,11 +294,11 @@ public class Vector2 implements Serializable {
      * @param mat The matrix to transform by.
      */
     public void transformMatrix4(Matrix4 mat) {
-        float[][] ua = mat.toUnsafeArray();
+        float[][] matrixArray = mat.toUnsafeArray();
         float ox = x;
         float oy = y;
-        x = ua[0][0] * ox + ua[1][0] * oy + ua[3][0];
-        y = ua[0][1] * ox + ua[1][1] * oy + ua[3][1];
+        x = matrixArray[0][0] * ox + matrixArray[1][0] * oy + matrixArray[3][0];
+        y = matrixArray[0][1] * ox + matrixArray[1][1] * oy + matrixArray[3][1];
     }
 
     /**
