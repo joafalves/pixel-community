@@ -5,12 +5,14 @@
 
 package org.pixel.demo.learning.common;
 
+import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.commons.DeltaTime;
 import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
+import org.pixel.input.keyboard.Keyboard;
+import org.pixel.input.keyboard.KeyboardKey;
 
 public abstract class DemoGame extends PixelWindow {
 
@@ -29,5 +31,9 @@ public abstract class DemoGame extends PixelWindow {
     @Override
     public void update(DeltaTime delta) {
         fpsCounter.update(delta);
+
+        if (Keyboard.isKeyPressed(KeyboardKey.ESCAPE)) {
+            close();
+        }
     }
 }

@@ -5,25 +5,6 @@
 
 package org.pixel.graphics.render;
 
-import org.lwjgl.system.MemoryUtil;
-import org.pixel.commons.logger.Logger;
-import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.content.Font;
-import org.pixel.content.FontGlyph;
-import org.pixel.content.Texture;
-import org.pixel.graphics.Color;
-import org.pixel.graphics.shader.Shader;
-import org.pixel.graphics.shader.VertexArrayObject;
-import org.pixel.graphics.shader.VertexBufferObject;
-import org.pixel.graphics.shader.standard.MultiTextureShader;
-import org.pixel.math.Matrix4;
-import org.pixel.math.Rectangle;
-import org.pixel.math.Vector2;
-
-import java.nio.FloatBuffer;
-import java.util.Arrays;
-import java.util.HashMap;
-
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL13C.GL_DST_COLOR;
 import static org.lwjgl.opengl.GL13C.GL_FLOAT;
@@ -39,9 +20,30 @@ import static org.lwjgl.opengl.GL13C.glBlendFunc;
 import static org.lwjgl.opengl.GL13C.glDrawArrays;
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
+import static org.lwjgl.opengl.GL20.GL_MAX_TEXTURE_IMAGE_UNITS;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glGetIntegerv;
-import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL20.glUniform1iv;
+import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL20C.glUniformMatrix4fv;
+
+import java.nio.FloatBuffer;
+import java.util.Arrays;
+import java.util.HashMap;
+import org.lwjgl.system.MemoryUtil;
+import org.pixel.commons.logger.Logger;
+import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.content.Font;
+import org.pixel.content.FontGlyph;
+import org.pixel.content.Texture;
+import org.pixel.graphics.Color;
+import org.pixel.graphics.shader.Shader;
+import org.pixel.graphics.shader.VertexArrayObject;
+import org.pixel.graphics.shader.VertexBufferObject;
+import org.pixel.graphics.shader.standard.MultiTextureShader;
+import org.pixel.math.Matrix4;
+import org.pixel.math.Rectangle;
+import org.pixel.math.Vector2;
 
 public class SpriteBatch extends DrawBatch {
 
@@ -50,19 +52,18 @@ public class SpriteBatch extends DrawBatch {
     private static final Logger log = LoggerFactory.getLogger(SpriteBatch.class);
 
     private static final int BUFFER_UNIT_LENGTH = 256; // maximum sprites per batch
-    private static final int SPRITE_UNIT_LENGTH = 54; // number of attributes information units per sprite (uploadBufferData * each inner put)
+    private static final int SPRITE_UNIT_LENGTH = 54; // number of attribute information units per sprite (uploadBufferData * each inner put)
     private static final int ATTRIBUTE_STRIDE = 36; // attribute stride (bytes) between each vertex info
 
     private static final Matrix4 spriteViewMatrix = new Matrix4();
-    private static final Vector2 tTopLeft = new Vector2();
-    private static final Vector2 tTopRight = new Vector2();
-    private static final Vector2 tBottomRight = new Vector2();
-    private static final Vector2 tBottomLeft = new Vector2();
-    private static final Vector2 bottomLeft = new Vector2();
-    private static final Vector2 bottomRight = new Vector2();
-    private static final Vector2 topLeft = new Vector2();
-    private static final Vector2 topRight = new Vector2();
-
+    private final Vector2 tTopLeft = new Vector2();
+    private final Vector2 tTopRight = new Vector2();
+    private final Vector2 tBottomRight = new Vector2();
+    private final Vector2 tBottomLeft = new Vector2();
+    private final Vector2 bottomLeft = new Vector2();
+    private final Vector2 bottomRight = new Vector2();
+    private final Vector2 topLeft = new Vector2();
+    private final Vector2 topRight = new Vector2();
     private final HashMap<Integer, Integer> shaderTextureMap = new HashMap<>();
     private final VertexBufferObject vbo;
     private final VertexArrayObject vao;
@@ -93,7 +94,7 @@ public class SpriteBatch extends DrawBatch {
     /**
      * Constructor.
      *
-     * @param bufferMaxSize The maximum number of sprites that can be drawn in one batch.
+     * @param bufferMaxSize The maximum number of sprites that can be drawn in a single batch.
      */
     public SpriteBatch(int bufferMaxSize) {
         this(bufferMaxSize, 0);
@@ -102,7 +103,7 @@ public class SpriteBatch extends DrawBatch {
     /**
      * Constructor.
      *
-     * @param bufferMaxSize      The maximum number of sprites that can be drawn in one batch.
+     * @param bufferMaxSize      The maximum number of sprites that can be drawn in a single batch.
      * @param shaderTextureCount The number of textures to be used by the shader (if the parameter is set to '0', the
      *                           value will be set based on the device maximum capacity).
      */
@@ -300,11 +301,11 @@ public class SpriteBatch extends DrawBatch {
         this.uploadBufferData(v3.getX(), v3.getY(), t3.getX(), t3.getY(), color, textureId);
     }
 
-    private void uploadBufferData(float x, float y, float px, float py, Color color, int textureId) {
+    private void uploadBufferData(float x, float y, float tx, float ty, Color color, int textureId) {
         this.dataBuffer.put(x);
         this.dataBuffer.put(y);
-        this.dataBuffer.put(px);
-        this.dataBuffer.put(py);
+        this.dataBuffer.put(tx);
+        this.dataBuffer.put(ty);
         this.dataBuffer.put(color.getRed());
         this.dataBuffer.put(color.getGreen());
         this.dataBuffer.put(color.getBlue());

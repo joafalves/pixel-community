@@ -78,7 +78,7 @@ public class KeyboardInputDemo extends DemoGame {
 
         // Note that 'isKeyPressed()' is also available:
         if (Keyboard.isKeyPressed(KeyboardKey.ESCAPE)) {
-            dispose(); // quit the game...
+            close(); // quit the game...
         }
 
         // Take into consideration that the 'getState()' causes volatile memory which can result in quicker GC cycles
