@@ -38,6 +38,7 @@ public class PrimitiveBatch extends DrawBatch {
     private int bufferMaxSize;
     private int bufferCount;
     private PrimitiveType primitiveType;
+    private boolean running;
 
     /**
      * Constructor.
@@ -86,11 +87,14 @@ public class PrimitiveBatch extends DrawBatch {
         matrixBuffer.clear();
         viewMatrix.writeBuffer(matrixBuffer);
         glUniformMatrix4fv(shader.getUniformLocation("uMatrix"), false, matrixBuffer);
+
+        running = true;
     }
 
     @Override
     public void end() {
         flush();
+        running = false;
     }
 
     @Override
@@ -176,6 +180,11 @@ public class PrimitiveBatch extends DrawBatch {
      * @param bufferMaxSize The maximum number of vertices that can be drawn in a single batch.
      */
     public void setBufferSize(int bufferMaxSize) {
+        if (running) {
+            log.warn("Cannot change buffer size while drawing, discarding...");
+            return;
+        }
+
         this.bufferMaxSize = bufferMaxSize;
     }
 }
