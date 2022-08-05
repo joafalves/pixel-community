@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.lwjgl.opengl.GL11C.GL_TRUE;
-import static org.lwjgl.opengl.GL20.glUseProgram;
 import static org.lwjgl.opengl.GL20C.*;
 
 public abstract class Shader implements Disposable {

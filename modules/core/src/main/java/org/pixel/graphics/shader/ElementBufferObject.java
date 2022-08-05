@@ -5,10 +5,10 @@
 
 package org.pixel.graphics.shader;
 
-import static org.lwjgl.opengl.GL30.GL_ELEMENT_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL30.glBindBuffer;
-import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
-import static org.lwjgl.opengl.GL30.glGenBuffers;
+import static org.lwjgl.opengl.GL30C.GL_ELEMENT_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL30C.glBindBuffer;
+import static org.lwjgl.opengl.GL30C.glDeleteVertexArrays;
+import static org.lwjgl.opengl.GL30C.glGenBuffers;
 
 import org.pixel.commons.lifecycle.Disposable;
 

@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.lwjgl.opengl.GL20.glUniform1f;
+import static org.lwjgl.opengl.GL20C.glUniform1f;
 
 @Getter
 @Setter

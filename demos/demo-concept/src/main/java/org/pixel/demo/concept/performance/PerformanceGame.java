@@ -26,7 +26,7 @@ import org.pixel.math.Vector2;
 
 public class PerformanceGame extends PixelWindow {
 
-    private static final int SPRITE_COUNT = 1024;
+    private static final int SPRITE_COUNT = 30000;
     private static final float SPRITE_MOVEMENT_SPEED = 100f;
     private static final boolean MULTI_TEXTURE = true;
 

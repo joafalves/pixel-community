@@ -13,7 +13,7 @@ import org.pixel.graphics.shader.Shader;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.lwjgl.opengl.GL20.glUniform4f;
+import static org.lwjgl.opengl.GL20C.glUniform4f;
 
 @Getter
 @Setter
