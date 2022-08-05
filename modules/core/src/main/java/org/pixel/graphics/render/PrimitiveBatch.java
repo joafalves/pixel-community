@@ -75,6 +75,12 @@ public class PrimitiveBatch extends DrawBatch {
         this.begin(viewMatrix, PrimitiveType.LINES);
     }
 
+    /**
+     * Begin drawing phase.
+     *
+     * @param viewMatrix The view matrix.
+     * @param type The primitive type.
+     */
     public void begin(Matrix4 viewMatrix, PrimitiveType type) {
         primitiveType = type;
         dataBuffer.clear();
