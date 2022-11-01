@@ -5,16 +5,16 @@
 import org.gradle.internal.os.OperatingSystem
 
 // Pixel Version:
-version = System.properties["PIXEL_RELEASE"];
+version = System.properties["PIXEL_RELEASE"]
 if (version == null) {
-    version = "SNAPSHOT";
+    version = "SNAPSHOT"
 }
 
 project.ext.dependencyMap = [
         lwjgl: "3.3.1",
-        lombok: "1.18.22",
-        junit: "5.8.2",
-        mockito: "4.3.1"
+        lombok: "1.18.24",
+        junit: "5.9.0",
+        mockito: "4.8.0"
 ]
 project.ext.buildTargetList = []
 
