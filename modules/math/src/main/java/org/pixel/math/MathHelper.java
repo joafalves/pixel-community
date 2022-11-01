@@ -131,6 +131,34 @@ public class MathHelper {
     }
 
     /**
+     * Calculates the distance between two points.
+     *
+     * @param x1 The X coordinate of point 1.
+     * @param y1 The Y coordinate of point 1.
+     * @param x2 The X coordinate of point 2.
+     * @param y2 The Y coordinate of point 2.
+     * @return The distance between the two given points.
+     */
+    public static float distance(float x1, float y1, float x2, float y2) {
+        return MathHelper.sqrt(squaredDistance(x1, y1, x2, y2));
+    }
+
+    /**
+     * Calculates the squared distance between two points.
+     *
+     * @param x1 The X coordinate of point 1.
+     * @param y1 The Y coordinate of point 1.
+     * @param x2 The X coordinate of point 2.
+     * @param y2 The Y coordinate of point 2.
+     * @return The squared distance between the two given points.
+     */
+    public static float squaredDistance(float x1, float y1, float x2, float y2) {
+        float vx = x1 - x2;
+        float vy = y1 - y2;
+        return vx * vx + vy * vy;
+    }
+
+    /**
      * Generates a random true or false value.
      *
      * @return True or false.

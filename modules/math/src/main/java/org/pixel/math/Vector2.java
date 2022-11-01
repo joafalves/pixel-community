@@ -584,7 +584,7 @@ public class Vector2 implements Serializable {
      * @return The distance.
      */
     public static float distance(Vector2 vec1, Vector2 vec2) {
-        return (float) Math.sqrt(Vector2.squaredDistance(vec1, vec2));
+        return MathHelper.distance(vec1.getX(), vec1.getY(), vec2.getX(), vec2.getY());
     }
 
     /**
@@ -595,9 +595,7 @@ public class Vector2 implements Serializable {
      * @return The squared distance.
      */
     public static float squaredDistance(Vector2 vec1, Vector2 vec2) {
-        float vx = vec1.getX() - vec2.getX();
-        float vy = vec1.getY() - vec2.getY();
-        return vx * vx + vy * vy;
+        return MathHelper.squaredDistance(vec1.getX(), vec1.getY(), vec2.getX(), vec2.getY());
     }
 
     /**

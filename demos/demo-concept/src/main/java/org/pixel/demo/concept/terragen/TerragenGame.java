@@ -24,7 +24,7 @@ public class TerragenGame extends PixelWindow {
     private final static int TILE_SIZE = 16;
     private final static int COLUMNS = SCREEN_WIDTH / TILE_SIZE;
     private final static int ROWS = SCREEN_HEIGHT / TILE_SIZE;
-    private final static double SCALE = 1.25f;
+    private final static double SCALE = 2;
 
     private Color[][] colorMap;
     private PrimitiveBatch primitiveBatch;
@@ -66,8 +66,8 @@ public class TerragenGame extends PixelWindow {
             for (int y = 0; y < ROWS; y++) {
                 // TODO: simplify the alpha interpolation
                 final var noise = (OpenSimplexNoise.noise2_ImproveX(seed,
-                        (x + px) / (double) COLUMNS * SCALE,
-                        (y + py) / (double) ROWS * SCALE) + 1) / 2f;
+                        (x + (int) px) / (double) COLUMNS * SCALE,
+                        (y + (int) py) / (double) ROWS * SCALE) + 1) / 2f;
                 var alpha = 0f;
                 if (noise < 0.10) { // deep water
                     colorMap[x][y] = new Color(0x2a6080ff);
