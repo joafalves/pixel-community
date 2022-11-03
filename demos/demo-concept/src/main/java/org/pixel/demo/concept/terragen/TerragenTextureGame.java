@@ -38,12 +38,13 @@ public class TerragenTextureGame extends PixelWindow {
 
     private final Logger log = LoggerFactory.getLogger(TerragenGame.class);
 
-    private final static int SCREEN_SIZE = 1024;
-    private final static int COLUMNS = SCREEN_SIZE;
-    private final static int ROWS = SCREEN_SIZE;
+    private final static int SCREEN_WIDTH = 1920;
+    private final static int SCREEN_HEIGHT = 1080;
+    private final static int COLUMNS = SCREEN_WIDTH;
+    private final static int ROWS = SCREEN_HEIGHT;
     private final static double SPECTRUM_SCALE = 1;
-    private final static double FREQUENCY_SCALE = 4;
-    private final static double EXP = 1.0d;
+    private final static double FREQUENCY_SCALE = 2.65;
+    private final static double EXP = 1d;
 
     private final ByteBuffer colorData = BufferUtils.createByteBuffer(COLUMNS * ROWS * 4);
     private final ByteBuffer heightMapData = BufferUtils.createByteBuffer(COLUMNS * ROWS * 4);
@@ -74,8 +75,8 @@ public class TerragenTextureGame extends PixelWindow {
         gameCamera.setOrigin(0);
         fpsCounter = new TitleFpsCounter(this, "Press R to reset seed");
         seed = ThreadLocalRandom.current().nextLong();
-        colorTexture = new Texture(glGenTextures(), SCREEN_SIZE, SCREEN_SIZE);
-        heightMapTexture = new Texture(glGenTextures(), SCREEN_SIZE, SCREEN_SIZE);
+        colorTexture = new Texture(glGenTextures(), SCREEN_WIDTH, SCREEN_HEIGHT);
+        heightMapTexture = new Texture(glGenTextures(), SCREEN_WIDTH, SCREEN_HEIGHT);
 
         setBackgroundColor(Color.BLACK);
 
@@ -105,9 +106,8 @@ public class TerragenTextureGame extends PixelWindow {
                 Terrain.builder().color(new Color(0xCFCFCFff)).minHeight(0.90f).build(),    // mountain top
         };
 
-
         final double[] spectrum = new double[] {SPECTRUM_SCALE, SPECTRUM_SCALE / 2, SPECTRUM_SCALE / 4, SPECTRUM_SCALE / 8, SPECTRUM_SCALE
-                / 16 };
+                / 16, SPECTRUM_SCALE / 32 };
         final double[] amplitudes = new double[spectrum.length];
         final double[] frequencies = new double[spectrum.length];
         double effectiveScale = 0;
@@ -122,9 +122,9 @@ public class TerragenTextureGame extends PixelWindow {
 
         // generate color & height maps
         float min = 1, max = 0;
-        for (int x = 0; x < COLUMNS; x++) {
-            for (int y = 0; y < ROWS; y++) {
-                double nx = x / (double) COLUMNS, ny = y / (double) ROWS;
+        for (int y = 0; y < ROWS; y++) {
+            for (int x = 0; x < COLUMNS; x++) {
+                double nx = x / (double) COLUMNS * (SCREEN_WIDTH / (float) SCREEN_HEIGHT), ny = y / (double) ROWS;
                 double e = 0;
                 for (int i = 0; i < amplitudes.length; i++) {
                     e += amplitudes[i] * noise(nx * frequencies[i], ny * frequencies[i]);
@@ -200,6 +200,8 @@ public class TerragenTextureGame extends PixelWindow {
         } else if (Keyboard.isKeyPressed(KeyboardKey.I)) {
             islandMode = !islandMode;
             generateTextures();
+        } else if (Keyboard.isKeyPressed(KeyboardKey.F)) {
+            toggleFullscreen();
         }
     }
 
@@ -208,12 +210,16 @@ public class TerragenTextureGame extends PixelWindow {
         spriteBatch.begin(gameCamera.getViewMatrix());
 
         if (showHeightOnly) {
-            spriteBatch.draw(heightMapTexture, new Rectangle(0, 0, SCREEN_SIZE, SCREEN_SIZE));
+            spriteBatch.draw(heightMapTexture, new Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT));
         } else {
-            spriteBatch.draw(colorTexture, new Rectangle(0, 0, SCREEN_SIZE, SCREEN_SIZE));
+            spriteBatch.draw(colorTexture, new Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT));
         }
 
         spriteBatch.end();
+
+        if (Keyboard.isKeyPressed(KeyboardKey.P)) {
+            screenshot("C:\\Temp\\out_" + seed + ".png", false);
+        }
     }
 
     @Override
@@ -226,13 +232,13 @@ public class TerragenTextureGame extends PixelWindow {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(SCREEN_SIZE, SCREEN_SIZE);
+        WindowSettings settings = new WindowSettings(SCREEN_WIDTH, SCREEN_HEIGHT);
         settings.setWindowResizable(true);
         settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setDebugMode(false);
-        settings.setWindowWidth(SCREEN_SIZE);
-        settings.setWindowHeight(SCREEN_SIZE);
+        settings.setWindowWidth(SCREEN_WIDTH);
+        settings.setWindowHeight(SCREEN_HEIGHT);
         settings.setIdleThrottle(false);
 
         PixelWindow window = new TerragenTextureGame(settings);

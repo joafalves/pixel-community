@@ -14,17 +14,20 @@ import org.pixel.graphics.PrimitiveType;
 import org.pixel.graphics.render.PrimitiveBatch;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
+import org.pixel.math.MathHelper;
 
 public class TerragenGame extends PixelWindow {
 
     private final Logger log = LoggerFactory.getLogger(TerragenGame.class);
 
-    private final static int SCREEN_WIDTH = 640;
-    private final static int SCREEN_HEIGHT = 640;
-    private final static int TILE_SIZE = 16;
+    private final static int SCREEN_WIDTH = 800;
+    private final static int SCREEN_HEIGHT = 800;
+    private final static int TILE_SIZE = 10;
     private final static int COLUMNS = SCREEN_WIDTH / TILE_SIZE;
     private final static int ROWS = SCREEN_HEIGHT / TILE_SIZE;
-    private final static double SCALE = 2;
+    private final static double SPECTRUM_SCALE = 1;
+    private final static double FREQUENCY_SCALE = 1.25;
+    private final static double EXP = 1d;
 
     private Color[][] colorMap;
     private PrimitiveBatch primitiveBatch;
@@ -60,32 +63,80 @@ public class TerragenGame extends PixelWindow {
         log.info("Noise map initialized in {}ms with seed '{}' (tiles: {}).", elapsed, seed, totalTiles);
     }
 
+    private double noise(double x, double y) {
+        return (OpenSimplexNoise.noise2(seed, x, y) + 1.0) / 2.0;
+    }
+
     private void updateColorMap() {
+        var terrainMap = new Terrain[]{
+                Terrain.builder().color(new Color(0x003EB2ff)).minHeight(0).build(),      // deep water
+                Terrain.builder().color(new Color(0x084BB5ff)).minHeight(0.07f).build(),      // mid water
+                Terrain.builder().color(new Color(0x0952C6ff)).minHeight(0.15f).build(),    // shore water
+                Terrain.builder().color(new Color(0xA49463ff)).minHeight(0.20f).build(),    // near water
+                Terrain.builder().color(new Color(0x867645ff)).minHeight(0.30f).build(),    // transition
+                Terrain.builder().color(new Color(0x3C6114ff)).minHeight(0.40f).build(),    // grass
+                Terrain.builder().color(new Color(0x5A7F32ff)).minHeight(0.55f).build(),    // grass 2
+                Terrain.builder().color(new Color(0x8C8E7Bff)).minHeight(0.70f).build(),    // mountain base
+                Terrain.builder().color(new Color(0xA0A28Fff)).minHeight(0.80f).build(),    // mountain mid
+                Terrain.builder().color(new Color(0xC7C7C7ff)).minHeight(0.85f).build(),    // mountain top
+                Terrain.builder().color(new Color(0xCFCFCFff)).minHeight(0.90f).build(),    // mountain top
+        };
+
         colorMap = new Color[COLUMNS][ROWS];
-        for (int x = 0; x < COLUMNS; x++) {
+
+        // SIMPLE:
+        /*for (int x = 0; x < COLUMNS; x++) {
             for (int y = 0; y < ROWS; y++) {
-                // TODO: simplify the alpha interpolation
-                final var noise = (OpenSimplexNoise.noise2_ImproveX(seed,
-                        (x + (int) px) / (double) COLUMNS * SCALE,
-                        (y + (int) py) / (double) ROWS * SCALE) + 1) / 2f;
-                var alpha = 0f;
-                if (noise < 0.10) { // deep water
-                    colorMap[x][y] = new Color(0x2a6080ff);
-                    alpha = noise / 0.10f;
-                } else if (noise < 0.15) { // shore water
-                    colorMap[x][y] = new Color(0x3a70A0ff);
-                    alpha = noise / 0.15f - 0.10f;
-                } else if (noise < 0.25) { // near water
-                    colorMap[x][y] = new Color(0x12410fff);
-                    alpha = noise / 0.25f - 0.15f;
-                } else if (noise < 0.5) { // grass
-                    colorMap[x][y] = new Color(0x32611fff);
-                    alpha = noise / 0.5f - 0.25f;
-                } else { // deep grass
-                    colorMap[x][y] = new Color(0x22410fff);
-                    alpha = noise - 0.5f;
+                var height = (OpenSimplexNoise.noise2(seed,
+                        (x + px) / (double) COLUMNS * SCALE,
+                        (y + py) / (double) ROWS * SCALE));
+                height = MathHelper.clamp(height, -1.0f, 1f);
+
+                for (int i = terrainMap.length - 1; i >= 0; i--) {
+                    if (height >= terrainMap[i].getMinHeight()) {
+                        colorMap[x][y] = terrainMap[i].getColor();
+                        break;
+                    }
                 }
-                colorMap[x][y].setAlpha(0.7f + (0.3f * alpha));
+            }
+        }*/
+
+        final double[] spectrum = new double[]{SPECTRUM_SCALE, SPECTRUM_SCALE / 2, SPECTRUM_SCALE / 4,
+                SPECTRUM_SCALE / 8, SPECTRUM_SCALE
+                / 16, SPECTRUM_SCALE / 32};
+        final double[] amplitudes = new double[spectrum.length];
+        final double[] frequencies = new double[spectrum.length];
+        double effectiveScale = 0;
+        for (int octave = 0, exponent = 1; octave < spectrum.length; octave++, exponent *= 2) {
+            effectiveScale += spectrum[octave];
+            amplitudes[octave] = spectrum[octave];
+            frequencies[octave] = exponent * FREQUENCY_SCALE;
+        }
+        for (int octave = 0; octave < spectrum.length; octave++) {
+            amplitudes[octave] = amplitudes[octave] / effectiveScale;
+        }
+
+        for (int y = 0; y < ROWS; y++) {
+            for (int x = 0; x < COLUMNS; x++) {
+                double nx = x / (double) COLUMNS * (SCREEN_WIDTH / (float) SCREEN_HEIGHT), ny = y / (double) ROWS;
+                double e = 0;
+                for (int i = 0; i < amplitudes.length; i++) {
+                    e += amplitudes[i] * noise((nx + px) * frequencies[i], (ny + py) * frequencies[i]);
+                }
+                float height = (float) e;
+
+                if (EXP != 1.0) {
+                    height = MathHelper.pow(height, 2.0f); // redistribution
+                }
+
+                height = MathHelper.clamp(height, 0f, 1f);
+
+                for (int i = terrainMap.length - 1; i >= 0; i--) {
+                    if (height >= terrainMap[i].getMinHeight()) {
+                        colorMap[x][y] = terrainMap[i].getColor();
+                        break;
+                    }
+                }
             }
         }
     }
@@ -95,8 +146,8 @@ public class TerragenGame extends PixelWindow {
         fpsCounter.update(delta);
 
         if (!Keyboard.isKeyDown(KeyboardKey.P)) {
-            px += delta.getElapsed() * 10f;
-            py += delta.getElapsed() * 10f;
+            px += delta.getElapsed() * .1f;
+            py += delta.getElapsed() * .1f;
             updateColorMap();
         }
 
