@@ -135,7 +135,7 @@ public class TerragenGame extends PixelWindow {
         WindowSettings settings = new WindowSettings(SCREEN_WIDTH, SCREEN_HEIGHT);
         settings.setWindowResizable(true);
         settings.setMultisampling(2);
-        settings.setVsync(false);
+        settings.setVsync(true);
         settings.setDebugMode(false);
         settings.setWindowWidth(SCREEN_WIDTH);
         settings.setWindowHeight(SCREEN_HEIGHT);
