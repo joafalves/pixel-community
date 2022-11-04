@@ -2,11 +2,12 @@ package org.pixel.ext.ecs;
 
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.Drawable;
+import org.pixel.commons.lifecycle.Loadable;
 import org.pixel.commons.lifecycle.Updatable;
 import org.pixel.core.Camera2D;
 import org.pixel.graphics.render.SpriteBatch;
 
-public class GameScene extends GameObjectContainer implements Updatable, Drawable {
+public class GameScene extends GameObjectContainer implements Loadable, Updatable, Drawable {
 
     private SpriteBatch spriteBatch;
     private Camera2D gameCamera;
@@ -32,6 +33,11 @@ public class GameScene extends GameObjectContainer implements Updatable, Drawabl
         super(name);
         this.gameCamera = gameCamera;
         this.spriteBatch = spriteBatch;
+    }
+
+    @Override
+    public void load() {
+        // intentionally empty
     }
 
     @Override

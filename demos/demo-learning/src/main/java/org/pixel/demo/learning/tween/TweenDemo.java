@@ -34,6 +34,11 @@ public class TweenDemo extends PixelWindow {
     }
 
     @Override
+    public void start() {
+        super.start();
+    }
+
+    @Override
     public void load() {
         contentManager = new ContentManager();
         spriteBatch = new SpriteBatch();

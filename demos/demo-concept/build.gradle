@@ -5,8 +5,8 @@
 import org.gradle.internal.os.OperatingSystem
 
 plugins {
-    id 'application'
-    id 'edu.sc.seis.launch4j' version '2.5.0'
+    id "application"
+    id "edu.sc.seis.launch4j" version "2.5.0"
 }
 
 dependencies {

@@ -15,12 +15,14 @@ public class Tween implements Updatable {
     private static final Logger log = LoggerFactory.getLogger(Tween.class);
 
     private boolean enabled;
+    private String name;
     private TweenPhaseListener listener;
     private TweenEasingExecutor easingExecutors;
     private TweenLoopMode loopMode;
     private float[] start;
     private float[] end;
     private float[] current;
+    private float pauseDelay;
     private float elapsedSeconds;
     private float durationInSeconds;
 
@@ -31,11 +33,13 @@ public class Tween implements Updatable {
      */
     public Tween(float... start) {
         this.start = start;
+        this.end = start;
         this.enabled = true;
         this.durationInSeconds = 1;
         this.easingExecutors = TweenEasingFactory.getExecutor(TweenEasingMode.LINEAR);
         this.loopMode = TweenLoopMode.NONE;
-        this.elapsedSeconds = 0;
+        this.pauseDelay = 0;
+        this.reset();
     }
 
     /**
@@ -45,21 +49,32 @@ public class Tween implements Updatable {
      */
     public <T> Tween(T start) {
         this.from(start);
+        this.to(start);
         if (this.start == null) {
             throw new IllegalArgumentException("The provided instance is not supported: " + start.getClass().getName());
         }
         this.enabled = true;
         this.durationInSeconds = 1;
+        this.pauseDelay = 0;
         this.easingExecutors = TweenEasingFactory.getExecutor(TweenEasingMode.LINEAR);
         this.loopMode = TweenLoopMode.NONE;
-        this.elapsedSeconds = 0;
+        this.reset();
     }
 
     @Override
     public void update(DeltaTime delta) {
-        if (!enabled) return;
+        if (!enabled) {
+            return;
+        }
         if (current == null || current.length != start.length) {
             current = new float[start.length];
+        }
+
+        if (pauseDelay > 0) {
+            pauseDelay -= delta.getElapsed();
+            if (pauseDelay > 0) {
+                return;
+            }
         }
 
         float elapsedTmp = Math.min(elapsedSeconds + delta.getElapsed(), durationInSeconds);
@@ -118,7 +133,7 @@ public class Tween implements Updatable {
      */
     public void restart() {
         this.enabled = true;
-        this.elapsedSeconds = 0;
+        reset();
     }
 
     /**
@@ -126,7 +141,16 @@ public class Tween implements Updatable {
      */
     public void stop() {
         this.enabled = false;
-        this.elapsedSeconds = 0;
+        reset();
+    }
+
+    /**
+     * Pause the tween until the given seconds elapse.
+     *
+     * @param seconds The number of seconds that the tween shall pause.
+     */
+    public void pause(float seconds) {
+        this.pauseDelay = seconds;
     }
 
     /**
@@ -144,9 +168,20 @@ public class Tween implements Updatable {
     }
 
     /**
-     * Set the listener to be notified when the tween state changes.
+     * Set the name of this tween.
      *
-     * @param listener The listener to be notified.
+     * @param name The name of this tween.
+     * @return This instance.
+     */
+    public Tween name(String name) {
+        this.name = name;
+        return this;
+    }
+
+    /**
+     * Set the listener to be triggered when the tween state changes.
+     *
+     * @param listener The listener.
      * @return This instance.
      */
     public Tween on(TweenPhaseListener listener) {
@@ -236,7 +271,8 @@ public class Tween implements Updatable {
         if (instance instanceof Vector2) {
             this.start = new float[]{((Vector2) instance).getX(), ((Vector2) instance).getY()};
         } else if (instance instanceof Vector3) {
-            this.start = new float[]{((Vector3) instance).getX(), ((Vector3) instance).getY(), ((Vector3) instance).getZ()};
+            this.start = new float[]{((Vector3) instance).getX(), ((Vector3) instance).getY(),
+                    ((Vector3) instance).getZ()};
         } else {
             log.warn("Unsupported instance type '{}'.", instance.getClass().getName());
         }
@@ -269,12 +305,22 @@ public class Tween implements Updatable {
         if (instance instanceof Vector2) {
             this.end = new float[]{((Vector2) instance).getX(), ((Vector2) instance).getY()};
         } else if (instance instanceof Vector3) {
-            this.end = new float[]{((Vector3) instance).getX(), ((Vector3) instance).getY(), ((Vector3) instance).getZ()};
+            this.end = new float[]{((Vector3) instance).getX(), ((Vector3) instance).getY(),
+                    ((Vector3) instance).getZ()};
         } else {
             log.warn("Unsupported instance type '{}'.", instance.getClass().getName());
         }
 
         return this;
+    }
+
+    /**
+     * Get the name of this tween.
+     *
+     * @return The name of this tween or null if not assigned.
+     */
+    public String getName() {
+        return this.name;
     }
 
     /**
@@ -317,5 +363,9 @@ public class Tween implements Updatable {
         } else {
             log.warn("Unsupported container type '{}'.", container.getClass().getName());
         }
+    }
+
+    private void reset() {
+        elapsedSeconds = 0;
     }
 }

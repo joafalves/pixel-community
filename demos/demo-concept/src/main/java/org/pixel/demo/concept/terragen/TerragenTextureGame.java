@@ -38,8 +38,8 @@ public class TerragenTextureGame extends PixelWindow {
 
     private final Logger log = LoggerFactory.getLogger(TerragenGame.class);
 
-    private final static int SCREEN_WIDTH = 1920;
-    private final static int SCREEN_HEIGHT = 1080;
+    private final static int SCREEN_WIDTH = 1280;
+    private final static int SCREEN_HEIGHT = 720;
     private final static int COLUMNS = SCREEN_WIDTH;
     private final static int ROWS = SCREEN_HEIGHT;
     private final static double SPECTRUM_SCALE = 1;
@@ -58,6 +58,7 @@ public class TerragenTextureGame extends PixelWindow {
     private boolean baseHeightModeToggle = false;
     private boolean showHeightOnly = false;
     private boolean islandMode = true;
+    private boolean noiseMode = false;
 
     /**
      * Constructor.
@@ -88,13 +89,17 @@ public class TerragenTextureGame extends PixelWindow {
     }
 
     private double noise(double x, double y) {
+        if (noiseMode) {
+            return (OpenSimplexNoise.noise2_ImproveX(seed, x, y) + 1.0) / 2.0;
+        }
+
         return (OpenSimplexNoise.noise2(seed, x, y) + 1.0) / 2.0;
     }
 
     private void generateTextures() {
         var terrainMap = new Terrain[]{
-                Terrain.builder().color(new Color(0x003EB2ff)).minHeight(0).build(),      // deep water
-                Terrain.builder().color(new Color(0x084BB5ff)).minHeight(0.07f).build(),      // mid water
+                Terrain.builder().color(new Color(0x003EB2ff)).minHeight(0).build(),        // deep water
+                Terrain.builder().color(new Color(0x084BB5ff)).minHeight(0.07f).build(),    // mid water
                 Terrain.builder().color(new Color(0x0952C6ff)).minHeight(0.15f).build(),    // shore water
                 Terrain.builder().color(new Color(0xA49463ff)).minHeight(0.20f).build(),    // near water
                 Terrain.builder().color(new Color(0x867645ff)).minHeight(0.30f).build(),    // transition
@@ -202,6 +207,9 @@ public class TerragenTextureGame extends PixelWindow {
             generateTextures();
         } else if (Keyboard.isKeyPressed(KeyboardKey.F)) {
             toggleFullscreen();
+        } else if (Keyboard.isKeyPressed(KeyboardKey.N)) {
+            noiseMode = !noiseMode;
+            generateTextures();
         }
     }
 
@@ -218,7 +226,7 @@ public class TerragenTextureGame extends PixelWindow {
         spriteBatch.end();
 
         if (Keyboard.isKeyPressed(KeyboardKey.P)) {
-            screenshot("C:\\Temp\\out_" + seed + ".png", false);
+            screenshot("./out_" + seed + ".png", false);
         }
     }
 

@@ -62,6 +62,28 @@ public class Font implements Disposable {
      */
     public Font(FontData fontData) {
         this.fontData = fontData;
+        this.fontSize = 24;
+        this.horizontalSpacing = 0;
+        this.verticalSpacing = 0;
+        this.oversampling = 1;
+        this.init();
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param fontData          The font data.
+     * @param fontSize          The initial font size.
+     * @param horizontalSpacing The horizontal spacing.
+     * @param verticalSpacing   The vertical spacing.
+     * @param oversampling      The oversampling.
+     */
+    public Font(FontData fontData, int fontSize, int horizontalSpacing, int verticalSpacing, int oversampling) {
+        this.fontData = fontData;
+        this.fontSize = fontSize;
+        this.horizontalSpacing = horizontalSpacing;
+        this.verticalSpacing = verticalSpacing;
+        this.oversampling = oversampling;
         this.init();
     }
 
@@ -70,11 +92,7 @@ public class Font implements Disposable {
     //region Private Functions
 
     private void init() {
-        this.fontSize = 32;
         this.textureId = -1;
-        this.horizontalSpacing = 0;
-        this.verticalSpacing = 0;
-        this.oversampling = 1;
         this.packedBuffer = STBTTPackedchar.malloc(6 * 128);
         this.glyphCache = new ConcurrentHashMap<>();
         this.computeFontData();

@@ -6,7 +6,7 @@ import org.gradle.internal.os.OperatingSystem
 
 // Pixel Version:
 version = System.properties["PIXEL_RELEASE"]
-if (version == null) {
+if (version == null || version == "unspecified") {
     version = "SNAPSHOT"
 }
 

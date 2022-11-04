@@ -556,6 +556,15 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
     }
 
     /**
+     * Gets the debug state value.
+     *
+     * @return Returns 'true' if debug mode is enabled.
+     */
+    public boolean isDebugMode() {
+        return debugMode;
+    }
+
+    /**
      * Get the window dimensions.
      *
      * @return The window dimensions.
