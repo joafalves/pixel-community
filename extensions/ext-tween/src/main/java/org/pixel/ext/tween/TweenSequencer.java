@@ -23,6 +23,7 @@ public class TweenSequencer implements Updatable {
     @Override
     public void update(DeltaTime delta) {
         if (!enabled || currentTween >= tweenSequence.length) {
+            enabled = false;
             return;
         }
 
@@ -35,9 +36,40 @@ public class TweenSequencer implements Updatable {
                 }
                 return;
             }
+            tweenSequence[currentTween].restart();
         }
 
         tweenSequence[currentTween].update(delta);
+    }
+
+    /**
+     * Set the tween as active for the next update and resets the sequence progression.
+     */
+    public void restart() {
+        this.enabled = true;
+        this.currentTween = 0;
+    }
+
+    /**
+     * Set the tween as disabled for the next update and resets the sequence progression.
+     */
+    public void stop() {
+        this.enabled = false;
+        this.currentTween = 0;
+    }
+
+    /**
+     * Set the tween sequencer as disabled for the next update.
+     */
+    public void pause() {
+        this.enabled = false;
+    }
+
+    /**
+     * Sets the tween sequencer as active for the next update.
+     */
+    public void play() {
+        this.enabled = true;
     }
 
     /**
@@ -64,6 +96,15 @@ public class TweenSequencer implements Updatable {
     }
 
     /**
+     * Get the currently assigned tween sequence.
+     *
+     * @return The currently assigned tween sequence.
+     */
+    public Tween[] getTweenSequence() {
+        return tweenSequence;
+    }
+
+    /**
      * Get the active tween at the moment of calling the function.
      *
      * @return The active tween or null if none is active.
@@ -74,5 +115,18 @@ public class TweenSequencer implements Updatable {
         }
 
         return tweenSequence[currentTween];
+    }
+
+    /**
+     * Get the active tween index.
+     *
+     * @return The active tween index or '-1' if none is active.
+     */
+    public int getActiveTweenIndex() {
+        if (!enabled || currentTween >= tweenSequence.length) {
+            return -1;
+        }
+
+        return currentTween;
     }
 }
