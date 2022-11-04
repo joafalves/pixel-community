@@ -28,7 +28,7 @@ public class TweenSequencer implements Updatable {
         }
 
         if (!tweenSequence[currentTween].isPlaying()) {
-            currentTween++;
+            changeCurrentTween(currentTween + 1);
             if (currentTween >= tweenSequence.length) {
                 enabled = false;
                 if (listener != null) {
@@ -36,7 +36,6 @@ public class TweenSequencer implements Updatable {
                 }
                 return;
             }
-            tweenSequence[currentTween].restart();
         }
 
         tweenSequence[currentTween].update(delta);
@@ -46,16 +45,16 @@ public class TweenSequencer implements Updatable {
      * Set the tween as active for the next update and resets the sequence progression.
      */
     public void restart() {
+        this.changeCurrentTween(0);
         this.enabled = true;
-        this.currentTween = 0;
     }
 
     /**
      * Set the tween as disabled for the next update and resets the sequence progression.
      */
     public void stop() {
+        this.changeCurrentTween(0);
         this.enabled = false;
-        this.currentTween = 0;
     }
 
     /**
@@ -79,8 +78,8 @@ public class TweenSequencer implements Updatable {
      * @return This instance.
      */
     public TweenSequencer set(Tween... tweenSequence) {
-        this.currentTween = 0;
         this.tweenSequence = tweenSequence;
+        this.changeCurrentTween(0);
         return this;
     }
 
@@ -128,5 +127,13 @@ public class TweenSequencer implements Updatable {
         }
 
         return currentTween;
+    }
+
+    private void changeCurrentTween(int index) {
+        this.currentTween = index;
+        if (currentTween < tweenSequence.length) {
+            tweenSequence[currentTween].loopMode(TweenLoopMode.NONE);
+            tweenSequence[currentTween].restart();
+        }
     }
 }
