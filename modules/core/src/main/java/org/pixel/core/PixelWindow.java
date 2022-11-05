@@ -240,7 +240,11 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
         glDisable(GL_CULL_FACE);
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
-        glEnable(GL_MULTISAMPLE); // Should be enabled by default but let's be safe
+        if (multisampling > 0) {
+            glEnable(GL_MULTISAMPLE);
+        } else {
+            glDisable(GL_MULTISAMPLE);
+        }
         glEnable(GL_STENCIL_TEST);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
