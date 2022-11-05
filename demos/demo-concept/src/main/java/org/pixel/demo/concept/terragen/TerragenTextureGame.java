@@ -26,7 +26,7 @@ import org.pixel.content.Texture;
 import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
-import org.pixel.demo.concept.commons.TitleFpsCounter;
+import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.keyboard.Keyboard;
@@ -53,7 +53,7 @@ public class TerragenTextureGame extends PixelWindow {
     private Texture heightMapTexture;
     private SpriteBatch spriteBatch;
     private Camera2D gameCamera;
-    private TitleFpsCounter fpsCounter;
+    private FpsCounter fpsCounter;
     private long seed;
     private boolean baseHeightModeToggle = false;
     private boolean showHeightOnly = false;
@@ -74,7 +74,7 @@ public class TerragenTextureGame extends PixelWindow {
         spriteBatch = new SpriteBatch();
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
-        fpsCounter = new TitleFpsCounter(this, "Press R to reset seed");
+        fpsCounter = new FpsCounter(this, "Press R to reset seed");
         seed = ThreadLocalRandom.current().nextLong();
         colorTexture = new Texture(glGenTextures(), SCREEN_WIDTH, SCREEN_HEIGHT);
         heightMapTexture = new Texture(glGenTextures(), SCREEN_WIDTH, SCREEN_HEIGHT);

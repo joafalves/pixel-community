@@ -330,8 +330,24 @@ public class Tween implements Updatable {
      * @return The current value.
      */
     public float getValue(int index) {
-        if (index > current.length) {
+        if (index >= current.length) {
             throw new IllegalArgumentException("Index out of bounds.");
+        }
+
+        return current[index];
+    }
+
+    /**
+     * Get the current value of this instance at the given index or return the given default value if index is out of
+     * bounds.
+     *
+     * @param index        The index.
+     * @param defaultValue The default value.
+     * @return The current value or the default value if the index is out of bounds.
+     */
+    public float getValue(int index, float defaultValue) {
+        if (index >= current.length) {
+            return defaultValue;
         }
 
         return current[index];

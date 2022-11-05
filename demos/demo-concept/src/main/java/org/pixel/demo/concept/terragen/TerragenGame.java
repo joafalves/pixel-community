@@ -8,7 +8,7 @@ import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
-import org.pixel.demo.concept.commons.TitleFpsCounter;
+import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.PrimitiveType;
 import org.pixel.graphics.render.PrimitiveBatch;
@@ -32,7 +32,7 @@ public class TerragenGame extends PixelWindow {
     private Color[][] colorMap;
     private PrimitiveBatch primitiveBatch;
     private Camera2D gameCamera;
-    private TitleFpsCounter fpsCounter;
+    private FpsCounter fpsCounter;
     private long seed;
     private float px, py;
 
@@ -50,7 +50,7 @@ public class TerragenGame extends PixelWindow {
         primitiveBatch = new PrimitiveBatch(768);
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
-        fpsCounter = new TitleFpsCounter(this, "Press R to reset seed");
+        fpsCounter = new FpsCounter(this, "Press R to reset seed");
         seed = ThreadLocalRandom.current().nextLong();
         px = 0;
         py = 0;

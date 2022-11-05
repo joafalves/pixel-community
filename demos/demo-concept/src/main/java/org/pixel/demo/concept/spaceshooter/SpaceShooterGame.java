@@ -7,7 +7,7 @@ import org.pixel.content.Texture;
 import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
-import org.pixel.demo.concept.commons.TitleFpsCounter;
+import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.demo.concept.commons.component.PlayerBoundaryComponent;
 import org.pixel.demo.concept.spaceshooter.component.CollisionHandlingComponent;
 import org.pixel.demo.concept.spaceshooter.component.PlayerInputComponent;
@@ -31,7 +31,7 @@ public class SpaceShooterGame extends PixelWindow {
 
     public static final EventDispatcher $ = new EventDispatcher();
 
-    private TitleFpsCounter fpsCounter;
+    private FpsCounter fpsCounter;
     private Camera2D gameCamera;
     private ContentManager content;
 
@@ -45,7 +45,7 @@ public class SpaceShooterGame extends PixelWindow {
 
     @Override
     public void load() {
-        fpsCounter = new TitleFpsCounter(this);
+        fpsCounter = new FpsCounter(this);
         content = new ContentManager();
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);

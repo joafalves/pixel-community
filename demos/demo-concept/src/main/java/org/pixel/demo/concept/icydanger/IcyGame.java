@@ -8,7 +8,7 @@ import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.concept.commons.PlayerIndex;
-import org.pixel.demo.concept.commons.TitleFpsCounter;
+import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.demo.concept.commons.component.PlayerBoundaryComponent;
 import org.pixel.demo.concept.icydanger.component.FlashAnimationComponent;
 import org.pixel.demo.concept.icydanger.component.PlayerMovementComponent;
@@ -42,7 +42,7 @@ public class IcyGame extends PixelWindow {
     private Text playerOnePoints;
     private Text playerTwoPoints;
 
-    private TitleFpsCounter fpsCounter;
+    private FpsCounter fpsCounter;
     private List<Rectangle> staticCollisionList;
 
     public IcyGame(WindowSettings settings) {
@@ -51,7 +51,7 @@ public class IcyGame extends PixelWindow {
 
     @Override
     public void load() {
-        fpsCounter = new TitleFpsCounter(this);
+        fpsCounter = new FpsCounter(this);
         contentManager = new ContentManager();
         contentManager.addContentImporter(new LdtkGameWorldImporter());
         gameCamera = new Camera2D(this);

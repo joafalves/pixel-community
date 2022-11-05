@@ -13,7 +13,7 @@ import org.pixel.content.Texture;
 import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
-import org.pixel.demo.concept.commons.TitleFpsCounter;
+import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.demo.concept.performance.component.ConstantVelocityBoundComponent;
 import org.pixel.ext.ecs.GameScene;
 import org.pixel.ext.ecs.Sprite;
@@ -26,12 +26,12 @@ import org.pixel.math.Vector2;
 
 public class PerformanceGame extends PixelWindow {
 
-    private static final int SPRITE_COUNT = 10000;
+    private static final int SPRITE_COUNT = 5000;
     private static final float SPRITE_MOVEMENT_SPEED = 100f;
     private static final boolean MULTI_TEXTURE = true;
 
     private ContentManager contentManager;
-    private TitleFpsCounter fpsCounter;
+    private FpsCounter fpsCounter;
     private GameScene gameScene;
     private SpriteBatch spriteBatch;
 
@@ -41,7 +41,7 @@ public class PerformanceGame extends PixelWindow {
 
     @Override
     public void load() {
-        fpsCounter = new TitleFpsCounter(this);
+        fpsCounter = new FpsCounter(this);
         contentManager = new ContentManager();
         spriteBatch = new SpriteBatch();
         gameScene = new GameScene("GameScene01", new Camera2D(this, Vector2.zero()), spriteBatch);
