@@ -47,7 +47,7 @@ public class MathHelper {
     }
 
     /**
-     * Returns the largest (closest to positive infinity) double value that is less than or equal to the argument and is
+     * Returns the largest (closest to positive infinity) float value that is less than or equal to the argument and is
      * equal to a mathematical integer. Special cases:
      *
      * @param value The value.
@@ -58,7 +58,18 @@ public class MathHelper {
     }
 
     /**
-     * Returns the smallest (closest to negative infinity) double value that is greater than or equal to the argument
+     * Returns the largest (closest to positive infinity) double value that is less than or equal to the argument and is
+     * equal to a mathematical integer. Special cases:
+     *
+     * @param value The value.
+     * @return The largest integer less than or equal to the argument.
+     */
+    public static double floor(double value) {
+        return StrictMath.floor(value);
+    }
+
+    /**
+     * Returns the smallest (closest to negative infinity) float value that is greater than or equal to the argument
      * and is equal to a mathematical integer. Special cases:
      *
      * @param value The value.
@@ -66,6 +77,37 @@ public class MathHelper {
      */
     public static float ceil(float value) {
         return (float) StrictMath.ceil(value);
+    }
+
+    /**
+     * Returns the smallest (closest to negative infinity) double value that is greater than or equal to the argument
+     * and is equal to a mathematical integer. Special cases:
+     *
+     * @param value The value.
+     * @return The smallest integer greater than or equal to the argument.
+     */
+    public static double ceil(double value) {
+        return StrictMath.ceil(value);
+    }
+
+    /**
+     * Returns the round float value of the given argument.
+     *
+     * @param value The value.
+     * @return The round float value of the given argument.
+     */
+    public static float round(float value) {
+        return (float) StrictMath.round(value);
+    }
+
+    /**
+     * Returns the round double value of the given argument.
+     *
+     * @param value The value.
+     * @return The round float value of the given argument.
+     */
+    public static double round(double value) {
+        return StrictMath.round(value);
     }
 
     /**
@@ -264,6 +306,18 @@ public class MathHelper {
      * @return The clamped value.
      */
     public static float clamp(float value, float min, float max) {
+        return value < min ? min : value > max ? max : value;
+    }
+
+    /**
+     * Clamps the given value between the given min and max values.
+     *
+     * @param value The value to clamp.
+     * @param min   The minimum value.
+     * @param max   The maximum value.
+     * @return The clamped value.
+     */
+    public static double clamp(double value, double min, double max) {
         return value < min ? min : value > max ? max : value;
     }
 
