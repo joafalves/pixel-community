@@ -6,7 +6,7 @@
 
 ### What is this repository for? ###
 
-This repository contains the Pixel Java Framework and associated modules/dependencies.
+This repository contains the Pixel Framework and associated modules/dependencies.
 
 ### Description ###
 
@@ -16,9 +16,9 @@ and [GLFW](https://www.glfw.org/) projects.
 
 > :book: For practical details on how to use this framework, please check the [wiki page](https://github.com/joafalves/pixel-community/wiki).
 
-Pixel is designed to be modular and easy to extend.
-Check [here](https://github.com/joafalves/pixel-community/wiki/E.-Extensions-Overview) for more details on how to use
-the available extensions (or how to create your own).
+Pixel is designed to be modular and easy to extend. Check 
+[here](https://github.com/joafalves/pixel-community/wiki/E.-Extensions-Overview) for more details on how to use the 
+available extensions (or how to create your own).
 
 ### Examples ##
 
@@ -120,8 +120,8 @@ The framework functionality is divided into multiple modules which can be import
 
 ### Development requirements ###
 
-- Java 11+
-- Gradle 7.x+
+- Java/JVM 11+
+- Gradle 7.x+ (gradle wrapper available)
 
 ### Runtime OS compatibility ###
 
@@ -135,7 +135,7 @@ Pretty much the same as the [LWJGL](https://www.lwjgl.org/) dependency, which in
 
 ### FAQ ###
 
-1. I'm unable to run Pixel on MacOS due to system error
+1. I'm unable to run Pixel on MacOS due to system error.
     - Add `-XstartOnFirstThread` as a java VM Option before running your project.
 2. Is Pixel compatible with Kotlin?
     - Yes, Pixel is fully compatible with Kotlin. Check
