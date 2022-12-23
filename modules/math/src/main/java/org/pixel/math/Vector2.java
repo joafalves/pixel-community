@@ -503,6 +503,19 @@ public class Vector2 implements Serializable {
     }
 
     /**
+     * Adds the vector by a given value and returns the result as a new instance.
+     *
+     * @param a The vector.
+     * @param b The value.
+     * @return The result of the addition.
+     */
+    public static Vector2 add(Vector2 a, float b) {
+        Vector2 vec = new Vector2(a);
+        vec.add(b);
+        return vec;
+    }
+
+    /**
      * Subtracts two vectors and returns the result as a new instance.
      *
      * @param a The first vector.
@@ -510,6 +523,19 @@ public class Vector2 implements Serializable {
      * @return The result of the subtraction.
      */
     public static Vector2 subtract(Vector2 a, Vector2 b) {
+        Vector2 vec = new Vector2(a);
+        vec.subtract(b);
+        return vec;
+    }
+
+    /**
+     * Subtracts the vector by a given value and returns the result as a new instance.
+     *
+     * @param a The vector.
+     * @param b The value.
+     * @return The result of the subtraction.
+     */
+    public static Vector2 subtract(Vector2 a, float b) {
         Vector2 vec = new Vector2(a);
         vec.subtract(b);
         return vec;
@@ -525,6 +551,45 @@ public class Vector2 implements Serializable {
     public static Vector2 multiply(Vector2 a, Vector2 b) {
         Vector2 vec = new Vector2(a);
         vec.multiply(b);
+        return vec;
+    }
+
+    /**
+     * Multiplies the vector by a given value and returns the result as a new instance.
+     *
+     * @param a The vector.
+     * @param b The value.
+     * @return The result of the multiplication.
+     */
+    public static Vector2 multiply(Vector2 a, float b) {
+        Vector2 vec = new Vector2(a);
+        vec.multiply(b);
+        return vec;
+    }
+
+    /**
+     * Divides two vectors and returns the result as a new instance.
+     *
+     * @param a The first vector.
+     * @param b The second vector.
+     * @return The result of the division.
+     */
+    public static Vector2 divide(Vector2 a, Vector2 b) {
+        Vector2 vec = new Vector2(a);
+        vec.divide(b);
+        return vec;
+    }
+
+    /**
+     * Divides the vector by a given value and returns the result as a new instance.
+     *
+     * @param a The vector.
+     * @param b The value.
+     * @return The result of the division.
+     */
+    public static Vector2 divide(Vector2 a, float b) {
+        Vector2 vec = new Vector2(a);
+        vec.divide(b);
         return vec;
     }
 
@@ -550,19 +615,6 @@ public class Vector2 implements Serializable {
      */
     public static float dot(float ax, float ay, float bx, float by) {
         return ax * bx + ay * by;
-    }
-
-    /**
-     * Divides two vectors and returns the result as a new instance.
-     *
-     * @param a The first vector.
-     * @param b The second vector.
-     * @return The result of the division.
-     */
-    public static Vector2 divide(Vector2 a, Vector2 b) {
-        Vector2 vec = new Vector2(a);
-        vec.divide(b);
-        return vec;
     }
 
     /**
