@@ -67,7 +67,7 @@ public class NvgRenderEngine extends RenderEngine2D {
             return;
         }
 
-        int fontRef = nvgCreateFontMem(ctx, fontName, fontData, 0);
+        int fontRef = nvgCreateFontMem(ctx, fontName, fontData, false);
         if (fontRef >= 0) {
             fontMapping.put(fontName, fontRef);
             fontBufferMapping.put(fontName, fontData);
