@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 
 public class EventDispatcher {
 
+    private static final EventDispatcher defaultDispatcher = new EventDispatcher();
+
     private final ConcurrentHashMap<String, List<EventListenerDispatcher>> listenerMap;
 
     /**
@@ -14,6 +16,15 @@ public class EventDispatcher {
      */
     public EventDispatcher() {
         this.listenerMap = new ConcurrentHashMap<>();
+    }
+
+    /**
+     * Returns the default event dispatcher.
+     *
+     * @return The default event dispatcher.
+     */
+    public static EventDispatcher getDefault() {
+        return defaultDispatcher;
     }
 
     /**
