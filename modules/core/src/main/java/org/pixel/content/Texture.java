@@ -5,11 +5,9 @@
 
 package org.pixel.content;
 
-import static org.lwjgl.opengl.GL11C.glDeleteTextures;
-
 import org.pixel.commons.lifecycle.Disposable;
 
-public class Texture implements Disposable {
+public abstract class Texture implements Disposable {
 
     //region properties
 
@@ -78,11 +76,7 @@ public class Texture implements Disposable {
      * Disposes the Texture (attention: this will unbind the rendering texture from memory).
      */
     @Override
-    public void dispose() {
-        if (this.id >= 0) {
-            glDeleteTextures(this.id);
-        }
-    }
+    public abstract void dispose();
 
     //endregion
 

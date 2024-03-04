@@ -65,6 +65,7 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.Texture;
+import org.pixel.content.opengl.GLTexture;
 import org.pixel.graphics.shader.Shader;
 import org.pixel.math.SizeInt;
 
@@ -121,7 +122,7 @@ public class ShaderPostProcessor implements PostProcessor {
         }
 
         if (texture == null) {
-            texture = new Texture(glGenTextures());
+            texture = new GLTexture(glGenTextures());
             glBindTexture(GL_TEXTURE_2D, texture.getId());
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);

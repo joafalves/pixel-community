@@ -11,6 +11,7 @@ import org.pixel.content.Font;
 import org.pixel.content.FontData;
 import org.pixel.content.ImportContext;
 import org.pixel.content.importer.settings.FontImporterSettings;
+import org.pixel.content.opengl.GLFont;
 
 @ContentImporterInfo(type = Font.class, extension = {".ttf", ".otf"})
 public class FontImporter implements ContentImporter<Font> {
@@ -21,10 +22,10 @@ public class FontImporter implements ContentImporter<Font> {
 
         if (ctx.getSettings() instanceof FontImporterSettings) {
             var settings = (FontImporterSettings) ctx.getSettings();
-            return new Font(fontData, settings.getFontSize(), settings.getHorizontalSpacing(),
+            return new GLFont(fontData, settings.getFontSize(), settings.getHorizontalSpacing(),
                     settings.getVerticalSpacing(), settings.getOversampling());
         }
 
-        return new Font(fontData);
+        return new GLFont(fontData);
     }
 }

@@ -5,51 +5,34 @@
 
 package org.pixel.content;
 
-import static org.lwjgl.BufferUtils.createByteBuffer;
-import static org.lwjgl.opengl.GL11C.GL_LINEAR;
-import static org.lwjgl.opengl.GL11C.GL_RGBA;
-import static org.lwjgl.opengl.GL11C.GL_RGBA8;
-import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MAG_FILTER;
-import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MIN_FILTER;
-import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_BYTE;
-import static org.lwjgl.opengl.GL11C.glBindTexture;
-import static org.lwjgl.opengl.GL11C.glGenTextures;
-import static org.lwjgl.opengl.GL11C.glTexImage2D;
-import static org.lwjgl.opengl.GL11C.glTexParameteri;
 import static org.lwjgl.opengl.GL11C.glDeleteTextures;
 import static org.lwjgl.stb.STBImageWrite.stbi_write_bmp;
 import static org.lwjgl.stb.STBImageWrite.stbi_write_png;
-import static org.lwjgl.stb.STBTruetype.stbtt_PackBegin;
-import static org.lwjgl.stb.STBTruetype.stbtt_PackEnd;
-import static org.lwjgl.stb.STBTruetype.stbtt_PackFontRange;
-import static org.lwjgl.stb.STBTruetype.stbtt_PackSetOversampling;
-import static org.lwjgl.system.MemoryUtil.NULL;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentHashMap;
-import org.lwjgl.stb.STBTTPackContext;
+
 import org.lwjgl.stb.STBTTPackedchar;
 import org.pixel.commons.lifecycle.Disposable;
 
-public class Font implements Disposable {
+public abstract class Font implements Disposable {
 
     //region Fields & Properties
 
-    private static final int GLYPH_TEXTURE_PADDING = 1;
-    private static final int GLYPH_TEXTURE_PADDING_COMPENSATION = 4;
+    protected static final int GLYPH_TEXTURE_PADDING = 1;
+    protected static final int GLYPH_TEXTURE_PADDING_COMPENSATION = 4;
 
-    private final FontData fontData;
-    private int textureId;
-    private int textureWidth;
-    private int textureHeight;
-    private int fontSize;
-    private int horizontalSpacing;
-    private int verticalSpacing;
-    private int oversampling;
-    private STBTTPackedchar.Buffer packedBuffer;
-    private ByteBuffer bitmap;
-    private ConcurrentHashMap<Character, FontGlyph> glyphCache;
+    protected final FontData fontData;
+    protected int textureId;
+    protected int textureWidth;
+    protected int textureHeight;
+    protected int fontSize;
+    protected int horizontalSpacing;
+    protected int verticalSpacing;
+    protected int oversampling;
+    protected STBTTPackedchar.Buffer packedBuffer;
+    protected ByteBuffer bitmap;
+    protected ConcurrentHashMap<Character, FontGlyph> glyphCache;
 
     //endregion
 
@@ -101,59 +84,7 @@ public class Font implements Disposable {
     /**
      * Generate and compute font data based on the current properties
      */
-    private void computeFontData() {
-        if (fontData.getSource() == null) {
-            throw new RuntimeException("Cannot compute font without a valid source");
-        }
-
-        if (this.getTextureId() < 0) {
-            // texture is not yet assigned to this font, generate:
-            this.textureId = glGenTextures();
-        }
-
-        // calculate texture size:
-        // note: since stbtt optimizes the glyph placing on the bitmap, we don't need to go for 1:1 ratio here
-        float maxGlyphSize = this.fontSize * oversampling;
-        float tmpTextureSize = (maxGlyphSize + GLYPH_TEXTURE_PADDING_COMPENSATION) * 8;
-        if (tmpTextureSize % 2 != 0) {
-            tmpTextureSize++; // let's keep this in multiples of 2
-        }
-
-        this.textureWidth = (int) tmpTextureSize;
-        this.textureHeight = (int) tmpTextureSize;
-
-        glyphCache.clear(); // clear the glyph cache
-        packedBuffer.clear(); // clear char data buffer
-        STBTTPackContext pc = STBTTPackContext.malloc();
-        ByteBuffer alphaBitmap = createByteBuffer(this.textureWidth * this.textureHeight);
-        stbtt_PackBegin(pc, alphaBitmap, this.textureWidth, this.textureHeight, 0, GLYPH_TEXTURE_PADDING, NULL);
-        // load up data to our buffer:
-        packedBuffer.limit(255); // text ascii range (32-127)
-        packedBuffer.position(32);
-        stbtt_PackSetOversampling(pc, oversampling, oversampling);
-        stbtt_PackFontRange(pc, fontData.getSource(), 0, getFontSize(), 32, packedBuffer);
-        stbtt_PackEnd(pc);
-        packedBuffer.clear();
-
-        // convert gray scale to rgba
-        bitmap = createByteBuffer(alphaBitmap.limit() * 4);
-        for (int i = 0; i < alphaBitmap.limit(); ++i) {
-            bitmap.put((byte) 255);
-            bitmap.put((byte) 255);
-            bitmap.put((byte) 255);
-            bitmap.put(alphaBitmap.get());
-        }
-        bitmap.clear();
-
-        // bind char data to our texture:
-        glBindTexture(GL_TEXTURE_2D, getTextureId());
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, this.textureWidth, this.textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                bitmap);
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    }
+    protected abstract void computeFontData();
 
     //endregion
 

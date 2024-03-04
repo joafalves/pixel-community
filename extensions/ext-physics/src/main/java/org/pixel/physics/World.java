@@ -46,7 +46,7 @@ public class World implements Updatable, Clearable {
         bodyList.iterator().forEachRemaining(body -> applyIntegratedForces(body, delta));
 
         // process and apply forces to detected collisions
-        if (stepCollisions != null && stepCollisions.size() > 0) {
+        if (stepCollisions != null && !stepCollisions.isEmpty()) {
             collisionManager.processCollisions(stepCollisions, iterations);
         }
 

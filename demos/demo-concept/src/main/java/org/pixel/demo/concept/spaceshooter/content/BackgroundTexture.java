@@ -24,8 +24,9 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11C;
 import org.pixel.content.Texture;
 import org.pixel.content.TextureFrame;
+import org.pixel.content.opengl.GLTexture;
 
-public class BackgroundTexture extends Texture {
+public class BackgroundTexture extends GLTexture {
 
     private ByteBuffer imageData;
     private ByteBuffer imageSourceData;

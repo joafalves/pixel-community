@@ -227,7 +227,7 @@ public class Vector2 implements Serializable {
      */
     public void normalize() {
         if (this.length() == 0) {
-            throw new RuntimeException("The length of the vector is 0");
+            return;
         }
         float value = 1.f / this.length();
         this.setX(this.getX() * value);

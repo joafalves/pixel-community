@@ -38,7 +38,6 @@ public class SingleSpriteDemo extends DemoGame {
         spriteBatch = new SpriteBatch();
 
         // load texture into memory
-
         spriteTex = content.load("images/screenshot-600x320.png", Texture.class);
     }
 

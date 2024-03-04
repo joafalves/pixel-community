@@ -76,7 +76,7 @@ public class KeyboardInputDemo extends DemoGame {
             gameCamera.setPosition(0, 0); // reset camera position
         }
 
-        // Note that 'isKeyPressed()' is also available:
+        // Note that 'Keyboard.isKeyPressed()' is also available:
         if (Keyboard.isKeyPressed(KeyboardKey.ESCAPE)) {
             close(); // quit the game...
         }

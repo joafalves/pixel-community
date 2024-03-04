@@ -25,6 +25,7 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.Texture;
+import org.pixel.content.opengl.GLTexture;
 import org.pixel.core.Camera2D;
 import org.pixel.core.PixelWindow;
 import org.pixel.core.WindowSettings;
@@ -77,8 +78,8 @@ public class TerragenAdvancedGame extends PixelWindow {
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
         seed = ThreadLocalRandom.current().nextLong();
-        colorTexture = new Texture(glGenTextures(), SCREEN_WIDTH, SCREEN_HEIGHT);
-        heightMapTexture = new Texture(glGenTextures(), SCREEN_WIDTH, SCREEN_HEIGHT);
+        colorTexture = new GLTexture(glGenTextures(), SCREEN_WIDTH, SCREEN_HEIGHT);
+        heightMapTexture = new GLTexture(glGenTextures(), SCREEN_WIDTH, SCREEN_HEIGHT);
 
         setBackgroundColor(Color.BLACK);
 

@@ -32,6 +32,7 @@ import org.pixel.content.ContentImporterInfo;
 import org.pixel.content.ImportContext;
 import org.pixel.content.Texture;
 import org.pixel.content.importer.settings.TextureImporterSettings;
+import org.pixel.content.opengl.GLTexture;
 
 @ContentImporterInfo(type = Texture.class, extension = {".png", ".jpeg", ".jpg", ".bmp"})
 public class TextureImporter implements ContentImporter<Texture> {
@@ -81,7 +82,7 @@ public class TextureImporter implements ContentImporter<Texture> {
             glBindTexture(GL_TEXTURE_2D, 0); // unbind
             free(imageData);
 
-            return new Texture(textureId, width, height);
+            return new GLTexture(textureId, width, height);
 
         } catch (Exception e) {
             log.error("Exception caught!", e);

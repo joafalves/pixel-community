@@ -19,6 +19,7 @@ import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.pixel.content.Sound;
+import org.pixel.content.openal.ALSound;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ContentImporter;
@@ -77,6 +78,6 @@ public class VorbisAudioImporter implements ContentImporter<Sound> {
         int sourcePointer = alGenSources();
         alSourcei(sourcePointer, AL_BUFFER, bufferPointer);
 
-        return new Sound(sourcePointer);
+        return new ALSound(sourcePointer);
     }
 }

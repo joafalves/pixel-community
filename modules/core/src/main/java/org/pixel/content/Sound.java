@@ -5,10 +5,9 @@
 
 package org.pixel.content;
 
-import org.lwjgl.openal.AL10;
 import org.pixel.commons.lifecycle.Disposable;
 
-public class Sound implements Disposable {
+public abstract class Sound implements Disposable {
 
     private final int sourcePointer;
 
@@ -28,13 +27,5 @@ public class Sound implements Disposable {
      */
     public int getSourcePointer() {
         return this.sourcePointer;
-    }
-
-    /**
-     * Dispose the sound instance and free the native resources.
-     */
-    @Override
-    public void dispose() {
-        AL10.alDeleteSources(sourcePointer);
     }
 }
