@@ -11,9 +11,9 @@ if (version == null || version == "unspecified") {
 }
 
 project.ext.dependencyMap = [
-        lwjgl: "3.3.2",
-        lombok: "1.18.24",
-        junit: "5.9.0",
+        lwjgl: "3.3.3",
+        lombok: "1.18.30",
+        junit: "5.10.2",
         mockito: "4.8.0"
 ]
 project.ext.buildTargetList = []

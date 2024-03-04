@@ -253,6 +253,7 @@ public abstract class PixelWindow implements Initializable, Loadable, Updatable,
         log.debug("OpenGL Vendor: '{}'.", glGetString(GL_VENDOR));
         log.debug("OpenGL Renderer: '{}'.", glGetString(GL_RENDERER));
         log.debug("OpenGL Version: '{}'.", glGetString(GL_VERSION));
+        log.debug("LWJGL Version: '{}'.", org.lwjgl.Version.getVersion());
 
         initializeWindowCallbacks();
         initializeAudio();
