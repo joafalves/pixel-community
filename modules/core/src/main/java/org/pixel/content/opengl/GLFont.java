@@ -93,8 +93,9 @@ public class GLFont extends Font {
 
     @Override
     public void dispose() {
-        if (this.getTextureId() >= 0) {
-            glDeleteTextures(this.getTextureId());
+        if (this.textureId >= 0) {
+            glDeleteTextures(this.textureId);
+            this.textureId = -1;
         } 
     }
     

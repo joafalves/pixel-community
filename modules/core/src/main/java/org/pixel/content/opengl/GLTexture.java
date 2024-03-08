@@ -12,8 +12,9 @@ public class GLTexture extends Texture {
 
     /**
      * Constructor
-     * @param id The native texture id
-     * @param width The texture width
+     * 
+     * @param id     The native texture id
+     * @param width  The texture width
      * @param height The texture height
      */
     public GLTexture(int id, int width, int height) {
@@ -22,9 +23,9 @@ public class GLTexture extends Texture {
 
     @Override
     public void dispose() {
-        if (this.getId() >= 0) {
-            glDeleteTextures(getId());
+        if (this.id >= 0) {
+            glDeleteTextures(this.id);
+            this.id = -1;
         }
     }
-
 }

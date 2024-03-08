@@ -9,7 +9,7 @@ import org.pixel.commons.lifecycle.Disposable;
 
 public abstract class Sound implements Disposable {
 
-    private final int sourcePointer;
+    protected int sourcePointer;
 
     /**
      * Constructor.

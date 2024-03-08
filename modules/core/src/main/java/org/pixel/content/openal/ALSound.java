@@ -11,7 +11,9 @@ public class ALSound extends Sound {
 
     @Override
     public void dispose() {
-        AL10.alDeleteSources(this.getSourcePointer());
+        if (this.getSourcePointer() >= 0) {
+            AL10.alDeleteSources(this.getSourcePointer());
+            this.sourcePointer = -1;
+        }
     }
-    
 }

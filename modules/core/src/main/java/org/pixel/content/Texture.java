@@ -11,7 +11,7 @@ public abstract class Texture implements Disposable {
 
     //region properties
 
-    private final int id;
+    protected int id;
     protected float width;
     protected float height;
 
