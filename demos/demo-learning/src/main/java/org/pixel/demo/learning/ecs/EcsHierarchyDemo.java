@@ -3,13 +3,13 @@ package org.pixel.demo.learning.ecs;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
 import org.pixel.core.Camera2D;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.ext.ecs.GameComponent;
 import org.pixel.ext.ecs.GameScene;
 import org.pixel.ext.ecs.Sprite;
 
-public class EcsHierarchyDemo extends PixelWindow {
+public class EcsHierarchyDemo extends GameWindow {
 
     private ContentManager contentManager;
     private GameScene gameScene;
@@ -73,7 +73,7 @@ public class EcsHierarchyDemo extends PixelWindow {
         settings.setVsync(true);
         settings.setDebugMode(false);
 
-        PixelWindow window = new EcsHierarchyDemo(settings);
+        GameWindow window = new EcsHierarchyDemo(settings);
         window.start();
     }
 }

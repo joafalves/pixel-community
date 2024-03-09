@@ -5,7 +5,7 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.core.Camera2D;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.graphics.Color;
@@ -114,7 +114,7 @@ public class PhysicsDemo extends DemoGame {
         settings.setMultisampling(2);
         settings.setVsync(true);
 
-        PixelWindow window = new PhysicsDemo(settings);
+        GameWindow window = new PhysicsDemo(settings);
         window.start();
     }
 }

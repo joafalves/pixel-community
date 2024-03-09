@@ -6,7 +6,7 @@
 package org.pixel.demo.learning.other;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.sprite.SingleSpriteDemo;
 import org.pixel.graphics.render.ShaderPostProcessor;
@@ -49,7 +49,7 @@ public class PostProcessingDemo extends SingleSpriteDemo {
         settings.setVsync(true);
         settings.setDebugMode(false);
 
-        PixelWindow window = new PostProcessingDemo(settings);
+        GameWindow window = new PostProcessingDemo(settings);
         window.start();
     }
 }

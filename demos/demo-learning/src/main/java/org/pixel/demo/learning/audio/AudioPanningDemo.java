@@ -9,7 +9,7 @@ import org.pixel.audio.AudioEngine;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.Texture;
 import org.pixel.core.Camera2D;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
@@ -71,7 +71,7 @@ public class AudioPanningDemo extends AudioDemo {
         settings.setVsync(true);
         settings.setDebugMode(true);
 
-        PixelWindow window = new AudioPanningDemo(settings);
+        GameWindow window = new AudioPanningDemo(settings);
         window.start();
     }
 }

@@ -27,7 +27,7 @@ import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.Texture;
 import org.pixel.content.opengl.GLTexture;
 import org.pixel.core.Camera2D;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
@@ -36,7 +36,7 @@ import org.pixel.input.keyboard.KeyboardKey;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Rectangle;
 
-public class TerragenAdvancedGame extends PixelWindow {
+public class TerragenAdvancedGame extends GameWindow {
 
     private final Logger log = LoggerFactory.getLogger(TerragenGame.class);
 
@@ -274,10 +274,6 @@ public class TerragenAdvancedGame extends PixelWindow {
         }
 
         spriteBatch.end();
-
-        if (Keyboard.isKeyPressed(KeyboardKey.P)) {
-            screenshot("./out_" + seed + ".png", false);
-        }
     }
 
     @Override
@@ -299,7 +295,7 @@ public class TerragenAdvancedGame extends PixelWindow {
         settings.setWindowHeight(SCREEN_HEIGHT);
         settings.setIdleThrottle(false);
 
-        PixelWindow window = new TerragenAdvancedGame(settings);
+        GameWindow window = new TerragenAdvancedGame(settings);
         window.start();
     }
 }

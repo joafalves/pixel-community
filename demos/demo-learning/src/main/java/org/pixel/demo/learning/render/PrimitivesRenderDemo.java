@@ -1,7 +1,7 @@
 package org.pixel.demo.learning.render;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.graphics.Color;
@@ -111,7 +111,7 @@ public class PrimitivesRenderDemo extends DemoGame {
         settings.setMultisampling(2);
         settings.setVsync(true);
 
-        PixelWindow window = new PrimitivesRenderDemo(settings);
+        GameWindow window = new PrimitivesRenderDemo(settings);
         window.start();
     }
 }

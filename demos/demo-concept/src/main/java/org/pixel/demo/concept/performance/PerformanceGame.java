@@ -11,7 +11,7 @@ import org.pixel.commons.logger.LogLevel;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.core.Camera2D;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.demo.concept.performance.component.ConstantVelocityBoundComponent;
@@ -24,7 +24,7 @@ import org.pixel.math.Boundary;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
 
-public class PerformanceGame extends PixelWindow {
+public class PerformanceGame extends GameWindow {
 
     private static final int SPRITE_COUNT = 5000;
     private static final float SPRITE_MOVEMENT_SPEED = 100f;

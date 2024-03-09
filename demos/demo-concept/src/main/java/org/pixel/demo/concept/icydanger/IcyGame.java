@@ -5,7 +5,7 @@ import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
 import org.pixel.content.Texture;
 import org.pixel.core.Camera2D;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.concept.commons.PlayerIndex;
 import org.pixel.demo.concept.commons.FpsCounter;
@@ -29,7 +29,7 @@ import org.pixel.math.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IcyGame extends PixelWindow {
+public class IcyGame extends GameWindow {
 
     private ContentManager contentManager;
     private Camera2D gameCamera;
@@ -187,7 +187,7 @@ public class IcyGame extends PixelWindow {
         settings.setWindowWidth(width);
         settings.setWindowHeight(height);
 
-        PixelWindow window = new IcyGame(settings);
+        GameWindow window = new IcyGame(settings);
         window.start();
     }
 }

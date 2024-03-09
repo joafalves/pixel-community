@@ -5,7 +5,7 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
 import org.pixel.content.importer.settings.ContentImporterSettings;
 import org.pixel.core.Camera2D;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.ext.tiled.content.TiledMap;
 import org.pixel.ext.tiled.content.importer.TiledMapImporter;
@@ -25,11 +25,11 @@ public class TiledMapViewTestIntegrated {
         WindowSettings settings = new WindowSettings(600, 600);
         settings.setDebugMode(true);
 
-        PixelWindow pixelWindow = new MockWindow(settings);
+        GameWindow pixelWindow = new MockWindow(settings);
         pixelWindow.start();
     }
 
-    public static class MockWindow extends PixelWindow {
+    public static class MockWindow extends GameWindow {
 
         protected final Camera2D gameCamera;
         /**

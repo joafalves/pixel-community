@@ -6,7 +6,7 @@ import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.core.Camera2D;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.ext.tween.Tween;
 import org.pixel.ext.tween.TweenEasingMode;
@@ -15,7 +15,7 @@ import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Vector2;
 
-public class TweenDemo extends PixelWindow {
+public class TweenDemo extends GameWindow {
 
     private final Logger log = LoggerFactory.getLogger(TweenDemo.class);
 
@@ -91,7 +91,7 @@ public class TweenDemo extends PixelWindow {
         settings.setDebugMode(false);
         settings.setIdleThrottle(false);
 
-        PixelWindow window = new TweenDemo(settings);
+        GameWindow window = new TweenDemo(settings);
         window.start();
     }
 }

@@ -8,7 +8,7 @@ package org.pixel.demo.learning.input;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.graphics.Color;
@@ -114,7 +114,7 @@ public class KeyboardInputDemo extends DemoGame {
         settings.setVsync(true);
         settings.setDebugMode(true);
 
-        PixelWindow window = new KeyboardInputDemo(settings);
+        GameWindow window = new KeyboardInputDemo(settings);
         window.start();
     }
 }

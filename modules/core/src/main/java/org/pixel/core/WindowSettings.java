@@ -8,6 +8,7 @@ package org.pixel.core;
 import lombok.Getter;
 import lombok.Setter;
 import org.pixel.graphics.Color;
+import org.pixel.graphics.GraphicsBackend;
 
 import java.util.Properties;
 
@@ -17,6 +18,7 @@ public class WindowSettings {
 
     //region Fields & Properties
 
+    private GraphicsBackend graphicsBackend;
     private String windowTitle;
     private WindowMode windowMode;
     private Properties clientProperties;
@@ -52,6 +54,7 @@ public class WindowSettings {
      * @param virtualHeight The virtual height of the window.
      */
     public WindowSettings(String windowTitle, int virtualWidth, int virtualHeight) {
+        this.graphicsBackend = GraphicsBackend.OpenGL;
         this.windowTitle = windowTitle;
         this.virtualWidth = virtualWidth;
         this.virtualHeight = virtualHeight;

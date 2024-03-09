@@ -9,7 +9,7 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.graphics.Color;
 import org.pixel.graphics.render.BlendMode;
@@ -99,7 +99,7 @@ public class GamePadInputDemo extends DemoGame {
         settings.setVsync(true);
         settings.setDebugMode(true);
 
-        PixelWindow window = new GamePadInputDemo(settings);
+        GameWindow window = new GamePadInputDemo(settings);
         window.start();
     }
 }

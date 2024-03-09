@@ -8,7 +8,7 @@ package org.pixel.demo.learning.audio;
 import org.pixel.audio.AudioEngine;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Sound;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 
@@ -48,7 +48,7 @@ public class AudioDemo extends DemoGame {
         settings.setVsync(true);
         settings.setDebugMode(true);
 
-        PixelWindow window = new AudioDemo(settings);
+        GameWindow window = new AudioDemo(settings);
         window.start();
     }
 }

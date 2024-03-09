@@ -4,7 +4,7 @@ package org.pixel.demo.learning.primitive;
 import java.util.ArrayList;
 import lombok.AllArgsConstructor;
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.graphics.Color;
@@ -118,7 +118,7 @@ public class PrimitiveBatchDemo extends DemoGame {
         settings.setVsync(false);
         settings.setDebugMode(true);
 
-        PixelWindow window = new PrimitiveBatchDemo(settings);
+        GameWindow window = new PrimitiveBatchDemo(settings);
         window.start();
     }
 

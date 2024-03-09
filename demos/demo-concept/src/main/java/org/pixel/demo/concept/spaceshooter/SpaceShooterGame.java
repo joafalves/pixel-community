@@ -1,11 +1,11 @@
 package org.pixel.demo.concept.spaceshooter;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.event.EventDispatcher;
+import org.pixel.commons.event.EventManager;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.core.Camera2D;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.demo.concept.commons.component.PlayerBoundaryComponent;
@@ -27,9 +27,9 @@ import org.pixel.math.MathHelper;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 
-public class SpaceShooterGame extends PixelWindow {
+public class SpaceShooterGame extends GameWindow {
 
-    public static final EventDispatcher $ = new EventDispatcher();
+    public static final EventManager $ = new EventManager();
 
     private FpsCounter fpsCounter;
     private Camera2D gameCamera;
@@ -144,17 +144,19 @@ public class SpaceShooterGame extends PixelWindow {
     }
 
     public static void main(String[] args) {
-        final int width = 800;
-        final int height = 600;
-        WindowSettings settings = new WindowSettings(width / 2, height / 2);
+        final int windowWidth = 1000;
+        final int windowHeight = 800;
+        final int virtualWidth = windowWidth / 2;
+        final int virtualHeight = windowHeight / 2;
+        WindowSettings settings = new WindowSettings(virtualWidth, virtualHeight);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
-        settings.setVsync(false);
+        settings.setVsync(true);
         settings.setDebugMode(false);
-        settings.setWindowWidth(width);
-        settings.setWindowHeight(height);
+        settings.setWindowWidth(windowWidth);
+        settings.setWindowHeight(windowHeight);
 
-        PixelWindow window = new SpaceShooterGame(settings);
+        GameWindow window = new SpaceShooterGame(settings);
         window.start();
     }
 }

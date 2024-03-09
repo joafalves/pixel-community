@@ -1,0 +1,7 @@
+plugins {
+    id "application"
+}
+
+application {
+    mainClassName = "org.pixel.forge.Application" 
+}

@@ -3,18 +3,19 @@ package org.pixel.commons.event;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+
 import lombok.RequiredArgsConstructor;
 
-public class EventDispatcher {
+public class EventManager {
 
-    private static final EventDispatcher defaultDispatcher = new EventDispatcher();
+    private static final EventManager defaultDispatcher = new EventManager();
 
     private final ConcurrentHashMap<String, List<EventListenerDispatcher>> listenerMap;
 
     /**
      * Constructor.
      */
-    public EventDispatcher() {
+    public EventManager() {
         this.listenerMap = new ConcurrentHashMap<>();
     }
 
@@ -23,7 +24,7 @@ public class EventDispatcher {
      *
      * @return The default event dispatcher.
      */
-    public static EventDispatcher getDefault() {
+    public static EventManager getDefault() {
         return defaultDispatcher;
     }
 
@@ -33,7 +34,7 @@ public class EventDispatcher {
      * @param eventName The event name.
      * @param listener  The listener.
      */
-    public void subscribe(String eventName, EventListener<Object> listener) {
+    public void subscribe(String eventName, EventListener<?> listener) {
         List<EventListenerDispatcher> listeners = listenerMap.computeIfAbsent(eventName, k -> new ArrayList<>());
         synchronized (listeners) {
             if (!listeners.contains(listener)) {
@@ -65,7 +66,7 @@ public class EventDispatcher {
      * @param listener  The listener.
      * @return True if the listener was unsubscribed.
      */
-    public boolean unsubscribe(String eventName, EventListener listener) {
+    public boolean unsubscribe(String eventName, EventListener<?> listener) {
         List<EventListenerDispatcher> listeners = listenerMap.get(eventName);
         if (listeners != null) {
             synchronized (listeners) {

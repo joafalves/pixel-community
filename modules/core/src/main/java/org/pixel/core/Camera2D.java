@@ -30,7 +30,7 @@ public class Camera2D implements Serializable {
      *
      * @param window The window instance.
      */
-    public Camera2D(PixelWindow window) {
+    public Camera2D(GameWindow window) {
         this(0, 0, window.getVirtualWidth(), window.getVirtualHeight());
     }
 
@@ -40,7 +40,7 @@ public class Camera2D implements Serializable {
      * @param window The window instance.
      * @param origin The camera view origin.
      */
-    public Camera2D(PixelWindow window, Vector2 origin) {
+    public Camera2D(GameWindow window, Vector2 origin) {
         this(0, 0, window.getVirtualWidth(), window.getVirtualHeight(), 1.0f, origin);
     }
 

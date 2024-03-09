@@ -6,7 +6,7 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.core.Camera2D;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.graphics.Color;
@@ -16,7 +16,7 @@ import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 import org.pixel.math.MathHelper;
 
-public class TerragenGame extends PixelWindow {
+public class TerragenGame extends GameWindow {
 
     private final Logger log = LoggerFactory.getLogger(TerragenGame.class);
 
@@ -192,7 +192,7 @@ public class TerragenGame extends PixelWindow {
         settings.setWindowHeight(SCREEN_HEIGHT);
         settings.setIdleThrottle(false);
 
-        PixelWindow window = new TerragenGame(settings);
+        GameWindow window = new TerragenGame(settings);
         window.start();
     }
 }

@@ -2,7 +2,7 @@ package org.pixel.demo.concept.roadcar;
 
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.concept.roadcar.model.RoadSegment;
 import org.pixel.demo.concept.roadcar.model.Vehicle;
@@ -19,7 +19,7 @@ import org.pixel.math.Vector2;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RoadCarGame extends PixelWindow {
+public class RoadCarGame extends GameWindow {
 
     static {
         LoggerFactory.setDefaultStrategy(new Log4j2LoggerStrategy());
@@ -241,7 +241,7 @@ public class RoadCarGame extends PixelWindow {
         settings.setWindowWidth(width);
         settings.setWindowHeight(height);
 
-        PixelWindow window = new RoadCarGame(settings);
+        GameWindow window = new RoadCarGame(settings);
         window.start();
     }
 }

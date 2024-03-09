@@ -54,6 +54,10 @@ public class GameScene extends GameObjectContainer implements Loadable, Updatabl
 
     @Override
     public void draw(DeltaTime delta) {
+        if (gameCamera == null || spriteBatch == null) {
+            return;
+        }
+
         spriteBatch.begin(gameCamera.getViewMatrix());
         for (GameObject child : getChildren()) {
             if (child.isEnabled()) {

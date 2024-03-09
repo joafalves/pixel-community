@@ -6,7 +6,7 @@ import org.pixel.commons.logger.LogLevel;
 import org.pixel.content.ContentManager;
 import org.pixel.content.importer.settings.ContentImporterSettings;
 import org.pixel.core.Camera2D;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.ext.tiled.content.TiledMap;
 import org.pixel.ext.tiled.content.importer.TiledMapImporter;
@@ -18,7 +18,7 @@ import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 
-public class TiledDemo extends PixelWindow {
+public class TiledDemo extends GameWindow {
 
     private static final float CAMERA_SPEED = 100f;
 
@@ -54,7 +54,7 @@ public class TiledDemo extends PixelWindow {
 
         ConsoleLogger.setLogLevel(LogLevel.TRACE);
 
-        PixelWindow window = new TiledDemo(settings);
+        GameWindow window = new TiledDemo(settings);
         window.start();
     }
 

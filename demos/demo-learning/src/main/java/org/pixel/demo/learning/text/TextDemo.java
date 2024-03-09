@@ -8,7 +8,7 @@ package org.pixel.demo.learning.text;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.graphics.Color;
@@ -92,7 +92,7 @@ public class TextDemo extends DemoGame {
         settings.setVsync(true);
         settings.setDebugMode(false);
 
-        PixelWindow window = new TextDemo(settings);
+        GameWindow window = new TextDemo(settings);
         window.start();
     }
 }

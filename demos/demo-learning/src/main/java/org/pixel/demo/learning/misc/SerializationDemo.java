@@ -4,7 +4,7 @@ import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.pixel.commons.util.DataSerializer;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.math.Vector2;
@@ -44,7 +44,7 @@ public class SerializationDemo extends DemoGame {
         WindowSettings settings = new WindowSettings(300, 300);
         settings.setVsync(true);
 
-        PixelWindow window = new SerializationDemo(settings);
+        GameWindow window = new SerializationDemo(settings);
         window.start();
     }
 }

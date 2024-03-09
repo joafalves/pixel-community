@@ -5,6 +5,11 @@
 
 package org.pixel.physics.shape;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
 public class CircleShape extends Shape {
 
     private float radius;
@@ -18,11 +23,4 @@ public class CircleShape extends Shape {
         this.radius = radius;
     }
 
-    public float getRadius() {
-        return radius;
-    }
-
-    public void setRadius(float radius) {
-        this.radius = radius;
-    }
 }

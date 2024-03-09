@@ -3,7 +3,7 @@ package org.pixel.demo.learning.ecs;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
 import org.pixel.core.Camera2D;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.ext.ecs.GameComponent;
 import org.pixel.ext.ecs.GameScene;
@@ -13,7 +13,7 @@ import org.pixel.math.MathHelper;
 /**
  * Entity Component System demo.
  */
-public class EcsDemo extends PixelWindow {
+public class EcsDemo extends GameWindow {
 
     private ContentManager contentManager;
     private GameScene gameScene;
@@ -69,7 +69,7 @@ public class EcsDemo extends PixelWindow {
         settings.setVsync(true);
         settings.setDebugMode(false);
 
-        PixelWindow window = new EcsDemo(settings);
+        GameWindow window = new EcsDemo(settings);
         window.start();
     }
 }

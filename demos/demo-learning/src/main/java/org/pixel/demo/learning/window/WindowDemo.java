@@ -6,10 +6,10 @@
 package org.pixel.demo.learning.window;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 
-public class WindowDemo extends PixelWindow {
+public class WindowDemo extends GameWindow {
 
     public WindowDemo(WindowSettings settings) {
         super(settings);
@@ -42,7 +42,7 @@ public class WindowDemo extends PixelWindow {
         settings.setVsync(true);
         settings.setDebugMode(false);
 
-        PixelWindow window = new WindowDemo(settings);
+        GameWindow window = new WindowDemo(settings);
         window.start();
     }
 }

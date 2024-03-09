@@ -18,7 +18,7 @@ import org.pixel.commons.lifecycle.Updatable;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.commons.util.IOUtils;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowEventListener;
 import org.pixel.core.WindowMode;
 import org.pixel.graphics.render.NvgRenderEngine;
@@ -38,7 +38,7 @@ public class UIView implements Updatable, Loadable, Disposable, WindowEventListe
 
     private final UIContext context;
     private final RenderBuffer renderBuffer;
-    private final PixelWindow window;
+    private final GameWindow window;
     private UIScene scene;
     private int targetFps;
     private float elapsed;
@@ -46,7 +46,7 @@ public class UIView implements Updatable, Loadable, Disposable, WindowEventListe
     /**
      * Constructor
      */
-    public UIView(PixelWindow window) {
+    public UIView(GameWindow window) {
         this.window = window;
         this.window.addWindowEventListener(this);
         this.targetFps = DEFAULT_FPS;

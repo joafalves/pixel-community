@@ -6,16 +6,16 @@
 package org.pixel.demo.ldtk;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 
 public class TitleFpsCounter {
 
-    private final PixelWindow window;
+    private final GameWindow window;
 
     private float elapsed = 0;
     private int count = 0;
 
-    public TitleFpsCounter(PixelWindow window) {
+    public TitleFpsCounter(GameWindow window) {
         this.window = window;
     }
 

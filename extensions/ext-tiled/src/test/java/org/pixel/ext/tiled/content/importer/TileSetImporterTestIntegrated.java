@@ -3,7 +3,7 @@ package org.pixel.ext.tiled.content.importer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.pixel.content.ContentManager;
-import org.pixel.core.PixelWindow;
+import org.pixel.core.GameWindow;
 import org.pixel.core.WindowSettings;
 import org.pixel.ext.tiled.content.TiledTileSet;
 
@@ -13,11 +13,11 @@ public class TileSetImporterTestIntegrated {
         WindowSettings settings = new WindowSettings(1, 1);
         settings.setDebugMode(true);
 
-        PixelWindow pixelWindow = new MockWindow(settings);
+        GameWindow pixelWindow = new MockWindow(settings);
         pixelWindow.start();
     }
 
-    public static class MockWindow extends PixelWindow {
+    public static class MockWindow extends GameWindow {
 
         /**
          * Constructor

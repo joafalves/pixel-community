@@ -13,6 +13,9 @@ include "modules/commons", "modules/core", "modules/input", "modules/math", "mod
 include "extensions/ext-log4j2", "extensions/ext-ldtk", "extensions/ext-physics", "extensions/ext-gui", \
     "extensions/ext-ecs", "extensions/ext-ecs-extra", "extensions/ext-tween", "extensions/ext-tiled"
 
+// tools:
+include "tools/forge"
+
 // demos:
 if (System.properties["PIXEL_RELEASE"] == null) {
     include "demos/demo-learning", "demos/demo-concept", "demos/demo-imgui", "demos/demo-kotlin", "demos/demo-ldtk", \
