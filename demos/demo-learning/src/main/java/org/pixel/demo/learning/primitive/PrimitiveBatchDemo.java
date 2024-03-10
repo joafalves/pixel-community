@@ -3,11 +3,11 @@ package org.pixel.demo.learning.primitive;
 
 import java.util.ArrayList;
 import lombok.AllArgsConstructor;
+
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.GameWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.Color;
+import org.pixel.graphics.DesktopGameSettings;
 import org.pixel.graphics.PrimitiveType;
 import org.pixel.graphics.render.PrimitiveBatch;
 import org.pixel.input.keyboard.Keyboard;
@@ -22,7 +22,7 @@ public class PrimitiveBatchDemo extends DemoGame {
 
     private ArrayList<VertexData> vertices;
 
-    public PrimitiveBatchDemo(WindowSettings settings) {
+    public PrimitiveBatchDemo(DesktopGameSettings settings) {
         super(settings);
     }
 
@@ -47,8 +47,6 @@ public class PrimitiveBatchDemo extends DemoGame {
                         MathHelper.random(50, 100));
             }
         }
-
-        centerWindow();
     }
 
     @Override
@@ -112,13 +110,13 @@ public class PrimitiveBatchDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(800, 800);
+        var settings = new DesktopGameSettings(800, 800);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(false);
         settings.setDebugMode(true);
 
-        GameWindow window = new PrimitiveBatchDemo(settings);
+        var window = new PrimitiveBatchDemo(settings);
         window.start();
     }
 

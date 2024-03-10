@@ -4,9 +4,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.Font;
-import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Vector2;
 

@@ -1,13 +1,13 @@
 package org.pixel.demo.concept.roadcar;
 
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.core.GameWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.demo.concept.roadcar.model.RoadSegment;
 import org.pixel.demo.concept.roadcar.model.Vehicle;
 import org.pixel.ext.log4j.Log4j2LoggerStrategy;
-import org.pixel.graphics.Color;
+import org.pixel.graphics.DesktopGameSettings;
+import org.pixel.graphics.DesktopGameWindow;
 import org.pixel.graphics.render.NvgRenderEngine;
 import org.pixel.graphics.render.RenderEngine2D;
 import org.pixel.input.keyboard.Keyboard;
@@ -19,7 +19,7 @@ import org.pixel.math.Vector2;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RoadCarGame extends GameWindow {
+public class RoadCarGame extends DesktopGameWindow {
 
     static {
         LoggerFactory.setDefaultStrategy(new Log4j2LoggerStrategy());
@@ -36,7 +36,7 @@ public class RoadCarGame extends GameWindow {
     private float cameraZoom;
     private float spawnElapsed = 0f;
 
-    public RoadCarGame(WindowSettings settings) {
+    public RoadCarGame(DesktopGameSettings settings) {
         super(settings);
     }
 
@@ -46,7 +46,7 @@ public class RoadCarGame extends GameWindow {
 
         cameraPosition = new Vector2(150, 150);
         cameraZoom = 0.75f;
-        renderEngine = new NvgRenderEngine(getViewportWidth(), getViewportHeight());
+        renderEngine = new NvgRenderEngine(getSettings().getWindowWidth(), getSettings().getWindowHeight());
 
         roadSegments.add(new RoadSegment(new Vector2(0, 0), true));
         roadSegments.add(new RoadSegment(new Vector2(200, 0)));
@@ -233,7 +233,7 @@ public class RoadCarGame extends GameWindow {
     public static void main(String[] args) {
         final int width = 800;
         final int height = 600;
-        WindowSettings settings = new WindowSettings(width / 2, height / 2);
+        var settings = new DesktopGameSettings(width / 2, height / 2);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
@@ -241,7 +241,7 @@ public class RoadCarGame extends GameWindow {
         settings.setWindowWidth(width);
         settings.setWindowHeight(height);
 
-        GameWindow window = new RoadCarGame(settings);
+        var window = new RoadCarGame(settings);
         window.start();
     }
 }

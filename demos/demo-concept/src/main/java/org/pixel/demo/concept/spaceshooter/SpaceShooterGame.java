@@ -5,8 +5,6 @@ import org.pixel.commons.event.EventManager;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.core.Camera2D;
-import org.pixel.core.GameWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.demo.concept.commons.component.PlayerBoundaryComponent;
 import org.pixel.demo.concept.spaceshooter.component.CollisionHandlingComponent;
@@ -22,12 +20,14 @@ import org.pixel.ext.ecs.Sprite;
 import org.pixel.ext.ecs.component.AutoDisposeComponent;
 import org.pixel.ext.ecs.component.ConstantVelocityComponent;
 import org.pixel.ext.ecs.component.SpriteAnimationComponent;
+import org.pixel.graphics.DesktopGameSettings;
+import org.pixel.graphics.DesktopGameWindow;
 import org.pixel.math.Boundary;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 
-public class SpaceShooterGame extends GameWindow {
+public class SpaceShooterGame extends DesktopGameWindow {
 
     public static final EventManager $ = new EventManager();
 
@@ -39,7 +39,7 @@ public class SpaceShooterGame extends GameWindow {
     private Texture explosionTexture;
     private BackgroundTexture backgroundTexture;
 
-    public SpaceShooterGame(WindowSettings settings) {
+    public SpaceShooterGame(DesktopGameSettings settings) {
         super(settings);
     }
 
@@ -148,7 +148,7 @@ public class SpaceShooterGame extends GameWindow {
         final int windowHeight = 800;
         final int virtualWidth = windowWidth / 2;
         final int virtualHeight = windowHeight / 2;
-        WindowSettings settings = new WindowSettings(virtualWidth, virtualHeight);
+        var settings = new DesktopGameSettings(virtualWidth, virtualHeight);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
@@ -156,7 +156,7 @@ public class SpaceShooterGame extends GameWindow {
         settings.setWindowWidth(windowWidth);
         settings.setWindowHeight(windowHeight);
 
-        GameWindow window = new SpaceShooterGame(settings);
+        var window = new SpaceShooterGame(settings);
         window.start();
     }
 }

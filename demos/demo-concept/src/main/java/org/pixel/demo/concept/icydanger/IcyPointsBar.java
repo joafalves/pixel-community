@@ -2,10 +2,11 @@ package org.pixel.demo.concept.icydanger;
 
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.Updatable;
 import org.pixel.content.Texture;
-import org.pixel.graphics.Color;
 import org.pixel.graphics.SpriteDrawable;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.MathHelper;

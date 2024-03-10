@@ -1,10 +1,10 @@
 package org.pixel.ext.tiled.view;
 
+import org.pixel.commons.Color;
 import org.pixel.ext.tiled.content.TiledObject;
 import org.pixel.ext.tiled.content.TiledObjectGroup;
 import org.pixel.ext.tiled.content.TiledTileObject;
 import org.pixel.ext.tiled.content.TiledTileSet;
-import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Boundary;
 import org.pixel.math.Rectangle;

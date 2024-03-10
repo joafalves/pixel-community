@@ -5,10 +5,10 @@
 
 package org.pixel.graphics.render;
 
+import org.pixel.commons.Color;
 import org.pixel.commons.attribute.HorizontalAlignment;
 import org.pixel.commons.attribute.Solidity;
 import org.pixel.commons.attribute.VerticalAlignment;
-import org.pixel.graphics.Color;
 import org.pixel.math.Size;
 import org.pixel.math.Matrix4;
 import org.pixel.math.Rectangle;

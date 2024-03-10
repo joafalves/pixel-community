@@ -3,18 +3,18 @@ package org.pixel.demo.learning.ecs;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
 import org.pixel.core.Camera2D;
-import org.pixel.core.GameWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.ext.ecs.GameComponent;
 import org.pixel.ext.ecs.GameScene;
 import org.pixel.ext.ecs.Sprite;
+import org.pixel.graphics.DesktopGameSettings;
+import org.pixel.graphics.DesktopGameWindow;
 
-public class EcsHierarchyDemo extends GameWindow {
+public class EcsHierarchyDemo extends DesktopGameWindow {
 
     private ContentManager contentManager;
     private GameScene gameScene;
 
-    public EcsHierarchyDemo(WindowSettings settings) {
+    public EcsHierarchyDemo(DesktopGameSettings settings) {
         super(settings);
     }
 
@@ -67,13 +67,13 @@ public class EcsHierarchyDemo extends GameWindow {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(600, 480);
+        var settings = new DesktopGameSettings(600, 480);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setDebugMode(false);
 
-        GameWindow window = new EcsHierarchyDemo(settings);
+        var window = new EcsHierarchyDemo(settings);
         window.start();
     }
 }

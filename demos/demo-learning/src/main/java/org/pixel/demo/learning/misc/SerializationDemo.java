@@ -4,9 +4,8 @@ import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.pixel.commons.util.DataSerializer;
-import org.pixel.core.GameWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
+import org.pixel.graphics.DesktopGameSettings;
 import org.pixel.math.Vector2;
 
 public class SerializationDemo extends DemoGame {
@@ -21,7 +20,7 @@ public class SerializationDemo extends DemoGame {
         private int gold;
     }
 
-    public SerializationDemo(WindowSettings settings) {
+    public SerializationDemo(DesktopGameSettings settings) {
         super(settings);
     }
 
@@ -41,10 +40,10 @@ public class SerializationDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(300, 300);
+        var settings = new DesktopGameSettings(300, 300);
         settings.setVsync(true);
 
-        GameWindow window = new SerializationDemo(settings);
+        var window = new SerializationDemo(settings);
         window.start();
     }
 }

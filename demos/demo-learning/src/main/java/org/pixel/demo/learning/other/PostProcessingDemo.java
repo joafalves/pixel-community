@@ -6,9 +6,10 @@
 package org.pixel.demo.learning.other;
 
 import org.pixel.commons.DeltaTime;
+import org.pixel.core.GameSettings;
 import org.pixel.core.GameWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.sprite.SingleSpriteDemo;
+import org.pixel.graphics.DesktopGameSettings;
 import org.pixel.graphics.render.ShaderPostProcessor;
 import org.pixel.graphics.shader.effect.SepiaEffectShader;
 
@@ -16,7 +17,7 @@ public class PostProcessingDemo extends SingleSpriteDemo {
 
     private ShaderPostProcessor pp;
 
-    public PostProcessingDemo(WindowSettings settings) {
+    public PostProcessingDemo(DesktopGameSettings settings) {
         super(settings);
     }
 
@@ -43,13 +44,13 @@ public class PostProcessingDemo extends SingleSpriteDemo {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(600, 320);
+        var settings = new DesktopGameSettings(600, 320);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setDebugMode(false);
 
-        GameWindow window = new PostProcessingDemo(settings);
+        var window = new PostProcessingDemo(settings);
         window.start();
     }
 }

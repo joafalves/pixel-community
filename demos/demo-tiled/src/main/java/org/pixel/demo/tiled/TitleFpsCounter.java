@@ -6,16 +6,16 @@
 package org.pixel.demo.tiled;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.GameWindow;
+import org.pixel.graphics.DesktopGameWindow;
 
 public class TitleFpsCounter {
 
-    private final GameWindow window;
+    private final DesktopGameWindow window;
 
     private float elapsed = 0;
     private int count = 0;
 
-    public TitleFpsCounter(GameWindow window) {
+    public TitleFpsCounter(DesktopGameWindow window) {
         this.window = window;
     }
 

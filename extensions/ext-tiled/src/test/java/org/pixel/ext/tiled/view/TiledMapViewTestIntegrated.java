@@ -1,17 +1,17 @@
 package org.pixel.ext.tiled.view;
 
 import org.junit.jupiter.api.Test;
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
 import org.pixel.content.importer.settings.ContentImporterSettings;
 import org.pixel.core.Camera2D;
-import org.pixel.core.GameWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.ext.tiled.content.TiledMap;
 import org.pixel.ext.tiled.content.importer.TiledMapImporter;
 import org.pixel.ext.tiled.content.importer.TiledMapImporterSettings;
 import org.pixel.ext.tiled.content.importer.TiledTileSetImporter;
-import org.pixel.graphics.Color;
+import org.pixel.graphics.DesktopGameSettings;
+import org.pixel.graphics.DesktopGameWindow;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.NvgRenderEngine;
 import org.pixel.graphics.render.SpriteBatch;
@@ -22,14 +22,14 @@ import org.pixel.math.Vector2;
 public class TiledMapViewTestIntegrated {
     @Test
     public void processCase1Integrated() {
-        WindowSettings settings = new WindowSettings(600, 600);
+        var settings = new DesktopGameSettings(600, 600);
         settings.setDebugMode(true);
 
-        GameWindow pixelWindow = new MockWindow(settings);
+        var pixelWindow = new MockWindow(settings);
         pixelWindow.start();
     }
 
-    public static class MockWindow extends GameWindow {
+    public static class MockWindow extends DesktopGameWindow {
 
         protected final Camera2D gameCamera;
         /**
@@ -45,7 +45,7 @@ public class TiledMapViewTestIntegrated {
         Color fillColor;
         float posX, posY;
 
-        public MockWindow(WindowSettings settings) {
+        public MockWindow(DesktopGameSettings settings) {
             super(settings);
 
             gameCamera = new Camera2D(this);
@@ -53,7 +53,7 @@ public class TiledMapViewTestIntegrated {
 
         @Override
         public void load() {
-            nvg = new NvgRenderEngine(getViewportWidth(), getViewportHeight());
+            nvg = new NvgRenderEngine(getSettings().getWindowWidth(), getSettings().getWindowHeight());
             fillColor = Color.BLACK;
             gameCamera.setOrigin(new Vector2(0f, 0f));
             //gameCamera.translate(500, 180);

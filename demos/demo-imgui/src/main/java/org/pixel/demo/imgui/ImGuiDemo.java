@@ -5,10 +5,10 @@ import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 import imgui.type.ImString;
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.GameWindow;
-import org.pixel.core.WindowSettings;
+import org.pixel.graphics.DesktopGameSettings;
+import org.pixel.graphics.DesktopGameWindow;
 
-public class ImGuiDemo extends GameWindow {
+public class ImGuiDemo extends DesktopGameWindow {
 
     private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
     private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
@@ -18,7 +18,7 @@ public class ImGuiDemo extends GameWindow {
      *
      * @param settings
      */
-    public ImGuiDemo(WindowSettings settings) {
+    public ImGuiDemo(DesktopGameSettings settings) {
         super(settings);
     }
 
@@ -55,7 +55,7 @@ public class ImGuiDemo extends GameWindow {
     public static void main(String[] args) {
         final int width = 640;
         final int height = 480;
-        WindowSettings settings = new WindowSettings(width, height);
+        var settings = new DesktopGameSettings(width, height);
         settings.setWindowResizable(true);
         settings.setMultisampling(2);
         settings.setVsync(true);
@@ -63,7 +63,7 @@ public class ImGuiDemo extends GameWindow {
         settings.setWindowWidth(width);
         settings.setWindowHeight(height);
 
-        GameWindow window = new ImGuiDemo(settings);
+        var window = new ImGuiDemo(settings);
         window.start();
     }
 }

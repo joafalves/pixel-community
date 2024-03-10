@@ -234,19 +234,5 @@
             "mainClass": "org.pixel.demo.tiled.TiledDemo",
             "projectName": "demo-tiled"
         },
-        {
-            "type": "java",
-            "name": "CustomRender",
-            "request": "launch",
-            "mainClass": "org.pixel.gui.render.CustomRender",
-            "projectName": "ext-gui"
-        },
-        {
-            "type": "java",
-            "name": "YogaTest",
-            "request": "launch",
-            "mainClass": "org.pixel.gui.yoga.YogaTest",
-            "projectName": "ext-gui"
-        }
     ]
 }

@@ -5,24 +5,23 @@
 
 package org.pixel.demo.learning.sprite;
 
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
-import org.pixel.core.GameWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.Color;
+import org.pixel.graphics.DesktopGameSettings;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Vector2;
 
-public class SingleSpriteDemo extends GameWindow {
+public class SingleSpriteDemo extends DemoGame {
 
     private ContentManager content;
     private SpriteBatch spriteBatch;
     private Texture spriteTex;
 
-    public SingleSpriteDemo(WindowSettings settings) {
+    public SingleSpriteDemo(DesktopGameSettings settings) {
         super(settings);
         setBackgroundColor(Color.BLACK);
     }
@@ -67,13 +66,13 @@ public class SingleSpriteDemo extends GameWindow {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(600, 320);
+        var settings = new DesktopGameSettings(600, 320);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setDebugMode(true);
 
-        GameWindow window = new SingleSpriteDemo(settings);
+        var window = new SingleSpriteDemo(settings);
         window.start();
     }
 }

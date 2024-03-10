@@ -10,9 +10,9 @@ import static org.lwjgl.opengl.GL20C.glUniformMatrix4fv;
 
 import java.nio.FloatBuffer;
 import org.lwjgl.system.MemoryUtil;
+import org.pixel.commons.Color;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.graphics.Color;
 import org.pixel.graphics.PrimitiveType;
 import org.pixel.graphics.shader.Shader;
 import org.pixel.graphics.shader.VertexArrayObject;

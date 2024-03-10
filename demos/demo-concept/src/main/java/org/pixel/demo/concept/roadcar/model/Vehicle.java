@@ -3,7 +3,8 @@ package org.pixel.demo.concept.roadcar.model;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.pixel.graphics.Color;
+
+import org.pixel.commons.Color;
 import org.pixel.math.SizeInt;
 import org.pixel.math.Vector2;
 

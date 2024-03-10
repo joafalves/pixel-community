@@ -1,23 +1,23 @@
 package org.pixel.demo.ldtk;
 
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.ConsoleLogger;
 import org.pixel.commons.logger.LogLevel;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
 import org.pixel.core.Camera2D;
-import org.pixel.core.GameWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.ext.ldtk.LdtkGameEntity;
 import org.pixel.ext.ldtk.LdtkGameLevel;
 import org.pixel.ext.ldtk.LdtkGameWorld;
 import org.pixel.ext.ldtk.importer.LdtkGameWorldImporter;
-import org.pixel.graphics.Color;
+import org.pixel.graphics.DesktopGameSettings;
+import org.pixel.graphics.DesktopGameWindow;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 
-public class LdtkDemo extends GameWindow {
+public class LdtkDemo extends DesktopGameWindow {
 
     private static final float CAMERA_SPEED = 500f;
 
@@ -36,7 +36,7 @@ public class LdtkDemo extends GameWindow {
      *
      * @param settings The settings to use.
      */
-    public LdtkDemo(WindowSettings settings) {
+    public LdtkDemo(DesktopGameSettings settings) {
         super(settings);
     }
 
@@ -118,8 +118,8 @@ public class LdtkDemo extends GameWindow {
     public static void main(String[] args) {
         final int width = 1280;
         final int height = 720;
-        WindowSettings settings = new WindowSettings(width, height);
-        settings.setWindowTitle("LDTK Demo");
+        var settings = new DesktopGameSettings(width, height);
+        settings.setTitle("LDTK Demo");
         settings.setWindowResizable(true);
         settings.setMultisampling(2);
         settings.setVsync(false);
@@ -129,7 +129,7 @@ public class LdtkDemo extends GameWindow {
 
         ConsoleLogger.setLogLevel(LogLevel.TRACE);
 
-        GameWindow window = new LdtkDemo(settings);
+        var window = new LdtkDemo(settings);
         window.start();
     }
 }

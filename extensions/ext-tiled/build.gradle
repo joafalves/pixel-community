@@ -19,6 +19,7 @@ pitest {
 
 dependencies {
     api project(":${rootProject.name}-core")
+    api project(":${rootProject.name}-desktop")
 
     testImplementation('org.mockito:mockito-core:3.7.7')
 }

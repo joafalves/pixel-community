@@ -5,21 +5,9 @@
 
 package org.pixel.core;
 
-import static org.lwjgl.openal.ALC10.alcCloseDevice;
-import static org.lwjgl.openal.ALC10.alcCreateContext;
-import static org.lwjgl.openal.ALC10.alcDestroyContext;
-import static org.lwjgl.openal.ALC10.alcMakeContextCurrent;
-import static org.lwjgl.openal.ALC10.alcOpenDevice;
-import static org.lwjgl.system.MemoryUtil.NULL;
-
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
-import org.lwjgl.openal.AL;
-import org.lwjgl.openal.ALC;
-import org.lwjgl.openal.ALCCapabilities;
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.commons.lifecycle.Drawable;
@@ -29,37 +17,29 @@ import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.lifecycle.Updatable;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.graphics.Color;
 import org.pixel.graphics.GraphicsDevice;
 import org.pixel.graphics.WindowManager;
-import org.pixel.graphics.glfw.GLFWWindowManager;
-import org.pixel.graphics.opengl.GLGraphicsDevice;
-import org.pixel.input.keyboard.Keyboard;
-import org.pixel.math.SizeInt;
 
-public abstract class GameWindow implements Initializable, Loadable, Updatable, Drawable, Disposable {
+public abstract class GameWindow<T extends WindowManager, S extends GraphicsDevice, Z extends GameSettings>
+        implements Initializable, Loadable, Updatable, Drawable, Disposable {
 
     private static final Logger log = LoggerFactory.getLogger(GameWindow.class);
 
-    private final List<WindowEventListener> windowEventListeners;
+    protected T windowManager;
+    protected S graphicsDevice;
+    protected Z settings;
 
-    private final int[] audioAttributes = { 0 };
-
-    private WindowManager windowManager;
-    private GraphicsDevice graphicsDevice;
-    private WindowSettings settings;
     private State state;
-
-    private long audioDevice;
-    private long audioContext;
 
     /**
      * Constructor.
      *
      * @param settings The settings to use.
      */
-    public GameWindow(WindowSettings settings) {
-        this.windowEventListeners = new ArrayList<>();
+    public GameWindow(Z settings) {
+        if (settings == null) {
+            throw new IllegalArgumentException("Game settings cannot be null.");
+        }
         this.settings = settings;
         this.state = State.CREATED;
     }
@@ -93,6 +73,10 @@ public abstract class GameWindow implements Initializable, Loadable, Updatable, 
             return false;
         }
 
+        // At this point, the window, audio and rendering engines are initialized. Now
+        // it's time to
+        // load the game window (user-space) and allow the game loop to start.
+
         // Load window procedure
         load();
 
@@ -117,10 +101,6 @@ public abstract class GameWindow implements Initializable, Loadable, Updatable, 
 
     @Override
     public void dispose() {
-        // dispose audio context
-        alcCloseDevice(audioDevice);
-        alcDestroyContext(audioContext);
-
         // dispose graphics device and window manager
         graphicsDevice.dispose();
         windowManager.dispose();
@@ -138,59 +118,21 @@ public abstract class GameWindow implements Initializable, Loadable, Updatable, 
      * 
      * @return True if the window manager was initialized successfully.
      */
-    private boolean initWindowManager() {
-        // TODO: make configurable when/if more options are available
-        this.windowManager = new GLFWWindowManager(this.settings);
-        return this.windowManager.init();
-    }
+    protected abstract boolean initWindowManager();
 
     /**
      * Initialize the graphics device.
      * 
      * @return True if the graphics device was initialized successfully.
      */
-    private boolean initGraphicsDevice() {
-        switch (this.settings.getGraphicsBackend()) {
-            case OpenGL:
-                this.graphicsDevice = new GLGraphicsDevice(this.windowManager, this.settings);
-                break;
-            default:
-                throw new UnsupportedOperationException(
-                        "Unsupported graphics backend: " + this.settings.getGraphicsBackend());
-        }
-
-        return this.graphicsDevice.init();
-    }
+    protected abstract boolean initGraphicsDevice();
 
     /**
      * Initialize the audio context.
      * 
      * @return True if the audio context was initialized successfully.
      */
-    private boolean initAudio() {
-        try { // Attempt to initialize the audio device
-            audioDevice = alcOpenDevice((ByteBuffer) null);
-            if (audioDevice == NULL) {
-                throw new IllegalStateException("Failed to open the default OpenAL device.");
-            }
-
-            audioContext = alcCreateContext(audioDevice, audioAttributes);
-            if (audioContext == NULL) {
-                throw new IllegalStateException("Failed to create OpenAL context.");
-            }
-
-            alcMakeContextCurrent(audioContext);
-
-            ALCCapabilities alcCapabilities = ALC.createCapabilities(audioDevice);
-            AL.createCapabilities(alcCapabilities);
-
-        } catch (Exception e) {
-            log.error("Exception caught while initializing the audio device!", e);
-            return false;
-        }
-
-        return true;
-    }
+    protected abstract boolean initAudio();
 
     /**
      * Starts the game loop. To terminate the loop, call {@link #close()} or close
@@ -218,10 +160,14 @@ public abstract class GameWindow implements Initializable, Loadable, Updatable, 
             this.windowManager.beginFrame();
             this.graphicsDevice.beginFrame();
 
+            // call game update
             update(delta);
-            draw(delta);
 
-            Keyboard.clear();
+            // call game draw
+            if (this.settings.isAutoWindowClear()) {
+                this.clear();
+            }
+            draw(delta);
 
             this.graphicsDevice.endFrame();
             this.windowManager.endFrame();
@@ -251,66 +197,12 @@ public abstract class GameWindow implements Initializable, Loadable, Updatable, 
     }
 
     /**
-     * Gets the debug state value.
-     *
-     * @return Returns 'true' if debug mode is enabled.
-     */
-    public boolean isDebugMode() {
-        return settings.isDebugMode();
-    }
-
-    /**
-     * Get the window dimensions.
-     *
-     * @return The window dimensions.
-     */
-    public WindowDimensions getWindowDimensions() {
-        return this.windowManager.getWindowDimensions();
-    }
-
-    /**
-     * Get the window width.
-     *
-     * @return The window width.
-     */
-    public int getWindowWidth() {
-        return this.windowManager.getWindowDimensions().getWindowWidth();
-    }
-
-    /**
-     * Get the window height.
-     *
-     * @return The window height.
-     */
-    public int getWindowHeight() {
-        return this.windowManager.getWindowDimensions().getWindowHeight();
-    }
-
-    /**
-     * Get the window frame width.
-     *
-     * @return The window frame width.
-     */
-    public int getWindowFrameWidth() {
-        return this.windowManager.getWindowDimensions().getFrameWidth();
-    }
-
-    /**
-     * Get the window frame height.
-     *
-     * @return The window frame height.
-     */
-    public int getWindowFrameHeight() {
-        return this.windowManager.getWindowDimensions().getFrameHeight();
-    }
-
-    /**
      * Get the window virtual width.
      *
      * @return The window virtual width.
      */
     public int getVirtualWidth() {
-        return this.windowManager.getWindowDimensions().getVirtualWidth();
+        return this.settings.getVirtualWidth();
     }
 
     /**
@@ -319,78 +211,7 @@ public abstract class GameWindow implements Initializable, Loadable, Updatable, 
      * @return The window virtual height.
      */
     public int getVirtualHeight() {
-        return this.windowManager.getWindowDimensions().getVirtualHeight();
-    }
-
-    /**
-     * Get the viewport width.
-     *
-     * @return The viewport width.
-     */
-    public int getViewportWidth() {
-        return this.getWindowWidth();
-    }
-
-    /**
-     * Get the viewport height.
-     *
-     * @return The viewport height.
-     */
-    public int getViewportHeight() {
-        return this.getWindowHeight();
-    }
-
-    /**
-     * Get the viewport dimensions.
-     *
-     * @return The viewport dimensions.
-     */
-    public SizeInt getViewportSize() {
-        var windowDimensions = this.windowManager.getWindowDimensions();
-        return new SizeInt(windowDimensions.getWindowWidth(), windowDimensions.getWindowHeight());
-    }
-
-    /**
-     * Toggle fullscreen mode.
-     */
-    public void toggleFullscreen() {
-        this.windowManager.setWindowMode(this.settings.getWindowMode() == WindowMode.WINDOWED ? WindowMode.FULLSCREEN
-                : WindowMode.WINDOWED);
-
-    }
-
-    /**
-     * Trigger window size change event.
-     */
-    private void triggerWindowSizeChangeEvent() {
-        var windowDimensions = this.windowManager.getWindowDimensions();
-        windowEventListeners.forEach(listener -> listener.windowSizeChanged(windowDimensions.getWindowWidth(),
-                windowDimensions.getWindowHeight()));
-    }
-
-    /**
-     * Trigger window size change event.
-     */
-    private void triggerWindowModeChangeEvent() {
-        //windowEventListeners.forEach(listener -> listener.windowModeChanged(windowMode));
-    }
-
-    /**
-     * Set cursor mode.
-     *
-     * @param mode The cursor mode.
-     */
-    public void setCursorMode(CursorMode mode) {
-        this.windowManager.setCursorMode(mode);
-    }
-
-    /**
-     * Set window title.
-     *
-     * @param title The window title.
-     */
-    public void setWindowTitle(String title) {
-        this.windowManager.setWindowTitle(title);
+        return this.settings.getVirtualHeight();
     }
 
     /**
@@ -412,25 +233,6 @@ public abstract class GameWindow implements Initializable, Loadable, Updatable, 
     }
 
     /**
-     * Register a window event listener.
-     *
-     * @param listener The window event listener to remove.
-     * @return True if the listener was successfully unregistered.
-     */
-    public boolean removeWindowEventListener(WindowEventListener listener) {
-        return windowEventListeners.remove(listener);
-    }
-
-    /**
-     * Register a window event listener.
-     *
-     * @param listener The window event listener to register.
-     */
-    public void addWindowEventListener(WindowEventListener listener) {
-        this.windowEventListeners.add(listener);
-    }
-    
-    /**
      * Set vsync mode.
      *
      * @param vsyncEnabled The vsync mode.
@@ -438,22 +240,31 @@ public abstract class GameWindow implements Initializable, Loadable, Updatable, 
     public void setVsyncEnabled(boolean vsyncEnabled) {
         this.windowManager.setVSync(vsyncEnabled);
     }
+    
+    /**
+     * Get the active window manager.
+     * 
+     * @return The active window manager.
+     */
+    public T getWindowManager() {
+        return windowManager;
+    }
 
     /**
      * Get the active graphics device.
      * 
      * @return The active graphics device.
      */
-    public GraphicsDevice getGraphicsDevice() {
+    public S getGraphicsDevice() {
         return this.graphicsDevice;
     }
 
     /**
-     * Get the active window manager.
+     * Get the game settings.
      * 
-     * @return The active window manager.
+     * @return The game settings.
      */
-    public WindowManager getWindowManager() {
-        return windowManager;
+    public Z getSettings() {
+        return settings;
     }
 }

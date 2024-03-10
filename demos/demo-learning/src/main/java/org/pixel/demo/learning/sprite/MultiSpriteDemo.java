@@ -5,13 +5,12 @@
 
 package org.pixel.demo.learning.sprite;
 
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
-import org.pixel.core.GameWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.Color;
+import org.pixel.graphics.DesktopGameSettings;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Vector2;
@@ -29,7 +28,7 @@ public class MultiSpriteDemo extends DemoGame {
     private Texture spriteTexB;
     private Vector2 spritePosB;
 
-    public MultiSpriteDemo(WindowSettings settings) {
+    public MultiSpriteDemo(DesktopGameSettings settings) {
         super(settings);
     }
 
@@ -80,13 +79,13 @@ public class MultiSpriteDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(600, 480);
+        var settings = new DesktopGameSettings(600, 480);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setDebugMode(false);
 
-        GameWindow window = new MultiSpriteDemo(settings);
+        var window = new MultiSpriteDemo(settings);
         window.start();
     }
 }

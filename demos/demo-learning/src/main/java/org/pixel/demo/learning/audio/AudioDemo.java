@@ -8,16 +8,15 @@ package org.pixel.demo.learning.audio;
 import org.pixel.audio.AudioEngine;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Sound;
-import org.pixel.core.GameWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
+import org.pixel.graphics.DesktopGameSettings;
 
 public class AudioDemo extends DemoGame {
 
     protected Sound sound;
     protected ContentManager content;
 
-    public AudioDemo(WindowSettings settings) {
+    public AudioDemo(DesktopGameSettings settings) {
         super(settings);
     }
 
@@ -41,14 +40,14 @@ public class AudioDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(600, 480);
-        settings.setWindowTitle("Volume up! Audio is playing :)");
+        var settings = new DesktopGameSettings(600, 480);
+        settings.setTitle("Volume up! Audio is playing :)");
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setDebugMode(true);
 
-        GameWindow window = new AudioDemo(settings);
+        var window = new AudioDemo(settings);
         window.start();
     }
 }

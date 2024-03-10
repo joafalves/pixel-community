@@ -6,6 +6,7 @@
 package org.pixel.core;
 
 import java.io.Serializable;
+
 import org.pixel.math.Matrix4;
 import org.pixel.math.Vector2;
 

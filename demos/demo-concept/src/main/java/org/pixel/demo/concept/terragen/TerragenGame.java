@@ -2,21 +2,22 @@ package org.pixel.demo.concept.terragen;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.core.Camera2D;
-import org.pixel.core.GameWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.demo.concept.commons.FpsCounter;
-import org.pixel.graphics.Color;
+import org.pixel.graphics.DesktopGameSettings;
+import org.pixel.graphics.DesktopGameWindow;
 import org.pixel.graphics.PrimitiveType;
 import org.pixel.graphics.render.PrimitiveBatch;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 import org.pixel.math.MathHelper;
 
-public class TerragenGame extends GameWindow {
+public class TerragenGame extends DesktopGameWindow {
 
     private final Logger log = LoggerFactory.getLogger(TerragenGame.class);
 
@@ -27,7 +28,7 @@ public class TerragenGame extends GameWindow {
     private final static int ROWS = SCREEN_HEIGHT / TILE_SIZE;
     private final static double SPECTRUM_SCALE = 1;
     private final static double FREQUENCY_SCALE = 1.25;
-    private final static double EXP = 1d;
+    //private final static double EXP = 1d;
 
     private Color[][] colorMap;
     private PrimitiveBatch primitiveBatch;
@@ -41,7 +42,7 @@ public class TerragenGame extends GameWindow {
      *
      * @param settings The settings to use.
      */
-    public TerragenGame(WindowSettings settings) {
+    public TerragenGame(DesktopGameSettings settings) {
         super(settings);
     }
 
@@ -125,9 +126,9 @@ public class TerragenGame extends GameWindow {
                 }
                 float height = (float) e;
 
-                if (EXP != 1.0) {
-                    height = MathHelper.pow(height, 2.0f); // redistribution
-                }
+                //if (EXP != 1.0) {
+                //    height = MathHelper.pow(height, 2.0f); // redistribution
+                //}
 
                 height = MathHelper.clamp(height, 0f, 1f);
 
@@ -183,7 +184,7 @@ public class TerragenGame extends GameWindow {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(SCREEN_WIDTH, SCREEN_HEIGHT);
+        var settings = new DesktopGameSettings(SCREEN_WIDTH, SCREEN_HEIGHT);
         settings.setWindowResizable(true);
         settings.setMultisampling(2);
         settings.setVsync(true);
@@ -192,7 +193,7 @@ public class TerragenGame extends GameWindow {
         settings.setWindowHeight(SCREEN_HEIGHT);
         settings.setIdleThrottle(false);
 
-        GameWindow window = new TerragenGame(settings);
+        var window = new TerragenGame(settings);
         window.start();
     }
 }

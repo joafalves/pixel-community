@@ -5,13 +5,12 @@
 
 package org.pixel.demo.learning.input;
 
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
-import org.pixel.core.GameWindow;
-import org.pixel.core.WindowSettings;
-import org.pixel.graphics.Color;
+import org.pixel.graphics.DesktopGameSettings;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.gamepad.GamePad;
@@ -31,7 +30,7 @@ public class GamePadInputDemo extends DemoGame {
     private Vector2 spritePos;
     private Vector2 spriteAnchor;
 
-    public GamePadInputDemo(WindowSettings settings) {
+    public GamePadInputDemo(DesktopGameSettings settings) {
         super(settings);
         setBackgroundColor(Color.BLACK);
     }
@@ -92,14 +91,14 @@ public class GamePadInputDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(600, 480);
-        settings.setWindowTitle("Input DEMO - use W or S keys to move the camera vertically");
+        var settings = new DesktopGameSettings(600, 480);
+        settings.setTitle("Input DEMO - use W or S keys to move the camera vertically");
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setDebugMode(true);
 
-        GameWindow window = new GamePadInputDemo(settings);
+        var window = new GamePadInputDemo(settings);
         window.start();
     }
 }

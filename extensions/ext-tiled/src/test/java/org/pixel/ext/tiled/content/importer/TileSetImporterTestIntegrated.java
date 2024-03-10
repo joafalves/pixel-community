@@ -3,21 +3,21 @@ package org.pixel.ext.tiled.content.importer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.pixel.content.ContentManager;
-import org.pixel.core.GameWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.ext.tiled.content.TiledTileSet;
+import org.pixel.graphics.DesktopGameSettings;
+import org.pixel.graphics.DesktopGameWindow;
 
 public class TileSetImporterTestIntegrated {
     @Test
     public void processCase1Integrated() {
-        WindowSettings settings = new WindowSettings(1, 1);
+        var settings = new DesktopGameSettings(1, 1);
         settings.setDebugMode(true);
 
-        GameWindow pixelWindow = new MockWindow(settings);
+        var pixelWindow = new MockWindow(settings);
         pixelWindow.start();
     }
 
-    public static class MockWindow extends GameWindow {
+    public static class MockWindow extends DesktopGameWindow {
 
         /**
          * Constructor
@@ -25,7 +25,7 @@ public class TileSetImporterTestIntegrated {
          * @param settings
          */
 
-        public MockWindow(WindowSettings settings) {
+        public MockWindow(DesktopGameSettings settings) {
             super(settings);
         }
 
