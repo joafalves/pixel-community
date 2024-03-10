@@ -1,8 +1,9 @@
 package org.pixel.demo.concept.terragen;
 
+import org.pixel.commons.Color;
+
 import lombok.Builder;
 import lombok.Getter;
-import org.pixel.graphics.Color;
 
 @Getter
 @Builder

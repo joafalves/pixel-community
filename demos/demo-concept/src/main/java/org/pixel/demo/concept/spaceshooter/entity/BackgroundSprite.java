@@ -1,9 +1,9 @@
 package org.pixel.demo.concept.spaceshooter.entity;
 
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.Texture;
 import org.pixel.ext.ecs.GameObject;
-import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Rectangle;
 

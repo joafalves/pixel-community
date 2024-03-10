@@ -1,9 +1,9 @@
 package org.pixel.ext.ecs;
 
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.Texture;
 import org.pixel.content.TextureFrame;
-import org.pixel.graphics.Color;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Boundary;
 import org.pixel.math.MathHelper;

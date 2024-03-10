@@ -7,7 +7,8 @@ package org.pixel.graphics.shader.effect;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.pixel.graphics.Color;
+
+import org.pixel.commons.Color;
 import org.pixel.graphics.shader.Shader;
 
 import java.util.Arrays;

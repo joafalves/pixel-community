@@ -1,0 +1,238 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "SkyShardGame",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.concept.shard.SkyShardGame",
+            "projectName": "demo-concept"
+        },
+        {
+            "type": "java",
+            "name": "Application",
+            "request": "launch",
+            "mainClass": "Application",
+            "projectName": "pixel-community"
+        },
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "IcyGame",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.concept.icydanger.IcyGame",
+            "projectName": "demo-concept"
+        },
+        {
+            "type": "java",
+            "name": "PerformanceGame",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.concept.performance.PerformanceGame",
+            "projectName": "demo-concept"
+        },
+        {
+            "type": "java",
+            "name": "RoadCarGame",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.concept.roadcar.RoadCarGame",
+            "projectName": "demo-concept"
+        },
+        {
+            "type": "java",
+            "name": "SpaceShooterGame",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.concept.spaceshooter.SpaceShooterGame",
+            "projectName": "demo-concept"
+        },
+        {
+            "type": "java",
+            "name": "TerragenAdvancedGame",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.concept.terragen.TerragenAdvancedGame",
+            "projectName": "demo-concept"
+        },
+        {
+            "type": "java",
+            "name": "TerragenGame",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.concept.terragen.TerragenGame",
+            "projectName": "demo-concept"
+        },
+        {
+            "type": "java",
+            "name": "TerragenTextureGame",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.concept.terragen.TerragenTextureGame",
+            "projectName": "demo-concept"
+        },
+        {
+            "type": "java",
+            "name": "ImGuiDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.imgui.ImGuiDemo",
+            "projectName": "demo-imgui"
+        },
+        {
+            "type": "java",
+            "name": "LdtkDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.ldtk.LdtkDemo",
+            "projectName": "demo-ldtk"
+        },
+        {
+            "type": "java",
+            "name": "AudioDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.audio.AudioDemo",
+            "projectName": "demo-learning"
+        },
+        {
+            "type": "java",
+            "name": "AudioPanningDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.audio.AudioPanningDemo",
+            "projectName": "demo-learning"
+        },
+        {
+            "type": "java",
+            "name": "EcsDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.ecs.EcsDemo",
+            "projectName": "demo-learning"
+        },
+        {
+            "type": "java",
+            "name": "EcsHierarchyDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.ecs.EcsHierarchyDemo",
+            "projectName": "demo-learning"
+        },
+        {
+            "type": "java",
+            "name": "EcsNoSceneDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.ecs.EcsNoSceneDemo",
+            "projectName": "demo-learning"
+        },
+        {
+            "type": "java",
+            "name": "SimpleWindowDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.gui.SimpleWindowDemo",
+            "projectName": "demo-learning"
+        },
+        {
+            "type": "java",
+            "name": "WindowStylingDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.gui.WindowStylingDemo",
+            "projectName": "demo-learning"
+        },
+        {
+            "type": "java",
+            "name": "GamePadInputDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.input.GamePadInputDemo",
+            "projectName": "demo-learning"
+        },
+        {
+            "type": "java",
+            "name": "KeyboardInputDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.input.KeyboardInputDemo",
+            "projectName": "demo-learning"
+        },
+        {
+            "type": "java",
+            "name": "SerializationDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.misc.SerializationDemo",
+            "projectName": "demo-learning"
+        },
+        {
+            "type": "java",
+            "name": "PostProcessingDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.other.PostProcessingDemo",
+            "projectName": "demo-learning"
+        },
+        {
+            "type": "java",
+            "name": "PhysicsDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.physics.PhysicsDemo",
+            "projectName": "demo-learning"
+        },
+        {
+            "type": "java",
+            "name": "PrimitiveBatchDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.primitive.PrimitiveBatchDemo",
+            "projectName": "demo-learning"
+        },
+        {
+            "type": "java",
+            "name": "PrimitivesRenderDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.render.PrimitivesRenderDemo",
+            "projectName": "demo-learning"
+        },
+        {
+            "type": "java",
+            "name": "AnimatedSpriteDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.sprite.AnimatedSpriteDemo",
+            "projectName": "demo-learning"
+        },
+        {
+            "type": "java",
+            "name": "MultiSpriteDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.sprite.MultiSpriteDemo",
+            "projectName": "demo-learning"
+        },
+        {
+            "type": "java",
+            "name": "SingleSpriteDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.sprite.SingleSpriteDemo",
+            "projectName": "demo-learning"
+        },
+        {
+            "type": "java",
+            "name": "TextDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.text.TextDemo",
+            "projectName": "demo-learning"
+        },
+        {
+            "type": "java",
+            "name": "TweenDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.tween.TweenDemo",
+            "projectName": "demo-learning"
+        },
+        {
+            "type": "java",
+            "name": "WindowDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.window.WindowDemo",
+            "projectName": "demo-learning"
+        },
+        {
+            "type": "java",
+            "name": "TiledDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.tiled.TiledDemo",
+            "projectName": "demo-tiled"
+        },
+    ]
+}
