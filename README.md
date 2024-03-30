@@ -43,7 +43,7 @@ public class SingleSpriteDemo extends PixelWindow {
     public void load() {
         // load up of resources and game managers/utilities
         gameCamera = new Camera2D(this);
-        content = new ContentManager();
+        content = ContentManagerFactory.create();
         spriteBatch = new SpriteBatch();
 
         // example of loading a texture into memory:

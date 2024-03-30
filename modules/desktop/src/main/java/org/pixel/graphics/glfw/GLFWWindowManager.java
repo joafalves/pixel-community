@@ -62,7 +62,7 @@ import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.commons.util.IOUtils;
-import org.pixel.graphics.DesktopGameSettings;
+import org.pixel.graphics.GameWindowSettings;
 import org.pixel.graphics.DesktopWindowManager;
 import org.pixel.graphics.GraphicsBackend;
 import org.pixel.graphics.WindowCursorMode;
@@ -79,14 +79,14 @@ public class GLFWWindowManager implements DesktopWindowManager {
     private static final int OPENGL_VERSION_MAJOR = 3;
     private static final int OPENGL_VERSION_MINOR = 3;
 
-    private final DesktopGameSettings windowSettings;
+    private final GameWindowSettings windowSettings;
 
     private State state;
     private WindowDimensions windowDimensions;
     private long windowHandle;
     private boolean isWindowFocused;
 
-    public GLFWWindowManager(DesktopGameSettings windowSettings) {
+    public GLFWWindowManager(GameWindowSettings windowSettings) {
         this.windowSettings = windowSettings;
         this.state = State.CREATED;
     }

@@ -10,21 +10,23 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.ConsoleLogger;
 import org.pixel.commons.logger.LogLevel;
 import org.pixel.content.ContentManager;
+import org.pixel.content.ContentManagerFactory;
 import org.pixel.content.Texture;
-import org.pixel.core.Camera2D;
 import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.demo.concept.performance.component.ConstantVelocityBoundComponent;
 import org.pixel.ext.ecs.GameScene;
 import org.pixel.ext.ecs.Sprite;
 import org.pixel.ext.ecs.component.ConstantRotationComponent;
-import org.pixel.graphics.DesktopGameSettings;
-import org.pixel.graphics.DesktopGameWindow;
+import org.pixel.graphics.Camera2D;
+import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.GameWindow;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.graphics.render.SpriteBatchFactory;
 import org.pixel.math.Boundary;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
 
-public class PerformanceGame extends DesktopGameWindow {
+public class PerformanceGame extends GameWindow {
 
     private static final int SPRITE_COUNT = 5000;
     private static final float SPRITE_MOVEMENT_SPEED = 100f;
@@ -35,15 +37,15 @@ public class PerformanceGame extends DesktopGameWindow {
     private GameScene gameScene;
     private SpriteBatch spriteBatch;
 
-    public PerformanceGame(DesktopGameSettings settings) {
+    public PerformanceGame(GameWindowSettings settings) {
         super(settings);
     }
 
     @Override
     public void load() {
         fpsCounter = new FpsCounter(this);
-        contentManager = new ContentManager();
-        spriteBatch = new SpriteBatch();
+        contentManager = ContentManagerFactory.create();
+        spriteBatch = SpriteBatchFactory.create(this);
         gameScene = new GameScene("GameScene01", new Camera2D(this, Vector2.zero()), spriteBatch);
 
         var screenBoundary = new Boundary(0, 0, getVirtualWidth(), getVirtualHeight());
@@ -90,7 +92,7 @@ public class PerformanceGame extends DesktopGameWindow {
     }
 
     public static void main(String[] args) {
-        var settings = new DesktopGameSettings("Performance", 1280, 720);
+        var settings = new GameWindowSettings("Performance", 1280, 720);
         settings.setVsync(false);
         settings.setIdleThrottle(false);
         settings.setWindowResizable(true);

@@ -5,19 +5,21 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.ConsoleLogger;
 import org.pixel.commons.logger.LogLevel;
 import org.pixel.content.ContentManager;
+import org.pixel.content.ContentManagerFactory;
 import org.pixel.content.Font;
-import org.pixel.core.Camera2D;
 import org.pixel.ext.ldtk.LdtkGameEntity;
 import org.pixel.ext.ldtk.LdtkGameLevel;
 import org.pixel.ext.ldtk.LdtkGameWorld;
 import org.pixel.ext.ldtk.importer.LdtkGameWorldImporter;
-import org.pixel.graphics.DesktopGameSettings;
-import org.pixel.graphics.DesktopGameWindow;
+import org.pixel.graphics.Camera2D;
+import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.GameWindow;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.graphics.render.SpriteBatchFactory;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 
-public class LdtkDemo extends DesktopGameWindow {
+public class LdtkDemo extends GameWindow {
 
     private static final float CAMERA_SPEED = 500f;
 
@@ -36,7 +38,7 @@ public class LdtkDemo extends DesktopGameWindow {
      *
      * @param settings The settings to use.
      */
-    public LdtkDemo(DesktopGameSettings settings) {
+    public LdtkDemo(GameWindowSettings settings) {
         super(settings);
     }
 
@@ -47,8 +49,8 @@ public class LdtkDemo extends DesktopGameWindow {
         gameCamera.setOrigin(0, 0);
         gameCamera.setZoom(2f);
 
-        spriteBatch = new SpriteBatch();
-        contentManager = new ContentManager();
+        spriteBatch = SpriteBatchFactory.create(this);
+        contentManager = ContentManagerFactory.create();
         contentManager.addContentImporter(new LdtkGameWorldImporter());
 
         ldtkGameWorld = contentManager.load("ldtk-example.ldtk", LdtkGameWorld.class);
@@ -118,7 +120,7 @@ public class LdtkDemo extends DesktopGameWindow {
     public static void main(String[] args) {
         final int width = 1280;
         final int height = 720;
-        var settings = new DesktopGameSettings(width, height);
+        var settings = new GameWindowSettings(width, height);
         settings.setTitle("LDTK Demo");
         settings.setWindowResizable(true);
         settings.setMultisampling(2);

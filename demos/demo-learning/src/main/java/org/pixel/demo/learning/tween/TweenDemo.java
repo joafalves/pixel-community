@@ -5,17 +5,19 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ContentManager;
+import org.pixel.content.ContentManagerFactory;
 import org.pixel.content.Texture;
-import org.pixel.core.Camera2D;
 import org.pixel.ext.tween.Tween;
 import org.pixel.ext.tween.TweenEasingMode;
 import org.pixel.ext.tween.TweenLoopMode;
-import org.pixel.graphics.DesktopGameSettings;
-import org.pixel.graphics.DesktopGameWindow;
+import org.pixel.graphics.Camera2D;
+import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.GameWindow;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.graphics.render.SpriteBatchFactory;
 import org.pixel.math.Vector2;
 
-public class TweenDemo extends DesktopGameWindow {
+public class TweenDemo extends GameWindow {
 
     private final Logger log = LoggerFactory.getLogger(TweenDemo.class);
 
@@ -29,7 +31,7 @@ public class TweenDemo extends DesktopGameWindow {
     private Tween tweenA;
     private Tween tweenB;
 
-    public TweenDemo(DesktopGameSettings settings) {
+    public TweenDemo(GameWindowSettings settings) {
         super(settings);
     }
 
@@ -40,8 +42,8 @@ public class TweenDemo extends DesktopGameWindow {
 
     @Override
     public void load() {
-        contentManager = new ContentManager();
-        spriteBatch = new SpriteBatch();
+        contentManager = ContentManagerFactory.create();
+        spriteBatch = SpriteBatchFactory.create(this);
         camera = new Camera2D(this);
 
         spriteTexture = contentManager.loadTexture("images/earth-48x48.png");
@@ -84,7 +86,7 @@ public class TweenDemo extends DesktopGameWindow {
     }
 
     public static void main(String[] args) {
-        var settings = new DesktopGameSettings(800, 600);
+        var settings = new GameWindowSettings(800, 600);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);

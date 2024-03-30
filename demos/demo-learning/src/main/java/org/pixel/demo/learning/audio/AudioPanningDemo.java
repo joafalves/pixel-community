@@ -9,8 +9,9 @@ import org.pixel.audio.AudioEngine;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.Texture;
-import org.pixel.core.Camera2D;
-import org.pixel.graphics.DesktopGameSettings;
+import org.pixel.graphics.Camera2D;
+import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.render.SpriteBatchFactory;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
@@ -24,7 +25,7 @@ public class AudioPanningDemo extends AudioDemo {
     private float panningValue = 0;
     private Vector2 texturePosition;
 
-    public AudioPanningDemo(DesktopGameSettings settings) {
+    public AudioPanningDemo(GameWindowSettings settings) {
         super(settings);
     }
 
@@ -32,7 +33,7 @@ public class AudioPanningDemo extends AudioDemo {
     public void load() {
         super.load();
 
-        spriteBatch = new SpriteBatch();
+        spriteBatch = SpriteBatchFactory.create(this);
         camera = new Camera2D(this);
         texturePosition = new Vector2();
 
@@ -63,7 +64,7 @@ public class AudioPanningDemo extends AudioDemo {
     }
 
     public static void main(String[] args) {
-        var settings = new DesktopGameSettings(600, 480);
+        var settings = new GameWindowSettings(600, 480);
         settings.setTitle("Volume up! Audio is playing :)");
         settings.setWindowResizable(false);
         settings.setMultisampling(2);

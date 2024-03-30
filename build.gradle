@@ -33,8 +33,9 @@ if (buildTarget == "all") {
     project.ext.buildTargetList.add(getCurrentClassifier())
 }
 
+println("Java Version: ${JavaVersion.current()}")
+println("Project Version: ${version}")
 println("Build Targets: ${project.ext.buildTargetList}")
-println("Version: ${version}")
 
 allprojects {
     apply plugin: "java"
@@ -45,7 +46,7 @@ allprojects {
     version rootProject.version
 
     java {
-        sourceCompatibility = 11
+        sourceCompatibility = 17
     }
 
     repositories {

@@ -2,14 +2,14 @@ package org.pixel.demo.concept.shard;
 
 import org.pixel.commons.DeltaTime;
 import org.pixel.ext.ecs.SceneManager;
-import org.pixel.graphics.DesktopGameSettings;
-import org.pixel.graphics.DesktopGameWindow;
+import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.GameWindow;
 
-public class SkyShardGame extends DesktopGameWindow {
+public class SkyShardGame extends GameWindow {
 
     private SceneManager sceneManager;
 
-    public SkyShardGame(DesktopGameSettings settings) {
+    public SkyShardGame(GameWindowSettings settings) {
         super(settings);
     }
 
@@ -38,7 +38,7 @@ public class SkyShardGame extends DesktopGameWindow {
         final int windowHeight = 720;
         final int virtualWidth = 1920;
         final int virtualHeight = 1080;
-        var settings = new DesktopGameSettings(virtualWidth, virtualHeight);
+        var settings = new GameWindowSettings(virtualWidth, virtualHeight);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(false);

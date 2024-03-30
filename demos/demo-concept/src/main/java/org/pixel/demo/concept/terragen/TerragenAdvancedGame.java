@@ -27,18 +27,19 @@ import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.Texture;
 import org.pixel.content.opengl.GLTexture;
-import org.pixel.core.Camera2D;
-import org.pixel.graphics.DesktopGameSettings;
-import org.pixel.graphics.DesktopGameWindow;
+import org.pixel.graphics.Camera2D;
+import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.GameWindow;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.graphics.render.SpriteBatchFactory;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Rectangle;
 
-public class TerragenAdvancedGame extends DesktopGameWindow {
+public class TerragenAdvancedGame extends GameWindow {
 
-    private final Logger log = LoggerFactory.getLogger(TerragenGame.class);
+    private final Logger log = LoggerFactory.getLogger(TerragenAdvancedGame.class);
 
     private final static int SCREEN_WIDTH = 1280;
     private final static int SCREEN_HEIGHT = 720;
@@ -56,7 +57,7 @@ public class TerragenAdvancedGame extends DesktopGameWindow {
     private boolean showHeightOnly = false;
     private int maxElevation = 32;
     private int minElevation = 1;
-    private double amplitude = maxElevation / 2.0;
+    private double amplitude = maxElevation / 2.0f;
     private double frequency = 0.003906;
     private int octaves = 6;
     private double lacunarity = 2.1;
@@ -68,13 +69,13 @@ public class TerragenAdvancedGame extends DesktopGameWindow {
      *
      * @param settings The settings to use.
      */
-    public TerragenAdvancedGame(DesktopGameSettings settings) {
+    public TerragenAdvancedGame(GameWindowSettings settings) {
         super(settings);
     }
 
     @Override
     public void load() {
-        spriteBatch = new SpriteBatch();
+        spriteBatch = SpriteBatchFactory.create(this);
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
         seed = ThreadLocalRandom.current().nextLong();
@@ -286,7 +287,7 @@ public class TerragenAdvancedGame extends DesktopGameWindow {
     }
 
     public static void main(String[] args) {
-        var settings = new DesktopGameSettings(SCREEN_WIDTH, SCREEN_HEIGHT);
+        var settings = new GameWindowSettings(SCREEN_WIDTH, SCREEN_HEIGHT);
         settings.setWindowResizable(true);
         settings.setMultisampling(2);
         settings.setVsync(true);

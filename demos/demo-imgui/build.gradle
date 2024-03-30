@@ -1,7 +1,6 @@
 apply plugin: "application"
 
 dependencies {
-    api project(":${rootProject.name}-core")
     api project(":${rootProject.name}-desktop")
 
     implementation "io.github.spair:imgui-java-binding:1.86.2"

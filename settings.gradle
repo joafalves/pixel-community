@@ -7,8 +7,8 @@
 rootProject.name = "pixel"
 
 // modules:
-include "modules/commons", "modules/core", "modules/math", "modules/pipeline", \
-    "modules/graphics", "modules/desktop"
+include "modules/commons", "modules/math", "modules/graphics", "modules/desktop", \
+    "modules/content", "modules/pipeline"
 
 // extensions:
 include "extensions/ext-log4j2", "extensions/ext-ldtk", "extensions/ext-ecs", \

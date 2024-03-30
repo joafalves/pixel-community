@@ -4,8 +4,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
-import org.pixel.core.Camera2D;
 import org.pixel.ext.tiled.content.*;
+import org.pixel.graphics.Camera2D;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Vector2;
 

@@ -4,23 +4,13 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.Drawable;
 import org.pixel.commons.lifecycle.Loadable;
 import org.pixel.commons.lifecycle.Updatable;
-import org.pixel.core.Camera2D;
+import org.pixel.graphics.Camera2D;
 import org.pixel.graphics.render.SpriteBatch;
 
 public class GameScene extends GameObjectContainer implements Loadable, Updatable, Drawable {
 
     private SpriteBatch spriteBatch;
     private Camera2D gameCamera;
-
-    /**
-     * Constructor.
-     *
-     * @param name       The name of the game scene.
-     * @param gameCamera The camera to use for this game scene.
-     */
-    public GameScene(String name, Camera2D gameCamera) {
-        this(name, gameCamera, new SpriteBatch());
-    }
 
     /**
      * Constructor.

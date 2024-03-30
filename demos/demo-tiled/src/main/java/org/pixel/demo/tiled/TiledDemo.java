@@ -5,20 +5,22 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.ConsoleLogger;
 import org.pixel.commons.logger.LogLevel;
 import org.pixel.content.ContentManager;
+import org.pixel.content.ContentManagerFactory;
 import org.pixel.content.importer.settings.ContentImporterSettings;
-import org.pixel.core.Camera2D;
 import org.pixel.ext.tiled.content.TiledMap;
 import org.pixel.ext.tiled.content.importer.TiledMapImporter;
 import org.pixel.ext.tiled.content.importer.TiledMapImporterSettings;
 import org.pixel.ext.tiled.content.importer.TiledTileSetImporter;
 import org.pixel.ext.tiled.view.TiledMapView;
-import org.pixel.graphics.DesktopGameSettings;
-import org.pixel.graphics.DesktopGameWindow;
+import org.pixel.graphics.Camera2D;
+import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.GameWindow;
+import org.pixel.graphics.render.SpriteBatchFactory;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 
-public class TiledDemo extends DesktopGameWindow {
+public class TiledDemo extends GameWindow {
 
     private static final float CAMERA_SPEED = 100f;
 
@@ -37,14 +39,14 @@ public class TiledDemo extends DesktopGameWindow {
      *
      * @param settings The settings to use.
      */
-    public TiledDemo(DesktopGameSettings settings) {
+    public TiledDemo(GameWindowSettings settings) {
         super(settings);
     }
 
     public static void main(String[] args) {
         final int width = 1280;
         final int height = 720;
-        var settings = new DesktopGameSettings(width, height);
+        var settings = new GameWindowSettings(width, height);
         settings.setTitle("Tiled Demo");
         settings.setWindowResizable(true);
         settings.setVsync(true);
@@ -62,8 +64,8 @@ public class TiledDemo extends DesktopGameWindow {
     public void load() {
         titleFpsCounter = new TitleFpsCounter(this);
         gameCamera = new Camera2D(this);
-        spriteBatch = new SpriteBatch();
-        contentManager = new ContentManager();
+        spriteBatch = SpriteBatchFactory.create(this);
+        contentManager = ContentManagerFactory.create();
 
         gameCamera.setOrigin(0.5f, 0.5f);
         gameCamera.setZoom(3f);

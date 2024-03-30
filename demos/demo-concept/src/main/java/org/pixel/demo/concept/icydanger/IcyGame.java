@@ -3,9 +3,9 @@ package org.pixel.demo.concept.icydanger;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
+import org.pixel.content.ContentManagerFactory;
 import org.pixel.content.Font;
 import org.pixel.content.Texture;
-import org.pixel.core.Camera2D;
 import org.pixel.demo.concept.commons.PlayerIndex;
 import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.demo.concept.commons.component.PlayerBoundaryComponent;
@@ -20,16 +20,18 @@ import org.pixel.ext.ldtk.LdtkGameIntLayer;
 import org.pixel.ext.ldtk.LdtkGameLevel;
 import org.pixel.ext.ldtk.LdtkGameWorld;
 import org.pixel.ext.ldtk.importer.LdtkGameWorldImporter;
-import org.pixel.graphics.DesktopGameSettings;
-import org.pixel.graphics.DesktopGameWindow;
+import org.pixel.graphics.Camera2D;
+import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.GameWindow;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.graphics.render.SpriteBatchFactory;
 import org.pixel.math.Boundary;
 import org.pixel.math.Rectangle;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class IcyGame extends DesktopGameWindow {
+public class IcyGame extends GameWindow {
 
     private ContentManager contentManager;
     private Camera2D gameCamera;
@@ -45,7 +47,7 @@ public class IcyGame extends DesktopGameWindow {
     private FpsCounter fpsCounter;
     private List<Rectangle> staticCollisionList;
 
-    public IcyGame(DesktopGameSettings settings) {
+    public IcyGame(GameWindowSettings settings) {
         super(settings);
     }
 
@@ -55,13 +57,13 @@ public class IcyGame extends DesktopGameWindow {
         var windowHeight = getSettings().getWindowHeight();
 
         fpsCounter = new FpsCounter(this);
-        contentManager = new ContentManager();
+        contentManager = ContentManagerFactory.create();
         contentManager.addContentImporter(new LdtkGameWorldImporter());
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
         uiCamera = new Camera2D(0, 0, windowWidth, windowHeight);
         uiCamera.setOrigin(0);
-        spriteBatch = new SpriteBatch();
+        spriteBatch = SpriteBatchFactory.create(this);
         gameScene = new GameScene("MainScene", gameCamera, spriteBatch);
 
         LdtkGameWorld tilemap = contentManager.load("icydanger.ldtk", LdtkGameWorld.class);
@@ -182,7 +184,7 @@ public class IcyGame extends DesktopGameWindow {
     public static void main(String[] args) {
         final int width = 800;
         final int height = 800;
-        var settings = new DesktopGameSettings(256, 256);
+        var settings = new GameWindowSettings(256, 256);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);

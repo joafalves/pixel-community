@@ -8,11 +8,13 @@ package org.pixel.demo.learning.input;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
+import org.pixel.content.ContentManagerFactory;
 import org.pixel.content.Texture;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.DesktopGameSettings;
+import org.pixel.graphics.GameWindowSettings;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.graphics.render.SpriteBatchFactory;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 import org.pixel.input.keyboard.KeyboardState;
@@ -31,7 +33,7 @@ public class KeyboardInputDemo extends DemoGame {
 
     private KeyboardState lastKeyboardState;
 
-    public KeyboardInputDemo(DesktopGameSettings settings) {
+    public KeyboardInputDemo(GameWindowSettings settings) {
         super(settings);
         setBackgroundColor(Color.BLACK);
     }
@@ -42,8 +44,8 @@ public class KeyboardInputDemo extends DemoGame {
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
-        content = new ContentManager();
-        spriteBatch = new SpriteBatch();
+        content = ContentManagerFactory.create();
+        spriteBatch = SpriteBatchFactory.create(this);
 
         // load texture into memory
         spriteTex = content.load("images/earth-48x48.png", Texture.class);
@@ -106,7 +108,7 @@ public class KeyboardInputDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        var settings = new DesktopGameSettings(600, 480);
+        var settings = new GameWindowSettings(600, 480);
         settings.setTitle("Input DEMO - use W or S keys to move the camera vertically");
         settings.setWindowResizable(false);
         settings.setMultisampling(2);

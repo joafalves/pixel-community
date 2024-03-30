@@ -2,39 +2,43 @@ package org.pixel.demo.learning.ecs;
 
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
-import org.pixel.core.Camera2D;
+import org.pixel.content.ContentManagerFactory;
 import org.pixel.ext.ecs.GameComponent;
 import org.pixel.ext.ecs.GameScene;
 import org.pixel.ext.ecs.Sprite;
-import org.pixel.graphics.DesktopGameSettings;
-import org.pixel.graphics.DesktopGameWindow;
+import org.pixel.graphics.Camera2D;
+import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.GameWindow;
+import org.pixel.graphics.render.SpriteBatchFactory;
 
-public class EcsHierarchyDemo extends DesktopGameWindow {
+public class EcsHierarchyDemo extends GameWindow {
 
     private ContentManager contentManager;
     private GameScene gameScene;
 
-    public EcsHierarchyDemo(DesktopGameSettings settings) {
+    public EcsHierarchyDemo(GameWindowSettings settings) {
         super(settings);
     }
 
     @Override
     public void load() {
-        contentManager = new ContentManager();
+        contentManager = ContentManagerFactory.create();
 
-        Sprite parent = new Sprite("parent", contentManager.loadTexture("images/earth-48x48.png"));
+        var spriteBatch = SpriteBatchFactory.create(this);
+
+        var parent = new Sprite("parent", contentManager.loadTexture("images/earth-48x48.png"));
         parent.getTransform().setScale(3f);
         parent.addComponent(new RotateComponent());
 
-        Sprite child = new Sprite("child", contentManager.loadTexture("images/earth-48x48.png"));
+        var child = new Sprite("child", contentManager.loadTexture("images/earth-48x48.png"));
         child.getTransform().setPosition(140, 0);
         child.getTransform().setScale(0.5f);
 
-        Sprite subChild = new Sprite("child", contentManager.loadTexture("images/earth-48x48.png"));
+        var subChild = new Sprite("child", contentManager.loadTexture("images/earth-48x48.png"));
         subChild.getTransform().setPosition(80, 0);
         subChild.getTransform().setScale(0.5f);
 
-        gameScene = new GameScene("SampleScene", new Camera2D(this));
+        gameScene = new GameScene("SampleScene", new Camera2D(this), spriteBatch);
         gameScene.addChild(parent);
         parent.addChild(child);
         child.addChild(subChild);
@@ -67,7 +71,7 @@ public class EcsHierarchyDemo extends DesktopGameWindow {
     }
 
     public static void main(String[] args) {
-        var settings = new DesktopGameSettings(600, 480);
+        var settings = new GameWindowSettings(600, 480);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);

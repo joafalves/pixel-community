@@ -7,5 +7,6 @@ project.ext.mavenPublish = true
 
 dependencies {
     api project(":${rootProject.name}-commons")
+    api project(":${rootProject.name}-content")
     api project(":${rootProject.name}-math")
 }

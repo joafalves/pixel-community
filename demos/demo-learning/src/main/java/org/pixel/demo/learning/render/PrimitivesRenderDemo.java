@@ -3,15 +3,15 @@ package org.pixel.demo.learning.render;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.DesktopGameSettings;
-import org.pixel.graphics.render.NvgRenderEngine;
+import org.pixel.graphics.GameWindowSettings;
 import org.pixel.graphics.render.RenderEngine2D;
+import org.pixel.graphics.render.nanovg.NvgRenderEngine;
 
 public class PrimitivesRenderDemo extends DemoGame {
 
     private RenderEngine2D re;
 
-    public PrimitivesRenderDemo(DesktopGameSettings settings) {
+    public PrimitivesRenderDemo(GameWindowSettings settings) {
         super(settings);
     }
 
@@ -98,7 +98,7 @@ public class PrimitivesRenderDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        var settings = new DesktopGameSettings(600, 400);
+        var settings = new GameWindowSettings(600, 400);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);

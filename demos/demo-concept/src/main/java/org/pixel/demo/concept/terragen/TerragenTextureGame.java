@@ -25,19 +25,20 @@ import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.Texture;
 import org.pixel.content.opengl.GLTexture;
-import org.pixel.core.Camera2D;
 import org.pixel.demo.concept.commons.FpsCounter;
-import org.pixel.graphics.DesktopGameSettings;
-import org.pixel.graphics.DesktopGameWindow;
+import org.pixel.graphics.Camera2D;
+import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.GameWindow;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.graphics.render.SpriteBatchFactory;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Rectangle;
 
-public class TerragenTextureGame extends DesktopGameWindow {
+public class TerragenTextureGame extends GameWindow {
 
-    private final Logger log = LoggerFactory.getLogger(TerragenGame.class);
+    private final Logger log = LoggerFactory.getLogger(TerragenTextureGame.class);
 
     private final static int SCREEN_WIDTH = 1280;
     private final static int SCREEN_HEIGHT = 720;
@@ -66,13 +67,13 @@ public class TerragenTextureGame extends DesktopGameWindow {
      *
      * @param settings The settings to use.
      */
-    public TerragenTextureGame(DesktopGameSettings settings) {
+    public TerragenTextureGame(GameWindowSettings settings) {
         super(settings);
     }
 
     @Override
     public void load() {
-        spriteBatch = new SpriteBatch();
+        spriteBatch = SpriteBatchFactory.create(this);
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
         fpsCounter = new FpsCounter(this, "Press R to reset seed");
@@ -237,7 +238,7 @@ public class TerragenTextureGame extends DesktopGameWindow {
     }
 
     public static void main(String[] args) {
-        var settings = new DesktopGameSettings(SCREEN_WIDTH, SCREEN_HEIGHT);
+        var settings = new GameWindowSettings(SCREEN_WIDTH, SCREEN_HEIGHT);
         settings.setWindowResizable(true);
         settings.setMultisampling(2);
         settings.setVsync(true);

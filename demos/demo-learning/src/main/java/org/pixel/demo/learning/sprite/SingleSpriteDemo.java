@@ -8,11 +8,13 @@ package org.pixel.demo.learning.sprite;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
+import org.pixel.content.ContentManagerFactory;
 import org.pixel.content.Texture;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.DesktopGameSettings;
+import org.pixel.graphics.GameWindowSettings;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.graphics.render.SpriteBatchFactory;
 import org.pixel.math.Vector2;
 
 public class SingleSpriteDemo extends DemoGame {
@@ -21,7 +23,7 @@ public class SingleSpriteDemo extends DemoGame {
     private SpriteBatch spriteBatch;
     private Texture spriteTex;
 
-    public SingleSpriteDemo(DesktopGameSettings settings) {
+    public SingleSpriteDemo(GameWindowSettings settings) {
         super(settings);
         setBackgroundColor(Color.BLACK);
     }
@@ -32,8 +34,8 @@ public class SingleSpriteDemo extends DemoGame {
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
-        content = new ContentManager();
-        spriteBatch = new SpriteBatch();
+        content = ContentManagerFactory.create();
+        spriteBatch = SpriteBatchFactory.create(this);
 
         // load texture into memory
         spriteTex = content.load("images/screenshot-600x320.png", Texture.class);
@@ -66,7 +68,7 @@ public class SingleSpriteDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        var settings = new DesktopGameSettings(600, 320);
+        var settings = new GameWindowSettings(600, 320);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);

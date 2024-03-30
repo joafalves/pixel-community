@@ -2,35 +2,40 @@ package org.pixel.demo.learning.ecs;
 
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
-import org.pixel.core.Camera2D;
+import org.pixel.content.ContentManagerFactory;
 import org.pixel.ext.ecs.GameComponent;
 import org.pixel.ext.ecs.GameScene;
 import org.pixel.ext.ecs.Sprite;
-import org.pixel.graphics.DesktopGameSettings;
-import org.pixel.graphics.DesktopGameWindow;
+import org.pixel.graphics.Camera2D;
+import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.GameWindow;
+import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.graphics.render.SpriteBatchFactory;
 import org.pixel.math.MathHelper;
 
 /**
  * Entity Component System demo.
  */
-public class EcsDemo extends DesktopGameWindow {
+public class EcsDemo extends GameWindow {
 
     private ContentManager contentManager;
     private GameScene gameScene;
 
-    public EcsDemo(DesktopGameSettings settings) {
+    public EcsDemo(GameWindowSettings settings) {
         super(settings);
     }
 
     @Override
     public void load() {
-        contentManager = new ContentManager();
+        contentManager = ContentManagerFactory.create();
+
+        SpriteBatch spriteBatch = SpriteBatchFactory.create(this);
 
         Sprite sprite = new Sprite("earth", contentManager.loadTexture("images/earth-48x48.png"));
         sprite.getTransform().setScale(3f);
         sprite.addComponent(new MovementComponent());
 
-        gameScene = new GameScene("SampleScene", new Camera2D(this));
+        gameScene = new GameScene("SampleScene", new Camera2D(this), spriteBatch);
         gameScene.addChild(sprite);
     }
 
@@ -63,7 +68,7 @@ public class EcsDemo extends DesktopGameWindow {
     }
 
     public static void main(String[] args) {
-        var settings = new DesktopGameSettings(600, 480);
+        var settings = new GameWindowSettings(600, 480);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
