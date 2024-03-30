@@ -12,15 +12,14 @@ include "modules/commons", "modules/math", "modules/graphics", "modules/desktop"
 
 // extensions:
 include "extensions/ext-log4j2", "extensions/ext-ldtk", "extensions/ext-ecs", \
-    "extensions/ext-ecs-extra", "extensions/ext-tween", "extensions/ext-tiled"
+    "extensions/ext-ecs-extra", "extensions/ext-tween" 
 
 // tools:
 include "tools/forge"
 
 // demos:
 if (System.properties["PIXEL_RELEASE"] == null) {
-    include "demos/demo-learning", "demos/demo-concept", "demos/demo-imgui", "demos/demo-kotlin", "demos/demo-ldtk", \
-         "demos/demo-tiled"
+    include "demos/demo-learning", "demos/demo-concept", "demos/demo-imgui", "demos/demo-ldtk" 
 }
 
 rootProject.children.each {

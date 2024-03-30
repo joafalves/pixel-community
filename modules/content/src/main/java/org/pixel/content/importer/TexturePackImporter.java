@@ -6,6 +6,7 @@
 package org.pixel.content.importer;
 
 import java.util.HashMap;
+
 import org.json.JSONObject;
 import org.pixel.commons.AttributeMap;
 import org.pixel.commons.logger.Logger;

@@ -120,6 +120,7 @@ public class GLSpriteBatch implements SpriteBatch {
         if (shaderTextureCount <= 0) {
             log.trace("Setting max number of textures based on 'GL_MAX_TEXTURE_IMAGE_UNITS'.");
 
+            // get the maximum number of textures allowed by the graphics device: 
             int[] textureUnits = new int[1];
             glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, textureUnits);
             this.shaderTextureCount = textureUnits[0] > 0 ? textureUnits[0] : 1;

@@ -12,7 +12,7 @@ if (version == null || version == "unspecified") {
 
 project.ext.dependencyMap = [
         lwjgl: "3.3.3",
-        lombok: "1.18.30",
+        lombok: "1.18.32",
         junit: "5.10.2",
         mockito: "4.8.0"
 ]
@@ -57,22 +57,6 @@ allprojects {
     }
 
     dependencies {
-        api group: "org.lwjgl", name: "lwjgl", version: rootProject.ext.dependencyMap["lwjgl"]
-        api group: "org.lwjgl", name: "lwjgl-glfw", version: rootProject.ext.dependencyMap["lwjgl"]
-        api group: "org.lwjgl", name: "lwjgl-opengl", version: rootProject.ext.dependencyMap["lwjgl"]
-        api group: "org.lwjgl", name: "lwjgl-openal", version: rootProject.ext.dependencyMap["lwjgl"]
-        api group: "org.lwjgl", name: "lwjgl-stb", version: rootProject.ext.dependencyMap["lwjgl"]
-        api group: "org.lwjgl", name: "lwjgl-nanovg", version: rootProject.ext.dependencyMap["lwjgl"]
-
-        rootProject.ext.buildTargetList.forEach { classifier ->
-            runtimeOnly group: "org.lwjgl", name: "lwjgl", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
-            runtimeOnly group: "org.lwjgl", name: "lwjgl-opengl", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
-            runtimeOnly group: "org.lwjgl", name: "lwjgl-openal", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
-            runtimeOnly group: "org.lwjgl", name: "lwjgl-glfw", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
-            runtimeOnly group: "org.lwjgl", name: "lwjgl-stb", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
-            runtimeOnly group: "org.lwjgl", name: "lwjgl-nanovg", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
-        }
-
         // lombok
         compileOnly "org.projectlombok:lombok:${rootProject.ext.dependencyMap["lombok"]}"
         annotationProcessor "org.projectlombok:lombok:${rootProject.ext.dependencyMap["lombok"]}"

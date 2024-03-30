@@ -44,7 +44,7 @@ public class SingleSpriteDemo extends PixelWindow {
         // load up of resources and game managers/utilities
         gameCamera = new Camera2D(this);
         content = ContentManagerFactory.create();
-        spriteBatch = new SpriteBatch();
+        spriteBatch = SpriteBatchFactory.create(this);
 
         // example of loading a texture into memory:
         spriteTex = content.load("<texture_path>", Texture.class);
@@ -91,7 +91,6 @@ The framework functionality is divided into multiple modules which can be import
         ├── ext-ecs-extra           # ECS utility components
         ├── ext-ldtk                # LDTK extension
         ├── ext-log4j2              # Log4j2 extension
-        ├── ext-tiled               # TileD extension
         └── ext-tween               # Tween extension
     .modules/                       # The principal modules of the framework
         ├── commons                 # Common utility classes

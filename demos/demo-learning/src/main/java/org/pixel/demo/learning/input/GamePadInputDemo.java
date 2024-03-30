@@ -34,7 +34,6 @@ public class GamePadInputDemo extends DemoGame {
 
     public GamePadInputDemo(GameWindowSettings settings) {
         super(settings);
-        setBackgroundColor(Color.BLACK);
     }
 
     @Override

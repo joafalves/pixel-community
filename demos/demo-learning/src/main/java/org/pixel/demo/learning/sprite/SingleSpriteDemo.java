@@ -25,7 +25,6 @@ public class SingleSpriteDemo extends DemoGame {
 
     public SingleSpriteDemo(GameWindowSettings settings) {
         super(settings);
-        setBackgroundColor(Color.BLACK);
     }
 
     @Override

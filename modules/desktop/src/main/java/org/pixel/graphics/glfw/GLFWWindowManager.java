@@ -61,7 +61,7 @@ import org.pixel.commons.data.ImageData;
 import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.commons.util.IOUtils;
+import org.pixel.desktop.io.IOUtils;
 import org.pixel.graphics.GameWindowSettings;
 import org.pixel.graphics.DesktopWindowManager;
 import org.pixel.graphics.GraphicsBackend;

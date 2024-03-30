@@ -5,7 +5,7 @@ import org.pixel.content.importer.GLFontImporter;
 import org.pixel.content.importer.GLTextureImporter;
 import org.pixel.content.importer.TextImporter;
 import org.pixel.content.importer.TexturePackImporter;
-import org.pixel.content.importer.VorbisAudioImporter;
+import org.pixel.content.importer.ALVorbisAudioImporter;
 
 public class ContentManagerFactory {
 
@@ -15,11 +15,11 @@ public class ContentManagerFactory {
      * @return The content manager instance.
      */
     public static ContentManager create() {
-        return new ContentManager(
+        return new ContentManager(new DesktopResourceLoader(),
                 // DESKTOP SPECIFIC IMPORTERS
                 new GLTextureImporter(),
                 new GLFontImporter(),
-                new VorbisAudioImporter(),
+                new ALVorbisAudioImporter(),
 
                 // COMMON IMPORTERS
                 new TextImporter(),

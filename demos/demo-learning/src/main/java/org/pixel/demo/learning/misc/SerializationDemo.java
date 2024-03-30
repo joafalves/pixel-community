@@ -3,8 +3,9 @@ package org.pixel.demo.learning.misc;
 import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import org.pixel.commons.util.DataSerializer;
+
 import org.pixel.demo.learning.common.DemoGame;
+import org.pixel.desktop.io.DataSerializer;
 import org.pixel.graphics.GameWindowSettings;
 import org.pixel.math.Vector2;
 

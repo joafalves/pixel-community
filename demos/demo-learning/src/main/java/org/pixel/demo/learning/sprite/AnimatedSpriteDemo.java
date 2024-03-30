@@ -33,7 +33,6 @@ public class AnimatedSpriteDemo extends DemoGame {
 
     public AnimatedSpriteDemo(GameWindowSettings settings) {
         super(settings);
-        setBackgroundColor(Color.BLACK);
     }
 
     @Override

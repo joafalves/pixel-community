@@ -35,7 +35,6 @@ public class KeyboardInputDemo extends DemoGame {
 
     public KeyboardInputDemo(GameWindowSettings settings) {
         super(settings);
-        setBackgroundColor(Color.BLACK);
     }
 
     @Override

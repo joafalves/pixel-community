@@ -43,8 +43,9 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
     }
 
     /**
-     * Disposes this game object instance and all of its children. Notice that if it has a parent, it will automatically
-     * detach this instance after the current cycle is executed.
+     * Disposes this game object instance and all of its children. Notice that if it
+     * has a parent, it will automatically detach this instance after the current
+     * cycle is executed.
      */
     @Override
     public void dispose() {
@@ -62,13 +63,13 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
      * @return A copied instance of this game object.
      */
     public GameObjectContainer copy() {
-        //Serialization of object
+        // Serialization of object
         try {
             var bos = new ByteArrayOutputStream();
             var out = new ObjectOutputStream(bos);
             out.writeObject(this);
 
-            //De-serialization of object
+            // De-serialization of object
             var bis = new ByteArrayInputStream(bos.toByteArray());
             var in = new ObjectInputStream(bis);
 
@@ -206,8 +207,9 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
     }
 
     /**
-     * Remove a child from this game object. Use this function outside the game loop, or it may cause a concurrent
-     * modification exception. To remove a child safely, use {@link #dispose()} instead.
+     * Remove a child from this game object. Use this function outside the game
+     * loop, or it may cause a concurrent modification exception. To remove a child
+     * safely, use {@link #dispose()} instead.
      *
      * @param child The child to remove.
      * @return True if the child was removed, false otherwise.
@@ -229,7 +231,6 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
     public List<GameObject> getChildren() {
         return this.children;
     }
-
 
     /**
      * Get the parent of this game object.
