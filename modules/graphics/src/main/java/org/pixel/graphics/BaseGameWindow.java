@@ -70,6 +70,10 @@ public abstract class BaseGameWindow<T extends WindowManager, S extends Graphics
             log.error("Failed to initialize the audio device.");
             return false;
         }
+        if (!initServices()) {
+            log.error("Failed to initialize the services.");
+            return false;
+        }
 
         // At this point, the window, audio and rendering engines are initialized. Now
         // it's time to
@@ -131,6 +135,13 @@ public abstract class BaseGameWindow<T extends WindowManager, S extends Graphics
      * @return True if the audio context was initialized successfully.
      */
     protected abstract boolean initAudio();
+
+    /**
+     * Initialize the services.
+     * 
+     * @return True if the services were initialized successfully.
+     */
+    protected abstract boolean initServices();
 
     /**
      * Starts the game loop. To terminate the loop, call {@link #close()} or close

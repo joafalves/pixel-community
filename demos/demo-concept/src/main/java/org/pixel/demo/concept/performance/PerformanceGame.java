@@ -7,10 +7,10 @@ package org.pixel.demo.concept.performance;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.ServiceProvider;
 import org.pixel.commons.logger.ConsoleLogger;
 import org.pixel.commons.logger.LogLevel;
 import org.pixel.content.ContentManager;
-import org.pixel.content.ContentManagerFactory;
 import org.pixel.content.Texture;
 import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.demo.concept.performance.component.ConstantVelocityBoundComponent;
@@ -21,7 +21,6 @@ import org.pixel.graphics.Camera2D;
 import org.pixel.graphics.GameWindowSettings;
 import org.pixel.graphics.GameWindow;
 import org.pixel.graphics.render.SpriteBatch;
-import org.pixel.graphics.render.SpriteBatchFactory;
 import org.pixel.math.Boundary;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
@@ -44,8 +43,8 @@ public class PerformanceGame extends GameWindow {
     @Override
     public void load() {
         fpsCounter = new FpsCounter(this);
-        contentManager = ContentManagerFactory.create();
-        spriteBatch = SpriteBatchFactory.create(this);
+        spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        contentManager = ServiceProvider.create(ContentManager.class);
         gameScene = new GameScene("GameScene01", new Camera2D(this, Vector2.zero()), spriteBatch);
 
         var screenBoundary = new Boundary(0, 0, getVirtualWidth(), getVirtualHeight());

@@ -11,10 +11,15 @@ import java.nio.ByteBuffer;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;
+import org.pixel.commons.ServiceProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.content.ContentManager;
+import org.pixel.content.GLContentManagerFactory;
 import org.pixel.graphics.glfw.GLFWWindowManager;
 import org.pixel.graphics.opengl.GLGraphicsDevice;
+import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.graphics.render.opengl.GLSpriteBatchServiceFactory;
 
 public class GameWindow extends BaseGameWindow<DesktopWindowManager, GLGraphicsDevice, GameWindowSettings> {
 
@@ -77,6 +82,23 @@ public class GameWindow extends BaseGameWindow<DesktopWindowManager, GLGraphicsD
         } catch (Exception e) {
             log.error("Exception caught while initializing the audio device!", e);
             return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    protected boolean initServices() {
+        switch (this.settings.getGraphicsBackend()) {
+            case OpenGL:
+                ServiceProvider.register(SpriteBatch.class, new GLSpriteBatchServiceFactory());
+                ServiceProvider.register(ContentManager.class, new GLContentManagerFactory());
+                break;
+            case Vulkan:
+                throw new UnsupportedOperationException("Vulkan is not supported yet.");
+            default:
+                throw new UnsupportedOperationException(
+                        "Unsupported graphics backend: " + this.settings.getGraphicsBackend());
         }
 
         return true;

@@ -1,9 +1,9 @@
 package org.pixel.demo.concept.spaceshooter;
 
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.ServiceProvider;
 import org.pixel.commons.event.EventManager;
 import org.pixel.content.ContentManager;
-import org.pixel.content.ContentManagerFactory;
 import org.pixel.content.Texture;
 import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.demo.concept.commons.component.PlayerBoundaryComponent;
@@ -22,8 +22,8 @@ import org.pixel.ext.ecs.component.ConstantVelocityComponent;
 import org.pixel.ext.ecs.component.SpriteAnimationComponent;
 import org.pixel.graphics.Camera2D;
 import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.graphics.GameWindow;
-import org.pixel.graphics.render.SpriteBatchFactory;
 import org.pixel.math.Boundary;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Rectangle;
@@ -48,7 +48,8 @@ public class SpaceShooterGame extends GameWindow {
     @Override
     public void load() {
         fpsCounter = new FpsCounter(this);
-        content = ContentManagerFactory.create();
+        var spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        var content = ServiceProvider.create(ContentManager.class);
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
 
@@ -58,7 +59,6 @@ public class SpaceShooterGame extends GameWindow {
         explosionTexture = content.loadTexture("spaceshooter/explosion.png");
 
         // game scene
-        var spriteBatch = SpriteBatchFactory.create(this);
         gameScene = new GameScene("MainScene", gameCamera, spriteBatch);
 
         // instances

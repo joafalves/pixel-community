@@ -6,8 +6,8 @@
 package org.pixel.demo.learning.audio;
 
 import org.pixel.audio.AudioEngine;
+import org.pixel.commons.ServiceProvider;
 import org.pixel.content.ContentManager;
-import org.pixel.content.ContentManagerFactory;
 import org.pixel.content.Sound;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.graphics.GameWindowSettings;
@@ -15,7 +15,7 @@ import org.pixel.graphics.GameWindowSettings;
 public class AudioDemo extends DemoGame {
 
     protected Sound sound;
-    protected ContentManager content;
+    protected ContentManager contentManager;
 
     public AudioDemo(GameWindowSettings settings) {
         super(settings);
@@ -24,10 +24,10 @@ public class AudioDemo extends DemoGame {
     @Override
     public void load() {
         // general game instances
-        content = ContentManagerFactory.create();
+        contentManager = ServiceProvider.create(ContentManager.class);
 
         // load the audio source into memory
-        sound = content.load("audio/sfx_step_grass.ogg", Sound.class);
+        sound = contentManager.load("audio/sfx_step_grass.ogg", Sound.class);
 
         // play the sound continuously
         AudioEngine.play(sound, true);
@@ -35,7 +35,7 @@ public class AudioDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        content.dispose();
+        contentManager.dispose();
         sound.dispose();
         super.dispose();
     }

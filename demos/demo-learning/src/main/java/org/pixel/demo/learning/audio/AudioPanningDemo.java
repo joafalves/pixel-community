@@ -8,10 +8,10 @@ package org.pixel.demo.learning.audio;
 import org.pixel.audio.AudioEngine;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.ServiceProvider;
 import org.pixel.content.Texture;
 import org.pixel.graphics.Camera2D;
 import org.pixel.graphics.GameWindowSettings;
-import org.pixel.graphics.render.SpriteBatchFactory;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
@@ -33,11 +33,11 @@ public class AudioPanningDemo extends AudioDemo {
     public void load() {
         super.load();
 
-        spriteBatch = SpriteBatchFactory.create(this);
+        spriteBatch = ServiceProvider.create(SpriteBatch.class);
         camera = new Camera2D(this);
         texturePosition = new Vector2();
 
-        texture = content.load("images/earth-48x48.png", Texture.class);
+        texture = contentManager.load("images/earth-48x48.png", Texture.class);
     }
 
     @Override

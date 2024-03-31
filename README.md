@@ -41,13 +41,14 @@ public class SingleSpriteDemo extends GameWindow {
 
     @Override
     public void load() {
-        // load up of resources and game managers/utilities
+        // load up of resources and game utilities:
+        content = ServiceProvider.create(ContentManager.class);
+        spriteBatch = ServiceProvider.create(SpriteBatch.class);
         gameCamera = new Camera2D(this);
-        content = ContentManagerFactory.create();
-        spriteBatch = SpriteBatchFactory.create(this);
 
         // example of loading a texture into memory:
         spriteTex = content.load("<texture_path>", Texture.class);
+        // ... or with the built-in 'texture' method: content.loadTexture(...)
     }
 
     @Override
@@ -116,9 +117,13 @@ The framework functionality is divided into multiple modules which can be import
             │   └── test             # Module Test Source classes
             └── build.gradle         # Module Gradle build file (contains inner dependency definitions)
 
-### Development requirements ###
+### Runtime requirements ###
 
 - Java/JVM 17.x+
+
+### Development requirements ###
+
+- (All Runtime requirements)
 - Gradle 8.x+ (gradle wrapper available)
 
 ### Runtime OS compatibility ###

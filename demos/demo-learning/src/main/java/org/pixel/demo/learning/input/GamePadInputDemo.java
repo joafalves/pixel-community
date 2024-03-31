@@ -7,14 +7,13 @@ package org.pixel.demo.learning.input;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.ServiceProvider;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
-import org.pixel.content.ContentManagerFactory;
 import org.pixel.content.Texture;
 import org.pixel.graphics.GameWindowSettings;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
-import org.pixel.graphics.render.SpriteBatchFactory;
 import org.pixel.input.gamepad.GamePad;
 import org.pixel.input.gamepad.GamePadButton;
 import org.pixel.input.gamepad.GamePadIndex;
@@ -42,8 +41,8 @@ public class GamePadInputDemo extends DemoGame {
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
-        content = ContentManagerFactory.create();
-        spriteBatch = SpriteBatchFactory.create(this);
+        spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        content = ServiceProvider.create(ContentManager.class);
 
         // load texture into memory
         spriteTex = content.load("images/earth-48x48.png", Texture.class);
@@ -62,10 +61,10 @@ public class GamePadInputDemo extends DemoGame {
 
         if (state != null) { // is game pad data from player 1 available?
             if (state.isButtonDown(GamePadButton.DPAD_UP)) {
-                gameCamera.translate(0,-MOVEMENT_SPEED * delta.getElapsed()); // translate camera vertically
+                gameCamera.translate(0, -MOVEMENT_SPEED * delta.getElapsed()); // translate camera vertically
 
             } else if (state.isButtonDown(GamePadButton.DPAD_DOWN)) {
-                gameCamera.translate(0,MOVEMENT_SPEED * delta.getElapsed()); // translate camera vertically
+                gameCamera.translate(0, MOVEMENT_SPEED * delta.getElapsed()); // translate camera vertically
             }
         }
     }

@@ -7,14 +7,13 @@ package org.pixel.demo.learning.sprite;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.ServiceProvider;
 import org.pixel.content.ContentManager;
-import org.pixel.content.ContentManagerFactory;
 import org.pixel.content.Texture;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.graphics.GameWindowSettings;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
-import org.pixel.graphics.render.SpriteBatchFactory;
 import org.pixel.math.Vector2;
 
 public class SingleSpriteDemo extends DemoGame {
@@ -33,8 +32,8 @@ public class SingleSpriteDemo extends DemoGame {
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
-        content = ContentManagerFactory.create();
-        spriteBatch = SpriteBatchFactory.create(this);
+        spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        content = ServiceProvider.create(ContentManager.class);
 
         // load texture into memory
         spriteTex = content.load("images/screenshot-600x320.png", Texture.class);

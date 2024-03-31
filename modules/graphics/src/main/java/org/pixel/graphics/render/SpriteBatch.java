@@ -233,4 +233,11 @@ public interface SpriteBatch extends Initializable, Disposable {
      * End drawing phase.
      */
     public void end();
+
+    /**
+     * Resize the buffer batch size. This will reset the buffer write index - make sure to call outside of the drawing loop.
+     *
+     * @param newSize The new size.
+     */
+    public void resizeBuffer(int newSize);
 }

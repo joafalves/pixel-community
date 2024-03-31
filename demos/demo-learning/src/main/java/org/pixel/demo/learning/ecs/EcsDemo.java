@@ -1,8 +1,8 @@
 package org.pixel.demo.learning.ecs;
 
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.ServiceProvider;
 import org.pixel.content.ContentManager;
-import org.pixel.content.ContentManagerFactory;
 import org.pixel.ext.ecs.GameComponent;
 import org.pixel.ext.ecs.GameScene;
 import org.pixel.ext.ecs.Sprite;
@@ -10,7 +10,6 @@ import org.pixel.graphics.Camera2D;
 import org.pixel.graphics.GameWindowSettings;
 import org.pixel.graphics.GameWindow;
 import org.pixel.graphics.render.SpriteBatch;
-import org.pixel.graphics.render.SpriteBatchFactory;
 import org.pixel.math.MathHelper;
 
 /**
@@ -27,9 +26,8 @@ public class EcsDemo extends GameWindow {
 
     @Override
     public void load() {
-        contentManager = ContentManagerFactory.create();
-
-        SpriteBatch spriteBatch = SpriteBatchFactory.create(this);
+        var spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        contentManager = ServiceProvider.create(ContentManager.class);
 
         Sprite sprite = new Sprite("earth", contentManager.loadTexture("images/earth-48x48.png"));
         sprite.getTransform().setScale(3f);

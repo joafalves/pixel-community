@@ -2,8 +2,8 @@ package org.pixel.demo.concept.icydanger;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.ServiceProvider;
 import org.pixel.content.ContentManager;
-import org.pixel.content.ContentManagerFactory;
 import org.pixel.content.Font;
 import org.pixel.content.Texture;
 import org.pixel.demo.concept.commons.PlayerIndex;
@@ -24,7 +24,6 @@ import org.pixel.graphics.Camera2D;
 import org.pixel.graphics.GameWindowSettings;
 import org.pixel.graphics.GameWindow;
 import org.pixel.graphics.render.SpriteBatch;
-import org.pixel.graphics.render.SpriteBatchFactory;
 import org.pixel.math.Boundary;
 import org.pixel.math.Rectangle;
 
@@ -57,13 +56,13 @@ public class IcyGame extends GameWindow {
         var windowHeight = getSettings().getWindowHeight();
 
         fpsCounter = new FpsCounter(this);
-        contentManager = ContentManagerFactory.create();
+        spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        contentManager = ServiceProvider.create(ContentManager.class);
         contentManager.addContentImporter(new LdtkGameWorldImporter());
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
         uiCamera = new Camera2D(0, 0, windowWidth, windowHeight);
         uiCamera.setOrigin(0);
-        spriteBatch = SpriteBatchFactory.create(this);
         gameScene = new GameScene("MainScene", gameCamera, spriteBatch);
 
         LdtkGameWorld tilemap = contentManager.load("icydanger.ldtk", LdtkGameWorld.class);

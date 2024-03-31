@@ -64,15 +64,16 @@ public class GLSpriteBatch implements SpriteBatch {
     private final HashMap<Integer, Integer> shaderTextureMap = new HashMap<>();
     private final GLVertexBufferObject vbo;
     private final GLVertexArrayObject vao;
-    private final FloatBuffer dataBuffer;
     private final FloatBuffer matrixBuffer;
-    private final SpriteData[] spriteData;
+
     private final Vector2 anchorZero = Vector2.zero();
-    private final int bufferMaxSize;
     private final int shaderTextureCount;
 
+    private FloatBuffer dataBuffer;
+    private SpriteData[] spriteData;
     private GLShader shader;
-    private int bufferCount;
+    private int bufferMaxSize;
+    private int bufferWriteIndex;
     private int lastTextureId;
     private int lastDepthLevel;
     private boolean hasDifferentDepthLevels;
@@ -109,18 +110,16 @@ public class GLSpriteBatch implements SpriteBatch {
             throw new RuntimeException("Invalid buffer size, must be greater than zero");
         }
 
-        this.vbo = new GLVertexBufferObject();
-        this.matrixBuffer = MemoryUtil.memAllocFloat(4 * 4);
-        this.spriteData = new SpriteData[bufferMaxSize];
         this.bufferMaxSize = bufferMaxSize;
-        this.dataBuffer = MemoryUtil.memAllocFloat(SPRITE_UNIT_LENGTH * bufferMaxSize);
+        this.matrixBuffer = MemoryUtil.memAllocFloat(4 * 4);
+        this.vbo = new GLVertexBufferObject();
         this.vao = new GLVertexArrayObject();
-        this.bufferCount = 0;
+        this.bufferWriteIndex = 0;
 
         if (shaderTextureCount <= 0) {
             log.trace("Setting max number of textures based on 'GL_MAX_TEXTURE_IMAGE_UNITS'.");
 
-            // get the maximum number of textures allowed by the graphics device: 
+            // get the maximum number of textures allowed by the graphics device:
             int[] textureUnits = new int[1];
             glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, textureUnits);
             this.shaderTextureCount = textureUnits[0] > 0 ? textureUnits[0] : 1;
@@ -131,7 +130,6 @@ public class GLSpriteBatch implements SpriteBatch {
 
         log.trace("Buffer max size (units): '{}'.", this.bufferMaxSize);
         log.trace("Shader texture count: '{}'.", this.shaderTextureCount);
-        log.trace("Data buffer capacity: '{}'.", dataBuffer.capacity());
 
         this.init();
     }
@@ -170,10 +168,7 @@ public class GLSpriteBatch implements SpriteBatch {
         glEnableVertexAttribArray(aTextureId);
         glVertexAttribPointer(aTextureId, 1, GL_FLOAT, false, ATTRIBUTE_STRIDE, 8 * Float.BYTES);
 
-        // initialize sprite data objects
-        for (int i = 0; i < bufferMaxSize; i++) {
-            this.spriteData[i] = new SpriteData();
-        }
+        this.initBuffer();
 
         return true;
     }
@@ -334,7 +329,7 @@ public class GLSpriteBatch implements SpriteBatch {
                 continue;
             }
 
-            SpriteData spriteData = getNextSpriteDataObject();
+            var spriteData = getNextSpriteDataObject();
             spriteData.active = true;
             spriteData.textureId = font.getTextureId();
             spriteData.textureWidth = font.getTextureWidth();
@@ -368,7 +363,7 @@ public class GLSpriteBatch implements SpriteBatch {
     public void begin(Matrix4 viewMatrix, BlendMode blendMode) {
         dataBuffer.clear();
         shaderTextureMap.clear();
-        bufferCount = 0;
+        bufferWriteIndex = 0;
         lastTextureId = -1;
         lastDepthLevel = -1;
         hasDifferentDepthLevels = false;
@@ -404,8 +399,37 @@ public class GLSpriteBatch implements SpriteBatch {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
+    @Override
+    public void resizeBuffer(int newSize) {
+        if (newSize <= 0) {
+            throw new RuntimeException("Invalid buffer size, must be greater than zero");
+        }
+
+        if (newSize == bufferMaxSize) {
+            return; // no need to resize
+        }
+
+        this.bufferMaxSize = newSize;
+        this.initBuffer();
+    }
+
+    private void initBuffer() {
+        if (this.dataBuffer != null) {
+            MemoryUtil.memFree(dataBuffer);
+        }
+
+        this.spriteData = new SpriteData[bufferMaxSize];
+        this.dataBuffer = MemoryUtil.memAllocFloat(SPRITE_UNIT_LENGTH * bufferMaxSize);
+        this.bufferWriteIndex = 0; // Ensure the buffer write index is reset because the buffer size has changed
+
+        // initialize sprite data objects
+        for (int i = 0; i < bufferMaxSize; i++) {
+            this.spriteData[i] = new SpriteData();
+        }
+    }
+
     private SpriteData getNextSpriteDataObject() {
-        return this.spriteData[this.bufferCount++];
+        return this.spriteData[this.bufferWriteIndex++];
     }
 
     private void putTexture(SpriteData spriteData) {
@@ -434,7 +458,7 @@ public class GLSpriteBatch implements SpriteBatch {
 
         // draw the sprite data..
         int count = 0;
-        for (int i = 0; i < bufferCount; ++i) {
+        for (int i = 0; i < bufferWriteIndex; ++i) {
             SpriteData spriteData = this.spriteData[i];
             if (!spriteData.active) {
                 continue; // skip inactive sprites
@@ -464,7 +488,7 @@ public class GLSpriteBatch implements SpriteBatch {
 
         hasDifferentDepthLevels = false;
         lastDepthLevel = -1;
-        bufferCount = 0;
+        bufferWriteIndex = 0;
     }
 
     private void processSpriteData(SpriteData sprite) {
@@ -543,7 +567,7 @@ public class GLSpriteBatch implements SpriteBatch {
     }
 
     private void spriteDataAdded() {
-        if (bufferCount >= bufferMaxSize) {
+        if (bufferWriteIndex >= bufferMaxSize) {
             flush();
         }
     }

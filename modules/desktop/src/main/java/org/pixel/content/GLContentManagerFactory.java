@@ -1,5 +1,6 @@
 package org.pixel.content;
 
+import org.pixel.commons.ServiceFactory;
 import org.pixel.content.importer.ByteBufferImporter;
 import org.pixel.content.importer.GLFontImporter;
 import org.pixel.content.importer.GLTextureImporter;
@@ -7,14 +8,10 @@ import org.pixel.content.importer.TextImporter;
 import org.pixel.content.importer.TexturePackImporter;
 import org.pixel.content.importer.ALVorbisAudioImporter;
 
-public class ContentManagerFactory {
+public class GLContentManagerFactory implements ServiceFactory<ContentManager> {
 
-    /**
-     * Create content manager with default importers.
-     * 
-     * @return The content manager instance.
-     */
-    public static ContentManager create() {
+    @Override
+    public ContentManager create() {
         return new ContentManager(new DesktopResourceLoader(),
                 // DESKTOP SPECIFIC IMPORTERS
                 new GLTextureImporter(),
