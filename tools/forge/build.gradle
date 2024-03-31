@@ -3,5 +3,5 @@ plugins {
 }
 
 application {
-    mainClassName = "org.pixel.forge.Application" 
+    mainClass.set("org.pixel.forge.Application" )
 }

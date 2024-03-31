@@ -42,11 +42,11 @@ natives-macos-arm64, etc...).
 
 To specify the publishing version, define the following argument (adjust the version as needed):
 
-`-DPIXEL_RELEASE=1.0.0`
+`-DPIXEL_RELEASE="1.0.0"`
 
 Example of a complete publish command line in a build node:
 
-`./gradlew clean publish -DBUILD_TARGET=all -DPIXEL_RELEASE=1.0.0`
+`./gradlew clean publish -DBUILD_TARGET=all -DPIXEL_RELEASE="1.0.0"`
 
 After all intended build targets are published to staging, visit the following 
 [Nexus page](https://s01.oss.sonatype.org/index.html).

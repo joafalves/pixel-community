@@ -81,12 +81,12 @@ allprojects {
     }
 
     task sourceJar(type: Jar) {
-        classifier "sources"
+        archiveClassifier.set('sources')
         from sourceSets.main.allJava
     }
 
     task javadocJar(type: Jar, dependsOn: javadoc) {
-        classifier "javadoc"
+        archiveClassifier.set('javadoc')
         from javadoc.destinationDir
     }
 
@@ -167,6 +167,19 @@ allprojects {
         options.addStringOption("Xdoclint:none", "-quiet")
         options.addStringOption("encoding", "UTF-8")
         options.addStringOption("charSet", "UTF-8")
+    }
+
+    task printClassStructures {
+        doLast {
+            allprojects { project ->
+                println "Project: ${project.name}"
+                project.sourceSets.main.allSource.each { File file ->
+                    if (file.name.endsWith('.java')) {
+                        println ("File: ${file.name} ${file}")
+                    }
+                }
+            }
+        }
     }
 }
 

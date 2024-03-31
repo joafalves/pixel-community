@@ -27,7 +27,7 @@ Check the :file_folder: [demos folder](https://github.com/joafalves/pixel-commun
 ##### Basic example (Drawing a Sprite) #####
 
 ```java
-public class SingleSpriteDemo extends PixelWindow {
+public class SingleSpriteDemo extends GameWindow {
 
     private Camera2D gameCamera;
     private ContentManager content;
@@ -35,7 +35,7 @@ public class SingleSpriteDemo extends PixelWindow {
 
     private Texture spriteTex;
 
-    public SingleSpriteDemo(GameSettings settings) {
+    public SingleSpriteDemo(GameWindowSettings settings) {
         super(settings);
     }
 
@@ -94,10 +94,11 @@ The framework functionality is divided into multiple modules which can be import
         └── ext-tween               # Tween extension
     .modules/                       # The principal modules of the framework
         ├── commons                 # Common utility classes
-        ├── core                    # Main module, contains principal classes
-        ├── input                   # Input module (Keyboard, Gamepad, Mouse)
-        ├── math                    # Math module (Vector, Matrix, etc)
-        └── pipeline                # Pipeline processing module
+        ├── content                 # Common Content classes (Texture, Font, Audio, ...)
+        ├── desktop                 # Desktop implementation of graphics, content, windowing and others
+        ├── graphics                # Graphics API module
+        ├── math                    # Math module (Vector, Matrix, ...)
+        └── pipeline                # Generic Pipeline processing module
     .resources/
         └── images                  # Project resource images
     .build.gradle                   # Gradle build file
@@ -117,8 +118,8 @@ The framework functionality is divided into multiple modules which can be import
 
 ### Development requirements ###
 
-- Java/JVM 11+
-- Gradle 7.x+ (gradle wrapper available)
+- Java/JVM 17.x+
+- Gradle 8.x+ (gradle wrapper available)
 
 ### Runtime OS compatibility ###
 
