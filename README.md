@@ -27,7 +27,7 @@ Check the :file_folder: [demos folder](https://github.com/joafalves/pixel-commun
 ##### Basic example (Drawing a Sprite) #####
 
 ```java
-public class SingleSpriteDemo extends PixelWindow {
+public class SingleSpriteDemo extends GameWindow {
 
     private Camera2D gameCamera;
     private ContentManager content;
@@ -35,19 +35,20 @@ public class SingleSpriteDemo extends PixelWindow {
 
     private Texture spriteTex;
 
-    public SingleSpriteDemo(GameSettings settings) {
+    public SingleSpriteDemo(GameWindowSettings settings) {
         super(settings);
     }
 
     @Override
     public void load() {
-        // load up of resources and game managers/utilities
+        // load up of resources and game utilities:
+        content = ServiceProvider.create(ContentManager.class);
+        spriteBatch = ServiceProvider.create(SpriteBatch.class);
         gameCamera = new Camera2D(this);
-        content = new ContentManager();
-        spriteBatch = new SpriteBatch();
 
         // example of loading a texture into memory:
         spriteTex = content.load("<texture_path>", Texture.class);
+        // ... or with the built-in 'texture' method: content.loadTexture(...)
     }
 
     @Override
@@ -89,18 +90,16 @@ The framework functionality is divided into multiple modules which can be import
     .extensions/                    # Extensions for the framework (optional)
         ├── ext-ecs                 # Entity component system extension
         ├── ext-ecs-extra           # ECS utility components
-        ├── ext-gui                 # GUI extension *WIP*
         ├── ext-ldtk                # LDTK extension
         ├── ext-log4j2              # Log4j2 extension
-        ├── ext-physics             # Physics extension *WIP*
-        ├── ext-tiled               # TileD extension
         └── ext-tween               # Tween extension
     .modules/                       # The principal modules of the framework
         ├── commons                 # Common utility classes
-        ├── core                    # Main module, contains principal classes
-        ├── input                   # Input module (Keyboard, Gamepad, Mouse)
-        ├── math                    # Math module (Vector, Matrix, etc)
-        └── pipeline                # Pipeline processing module
+        ├── content                 # Common Content classes (Texture, Font, Audio, ...)
+        ├── desktop                 # Desktop implementation of graphics, content, windowing and others
+        ├── graphics                # Graphics API module
+        ├── math                    # Math module (Vector, Matrix, ...)
+        └── pipeline                # Generic Pipeline processing module
     .resources/
         └── images                  # Project resource images
     .build.gradle                   # Gradle build file
@@ -118,10 +117,14 @@ The framework functionality is divided into multiple modules which can be import
             │   └── test             # Module Test Source classes
             └── build.gradle         # Module Gradle build file (contains inner dependency definitions)
 
+### Runtime requirements ###
+
+- Java/JVM 17.x+
+
 ### Development requirements ###
 
-- Java/JVM 11+
-- Gradle 7.x+ (gradle wrapper available)
+- (All Runtime requirements)
+- Gradle 8.x+ (gradle wrapper available)
 
 ### Runtime OS compatibility ###
 

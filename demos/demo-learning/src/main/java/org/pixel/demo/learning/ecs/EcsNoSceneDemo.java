@@ -1,19 +1,20 @@
 package org.pixel.demo.learning.ecs;
 
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.ServiceProvider;
 import org.pixel.content.ContentManager;
-import org.pixel.core.Camera2D;
-import org.pixel.core.PixelWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.ext.ecs.GameComponent;
 import org.pixel.ext.ecs.Sprite;
+import org.pixel.graphics.Camera2D;
+import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.GameWindow;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.MathHelper;
 
 /**
  * Entity Component System demo without using the Scene system.
  */
-public class EcsNoSceneDemo extends PixelWindow {
+public class EcsNoSceneDemo extends GameWindow {
 
     private ContentManager contentManager;
     private Camera2D gameCamera;
@@ -21,15 +22,15 @@ public class EcsNoSceneDemo extends PixelWindow {
     private SpriteBatch spriteBatch;
     private Sprite sprite;
 
-    public EcsNoSceneDemo(WindowSettings settings) {
+    public EcsNoSceneDemo(GameWindowSettings settings) {
         super(settings);
     }
 
     @Override
     public void load() {
-        contentManager = new ContentManager();
         gameCamera = new Camera2D(this);
-        spriteBatch = new SpriteBatch();
+        spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        contentManager = ServiceProvider.create(ContentManager.class);
 
         sprite = new Sprite("earth", contentManager.loadTexture("images/earth-48x48.png"));
         sprite.getTransform().setScale(3f);
@@ -67,13 +68,13 @@ public class EcsNoSceneDemo extends PixelWindow {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(600, 480);
+        var settings = new GameWindowSettings(600, 480);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setDebugMode(false);
 
-        PixelWindow window = new EcsNoSceneDemo(settings);
+        var window = new EcsNoSceneDemo(settings);
         window.start();
     }
 }

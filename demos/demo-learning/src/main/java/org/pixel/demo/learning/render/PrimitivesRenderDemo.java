@@ -1,26 +1,23 @@
 package org.pixel.demo.learning.render;
 
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.PixelWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.Color;
-import org.pixel.graphics.render.NvgRenderEngine;
+import org.pixel.graphics.GameWindowSettings;
 import org.pixel.graphics.render.RenderEngine2D;
-import org.pixel.input.keyboard.Keyboard;
-import org.pixel.input.keyboard.KeyboardKey;
+import org.pixel.graphics.render.nanovg.NvgRenderEngine;
 
 public class PrimitivesRenderDemo extends DemoGame {
 
     private RenderEngine2D re;
 
-    public PrimitivesRenderDemo(WindowSettings settings) {
+    public PrimitivesRenderDemo(GameWindowSettings settings) {
         super(settings);
     }
 
     @Override
     public void load() {
-        re = new NvgRenderEngine(getViewportWidth(), getViewportHeight());
+        re = new NvgRenderEngine(getSettings().getWindowWidth(), getSettings().getWindowHeight());
     }
 
     @Override
@@ -92,11 +89,6 @@ public class PrimitivesRenderDemo extends DemoGame {
         re.fill();
 
         re.end();
-
-        if (Keyboard.isKeyDown(KeyboardKey.ESCAPE)) {
-            screenshot("C:\\Workspace\\Sandbox\\Hello.png", true);
-            close();
-        }
     }
 
     @Override
@@ -106,12 +98,12 @@ public class PrimitivesRenderDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(600, 400);
+        var settings = new GameWindowSettings(600, 400);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
 
-        PixelWindow window = new PrimitivesRenderDemo(settings);
+        var window = new PrimitivesRenderDemo(settings);
         window.start();
     }
 }

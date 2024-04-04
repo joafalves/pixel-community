@@ -2,13 +2,14 @@ package org.pixel.ext.ldtk.importer;
 
 import io.github.joafalves.ldtk.LdtkConverter;
 import io.github.joafalves.ldtk.model.*;
+
+import org.pixel.commons.Color;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.commons.util.TextUtils;
 import org.pixel.content.*;
 import org.pixel.ext.ldtk.*;
 import org.pixel.ext.ldtk.LdtkGameIntLayer.LayerCoordinate;
-import org.pixel.graphics.Color;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;

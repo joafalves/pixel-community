@@ -6,17 +6,14 @@
 apply plugin: "application"
 
 dependencies {
-    api project(":${rootProject.name}-core")
-    api project(":${rootProject.name}-input")
-    api project(":${rootProject.name}-ext-gui")
-    api project(":${rootProject.name}-ext-physics");
+    api project(":${rootProject.name}-desktop")
     api project(":${rootProject.name}-ext-ecs");
     api project(":${rootProject.name}-ext-ecs-extra");
     api project(":${rootProject.name}-ext-tween");
 }
 
 application {
-    mainClassName = 'org.pixel.demo.learning.sprite.SingleSpriteDemo'
+    mainClass.set('org.pixel.demo.learning.sprite.SingleSpriteDemo')
     if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
         applicationDefaultJvmArgs = ["-XstartOnFirstThread"]
     }

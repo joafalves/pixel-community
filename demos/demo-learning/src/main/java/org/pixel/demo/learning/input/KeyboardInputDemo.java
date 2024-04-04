@@ -5,13 +5,13 @@
 
 package org.pixel.demo.learning.input;
 
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
-import org.pixel.core.PixelWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.Color;
+import org.pixel.graphics.GameWindowSettings;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.keyboard.Keyboard;
@@ -32,9 +32,8 @@ public class KeyboardInputDemo extends DemoGame {
 
     private KeyboardState lastKeyboardState;
 
-    public KeyboardInputDemo(WindowSettings settings) {
+    public KeyboardInputDemo(GameWindowSettings settings) {
         super(settings);
-        setBackgroundColor(Color.BLACK);
     }
 
     @Override
@@ -43,8 +42,8 @@ public class KeyboardInputDemo extends DemoGame {
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
-        content = new ContentManager();
-        spriteBatch = new SpriteBatch();
+        spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        content = ServiceProvider.create(ContentManager.class);
 
         // load texture into memory
         spriteTex = content.load("images/earth-48x48.png", Texture.class);
@@ -107,14 +106,14 @@ public class KeyboardInputDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(600, 480);
-        settings.setWindowTitle("Input DEMO - use W or S keys to move the camera vertically");
+        var settings = new GameWindowSettings(600, 480);
+        settings.setTitle("Input DEMO - use W or S keys to move the camera vertically");
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setDebugMode(true);
 
-        PixelWindow window = new KeyboardInputDemo(settings);
+        var window = new KeyboardInputDemo(settings);
         window.start();
     }
 }

@@ -7,7 +7,7 @@ project.ext.mavenPublish = true
 
 dependencies {
     api project(":${rootProject.name}-commons")
-    api project(":${rootProject.name}-core")
+    api project(":${rootProject.name}-desktop")
 
     implementation 'io.github.joafalves:java-ldtk-api:1.1.0'
 }

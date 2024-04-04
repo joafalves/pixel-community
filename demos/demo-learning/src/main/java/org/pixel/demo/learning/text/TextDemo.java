@@ -5,13 +5,13 @@
 
 package org.pixel.demo.learning.text;
 
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
-import org.pixel.core.PixelWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.Color;
+import org.pixel.graphics.GameWindowSettings;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.keyboard.Keyboard;
@@ -29,7 +29,7 @@ public class TextDemo extends DemoGame {
     private String text = BASE_TEXT;
     private Vector2 textPosition;
 
-    public TextDemo(WindowSettings settings) {
+    public TextDemo(GameWindowSettings settings) {
         super(settings);
     }
 
@@ -39,8 +39,8 @@ public class TextDemo extends DemoGame {
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
-        content = new ContentManager();
-        spriteBatch = new SpriteBatch();
+        spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        content = ServiceProvider.create(ContentManager.class);
 
         // load font into memory
         font = content.load("fonts/gidole-regular.ttf", Font.class);
@@ -86,13 +86,13 @@ public class TextDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(800, 600);
+        var settings = new GameWindowSettings(800, 600);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setDebugMode(false);
 
-        PixelWindow window = new TextDemo(settings);
+        var window = new TextDemo(settings);
         window.start();
     }
 }

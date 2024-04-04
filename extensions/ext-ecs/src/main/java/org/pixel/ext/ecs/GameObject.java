@@ -29,7 +29,7 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
     @Override
     public void update(DeltaTime delta) {
         if (components != null && !components.isEmpty()) {
-            for (Iterator<GameComponent> iterator = components.iterator(); iterator.hasNext(); ) {
+            for (Iterator<GameComponent> iterator = components.iterator(); iterator.hasNext();) {
                 var component = iterator.next();
                 if (component.isEnabled()) {
                     component.update(delta);
@@ -39,7 +39,8 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
                     iterator.remove();
                 }
                 if (isDisposed()) {
-                    // any of the attached components can call the "dispose()", that's why this validation exists...
+                    // any of the attached components can call the "dispose()", that's why this
+                    // validation exists...
                     return;
                 }
             }
@@ -47,7 +48,7 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
 
         var children = getChildren();
         if (children != null && !children.isEmpty()) {
-            for (Iterator<GameObject> iterator = children.iterator(); iterator.hasNext(); ) {
+            for (Iterator<GameObject> iterator = children.iterator(); iterator.hasNext();) {
                 var child = iterator.next();
                 if (child.isEnabled()) {
                     child.update(delta);
@@ -241,7 +242,8 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
     }
 
     /**
-     * Set the active state of this game object. If the game object is disabled, it will not be updated or drawn
+     * Set the active state of this game object. If the game object is disabled, it
+     * will not be updated or drawn
      * (neither its children).
      *
      * @param enabled The active state of this game object.

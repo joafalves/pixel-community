@@ -1,23 +1,24 @@
 package org.pixel.demo.ldtk;
 
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.ServiceProvider;
 import org.pixel.commons.logger.ConsoleLogger;
 import org.pixel.commons.logger.LogLevel;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
-import org.pixel.core.Camera2D;
-import org.pixel.core.PixelWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.ext.ldtk.LdtkGameEntity;
 import org.pixel.ext.ldtk.LdtkGameLevel;
 import org.pixel.ext.ldtk.LdtkGameWorld;
 import org.pixel.ext.ldtk.importer.LdtkGameWorldImporter;
-import org.pixel.graphics.Color;
+import org.pixel.graphics.Camera2D;
+import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.GameWindow;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 
-public class LdtkDemo extends PixelWindow {
+public class LdtkDemo extends GameWindow {
 
     private static final float CAMERA_SPEED = 500f;
 
@@ -36,7 +37,7 @@ public class LdtkDemo extends PixelWindow {
      *
      * @param settings The settings to use.
      */
-    public LdtkDemo(WindowSettings settings) {
+    public LdtkDemo(GameWindowSettings settings) {
         super(settings);
     }
 
@@ -47,8 +48,8 @@ public class LdtkDemo extends PixelWindow {
         gameCamera.setOrigin(0, 0);
         gameCamera.setZoom(2f);
 
-        spriteBatch = new SpriteBatch();
-        contentManager = new ContentManager();
+        spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        contentManager = ServiceProvider.create(ContentManager.class);
         contentManager.addContentImporter(new LdtkGameWorldImporter());
 
         ldtkGameWorld = contentManager.load("ldtk-example.ldtk", LdtkGameWorld.class);
@@ -118,8 +119,8 @@ public class LdtkDemo extends PixelWindow {
     public static void main(String[] args) {
         final int width = 1280;
         final int height = 720;
-        WindowSettings settings = new WindowSettings(width, height);
-        settings.setWindowTitle("LDTK Demo");
+        var settings = new GameWindowSettings(width, height);
+        settings.setTitle("LDTK Demo");
         settings.setWindowResizable(true);
         settings.setMultisampling(2);
         settings.setVsync(false);
@@ -129,7 +130,7 @@ public class LdtkDemo extends PixelWindow {
 
         ConsoleLogger.setLogLevel(LogLevel.TRACE);
 
-        PixelWindow window = new LdtkDemo(settings);
+        var window = new LdtkDemo(settings);
         window.start();
     }
 }

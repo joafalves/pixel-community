@@ -6,12 +6,12 @@
 package org.pixel.demo.learning.audio;
 
 import org.pixel.audio.AudioEngine;
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.ServiceProvider;
 import org.pixel.content.Texture;
-import org.pixel.core.Camera2D;
-import org.pixel.core.PixelWindow;
-import org.pixel.core.WindowSettings;
-import org.pixel.graphics.Color;
+import org.pixel.graphics.Camera2D;
+import org.pixel.graphics.GameWindowSettings;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
@@ -25,7 +25,7 @@ public class AudioPanningDemo extends AudioDemo {
     private float panningValue = 0;
     private Vector2 texturePosition;
 
-    public AudioPanningDemo(WindowSettings settings) {
+    public AudioPanningDemo(GameWindowSettings settings) {
         super(settings);
     }
 
@@ -33,11 +33,11 @@ public class AudioPanningDemo extends AudioDemo {
     public void load() {
         super.load();
 
-        spriteBatch = new SpriteBatch();
+        spriteBatch = ServiceProvider.create(SpriteBatch.class);
         camera = new Camera2D(this);
         texturePosition = new Vector2();
 
-        texture = content.load("images/earth-48x48.png", Texture.class);
+        texture = contentManager.load("images/earth-48x48.png", Texture.class);
     }
 
     @Override
@@ -64,14 +64,14 @@ public class AudioPanningDemo extends AudioDemo {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(600, 480);
-        settings.setWindowTitle("Volume up! Audio is playing :)");
+        var settings = new GameWindowSettings(600, 480);
+        settings.setTitle("Volume up! Audio is playing :)");
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setDebugMode(true);
 
-        PixelWindow window = new AudioPanningDemo(settings);
+        var window = new AudioPanningDemo(settings);
         window.start();
     }
 }

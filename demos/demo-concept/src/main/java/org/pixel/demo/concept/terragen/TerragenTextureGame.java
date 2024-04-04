@@ -19,25 +19,26 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import org.lwjgl.BufferUtils;
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.ServiceProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.Texture;
 import org.pixel.content.opengl.GLTexture;
-import org.pixel.core.Camera2D;
-import org.pixel.core.PixelWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.demo.concept.commons.FpsCounter;
-import org.pixel.graphics.Color;
+import org.pixel.graphics.Camera2D;
+import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.GameWindow;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Rectangle;
 
-public class TerragenTextureGame extends PixelWindow {
+public class TerragenTextureGame extends GameWindow {
 
-    private final Logger log = LoggerFactory.getLogger(TerragenGame.class);
+    private final Logger log = LoggerFactory.getLogger(TerragenTextureGame.class);
 
     private final static int SCREEN_WIDTH = 1280;
     private final static int SCREEN_HEIGHT = 720;
@@ -45,7 +46,7 @@ public class TerragenTextureGame extends PixelWindow {
     private final static int ROWS = SCREEN_HEIGHT;
     private final static double SPECTRUM_SCALE = 1;
     private final static double FREQUENCY_SCALE = 2.65;
-    private final static double EXP = 1d;
+    //private final static double EXP = 1d;
 
     private final ByteBuffer colorData = BufferUtils.createByteBuffer(COLUMNS * ROWS * 4);
     private final ByteBuffer heightMapData = BufferUtils.createByteBuffer(COLUMNS * ROWS * 4);
@@ -66,13 +67,13 @@ public class TerragenTextureGame extends PixelWindow {
      *
      * @param settings The settings to use.
      */
-    public TerragenTextureGame(WindowSettings settings) {
+    public TerragenTextureGame(GameWindowSettings settings) {
         super(settings);
     }
 
     @Override
     public void load() {
-        spriteBatch = new SpriteBatch();
+        spriteBatch = ServiceProvider.create(SpriteBatch.class);
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
         fpsCounter = new FpsCounter(this, "Press R to reset seed");
@@ -148,9 +149,9 @@ public class TerragenTextureGame extends PixelWindow {
                     height -= heightReduction;
                 }
 
-                if (EXP != 1.0) {
-                    height = MathHelper.pow(height, 2.0f); // redistribution
-                }
+                //if (EXP != 1.0) {
+                //    height = MathHelper.pow(height, 2.0f); // redistribution
+                //}
 
                 max = MathHelper.max(height, max);
                 min = MathHelper.min(height, min);
@@ -225,10 +226,6 @@ public class TerragenTextureGame extends PixelWindow {
         }
 
         spriteBatch.end();
-
-        if (Keyboard.isKeyPressed(KeyboardKey.P)) {
-            screenshot("./out_" + seed + ".png", false);
-        }
     }
 
     @Override
@@ -241,7 +238,7 @@ public class TerragenTextureGame extends PixelWindow {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(SCREEN_WIDTH, SCREEN_HEIGHT);
+        var settings = new GameWindowSettings(SCREEN_WIDTH, SCREEN_HEIGHT);
         settings.setWindowResizable(true);
         settings.setMultisampling(2);
         settings.setVsync(true);
@@ -250,7 +247,7 @@ public class TerragenTextureGame extends PixelWindow {
         settings.setWindowHeight(SCREEN_HEIGHT);
         settings.setIdleThrottle(false);
 
-        PixelWindow window = new TerragenTextureGame(settings);
+        var window = new TerragenTextureGame(settings);
         window.start();
     }
 }

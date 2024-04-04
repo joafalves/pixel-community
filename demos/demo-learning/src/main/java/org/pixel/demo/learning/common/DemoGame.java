@@ -8,20 +8,20 @@ package org.pixel.demo.learning.common;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.core.Camera2D;
-import org.pixel.core.PixelWindow;
-import org.pixel.core.WindowSettings;
+import org.pixel.graphics.Camera2D;
+import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.GameWindow;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 
-public abstract class DemoGame extends PixelWindow {
+public abstract class DemoGame extends GameWindow {
 
     protected final static Logger log = LoggerFactory.getLogger(DemoGame.class);
 
     protected final Camera2D gameCamera;
     protected final FpsCounter fpsCounter;
 
-    public DemoGame(WindowSettings settings) {
+    public DemoGame(GameWindowSettings settings) {
         super(settings);
 
         gameCamera = new Camera2D(this);

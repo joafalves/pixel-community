@@ -1,21 +1,22 @@
 package org.pixel.demo.learning.tween;
 
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.ServiceProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
-import org.pixel.core.Camera2D;
-import org.pixel.core.PixelWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.ext.tween.Tween;
 import org.pixel.ext.tween.TweenEasingMode;
 import org.pixel.ext.tween.TweenLoopMode;
-import org.pixel.graphics.Color;
+import org.pixel.graphics.Camera2D;
+import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.GameWindow;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Vector2;
 
-public class TweenDemo extends PixelWindow {
+public class TweenDemo extends GameWindow {
 
     private final Logger log = LoggerFactory.getLogger(TweenDemo.class);
 
@@ -29,7 +30,7 @@ public class TweenDemo extends PixelWindow {
     private Tween tweenA;
     private Tween tweenB;
 
-    public TweenDemo(WindowSettings settings) {
+    public TweenDemo(GameWindowSettings settings) {
         super(settings);
     }
 
@@ -40,8 +41,8 @@ public class TweenDemo extends PixelWindow {
 
     @Override
     public void load() {
-        contentManager = new ContentManager();
-        spriteBatch = new SpriteBatch();
+        spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        contentManager = ServiceProvider.create(ContentManager.class);
         camera = new Camera2D(this);
 
         spriteTexture = contentManager.loadTexture("images/earth-48x48.png");
@@ -84,14 +85,14 @@ public class TweenDemo extends PixelWindow {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(800, 600);
+        var settings = new GameWindowSettings(800, 600);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setDebugMode(false);
         settings.setIdleThrottle(false);
 
-        PixelWindow window = new TweenDemo(settings);
+        var window = new TweenDemo(settings);
         window.start();
     }
 }

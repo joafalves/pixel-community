@@ -1,7 +1,7 @@
 package org.pixel.ext.ecs.component;
 
+import org.pixel.graphics.Camera2D;
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.Camera2D;
 import org.pixel.ext.ecs.GameComponent;
 
 /**

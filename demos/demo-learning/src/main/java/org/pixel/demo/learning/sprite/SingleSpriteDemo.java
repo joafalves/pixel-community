@@ -5,16 +5,15 @@
 
 package org.pixel.demo.learning.sprite;
 
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
-import org.pixel.core.PixelWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.Color;
+import org.pixel.graphics.GameWindowSettings;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
-import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
 
 public class SingleSpriteDemo extends DemoGame {
@@ -23,9 +22,8 @@ public class SingleSpriteDemo extends DemoGame {
     private SpriteBatch spriteBatch;
     private Texture spriteTex;
 
-    public SingleSpriteDemo(WindowSettings settings) {
+    public SingleSpriteDemo(GameWindowSettings settings) {
         super(settings);
-        setBackgroundColor(Color.BLACK);
     }
 
     @Override
@@ -34,8 +32,8 @@ public class SingleSpriteDemo extends DemoGame {
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
-        content = new ContentManager();
-        spriteBatch = new SpriteBatch();
+        spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        content = ServiceProvider.create(ContentManager.class);
 
         // load texture into memory
         spriteTex = content.load("images/screenshot-600x320.png", Texture.class);
@@ -68,13 +66,13 @@ public class SingleSpriteDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(600, 320);
+        var settings = new GameWindowSettings(600, 320);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setDebugMode(true);
 
-        PixelWindow window = new SingleSpriteDemo(settings);
+        var window = new SingleSpriteDemo(settings);
         window.start();
     }
 }

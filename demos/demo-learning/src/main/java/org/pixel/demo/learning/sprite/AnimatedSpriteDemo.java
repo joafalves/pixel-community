@@ -5,13 +5,13 @@
 
 package org.pixel.demo.learning.sprite;
 
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.PixelWindow;
+import org.pixel.commons.ServiceProvider;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
-import org.pixel.core.WindowSettings;
-import org.pixel.graphics.Color;
+import org.pixel.graphics.GameWindowSettings;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Rectangle;
@@ -30,9 +30,8 @@ public class AnimatedSpriteDemo extends DemoGame {
     private int animStep;
     private float animDelay;
 
-    public AnimatedSpriteDemo(WindowSettings settings) {
+    public AnimatedSpriteDemo(GameWindowSettings settings) {
         super(settings);
-        setBackgroundColor(Color.BLACK);
     }
 
     @Override
@@ -41,8 +40,8 @@ public class AnimatedSpriteDemo extends DemoGame {
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
-        content = new ContentManager();
-        spriteBatch = new SpriteBatch();
+        spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        content = ServiceProvider.create(ContentManager.class);
 
         // load texture into memory
         spriteTex = content.load("images/char-anim-50x85.png", Texture.class);
@@ -90,13 +89,13 @@ public class AnimatedSpriteDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings(600, 480);
+        var settings = new GameWindowSettings(600, 480);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setDebugMode(true);
 
-        PixelWindow window = new AnimatedSpriteDemo(settings);
+        var window = new AnimatedSpriteDemo(settings);
         window.start();
     }
 }

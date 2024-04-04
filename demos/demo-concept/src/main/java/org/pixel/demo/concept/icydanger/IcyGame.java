@@ -1,12 +1,11 @@
 package org.pixel.demo.concept.icydanger;
 
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
 import org.pixel.content.Texture;
-import org.pixel.core.Camera2D;
-import org.pixel.core.PixelWindow;
-import org.pixel.core.WindowSettings;
 import org.pixel.demo.concept.commons.PlayerIndex;
 import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.demo.concept.commons.component.PlayerBoundaryComponent;
@@ -21,7 +20,9 @@ import org.pixel.ext.ldtk.LdtkGameIntLayer;
 import org.pixel.ext.ldtk.LdtkGameLevel;
 import org.pixel.ext.ldtk.LdtkGameWorld;
 import org.pixel.ext.ldtk.importer.LdtkGameWorldImporter;
-import org.pixel.graphics.Color;
+import org.pixel.graphics.Camera2D;
+import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.GameWindow;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Boundary;
 import org.pixel.math.Rectangle;
@@ -29,7 +30,7 @@ import org.pixel.math.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IcyGame extends PixelWindow {
+public class IcyGame extends GameWindow {
 
     private ContentManager contentManager;
     private Camera2D gameCamera;
@@ -45,20 +46,23 @@ public class IcyGame extends PixelWindow {
     private FpsCounter fpsCounter;
     private List<Rectangle> staticCollisionList;
 
-    public IcyGame(WindowSettings settings) {
+    public IcyGame(GameWindowSettings settings) {
         super(settings);
     }
 
     @Override
     public void load() {
+        var windowWidth = getSettings().getWindowWidth();
+        var windowHeight = getSettings().getWindowHeight();
+
         fpsCounter = new FpsCounter(this);
-        contentManager = new ContentManager();
+        spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        contentManager = ServiceProvider.create(ContentManager.class);
         contentManager.addContentImporter(new LdtkGameWorldImporter());
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
-        uiCamera = new Camera2D(0, 0, getViewportWidth(), getViewportHeight());
+        uiCamera = new Camera2D(0, 0, windowWidth, windowHeight);
         uiCamera.setOrigin(0);
-        spriteBatch = new SpriteBatch();
         gameScene = new GameScene("MainScene", gameCamera, spriteBatch);
 
         LdtkGameWorld tilemap = contentManager.load("icydanger.ldtk", LdtkGameWorld.class);
@@ -104,7 +108,7 @@ public class IcyGame extends PixelWindow {
 
         playerTwoPoints = new Text("PlayerTwoPoints", gameFont, "0", Color.WHITE, Alignment.CENTER);
         playerTwoPoints.setPivot(0.5f, 0f);
-        playerTwoPoints.getTransform().setPosition(getViewportWidth() - 150, 10);
+        playerTwoPoints.getTransform().setPosition(windowWidth - 150, 10);
 
         playerOne.getAttributeMap().put("points", playerOnePoints);
         playerTwo.getAttributeMap().put("points", playerTwoPoints);
@@ -112,7 +116,7 @@ public class IcyGame extends PixelWindow {
         pointsBar = new IcyPointsBar(gameTexture,
                 new Rectangle(17, 65, 1, 1),
                 new Rectangle(19, 65, 1, 1),
-                getViewportWidth(), getViewportHeight());
+                windowWidth, windowHeight);
 
         playerOne.getAttributeMap().put("pointsBar", pointsBar);
         playerTwo.getAttributeMap().put("pointsBar", pointsBar);
@@ -179,7 +183,7 @@ public class IcyGame extends PixelWindow {
     public static void main(String[] args) {
         final int width = 800;
         final int height = 800;
-        WindowSettings settings = new WindowSettings(256, 256);
+        var settings = new GameWindowSettings(256, 256);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
@@ -187,7 +191,7 @@ public class IcyGame extends PixelWindow {
         settings.setWindowWidth(width);
         settings.setWindowHeight(height);
 
-        PixelWindow window = new IcyGame(settings);
+        var window = new IcyGame(settings);
         window.start();
     }
 }
