@@ -1,0 +1,20 @@
+/*
+ * This software is available under Apache License
+ * Copyright (c) 2020
+ */
+
+apply plugin: "application"
+
+dependencies {
+    implementation project(":${rootProject.name}-desktop")
+    implementation project(":${rootProject.name}-ext-ecs");
+    implementation project(":${rootProject.name}-ext-ecs-extra");
+    implementation project(":${rootProject.name}-ext-tween");
+}
+
+application {
+    mainClass.set('org.pixel.demo.learning.sprite.SingleSpriteDemo')
+    if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
+        applicationDefaultJvmArgs = ["-XstartOnFirstThread"]
+    }
+}

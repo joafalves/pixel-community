@@ -1,0 +1,23 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="org.pixel.android">
+
+    <application
+            android:theme="@style/AppTheme"
+            android:supportsRtl="true">
+
+        <activity android:name="org.pixel.demo.android.MainActivity"
+                  android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <!-- Specify other activities and services here if necessary -->
+    </application>
+
+    <!-- Define permissions and features used by the app -->
+    <!-- Example: Access to the Internet -->
+    <!-- <uses-permission android:name="android.permission.INTERNET" /> -->
+
+</manifest>

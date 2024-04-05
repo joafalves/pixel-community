@@ -7,21 +7,38 @@
 rootProject.name = "pixel"
 
 // modules:
-include "modules/commons", "modules/math", "modules/graphics", "modules/desktop", \
-    "modules/content", "modules/pipeline"
+include "modules/commons",
+        "modules/math",
+        "modules/graphics",
+        "modules/content",
+        "modules/pipeline"
+
+// platform modules:
+include "platform/desktop"
+if (System.getenv("ANDROID_HOME") != null) {
+    include "platform/android"
+}
 
 // extensions:
-include "extensions/ext-log4j2", "extensions/ext-ldtk", "extensions/ext-ecs", \
-    "extensions/ext-ecs-extra", "extensions/ext-tween" 
-
-// tools:
-include "tools/forge"
+include "extensions/ext-log4j2",
+        "extensions/ext-ecs",
+        "extensions/ext-ecs-extra",
+        "extensions/ext-tween"
 
 // demos:
 if (System.properties["PIXEL_RELEASE"] == null) {
-    include "demos/demo-learning", "demos/demo-concept", "demos/demo-imgui", "demos/demo-ldtk" 
+    // desktop:
+    include "demos/desktop/demo-desktop-learning",
+            "demos/desktop/demo-desktop-concept",
+            "demos/desktop/demo-desktop-imgui"
+
+    // android:
+    if (System.getenv("ANDROID_HOME") != null) {
+        include "demos/android/demo-android-learning"
+    }
 }
 
+// bootstrap module names:
 rootProject.children.each {
     def parts = it.name.split("/")
     def prefix = rootProject.name + "-"

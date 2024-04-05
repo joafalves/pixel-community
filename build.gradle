@@ -10,173 +10,140 @@ if (version == null || version == "unspecified") {
     version = "SNAPSHOT"
 }
 
-project.ext.dependencyMap = [
-        lwjgl: "3.3.3",
-        lombok: "1.18.32",
-        junit: "5.10.2",
-        mockito: "4.8.0"
-]
-project.ext.buildTargetList = []
+ext {
+    dependencyMap = [
+            lwjgl  : "3.3.3",
+            lombok : "1.18.32",
+            junit  : "5.10.2",
+            mockito: "4.8.0"
+    ]
+    buildTargetList = determineBuildTargets()
+}
 
-def buildTarget = System.properties["BUILD_TARGET"]
-if (buildTarget == "all") {
-    // Use this build mode publishing:
-    project.ext.buildTargetList.addAll([
-            "natives-windows", "natives-windows-x86", "natives-windows-arm64",
-            "natives-macos", "natives-macos-arm64",
-            "natives-linux", "natives-linux-arm64", "natives-linux-arm32"])
-} else if (buildTarget != null) {
-    // applies the build target based on the BUILD_TARGET environment variable:
-    project.ext.buildTargetList.add(buildTarget)
-} else {
-    // no manual build type assigned, apply the classifier based on the current OS:
-    project.ext.buildTargetList.add(getCurrentClassifier())
+static ArrayList<String> determineBuildTargets() {
+    // TODO: update this when android platform is fully supported
+    def buildTarget = System.properties["BUILD_TARGET"]
+    if (buildTarget == "all") {
+        return ["natives-windows", "natives-windows-x86", "natives-windows-arm64",
+                "natives-macos", "natives-macos-arm64",
+                "natives-linux", "natives-linux-arm64", "natives-linux-arm32"]
+    } else if (buildTarget != null) {
+        return [buildTarget]
+    } else {
+        return [getCurrentClassifier()]
+    }
 }
 
 println("Java Version: ${JavaVersion.current()}")
 println("Project Version: ${version}")
 println("Build Targets: ${project.ext.buildTargetList}")
+println("Android Home: ${System.getenv("ANDROID_HOME")}")
 
-allprojects {
-    apply plugin: "java"
-    apply plugin: "java-library"
-    apply plugin: "maven-publish"
-    apply plugin: "signing"
-
-    version rootProject.version
-
-    java {
-        sourceCompatibility = 17
-    }
-
+buildscript {
     repositories {
         mavenLocal()
         mavenCentral()
+        google()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         maven { url "https://s01.oss.sonatype.org/content/repositories/releases/" }
     }
-
     dependencies {
-        // lombok
-        compileOnly "org.projectlombok:lombok:${rootProject.ext.dependencyMap["lombok"]}"
-        annotationProcessor "org.projectlombok:lombok:${rootProject.ext.dependencyMap["lombok"]}"
-
-        // test:
-        testImplementation "org.mockito:mockito-core:${rootProject.ext.dependencyMap["mockito"]}"
-        testImplementation "org.junit.jupiter:junit-jupiter-api:${rootProject.ext.dependencyMap["junit"]}"
-        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${rootProject.ext.dependencyMap["junit"]}"
+        classpath 'com.android.tools.build:gradle:8.2.0'
     }
+}
 
-    test {
-        useJUnitPlatform()
+allprojects {
+    version = rootProject.version
+    ext {
+        namespace = "org.pixel"
     }
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        google()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url "https://s01.oss.sonatype.org/content/repositories/releases/" }
+    }
+}
 
-    jar {
-        manifest {
-            attributes(
-                    "Implementation-Title": jar.getArchiveBaseName(),
-                    "Implementation-Version": getArchiveVersion()
-            )
-        }
-    }
-
-    task sourceJar(type: Jar) {
-        archiveClassifier.set('sources')
-        from sourceSets.main.allJava
-    }
-
-    task javadocJar(type: Jar, dependsOn: javadoc) {
-        archiveClassifier.set('javadoc')
-        from javadoc.destinationDir
-    }
-
-    artifacts {
-        archives jar
-        archives sourceJar
-        archives javadocJar
-    }
-
-    signing {
-        if (rootProject.hasProperty("signing.keyId")) {
-            sign(publishing.publications) // sign everything to be published
-        }
-    }
+subprojects { project ->
+    apply plugin: "maven-publish"
 
     publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                groupId "io.github.joafalves"
-                artifactId project.name
-                version rootProject.version
-
-                from components.java
-
-                artifact(sourceJar) {
-                    classifier = "sources"
-                }
-
-                artifact(javadocJar) {
-                    classifier = "javadoc"
-                }
-
-                pom {
-                    name = "Pixel 2D Game Framework"
-                    description = "Modular Java/Kotlin 2D Game Framework."
-                    url = "https://github.com/joafalves/pixel-community"
-                    licenses {
-                        license {
-                            name = "The Apache License, Version 2.0"
-                            url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
-                        }
-                    }
-                    developers {
-                        developer {
-                            id = "jfalves"
-                            name = "João Alves"
-                            email = "joao.cpp.sca@gmail.com"
-                        }
-                    }
-                    scm {
-                        connection = "scm:git:git://github.com/joafalves/pixel-community.git"
-                        developerConnection = "scm:git:ssh://github.com/joafalves/pixel-community.git"
-                        url = "https://github.com/joafalves/pixel-community"
-                    }
-                }
-            }
-        }
         repositories {
-            if (rootProject.hasProperty("sonatypeUsername") && rootProject.hasProperty("sonatypePassword")) {
-                maven {
-                    url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2"
-                    credentials {
-                        username sonatypeUsername
-                        password sonatypePassword
-                    }
+            maven {
+                url = project.version.endsWith('SNAPSHOT') ?
+                        "https://s01.oss.sonatype.org/content/repositories/snapshots/" :
+                        "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                credentials {
+                    username = findProperty("sonatypeUsername") ?: System.getenv("SONATYPE_USERNAME")
+                    password = findProperty("sonatypePassword") ?: System.getenv("SONATYPE_PASSWORD")
                 }
             }
         }
     }
 
-    tasks.withType(AbstractPublishToMaven).configureEach {
-        // only publish modules with "mavenPublish" set to "true"
-        it.enabled = (project.ext.has("mavenPublish") && project.ext.get("mavenPublish"))
+    tasks.withType(Javadoc).tap {
+        configureEach {
+            failOnError false
+            options.addStringOption("Xdoclint:none", "-quiet")
+            options.addStringOption("encoding", "UTF-8")
+            options.addStringOption("charSet", "UTF-8")
+        }
     }
 
-    tasks.withType(Javadoc) {
-        failOnError false
-        options.addStringOption("Xdoclint:none", "-quiet")
-        options.addStringOption("encoding", "UTF-8")
-        options.addStringOption("charSet", "UTF-8")
-    }
+    project.plugins.withType(JavaPlugin).whenPluginAdded {
+        dependencies {
+            // lombok
+            compileOnly "org.projectlombok:lombok:${rootProject.ext.dependencyMap["lombok"]}"
+            annotationProcessor "org.projectlombok:lombok:${rootProject.ext.dependencyMap["lombok"]}"
 
-    task printClassStructures {
-        doLast {
-            allprojects { project ->
-                println "Project: ${project.name}"
-                project.sourceSets.main.allSource.each { File file ->
-                    if (file.name.endsWith('.java')) {
-                        println ("File: ${file.name} ${file}")
-                    }
+            // test:
+            testImplementation "org.mockito:mockito-core:${rootProject.ext.dependencyMap["mockito"]}"
+            testImplementation "org.junit.jupiter:junit-jupiter-api:${rootProject.ext.dependencyMap["junit"]}"
+            testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${rootProject.ext.dependencyMap["junit"]}"
+        }
+
+        test {
+            useJUnitPlatform()
+        }
+
+        jar {
+            manifest {
+                attributes(
+                        "Implementation-Title": jar.getArchiveBaseName(),
+                        "Implementation-Version": getArchiveVersion()
+                )
+            }
+        }
+
+        tasks.register('sourceJar', Jar) {
+            archiveClassifier.set('sources')
+            from sourceSets.main.allJava
+        }
+
+        tasks.register('javadocJar', Jar) {
+            dependsOn javadoc
+            archiveClassifier.set('javadoc')
+            from javadoc.destinationDir
+        }
+
+        artifacts {
+            archives jar
+            archives sourceJar
+            archives javadocJar
+        }
+
+        publishing {
+            publications {
+                mavenJava(MavenPublication) {
+                    from components.java
+
+                    groupId = project.namespace
+                    artifactId = 'your-java-library'
+                    version = '1.0.0'
+
+                    // Additional POM information goes here
                 }
             }
         }

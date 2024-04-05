@@ -30,3 +30,6 @@ hs_err_pid*
 /projects/**/build/
 /demos/**/build/
 build
+
+# android
+local.properties

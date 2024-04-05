@@ -1,0 +1,24 @@
+apply plugin: 'com.android.library'
+
+android {
+    namespace "org.pixel.android"
+
+    defaultConfig {
+        compileSdk 34
+        buildToolsVersion = "34.0.0"
+
+        versionCode 1
+        versionName rootProject.version
+
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+// TODO: add publishing configuration here

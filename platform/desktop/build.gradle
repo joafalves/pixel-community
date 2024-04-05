@@ -1,0 +1,30 @@
+/*
+ * This software is available under Apache License
+ * Copyright (c) 2020
+ */
+apply plugin: 'java'
+apply plugin: 'java-library'
+
+project.ext.mavenPublish = true
+
+dependencies {
+    api project(":${rootProject.name}-commons")
+    api project(":${rootProject.name}-content")
+    api project(":${rootProject.name}-graphics")
+
+    api group: "org.lwjgl", name: "lwjgl", version: rootProject.ext.dependencyMap["lwjgl"]
+    api group: "org.lwjgl", name: "lwjgl-glfw", version: rootProject.ext.dependencyMap["lwjgl"]
+    api group: "org.lwjgl", name: "lwjgl-opengl", version: rootProject.ext.dependencyMap["lwjgl"]
+    api group: "org.lwjgl", name: "lwjgl-openal", version: rootProject.ext.dependencyMap["lwjgl"]
+    api group: "org.lwjgl", name: "lwjgl-stb", version: rootProject.ext.dependencyMap["lwjgl"]
+    api group: "org.lwjgl", name: "lwjgl-nanovg", version: rootProject.ext.dependencyMap["lwjgl"]
+
+    rootProject.ext.buildTargetList.forEach { classifier ->
+        runtimeOnly group: "org.lwjgl", name: "lwjgl", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
+        runtimeOnly group: "org.lwjgl", name: "lwjgl-opengl", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
+        runtimeOnly group: "org.lwjgl", name: "lwjgl-openal", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
+        runtimeOnly group: "org.lwjgl", name: "lwjgl-glfw", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
+        runtimeOnly group: "org.lwjgl", name: "lwjgl-stb", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
+        runtimeOnly group: "org.lwjgl", name: "lwjgl-nanovg", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
+    }
+}
