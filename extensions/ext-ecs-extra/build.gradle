@@ -8,7 +8,7 @@ apply plugin: 'java-library'
 project.ext.mavenPublish = true
 
 dependencies {
-    api project(":${rootProject.name}-commons")
+    api project(":${rootProject.name}-core")
     api project(":${rootProject.name}-math")
     api project(":${rootProject.name}-ext-ecs")
 }

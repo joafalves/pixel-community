@@ -11,6 +11,7 @@ include "modules/commons",
         "modules/math",
         "modules/graphics",
         "modules/content",
+        "modules/core",
         "modules/pipeline"
 
 // platform modules:

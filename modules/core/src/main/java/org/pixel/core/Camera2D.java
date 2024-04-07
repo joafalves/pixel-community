@@ -3,12 +3,12 @@
  * Copyright (c) 2020
  */
 
-package org.pixel.graphics;
-
-import java.io.Serializable;
+package org.pixel.core;
 
 import org.pixel.math.Matrix4;
 import org.pixel.math.Vector2;
+
+import java.io.Serializable;
 
 public class Camera2D implements Serializable {
 
@@ -31,7 +31,7 @@ public class Camera2D implements Serializable {
      *
      * @param window The window instance.
      */
-    public Camera2D(GameContainer window) {
+    public Camera2D(GameContainer<?,?> window) {
         this(0, 0, window.getVirtualWidth(), window.getVirtualHeight());
     }
 
@@ -41,7 +41,7 @@ public class Camera2D implements Serializable {
      * @param window The window instance.
      * @param origin The camera view origin.
      */
-    public Camera2D(GameContainer window, Vector2 origin) {
+    public Camera2D(GameContainer<?,?> window, Vector2 origin) {
         this(0, 0, window.getVirtualWidth(), window.getVirtualHeight(), 1.0f, origin);
     }
 

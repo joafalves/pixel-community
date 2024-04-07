@@ -7,6 +7,7 @@ package org.pixel.graphics;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.pixel.core.GameSettings;
 
 @Getter
 @Setter

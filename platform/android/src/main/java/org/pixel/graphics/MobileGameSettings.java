@@ -1,5 +1,7 @@
 package org.pixel.graphics;
 
+import org.pixel.core.GameSettings;
+
 public class MobileGameSettings extends GameSettings {
     /**
      * Constructor.

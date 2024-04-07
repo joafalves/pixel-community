@@ -183,7 +183,7 @@ public class AttributeMap extends HashMap<String, Object> {
      * @param key The key.
      * @return The value of the key as a List.
      */
-    public List getList(String key) {
+    public List<?> getList(String key) {
         return get(key, List.class, null);
     }
 }

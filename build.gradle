@@ -108,6 +108,11 @@ subprojects { project ->
             testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${rootProject.ext.dependencyMap["junit"]}"
         }
 
+        java {
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
+        }
+
         test {
             useJUnitPlatform()
         }

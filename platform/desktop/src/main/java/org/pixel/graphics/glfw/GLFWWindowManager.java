@@ -61,7 +61,7 @@ import org.pixel.commons.data.ImageData;
 import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.desktop.io.IOUtils;
+import org.pixel.io.FileUtils;
 import org.pixel.graphics.WindowSettings;
 import org.pixel.graphics.DesktopWindowManager;
 import org.pixel.graphics.GraphicsBackend;
@@ -257,7 +257,7 @@ public class GLFWWindowManager implements DesktopWindowManager {
 
         GLFWImage[] imageDataArray = new GLFWImage[iconPaths.length];
         for (int i = 0; i < iconPaths.length; i++) {
-            ImageData imgData = IOUtils.loadImage(iconPaths[i]);
+            ImageData imgData = FileUtils.loadImage(iconPaths[i]);
             if (imgData == null) {
                 log.warn("Unable to set window icon, cannot load image from given file path '{}'.", iconPaths[i]);
                 return;

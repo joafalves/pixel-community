@@ -28,7 +28,7 @@ import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.Texture;
 import org.pixel.content.opengl.GLTexture;
-import org.pixel.graphics.Camera2D;
+import org.pixel.core.Camera2D;
 import org.pixel.graphics.WindowSettings;
 import org.pixel.graphics.Game;
 import org.pixel.graphics.render.SpriteBatch;

@@ -1,23 +1,16 @@
 package org.pixel.graphics.shader.opengl;
 
+import android.opengl.GLES20;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.graphics.shader.Shader;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static org.lwjgl.opengl.GL11C.GL_TRUE;
-import static org.lwjgl.opengl.GL20C.*;
+public abstract class GLESShader implements Shader {
 
-public abstract class GLShader implements Shader {
-
-    private static final Logger log = LoggerFactory.getLogger(GLShader.class);
+    private static final Logger log = LoggerFactory.getLogger(GLESShader.class);
 
     private final String vertexShaderSource;
     private final String fragmentShaderSource;
@@ -38,7 +31,7 @@ public abstract class GLShader implements Shader {
      * @param attributes The shader attributes.
      * @param uniforms   The shader uniforms.
      */
-    public GLShader(String vertexSrc, String fragSrc, List<String> attributes, List<String> uniforms) {
+    public GLESShader(String vertexSrc, String fragSrc, List<String> attributes, List<String> uniforms) {
         this.vertexShaderSource = vertexSrc;
         this.fragmentShaderSource = fragSrc;
         this.attributes = attributes;
@@ -50,26 +43,28 @@ public abstract class GLShader implements Shader {
     @Override
     public boolean init() {
         // create and put vertex/fragment shader:
-        vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
-        fragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
+        vertexShaderId = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
+        fragmentShaderId = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER);
 
         // attach shader source
         initShader(vertexShaderId, vertexShaderSource);
         initShader(fragmentShaderId, fragmentShaderSource);
 
         // create program:
-        programId = glCreateProgram();
+        programId = GLES20.glCreateProgram();
 
         // attach shaders:
-        glAttachShader(programId, vertexShaderId);
-        glAttachShader(programId, fragmentShaderId);
+        GLES20.glAttachShader(programId, vertexShaderId);
+        GLES20.glAttachShader(programId, fragmentShaderId);
 
         // link:
-        glLinkProgram(programId);
+        GLES20.glLinkProgram(programId);
 
         // status check:
-        if (glGetProgrami(programId, GL_LINK_STATUS) != GL_TRUE) {
-            throw new RuntimeException(glGetProgramInfoLog(programId));
+        int[] linkStatus = new int[1];
+        GLES20.glGetProgramiv(programId, GLES20.GL_LINK_STATUS, linkStatus, 0);
+        if (linkStatus[0] != GLES20.GL_TRUE) {
+            throw new RuntimeException("Could not link program: " + GLES20.glGetProgramInfoLog(programId));
         }
 
         // cache locations
@@ -81,19 +76,19 @@ public abstract class GLShader implements Shader {
 
     @Override
     public void use() {
-        glUseProgram(programId);
+        GLES20.glUseProgram(programId);
     }
 
     @Override
     public void apply() {
-       // intentionally empty
+        // intentionally empty
     }
 
     @Override
     public void dispose() {
-        glDeleteShader(vertexShaderId);
-        glDeleteShader(fragmentShaderId);
-        glDeleteProgram(programId);
+        GLES20.glDeleteShader(vertexShaderId);
+        GLES20.glDeleteShader(fragmentShaderId);
+        GLES20.glDeleteProgram(programId);
     }
 
     /**
@@ -125,51 +120,23 @@ public abstract class GLShader implements Shader {
         return attributeLocationMap.get(name);
     }
 
-    private void initShader(int shaderId, CharSequence shaderSrc) {
+    private void initShader(int shaderId, String shaderSrc) {
         // attach source & compile shader:
-        glShaderSource(shaderId, shaderSrc);
-        glCompileShader(shaderId);
+        GLES20.glShaderSource(shaderId, shaderSrc);
+        GLES20.glCompileShader(shaderId);
 
-        if (glGetShaderi(shaderId, GL_COMPILE_STATUS) != GL_TRUE) {
-            throw new RuntimeException(glGetShaderInfoLog(shaderId));
+        int[] linkStatus = new int[1];
+        GLES20.glGetShaderiv(shaderId, GLES20.GL_COMPILE_STATUS, linkStatus, 0);
+        if (linkStatus[0] != GLES20.GL_TRUE) {
+            throw new RuntimeException(GLES20.glGetShaderInfoLog(shaderId));
         }
     }
 
     private void cacheAttributeLocations() {
-        attributes.forEach(elem -> attributeLocationMap.put(elem, glGetAttribLocation(programId, elem)));
+        attributes.forEach(elem -> attributeLocationMap.put(elem, GLES20.glGetAttribLocation(programId, elem)));
     }
 
     private void cacheUniformLocations() {
-        uniforms.forEach(elem -> uniformLocationMap.put(elem, glGetUniformLocation(programId, elem)));
+        uniforms.forEach(elem -> uniformLocationMap.put(elem, GLES20.glGetUniformLocation(programId, elem)));
     }
-
-    // region static
-
-    /**
-     * Load shader source from file.
-     *
-     * @param fileName The file name.
-     * @return The shader source.
-     */
-    protected static String loadShader(String fileName) {
-        // TODO: remove this code, use FileUtils.*
-        // TODO: apply early loading? (load all engine shaders at once)
-        ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-        try (InputStream is = classLoader.getResourceAsStream(fileName)) {
-            if (is == null) {
-                return null;
-            }
-            try (InputStreamReader isr = new InputStreamReader(is);
-                    BufferedReader reader = new BufferedReader(isr)) {
-                return reader.lines().collect(Collectors.joining(System.lineSeparator()));
-            }
-        } catch (IOException e) {
-            log.error("Exception caught!", e);
-        }
-
-        return "";
-    }
-
-    // endregion
-
 }

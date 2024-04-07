@@ -1,12 +1,9 @@
-package org.pixel.desktop.io;
+package org.pixel.io;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
+
+import java.io.*;
 
 public class DataSerializer {
 

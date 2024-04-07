@@ -1,13 +1,13 @@
 package org.pixel.demo.learning.misc;
 
-import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.desktop.io.DataSerializer;
 import org.pixel.graphics.WindowSettings;
+import org.pixel.io.DataSerializer;
 import org.pixel.math.Vector2;
+
+import java.io.Serializable;
 
 public class SerializationDemo extends DemoGame {
 

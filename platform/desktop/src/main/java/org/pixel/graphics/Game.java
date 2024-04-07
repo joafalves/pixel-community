@@ -1,13 +1,5 @@
 package org.pixel.graphics;
 
-import static org.lwjgl.openal.ALC10.alcCloseDevice;
-import static org.lwjgl.openal.ALC10.alcCreateContext;
-import static org.lwjgl.openal.ALC10.alcDestroyContext;
-import static org.lwjgl.openal.ALC10.alcMakeContextCurrent;
-import static org.lwjgl.openal.ALC10.alcOpenDevice;
-
-import java.nio.ByteBuffer;
-
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;
@@ -20,6 +12,10 @@ import org.pixel.graphics.glfw.GLFWWindowManager;
 import org.pixel.graphics.opengl.GLGraphicsDevice;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.graphics.render.opengl.GLSpriteBatchServiceFactory;
+
+import java.nio.ByteBuffer;
+
+import static org.lwjgl.openal.ALC10.*;
 
 public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLGraphicsDevice, WindowSettings> {
 

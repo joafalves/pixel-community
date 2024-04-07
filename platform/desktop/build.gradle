@@ -11,6 +11,7 @@ dependencies {
     api project(":${rootProject.name}-commons")
     api project(":${rootProject.name}-content")
     api project(":${rootProject.name}-graphics")
+    api project(":${rootProject.name}-core")
 
     api group: "org.lwjgl", name: "lwjgl", version: rootProject.ext.dependencyMap["lwjgl"]
     api group: "org.lwjgl", name: "lwjgl-glfw", version: rootProject.ext.dependencyMap["lwjgl"]

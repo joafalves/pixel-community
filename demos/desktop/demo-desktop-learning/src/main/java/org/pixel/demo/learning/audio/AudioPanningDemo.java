@@ -10,7 +10,7 @@ import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.ServiceProvider;
 import org.pixel.content.Texture;
-import org.pixel.graphics.Camera2D;
+import org.pixel.core.Camera2D;
 import org.pixel.graphics.WindowSettings;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.MathHelper;

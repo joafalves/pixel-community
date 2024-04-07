@@ -20,7 +20,7 @@ import org.pixel.ext.ecs.Sprite;
 import org.pixel.ext.ecs.component.AutoDisposeComponent;
 import org.pixel.ext.ecs.component.ConstantVelocityComponent;
 import org.pixel.ext.ecs.component.SpriteAnimationComponent;
-import org.pixel.graphics.Camera2D;
+import org.pixel.core.Camera2D;
 import org.pixel.graphics.WindowSettings;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.graphics.Game;

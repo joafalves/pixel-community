@@ -3,6 +3,7 @@ package org.pixel.graphics;
 import android.content.Context;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.core.GameContainer;
 import org.pixel.graphics.opengl.GLESGraphicsDevice;
 
 import java.util.Objects;

@@ -3,11 +3,12 @@
  * Copyright (c) 2020
  */
 
-package org.pixel.desktop.io;
+package org.pixel.io;
 
-import static org.lwjgl.BufferUtils.createByteBuffer;
-import static org.lwjgl.stb.STBImage.stbi_failure_reason;
-import static org.lwjgl.stb.STBImage.stbi_load_from_memory;
+import org.lwjgl.system.MemoryStack;
+import org.pixel.commons.data.ImageData;
+import org.pixel.commons.logger.Logger;
+import org.pixel.commons.logger.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,15 +22,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.lwjgl.system.MemoryStack;
-import org.pixel.commons.logger.Logger;
-import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.commons.util.FileUtils;
-import org.pixel.commons.data.ImageData;
 
-public class IOUtils {
+import static org.lwjgl.BufferUtils.createByteBuffer;
+import static org.lwjgl.stb.STBImage.stbi_failure_reason;
+import static org.lwjgl.stb.STBImage.stbi_load_from_memory;
 
-    private static final Logger log = LoggerFactory.getLogger(IOUtils.class);
+public class FileUtils {
+
+    private static final Logger log = LoggerFactory.getLogger(FileUtils.class);
 
     /**
      * Load image file.
@@ -72,7 +72,7 @@ public class IOUtils {
     public static ByteBuffer loadFile(String filepath) {
         Path path = Paths.get(filepath);
         if (!path.isAbsolute()) {
-            InputStream in = FileUtils.class.getClassLoader().getResourceAsStream(filepath);
+            InputStream in = org.pixel.commons.util.FileUtils.class.getClassLoader().getResourceAsStream(filepath);
             if (in == null) {
                 log.warn("Unable to load local resource file '{}'.", filepath);
                 return null;

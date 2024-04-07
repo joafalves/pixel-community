@@ -35,7 +35,7 @@ public class GLESGraphicsDevice extends GLSurfaceView implements GraphicsDevice 
         log.debug("Initializing OpenGL ES graphics device...");
         this.state = State.INITIALIZING;
 
-        this.setEGLContextClientVersion(2); // Use OpenGL ES 2.0 or higher as appropriate
+        this.setEGLContextClientVersion(2); // Setting OpenGL ES 2.0 as the rendering context.
         this.setRenderer(new GLSurfaceView.Renderer() {
             private final DeltaTime delta = new DeltaTime();
 
@@ -43,6 +43,9 @@ public class GLESGraphicsDevice extends GLSurfaceView implements GraphicsDevice 
             public void onSurfaceCreated(javax.microedition.khronos.opengles.GL10 gl, javax.microedition.khronos.egl.EGLConfig config) {
                 initGLESCapabilities();
                 setClearColor(game.getSettings().getBackgroundColor());
+
+                // load assets here:
+                game.load();
             }
 
             @Override
@@ -62,9 +65,6 @@ public class GLESGraphicsDevice extends GLSurfaceView implements GraphicsDevice 
                 gl.glViewport(0, 0, width, height);
             }
         });
-
-        // attach the surface view to the context:
-        // TODO: HERE
 
         log.debug("OpenGL ES Version: '{}'.", GLES20.glGetString(GLES20.GL_VERSION));
 

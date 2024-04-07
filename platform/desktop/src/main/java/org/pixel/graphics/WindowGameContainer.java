@@ -4,6 +4,8 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.*;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.core.GameContainer;
+import org.pixel.core.GameSettings;
 
 public abstract class WindowGameContainer<T extends WindowManager, S extends GraphicsDevice, Z extends GameSettings>
         extends GameContainer<S, Z>
@@ -31,6 +33,12 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
 
     @Override
     public boolean init() {
+        if (this.state.hasInitialized()) {
+            log.warn("Game already initialized.");
+            return false;
+        }
+        this.state = State.INITIALIZING;
+
         // Initialize main components
         if (!initWindowManager()) {
             log.error("Failed to initialize the window manager.");

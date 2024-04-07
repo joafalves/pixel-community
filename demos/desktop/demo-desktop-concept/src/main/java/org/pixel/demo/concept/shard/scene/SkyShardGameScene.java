@@ -1,7 +1,7 @@
 package org.pixel.demo.concept.shard.scene;
 
 import org.pixel.ext.ecs.GameScene;
-import org.pixel.graphics.Camera2D;
+import org.pixel.core.Camera2D;
 import org.pixel.graphics.render.SpriteBatch;
 
 public class SkyShardGameScene extends GameScene {

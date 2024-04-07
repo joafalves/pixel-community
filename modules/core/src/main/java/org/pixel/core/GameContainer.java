@@ -3,20 +3,16 @@
  * Copyright (c) 2020
  */
 
-package org.pixel.graphics;
-
-import java.util.Properties;
+package org.pixel.core;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.lifecycle.Disposable;
-import org.pixel.commons.lifecycle.Drawable;
-import org.pixel.commons.lifecycle.Initializable;
-import org.pixel.commons.lifecycle.Loadable;
-import org.pixel.commons.lifecycle.State;
-import org.pixel.commons.lifecycle.Updatable;
+import org.pixel.commons.lifecycle.*;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.graphics.GraphicsDevice;
+
+import java.util.Properties;
 
 public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSettings>
         implements Initializable, Loadable, Updatable, Drawable, Disposable {
@@ -112,7 +108,6 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
         graphicsDevice.clear();
     }
 
-
     /**
      * Initialize the graphics device.
      * 
@@ -158,6 +153,10 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
      * @param backgroundColor The window background color.
      */
     public void setBackgroundColor(Color backgroundColor) {
+        if (this.graphicsDevice == null) {
+            throw new IllegalStateException("Graphics device not initialized.");
+        }
+
         this.graphicsDevice.setClearColor(backgroundColor);
     }
 

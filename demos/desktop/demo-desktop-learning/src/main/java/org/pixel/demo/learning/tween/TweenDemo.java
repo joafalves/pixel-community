@@ -10,7 +10,7 @@ import org.pixel.content.Texture;
 import org.pixel.ext.tween.Tween;
 import org.pixel.ext.tween.TweenEasingMode;
 import org.pixel.ext.tween.TweenLoopMode;
-import org.pixel.graphics.Camera2D;
+import org.pixel.core.Camera2D;
 import org.pixel.graphics.WindowSettings;
 import org.pixel.graphics.Game;
 import org.pixel.graphics.render.SpriteBatch;
