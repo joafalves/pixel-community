@@ -18,7 +18,7 @@ public interface DesktopWindowManager extends WindowManager {
     /**
      * Set the window cursor mode.
      * 
-     * @param dimensions The window dimensions.
+     * @param mode The cursor mode.
      */
     void setWindowCursorMode(WindowCursorMode mode);
 

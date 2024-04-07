@@ -40,6 +40,9 @@ println("Build Targets: ${project.ext.buildTargetList}")
 println("Android Home: ${System.getenv("ANDROID_HOME")}")
 
 buildscript {
+    ext {
+        kotlin_version = '1.9.20'
+    }
     repositories {
         mavenLocal()
         mavenCentral()
@@ -49,6 +52,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.2.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 

@@ -21,9 +21,9 @@ import org.pixel.graphics.opengl.GLGraphicsDevice;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.graphics.render.opengl.GLSpriteBatchServiceFactory;
 
-public class GameWindow extends BaseGameWindow<DesktopWindowManager, GLGraphicsDevice, GameWindowSettings> {
+public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLGraphicsDevice, WindowSettings> {
 
-    private static final Logger log = LoggerFactory.getLogger(GameWindow.class);
+    private static final Logger log = LoggerFactory.getLogger(Game.class);
 
     private final int[] audioAttributes = { 0 };
     private long audioDevice;
@@ -32,9 +32,9 @@ public class GameWindow extends BaseGameWindow<DesktopWindowManager, GLGraphicsD
     /**
      * Constructor
      *
-     * @param settings
+     * @param settings The game settings.
      */
-    public GameWindow(GameWindowSettings settings) {
+    public Game(WindowSettings settings) {
         super(settings);
     }
 
@@ -49,7 +49,7 @@ public class GameWindow extends BaseGameWindow<DesktopWindowManager, GLGraphicsD
     protected boolean initGraphicsDevice() {
         switch (this.settings.getGraphicsBackend()) {
             case OpenGL:
-                this.graphicsDevice = new GLGraphicsDevice((DesktopWindowManager) this.windowManager, this.settings);
+                this.graphicsDevice = new GLGraphicsDevice(this.windowManager, this.settings);
                 break;
             case Vulkan:
                 throw new UnsupportedOperationException("Vulkan is not supported yet.");

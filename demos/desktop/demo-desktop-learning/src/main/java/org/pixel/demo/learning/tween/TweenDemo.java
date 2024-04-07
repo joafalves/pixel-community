@@ -11,12 +11,12 @@ import org.pixel.ext.tween.Tween;
 import org.pixel.ext.tween.TweenEasingMode;
 import org.pixel.ext.tween.TweenLoopMode;
 import org.pixel.graphics.Camera2D;
-import org.pixel.graphics.GameWindowSettings;
-import org.pixel.graphics.GameWindow;
+import org.pixel.graphics.WindowSettings;
+import org.pixel.graphics.Game;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Vector2;
 
-public class TweenDemo extends GameWindow {
+public class TweenDemo extends Game {
 
     private final Logger log = LoggerFactory.getLogger(TweenDemo.class);
 
@@ -30,7 +30,7 @@ public class TweenDemo extends GameWindow {
     private Tween tweenA;
     private Tween tweenB;
 
-    public TweenDemo(GameWindowSettings settings) {
+    public TweenDemo(WindowSettings settings) {
         super(settings);
     }
 
@@ -85,7 +85,7 @@ public class TweenDemo extends GameWindow {
     }
 
     public static void main(String[] args) {
-        var settings = new GameWindowSettings(800, 600);
+        var settings = new WindowSettings(800, 600);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);

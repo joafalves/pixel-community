@@ -1,16 +1,32 @@
-package org.pixel.demo.android;
+package org.pixel.demo.android
 
-import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
-import org.pixel.android.R;
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import org.pixel.commons.Color
+import org.pixel.graphics.Game
+import org.pixel.graphics.MobileGameSettings
 
-public class MainActivity extends AppCompatActivity {
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+class MainActivity : AppCompatActivity() {
 
-        getWindow().getDecorView().setBackgroundColor(getResources().getColor(R.color.cornflower_blue));
+    private val gameWindow: Game
+
+    init {
+        val settings = MobileGameSettings(300, 600)
+        settings.backgroundColor = Color.CORNFLOWER_BLUE
+
+        gameWindow = DemoGame(settings, this)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val settings = MobileGameSettings(300, 600)
+        settings.backgroundColor = Color.CORNFLOWER_BLUE
+
+        if (gameWindow.init()) {
+            setContentView(gameWindow.graphicsDevice)
+        }
     }
 }
 

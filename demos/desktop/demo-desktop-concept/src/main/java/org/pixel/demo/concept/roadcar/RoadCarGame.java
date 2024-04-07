@@ -6,8 +6,8 @@ import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.demo.concept.roadcar.model.RoadSegment;
 import org.pixel.demo.concept.roadcar.model.Vehicle;
 import org.pixel.ext.log4j.Log4j2LoggerStrategy;
-import org.pixel.graphics.GameWindowSettings;
-import org.pixel.graphics.GameWindow;
+import org.pixel.graphics.WindowSettings;
+import org.pixel.graphics.Game;
 import org.pixel.graphics.render.RenderEngine2D;
 import org.pixel.graphics.render.nanovg.NvgRenderEngine;
 import org.pixel.input.keyboard.Keyboard;
@@ -19,7 +19,7 @@ import org.pixel.math.Vector2;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RoadCarGame extends GameWindow {
+public class RoadCarGame extends Game {
 
     static {
         LoggerFactory.setDefaultStrategy(new Log4j2LoggerStrategy());
@@ -36,7 +36,7 @@ public class RoadCarGame extends GameWindow {
     private float cameraZoom;
     private float spawnElapsed = 0f;
 
-    public RoadCarGame(GameWindowSettings settings) {
+    public RoadCarGame(WindowSettings settings) {
         super(settings);
     }
 
@@ -233,7 +233,7 @@ public class RoadCarGame extends GameWindow {
     public static void main(String[] args) {
         final int width = 800;
         final int height = 600;
-        var settings = new GameWindowSettings(width / 2, height / 2);
+        var settings = new WindowSettings(width / 2, height / 2);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);

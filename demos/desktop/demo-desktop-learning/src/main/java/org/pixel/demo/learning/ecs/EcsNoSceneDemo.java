@@ -6,15 +6,15 @@ import org.pixel.content.ContentManager;
 import org.pixel.ext.ecs.GameComponent;
 import org.pixel.ext.ecs.Sprite;
 import org.pixel.graphics.Camera2D;
-import org.pixel.graphics.GameWindowSettings;
-import org.pixel.graphics.GameWindow;
+import org.pixel.graphics.WindowSettings;
+import org.pixel.graphics.Game;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.MathHelper;
 
 /**
  * Entity Component System demo without using the Scene system.
  */
-public class EcsNoSceneDemo extends GameWindow {
+public class EcsNoSceneDemo extends Game {
 
     private ContentManager contentManager;
     private Camera2D gameCamera;
@@ -22,7 +22,7 @@ public class EcsNoSceneDemo extends GameWindow {
     private SpriteBatch spriteBatch;
     private Sprite sprite;
 
-    public EcsNoSceneDemo(GameWindowSettings settings) {
+    public EcsNoSceneDemo(WindowSettings settings) {
         super(settings);
     }
 
@@ -68,7 +68,7 @@ public class EcsNoSceneDemo extends GameWindow {
     }
 
     public static void main(String[] args) {
-        var settings = new GameWindowSettings(600, 480);
+        var settings = new WindowSettings(600, 480);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);

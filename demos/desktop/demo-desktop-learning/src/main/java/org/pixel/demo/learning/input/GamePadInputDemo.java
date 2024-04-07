@@ -11,7 +11,7 @@ import org.pixel.commons.ServiceProvider;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
-import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.WindowSettings;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.gamepad.GamePad;
@@ -31,7 +31,7 @@ public class GamePadInputDemo extends DemoGame {
     private Vector2 spritePos;
     private Vector2 spriteAnchor;
 
-    public GamePadInputDemo(GameWindowSettings settings) {
+    public GamePadInputDemo(WindowSettings settings) {
         super(settings);
     }
 
@@ -91,7 +91,7 @@ public class GamePadInputDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        var settings = new GameWindowSettings(600, 480);
+        var settings = new WindowSettings(600, 480);
         settings.setTitle("Input DEMO - use W or S keys to move the camera vertically");
         settings.setWindowResizable(false);
         settings.setMultisampling(2);

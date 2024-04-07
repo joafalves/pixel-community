@@ -10,7 +10,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class GameWindowSettings extends BaseGameWindowSettings {
+public class WindowSettings extends GameSettings {
 
     private int windowWidth, windowHeight;
     private boolean windowResizable;
@@ -22,7 +22,7 @@ public class GameWindowSettings extends BaseGameWindowSettings {
      * @param virtualWidth  The virtual width of the window.
      * @param virtualHeight The virtual height of the window.
      */
-    public GameWindowSettings(int virtualWidth, int virtualHeight) {
+    public WindowSettings(int virtualWidth, int virtualHeight) {
         super(virtualWidth, virtualHeight);
         this.windowWidth = virtualWidth;
         this.windowHeight = virtualHeight;
@@ -37,7 +37,7 @@ public class GameWindowSettings extends BaseGameWindowSettings {
      * @param virtualWidth  The virtual width of the window.
      * @param virtualHeight The virtual height of the window.
      */
-    public GameWindowSettings(String gameTitle, int virtualWidth, int virtualHeight) {
+    public WindowSettings(String gameTitle, int virtualWidth, int virtualHeight) {
         super(gameTitle, virtualWidth, virtualHeight);
     }
 }

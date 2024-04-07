@@ -18,23 +18,21 @@ import org.pixel.commons.lifecycle.Updatable;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 
-public abstract class BaseGameWindow<T extends WindowManager, S extends GraphicsDevice, Z extends BaseGameWindowSettings>
+public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSettings>
         implements Initializable, Loadable, Updatable, Drawable, Disposable {
 
-    private static final Logger log = LoggerFactory.getLogger(BaseGameWindow.class);
+    private static final Logger log = LoggerFactory.getLogger(GameContainer.class);
 
-    protected T windowManager;
     protected S graphicsDevice;
     protected Z settings;
-
-    private State state;
+    protected State state;
 
     /**
      * Constructor.
      *
      * @param settings The settings to use.
      */
-    public BaseGameWindow(Z settings) {
+    public GameContainer(Z settings) {
         if (settings == null) {
             throw new IllegalArgumentException("Game settings cannot be null.");
         }
@@ -47,7 +45,6 @@ public abstract class BaseGameWindow<T extends WindowManager, S extends Graphics
      */
     public void start() {
         this.init();
-        this.run();
     }
 
     /**
@@ -57,11 +54,12 @@ public abstract class BaseGameWindow<T extends WindowManager, S extends Graphics
      */
     @Override
     public boolean init() {
-        // Initialize main components
-        if (!initWindowManager()) {
-            log.error("Failed to initialize the window manager.");
+        if (this.state.hasInitialized()) {
+            log.warn("Game already initialized.");
             return false;
         }
+        this.state = State.INITIALIZING;
+
         if (!initGraphicsDevice()) {
             log.error("Failed to initialize the graphics device.");
             return false;
@@ -105,7 +103,6 @@ public abstract class BaseGameWindow<T extends WindowManager, S extends Graphics
     public void dispose() {
         // dispose graphics device and window manager
         graphicsDevice.dispose();
-        windowManager.dispose();
     }
 
     /**
@@ -115,12 +112,6 @@ public abstract class BaseGameWindow<T extends WindowManager, S extends Graphics
         graphicsDevice.clear();
     }
 
-    /**
-     * Initialize the window manager.
-     * 
-     * @return True if the window manager was initialized successfully.
-     */
-    protected abstract boolean initWindowManager();
 
     /**
      * Initialize the graphics device.
@@ -142,67 +133,6 @@ public abstract class BaseGameWindow<T extends WindowManager, S extends Graphics
      * @return True if the services were initialized successfully.
      */
     protected abstract boolean initServices();
-
-    /**
-     * Starts the game loop. To terminate the loop, call {@link #close()} or close
-     * the window.
-     */
-    public void run() {
-        if (!this.state.hasInitialized()) {
-            throw new RuntimeException("init() must be called before running the game..");
-        }
-
-        renderLoop();
-
-        // Dispose of the window
-        dispose();
-    }
-
-    /**
-     * The render loop.
-     */
-    private void renderLoop() {
-        var delta = new DeltaTime();
-        while (this.windowManager.isWindowActive()) {
-            delta.tick();
-
-            this.windowManager.beginFrame();
-            this.graphicsDevice.beginFrame();
-
-            // call game update
-            update(delta);
-
-            // call game draw
-            if (this.settings.isAutoWindowClear()) {
-                this.clear();
-            }
-            draw(delta);
-
-            this.graphicsDevice.endFrame();
-            this.windowManager.endFrame();
-
-            if (!this.windowManager.isWindowFocused() && this.settings.isIdleThrottle()) {
-                try {
-                    Thread.sleep(100); // TODO: make idle period configurable
-
-                } catch (InterruptedException e) {
-                    log.error("Exception caught!", e);
-                }
-            }
-
-            // TODO: study the feasibility/impact of implementing a multi-threaded mechanism
-            // on the game loop, more info:
-            // https://github.com/LWJGL/lwjgl3/blob/master/modules/samples/src/test/java/org/lwjgl/demo/glfw/Threads.java
-        }
-    }
-
-    /**
-     * Flag the rendering loop to terminate.
-     */
-    public void close() {
-        this.graphicsDevice.dispose();
-        this.windowManager.dispose();
-    }
 
     /**
      * Get the window virtual width.
@@ -238,24 +168,6 @@ public abstract class BaseGameWindow<T extends WindowManager, S extends Graphics
      */
     public Properties getClientProperties() {
         return this.settings.getClientProperties();
-    }
-
-    /**
-     * Set vsync mode.
-     *
-     * @param vsyncEnabled The vsync mode.
-     */
-    public void setVsyncEnabled(boolean vsyncEnabled) {
-        this.windowManager.setVSync(vsyncEnabled);
-    }
-    
-    /**
-     * Get the active window manager.
-     * 
-     * @return The active window manager.
-     */
-    public T getWindowManager() {
-        return windowManager;
     }
 
     /**

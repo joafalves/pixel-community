@@ -29,15 +29,15 @@ import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.Texture;
 import org.pixel.content.opengl.GLTexture;
 import org.pixel.graphics.Camera2D;
-import org.pixel.graphics.GameWindowSettings;
-import org.pixel.graphics.GameWindow;
+import org.pixel.graphics.WindowSettings;
+import org.pixel.graphics.Game;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Rectangle;
 
-public class TerragenAdvancedGame extends GameWindow {
+public class TerragenAdvancedGame extends Game {
 
     private final Logger log = LoggerFactory.getLogger(TerragenAdvancedGame.class);
 
@@ -69,7 +69,7 @@ public class TerragenAdvancedGame extends GameWindow {
      *
      * @param settings The settings to use.
      */
-    public TerragenAdvancedGame(GameWindowSettings settings) {
+    public TerragenAdvancedGame(WindowSettings settings) {
         super(settings);
     }
 
@@ -287,7 +287,7 @@ public class TerragenAdvancedGame extends GameWindow {
     }
 
     public static void main(String[] args) {
-        var settings = new GameWindowSettings(SCREEN_WIDTH, SCREEN_HEIGHT);
+        var settings = new WindowSettings(SCREEN_WIDTH, SCREEN_HEIGHT);
         settings.setWindowResizable(true);
         settings.setMultisampling(2);
         settings.setVsync(true);

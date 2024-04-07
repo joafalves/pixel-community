@@ -11,7 +11,7 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.ServiceProvider;
 import org.pixel.content.Texture;
 import org.pixel.graphics.Camera2D;
-import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.WindowSettings;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
@@ -25,7 +25,7 @@ public class AudioPanningDemo extends AudioDemo {
     private float panningValue = 0;
     private Vector2 texturePosition;
 
-    public AudioPanningDemo(GameWindowSettings settings) {
+    public AudioPanningDemo(WindowSettings settings) {
         super(settings);
     }
 
@@ -64,7 +64,7 @@ public class AudioPanningDemo extends AudioDemo {
     }
 
     public static void main(String[] args) {
-        var settings = new GameWindowSettings(600, 480);
+        var settings = new WindowSettings(600, 480);
         settings.setTitle("Volume up! Audio is playing :)");
         settings.setWindowResizable(false);
         settings.setMultisampling(2);

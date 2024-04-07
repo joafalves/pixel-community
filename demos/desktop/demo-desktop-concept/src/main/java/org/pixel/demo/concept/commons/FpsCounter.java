@@ -8,13 +8,13 @@ package org.pixel.demo.concept.commons;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.graphics.GameWindow;
+import org.pixel.graphics.Game;
 
 public class FpsCounter {
 
     private static final Logger log = LoggerFactory.getLogger(FpsCounter.class);
 
-    private final GameWindow window;
+    private final Game window;
     private final String suffix;
 
     private final float logPeriodSec = 5;
@@ -26,12 +26,12 @@ public class FpsCounter {
     private int sampleSum;
     private int sampleCount;
 
-    public FpsCounter(GameWindow window) {
+    public FpsCounter(Game window) {
         this.window = window;
         this.suffix = "";
     }
 
-    public FpsCounter(GameWindow window, String suffix) {
+    public FpsCounter(Game window, String suffix) {
         this.window = window;
         this.suffix = suffix;
     }

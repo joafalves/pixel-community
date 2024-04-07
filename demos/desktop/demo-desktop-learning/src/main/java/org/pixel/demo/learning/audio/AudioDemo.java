@@ -10,14 +10,14 @@ import org.pixel.commons.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Sound;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.WindowSettings;
 
 public class AudioDemo extends DemoGame {
 
     protected Sound sound;
     protected ContentManager contentManager;
 
-    public AudioDemo(GameWindowSettings settings) {
+    public AudioDemo(WindowSettings settings) {
         super(settings);
     }
 
@@ -41,7 +41,7 @@ public class AudioDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        var settings = new GameWindowSettings(600, 480);
+        var settings = new WindowSettings(600, 480);
         settings.setTitle("Volume up! Audio is playing :)");
         settings.setWindowResizable(false);
         settings.setMultisampling(2);

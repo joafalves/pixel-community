@@ -9,19 +9,19 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.graphics.Camera2D;
-import org.pixel.graphics.GameWindowSettings;
-import org.pixel.graphics.GameWindow;
+import org.pixel.graphics.WindowSettings;
+import org.pixel.graphics.Game;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 
-public abstract class DemoGame extends GameWindow {
+public abstract class DemoGame extends Game {
 
     protected final static Logger log = LoggerFactory.getLogger(DemoGame.class);
 
     protected final Camera2D gameCamera;
     protected final FpsCounter fpsCounter;
 
-    public DemoGame(GameWindowSettings settings) {
+    public DemoGame(WindowSettings settings) {
         super(settings);
 
         gameCamera = new Camera2D(this);
@@ -33,7 +33,7 @@ public abstract class DemoGame extends GameWindow {
         fpsCounter.update(delta);
 
         if (Keyboard.isKeyPressed(KeyboardKey.ESCAPE)) {
-            close();
+            dispose();
         }
     }
 }

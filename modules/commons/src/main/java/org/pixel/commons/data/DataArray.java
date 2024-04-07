@@ -7,7 +7,7 @@ package org.pixel.commons.data;
 
 import java.nio.charset.Charset;
 
-public class DataBuffer {
+public class DataArray {
 
     private byte[] source;
     private int offset;
@@ -17,7 +17,7 @@ public class DataBuffer {
     /**
      * Constructor.
      */
-    public DataBuffer() {
+    public DataArray() {
         this.set(null, 0, 0);
     }
 
@@ -26,7 +26,7 @@ public class DataBuffer {
      *
      * @param that The other buffer.
      */
-    public DataBuffer(DataBuffer that) {
+    public DataArray(DataArray that) {
         this.set(that.source, that.offset, that.length);
     }
 
@@ -35,7 +35,7 @@ public class DataBuffer {
      *
      * @param source The source buffer.
      */
-    public DataBuffer(byte[] source) {
+    public DataArray(byte[] source) {
         this.set(source, 0, 0);
     }
 
@@ -46,7 +46,7 @@ public class DataBuffer {
      * @param offset The source buffer offset.
      * @param length The length of the data to be read.
      */
-    public DataBuffer(byte[] source, int offset, int length) {
+    public DataArray(byte[] source, int offset, int length) {
         this.set(source, offset, length);
     }
 
@@ -55,7 +55,7 @@ public class DataBuffer {
      *
      * @param source The source buffer.
      */
-    public DataBuffer(String source) {
+    public DataArray(String source) {
         this.set(source.getBytes(), 0, source.length());
     }
 
@@ -140,9 +140,9 @@ public class DataBuffer {
      * @param size The number of bytes to read.
      * @return The next bytes encapsulated in a DataBuffer.
      */
-    public DataBuffer getBytes(int size) {
+    public DataArray getBytes(int size) {
         //checkOverflow(size);
-        return new DataBuffer(source, offset + readerIndex, size);
+        return new DataArray(source, offset + readerIndex, size);
     }
 
     /**
@@ -211,7 +211,7 @@ public class DataBuffer {
      *
      * @param value Byte buffer to append.
      */
-    public void append(DataBuffer value) {
+    public void append(DataArray value) {
         this.append(value.getSource(), value.getOffset(), value.getLength());
     }
 

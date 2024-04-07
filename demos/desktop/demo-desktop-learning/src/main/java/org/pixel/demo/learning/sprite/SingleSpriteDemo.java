@@ -11,7 +11,7 @@ import org.pixel.commons.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.WindowSettings;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Vector2;
@@ -22,7 +22,7 @@ public class SingleSpriteDemo extends DemoGame {
     private SpriteBatch spriteBatch;
     private Texture spriteTex;
 
-    public SingleSpriteDemo(GameWindowSettings settings) {
+    public SingleSpriteDemo(WindowSettings settings) {
         super(settings);
     }
 
@@ -66,7 +66,7 @@ public class SingleSpriteDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        var settings = new GameWindowSettings(600, 320);
+        var settings = new WindowSettings(600, 320);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);

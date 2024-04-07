@@ -37,15 +37,15 @@ import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.graphics.DesktopWindowManager;
+import org.pixel.graphics.WindowSettings;
 import org.pixel.graphics.GraphicsDevice;
-import org.pixel.graphics.BaseGameWindowSettings;
 
 public class GLGraphicsDevice implements GraphicsDevice {
 
     private static final Logger log = LoggerFactory.getLogger(GLGraphicsDevice.class);
 
     private final DesktopWindowManager windowManager;
-    private final BaseGameWindowSettings windowSettings;
+    private final WindowSettings windowSettings;
 
     private State state;
     private Callback debugLocalCallback;
@@ -53,7 +53,7 @@ public class GLGraphicsDevice implements GraphicsDevice {
     /**
      * Constructor
      */
-    public GLGraphicsDevice(DesktopWindowManager windowManager, BaseGameWindowSettings windowSettings) {
+    public GLGraphicsDevice(DesktopWindowManager windowManager, WindowSettings windowSettings) {
         this.windowManager = windowManager;
         this.windowSettings = windowSettings;
         this.state = State.CREATED;
@@ -104,16 +104,6 @@ public class GLGraphicsDevice implements GraphicsDevice {
         }
 
         this.state = State.DISPOSED;
-    }
-
-    @Override
-    public void beginFrame() {
-        // nothing to do here
-    }
-
-    @Override
-    public void endFrame() {
-        // nothing to do here
     }
 
     @Override

@@ -11,7 +11,7 @@ import org.pixel.commons.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.WindowSettings;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.keyboard.Keyboard;
@@ -32,7 +32,7 @@ public class KeyboardInputDemo extends DemoGame {
 
     private KeyboardState lastKeyboardState;
 
-    public KeyboardInputDemo(GameWindowSettings settings) {
+    public KeyboardInputDemo(WindowSettings settings) {
         super(settings);
     }
 
@@ -77,7 +77,7 @@ public class KeyboardInputDemo extends DemoGame {
 
         // Note that 'Keyboard.isKeyPressed()' is also available:
         if (Keyboard.isKeyPressed(KeyboardKey.ESCAPE)) {
-            close(); // quit the game...
+            dispose(); // quit the game...
         }
 
         // Take into consideration that the 'getState()' causes volatile memory which can result in quicker GC cycles
@@ -106,7 +106,7 @@ public class KeyboardInputDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        var settings = new GameWindowSettings(600, 480);
+        var settings = new WindowSettings(600, 480);
         settings.setTitle("Input DEMO - use W or S keys to move the camera vertically");
         settings.setWindowResizable(false);
         settings.setMultisampling(2);

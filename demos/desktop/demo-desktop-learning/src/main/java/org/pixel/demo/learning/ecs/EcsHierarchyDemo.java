@@ -7,16 +7,16 @@ import org.pixel.ext.ecs.GameComponent;
 import org.pixel.ext.ecs.GameScene;
 import org.pixel.ext.ecs.Sprite;
 import org.pixel.graphics.Camera2D;
-import org.pixel.graphics.GameWindowSettings;
-import org.pixel.graphics.GameWindow;
+import org.pixel.graphics.WindowSettings;
+import org.pixel.graphics.Game;
 import org.pixel.graphics.render.SpriteBatch;
 
-public class EcsHierarchyDemo extends GameWindow {
+public class EcsHierarchyDemo extends Game {
 
     private ContentManager contentManager;
     private GameScene gameScene;
 
-    public EcsHierarchyDemo(GameWindowSettings settings) {
+    public EcsHierarchyDemo(WindowSettings settings) {
         super(settings);
     }
 
@@ -70,7 +70,7 @@ public class EcsHierarchyDemo extends GameWindow {
     }
 
     public static void main(String[] args) {
-        var settings = new GameWindowSettings(600, 480);
+        var settings = new WindowSettings(600, 480);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);

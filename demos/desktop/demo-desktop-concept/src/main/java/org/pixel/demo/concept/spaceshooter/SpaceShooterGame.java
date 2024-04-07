@@ -21,15 +21,15 @@ import org.pixel.ext.ecs.component.AutoDisposeComponent;
 import org.pixel.ext.ecs.component.ConstantVelocityComponent;
 import org.pixel.ext.ecs.component.SpriteAnimationComponent;
 import org.pixel.graphics.Camera2D;
-import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.WindowSettings;
 import org.pixel.graphics.render.SpriteBatch;
-import org.pixel.graphics.GameWindow;
+import org.pixel.graphics.Game;
 import org.pixel.math.Boundary;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 
-public class SpaceShooterGame extends GameWindow {
+public class SpaceShooterGame extends Game {
 
     public static final EventManager $ = new EventManager();
 
@@ -41,7 +41,7 @@ public class SpaceShooterGame extends GameWindow {
     private Texture explosionTexture;
     private BackgroundTexture backgroundTexture;
 
-    public SpaceShooterGame(GameWindowSettings settings) {
+    public SpaceShooterGame(WindowSettings settings) {
         super(settings);
     }
 
@@ -151,7 +151,7 @@ public class SpaceShooterGame extends GameWindow {
         final int windowHeight = 800;
         final int virtualWidth = windowWidth / 2;
         final int virtualHeight = windowHeight / 2;
-        var settings = new GameWindowSettings(virtualWidth, virtualHeight);
+        var settings = new WindowSettings(virtualWidth, virtualHeight);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);

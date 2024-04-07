@@ -14,7 +14,7 @@ import java.util.Properties;
 
 @Getter
 @Setter
-public class BaseGameWindowSettings {
+public class GameSettings {
 
     private static final String DEFAULT_TITLE = "Pixel Game";
 
@@ -29,7 +29,7 @@ public class BaseGameWindowSettings {
     private boolean vsync;
     private boolean debugMode;
     private boolean idleThrottle;
-    private boolean autoWindowClear;
+    private boolean autoClear;
 
     //endregion
 
@@ -38,10 +38,10 @@ public class BaseGameWindowSettings {
     /**
      * Constructor.
      *
-     * @param virtualWidth The virtual width of the window.
-     * @param virtualHeight The virtual height of the window.
+     * @param virtualWidth The virtual width of the game viewport.
+     * @param virtualHeight The virtual height of the game viewport.
      */
-    public BaseGameWindowSettings(int virtualWidth, int virtualHeight) {
+    public GameSettings(int virtualWidth, int virtualHeight) {
         this(DEFAULT_TITLE, virtualWidth, virtualHeight);
     }
 
@@ -49,10 +49,10 @@ public class BaseGameWindowSettings {
      * Constructor.
      *
      * @param gameTitle The title of the game.
-     * @param virtualWidth The virtual width of the window.
-     * @param virtualHeight The virtual height of the window.
+     * @param virtualWidth The virtual width of the game viewport.
+     * @param virtualHeight The virtual height of the game viewport.
      */
-    public BaseGameWindowSettings(String gameTitle, int virtualWidth, int virtualHeight) {
+    public GameSettings(String gameTitle, int virtualWidth, int virtualHeight) {
         this.graphicsBackend = GraphicsBackend.OpenGL;
         this.title = gameTitle;
         this.virtualWidth = virtualWidth;
@@ -61,7 +61,7 @@ public class BaseGameWindowSettings {
         this.vsync = true;
         this.multisampling = 0;
         this.debugMode = false;
-        this.autoWindowClear = true;
+        this.autoClear = true;
         this.backgroundColor = Color.CORNFLOWER_BLUE;
     }
 

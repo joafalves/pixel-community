@@ -11,7 +11,7 @@ import org.pixel.commons.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.WindowSettings;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Vector2;
@@ -29,7 +29,7 @@ public class MultiSpriteDemo extends DemoGame {
     private Texture spriteTexB;
     private Vector2 spritePosB;
 
-    public MultiSpriteDemo(GameWindowSettings settings) {
+    public MultiSpriteDemo(WindowSettings settings) {
         super(settings);
     }
 
@@ -80,7 +80,7 @@ public class MultiSpriteDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        var settings = new GameWindowSettings(600, 480);
+        var settings = new WindowSettings(600, 480);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);

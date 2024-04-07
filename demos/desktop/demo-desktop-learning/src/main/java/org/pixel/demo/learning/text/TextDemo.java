@@ -11,7 +11,7 @@ import org.pixel.commons.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.GameWindowSettings;
+import org.pixel.graphics.WindowSettings;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.keyboard.Keyboard;
@@ -29,7 +29,7 @@ public class TextDemo extends DemoGame {
     private String text = BASE_TEXT;
     private Vector2 textPosition;
 
-    public TextDemo(GameWindowSettings settings) {
+    public TextDemo(WindowSettings settings) {
         super(settings);
     }
 
@@ -86,7 +86,7 @@ public class TextDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        var settings = new GameWindowSettings(800, 600);
+        var settings = new WindowSettings(800, 600);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);

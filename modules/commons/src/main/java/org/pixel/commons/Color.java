@@ -234,6 +234,24 @@ public class Color implements Serializable {
         return a;
     }
 
+    /**
+     * Get the color in rgba 8888 format.
+     *
+     * @return The color in rgba 8888 format.
+     */
+    public int rgba() {
+        return ((int) (r * 255) << 24) | ((int) (g * 255) << 16) | ((int) (b * 255) << 8) | ((int) (a * 255));
+    }
+
+    /**
+     * Get the color in argb format.
+     *
+     * @return The color in argb format.
+     */
+    public int argb() {
+        return ((int) (a * 255) << 24) | ((int) (r * 255) << 16) | ((int) (g * 255) << 8) | ((int) (b * 255));
+    }
+
     //endregion
 
     //region <public static methods>
