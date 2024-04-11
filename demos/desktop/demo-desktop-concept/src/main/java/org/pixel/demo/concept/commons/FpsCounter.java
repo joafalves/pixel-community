@@ -8,7 +8,7 @@ package org.pixel.demo.concept.commons;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.graphics.Game;
+import org.pixel.core.Game;
 
 public class FpsCounter {
 

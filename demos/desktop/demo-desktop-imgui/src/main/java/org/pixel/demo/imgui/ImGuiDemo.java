@@ -5,8 +5,8 @@ import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 import imgui.type.ImString;
 import org.pixel.commons.DeltaTime;
-import org.pixel.graphics.WindowSettings;
-import org.pixel.graphics.Game;
+import org.pixel.core.WindowSettings;
+import org.pixel.core.Game;
 
 public class ImGuiDemo extends Game {
 

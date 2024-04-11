@@ -5,6 +5,7 @@
 
 package org.pixel.content.importer;
 
+import static org.lwjgl.BufferUtils.createByteBuffer;
 import static org.lwjgl.openal.AL10.AL_BUFFER;
 import static org.lwjgl.openal.AL10.AL_FORMAT_MONO16;
 import static org.lwjgl.openal.AL10.AL_FORMAT_STEREO16;
@@ -15,6 +16,7 @@ import static org.lwjgl.openal.AL10.alSourcei;
 import static org.lwjgl.stb.STBVorbis.stb_vorbis_decode_memory;
 import static org.lwjgl.system.libc.LibCStdlib.free;
 
+import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import org.lwjgl.system.MemoryStack;
@@ -40,8 +42,10 @@ public class ALVorbisAudioImporter implements ContentImporter<Sound> {
             // load the sound resource item:
             IntBuffer channelsBuffer = stack.mallocInt(1);
             IntBuffer sampleRateBuffer = stack.mallocInt(1);
+            ByteBuffer rawBuffer = createByteBuffer(ctx.getData().length);
+            rawBuffer.put(ctx.getData()).flip(); // reset position to 0
 
-            rawAudioBuffer = stb_vorbis_decode_memory(ctx.getBuffer(), channelsBuffer, sampleRateBuffer);
+            rawAudioBuffer = stb_vorbis_decode_memory(rawBuffer, channelsBuffer, sampleRateBuffer);
             if (rawAudioBuffer == null) {
                 log.warn("Failed to load sound resource, invalid buffer.");
                 return null;

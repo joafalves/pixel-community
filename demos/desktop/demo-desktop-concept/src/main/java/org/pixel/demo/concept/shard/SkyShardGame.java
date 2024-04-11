@@ -2,8 +2,8 @@ package org.pixel.demo.concept.shard;
 
 import org.pixel.commons.DeltaTime;
 import org.pixel.ext.ecs.SceneManager;
-import org.pixel.graphics.WindowSettings;
-import org.pixel.graphics.Game;
+import org.pixel.core.WindowSettings;
+import org.pixel.core.Game;
 
 public class SkyShardGame extends Game {
 

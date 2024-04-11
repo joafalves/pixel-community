@@ -1,11 +1,10 @@
-package org.pixel.graphics;
+package org.pixel.core;
 
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.*;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.core.GameContainer;
-import org.pixel.core.GameSettings;
+import org.pixel.graphics.GraphicsDevice;
 
 public abstract class WindowGameContainer<T extends WindowManager, S extends GraphicsDevice, Z extends GameSettings>
         extends GameContainer<S, Z>
@@ -45,7 +44,13 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
             return false;
         }
 
-        return super.init();
+        if (super.init()) {
+            // Load window procedure
+            load();
+            return true;
+        }
+
+        return false;
     }
 
     @Override

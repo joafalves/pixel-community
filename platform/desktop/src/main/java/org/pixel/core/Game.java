@@ -1,4 +1,4 @@
-package org.pixel.graphics;
+package org.pixel.core;
 
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALC;
@@ -43,6 +43,8 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
 
     @Override
     protected boolean initGraphicsDevice() {
+        log.debug ("Initializing {} graphics device.", this.settings.getGraphicsBackend());
+
         switch (this.settings.getGraphicsBackend()) {
             case OpenGL:
                 this.graphicsDevice = new GLGraphicsDevice(this.windowManager, this.settings);
@@ -59,6 +61,8 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
 
     @Override
     protected boolean initAudio() {
+        log.debug("Initializing audio device.");
+
         try { // Attempt to initialize the audio device
             audioDevice = alcOpenDevice((ByteBuffer) null);
             if (audioDevice == 0L) {
@@ -85,6 +89,8 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
 
     @Override
     protected boolean initServices() {
+        log.debug("Initializing services.");
+
         switch (this.settings.getGraphicsBackend()) {
             case OpenGL:
                 ServiceProvider.register(SpriteBatch.class, new GLSpriteBatchServiceFactory());

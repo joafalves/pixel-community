@@ -9,8 +9,8 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.core.Camera2D;
-import org.pixel.graphics.WindowSettings;
-import org.pixel.graphics.Game;
+import org.pixel.core.WindowSettings;
+import org.pixel.core.Game;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 

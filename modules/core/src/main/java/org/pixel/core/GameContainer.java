@@ -69,13 +69,6 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
             return false;
         }
 
-        // At this point, the window, audio and rendering engines are initialized. Now
-        // it's time to
-        // load the game window (user-space) and allow the game loop to start.
-
-        // Load window procedure
-        load();
-
         this.state = State.INITIALIZED;
         return true;
     }

@@ -1,6 +1,6 @@
 package org.pixel.graphics.shader.opengl;
 
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.graphics.shader.Shader;
@@ -8,9 +8,9 @@ import org.pixel.graphics.shader.Shader;
 import java.util.HashMap;
 import java.util.List;
 
-public abstract class GLESShader implements Shader {
+public abstract class GLES30Shader implements Shader {
 
-    private static final Logger log = LoggerFactory.getLogger(GLESShader.class);
+    private static final Logger log = LoggerFactory.getLogger(GLES30Shader.class);
 
     private final String vertexShaderSource;
     private final String fragmentShaderSource;
@@ -31,7 +31,7 @@ public abstract class GLESShader implements Shader {
      * @param attributes The shader attributes.
      * @param uniforms   The shader uniforms.
      */
-    public GLESShader(String vertexSrc, String fragSrc, List<String> attributes, List<String> uniforms) {
+    public GLES30Shader(String vertexSrc, String fragSrc, List<String> attributes, List<String> uniforms) {
         this.vertexShaderSource = vertexSrc;
         this.fragmentShaderSource = fragSrc;
         this.attributes = attributes;
@@ -43,28 +43,28 @@ public abstract class GLESShader implements Shader {
     @Override
     public boolean init() {
         // create and put vertex/fragment shader:
-        vertexShaderId = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
-        fragmentShaderId = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER);
+        vertexShaderId = GLES30.glCreateShader(GLES30.GL_VERTEX_SHADER);
+        fragmentShaderId = GLES30.glCreateShader(GLES30.GL_FRAGMENT_SHADER);
 
         // attach shader source
         initShader(vertexShaderId, vertexShaderSource);
         initShader(fragmentShaderId, fragmentShaderSource);
 
         // create program:
-        programId = GLES20.glCreateProgram();
+        programId = GLES30.glCreateProgram();
 
         // attach shaders:
-        GLES20.glAttachShader(programId, vertexShaderId);
-        GLES20.glAttachShader(programId, fragmentShaderId);
+        GLES30.glAttachShader(programId, vertexShaderId);
+        GLES30.glAttachShader(programId, fragmentShaderId);
 
         // link:
-        GLES20.glLinkProgram(programId);
+        GLES30.glLinkProgram(programId);
 
         // status check:
         int[] linkStatus = new int[1];
-        GLES20.glGetProgramiv(programId, GLES20.GL_LINK_STATUS, linkStatus, 0);
-        if (linkStatus[0] != GLES20.GL_TRUE) {
-            throw new RuntimeException("Could not link program: " + GLES20.glGetProgramInfoLog(programId));
+        GLES30.glGetProgramiv(programId, GLES30.GL_LINK_STATUS, linkStatus, 0);
+        if (linkStatus[0] != GLES30.GL_TRUE) {
+            throw new RuntimeException("Could not link program: " + GLES30.glGetProgramInfoLog(programId));
         }
 
         // cache locations
@@ -76,7 +76,7 @@ public abstract class GLESShader implements Shader {
 
     @Override
     public void use() {
-        GLES20.glUseProgram(programId);
+        GLES30.glUseProgram(programId);
     }
 
     @Override
@@ -86,9 +86,9 @@ public abstract class GLESShader implements Shader {
 
     @Override
     public void dispose() {
-        GLES20.glDeleteShader(vertexShaderId);
-        GLES20.glDeleteShader(fragmentShaderId);
-        GLES20.glDeleteProgram(programId);
+        GLES30.glDeleteShader(vertexShaderId);
+        GLES30.glDeleteShader(fragmentShaderId);
+        GLES30.glDeleteProgram(programId);
     }
 
     /**
@@ -122,21 +122,21 @@ public abstract class GLESShader implements Shader {
 
     private void initShader(int shaderId, String shaderSrc) {
         // attach source & compile shader:
-        GLES20.glShaderSource(shaderId, shaderSrc);
-        GLES20.glCompileShader(shaderId);
+        GLES30.glShaderSource(shaderId, shaderSrc);
+        GLES30.glCompileShader(shaderId);
 
         int[] linkStatus = new int[1];
-        GLES20.glGetShaderiv(shaderId, GLES20.GL_COMPILE_STATUS, linkStatus, 0);
-        if (linkStatus[0] != GLES20.GL_TRUE) {
-            throw new RuntimeException(GLES20.glGetShaderInfoLog(shaderId));
+        GLES30.glGetShaderiv(shaderId, GLES30.GL_COMPILE_STATUS, linkStatus, 0);
+        if (linkStatus[0] != GLES30.GL_TRUE) {
+            throw new RuntimeException(GLES30.glGetShaderInfoLog(shaderId));
         }
     }
 
     private void cacheAttributeLocations() {
-        attributes.forEach(elem -> attributeLocationMap.put(elem, GLES20.glGetAttribLocation(programId, elem)));
+        attributes.forEach(elem -> attributeLocationMap.put(elem, GLES30.glGetAttribLocation(programId, elem)));
     }
 
     private void cacheUniformLocations() {
-        uniforms.forEach(elem -> uniformLocationMap.put(elem, GLES20.glGetUniformLocation(programId, elem)));
+        uniforms.forEach(elem -> uniformLocationMap.put(elem, GLES30.glGetUniformLocation(programId, elem)));
     }
 }

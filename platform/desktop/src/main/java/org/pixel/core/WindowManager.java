@@ -1,4 +1,4 @@
-package org.pixel.graphics;
+package org.pixel.core;
 
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.commons.lifecycle.Initializable;

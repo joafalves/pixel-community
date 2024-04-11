@@ -38,11 +38,14 @@ public class FileUtils {
      * @return The image data.
      */
     public static ImageData loadImage(String filepath) {
-        ByteBuffer rawBuffer = loadFile(filepath);
-        if (rawBuffer == null) {
+        byte[] data = loadFile(filepath);
+        if (data == null) {
             log.warn("Unable to load image due to IO failure (cannot read file from '{}').", filepath);
             return null;
         }
+
+        ByteBuffer rawBuffer = createByteBuffer(data.length);
+        rawBuffer.put(data).flip(); // reset position to 0
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
             IntBuffer w = stack.mallocInt(1);
@@ -69,7 +72,7 @@ public class FileUtils {
      * @param filepath The file path (relative paths allowed).
      * @return The byte buffer.
      */
-    public static ByteBuffer loadFile(String filepath) {
+    public static byte[] loadFile(String filepath) {
         Path path = Paths.get(filepath);
         if (!path.isAbsolute()) {
             InputStream in = org.pixel.commons.util.FileUtils.class.getClassLoader().getResourceAsStream(filepath);
@@ -79,9 +82,7 @@ public class FileUtils {
             }
 
             try {
-                byte[] bytes = in.readAllBytes();
-                ByteBuffer buffer = createByteBuffer(bytes.length);
-                return buffer.put(bytes).flip();
+                return in.readAllBytes();
 
             } catch (IOException e) {
                 log.error("Exception caught while loading relative path resource!", e);
@@ -94,8 +95,7 @@ public class FileUtils {
             try (SeekableByteChannel fc = Files.newByteChannel(path)) {
                 ByteBuffer buffer = createByteBuffer((int) fc.size());
                 while (fc.read(buffer) != -1) ; // write into our buffer
-
-                return buffer.flip();
+                return buffer.array();
 
             } catch (IOException e) {
                 log.error("Exception caught!", e);

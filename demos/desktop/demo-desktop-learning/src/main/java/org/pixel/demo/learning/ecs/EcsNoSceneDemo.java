@@ -6,8 +6,8 @@ import org.pixel.content.ContentManager;
 import org.pixel.ext.ecs.GameComponent;
 import org.pixel.ext.ecs.Sprite;
 import org.pixel.core.Camera2D;
-import org.pixel.graphics.WindowSettings;
-import org.pixel.graphics.Game;
+import org.pixel.core.WindowSettings;
+import org.pixel.core.Game;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.MathHelper;
 

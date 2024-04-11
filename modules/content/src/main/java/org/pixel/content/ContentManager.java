@@ -24,7 +24,7 @@ public class ContentManager implements Disposable {
     private final ConcurrentHashMap<String, Object> assetCache;
     private final ConcurrentHashMap<Class<?>, ContentImporter<?>> importers;
 
-    private DataPipeline<ByteBuffer> dataPipeline;
+    private DataPipeline<byte[]> dataPipeline;
 
     /**
      * Constructor. By default, includes all internal importers.
@@ -289,7 +289,7 @@ public class ContentManager implements Disposable {
             return null;
         }
 
-        ByteBuffer resourceData = this.resourceLoader.load(filepath);
+        byte[] resourceData = this.resourceLoader.load(filepath);
         if (resourceData == null) {
             log.warn("Unable to load asset '{}'; target could not be found.", filepath);
             return null;
@@ -319,7 +319,7 @@ public class ContentManager implements Disposable {
      *
      * @return The data pipeline.
      */
-    public DataPipeline<ByteBuffer> getDataPipeline() {
+    public DataPipeline<byte[]> getDataPipeline() {
         return dataPipeline;
     }
 
@@ -330,7 +330,7 @@ public class ContentManager implements Disposable {
      *
      * @param dataPipeline The data pipeline to use.
      */
-    public void setDataPipeline(DataPipeline<ByteBuffer> dataPipeline) {
+    public void setDataPipeline(DataPipeline<byte[]> dataPipeline) {
         this.dataPipeline = dataPipeline;
     }
 }

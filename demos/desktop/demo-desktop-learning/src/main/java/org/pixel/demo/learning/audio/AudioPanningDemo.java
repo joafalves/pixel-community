@@ -11,7 +11,7 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.ServiceProvider;
 import org.pixel.content.Texture;
 import org.pixel.core.Camera2D;
-import org.pixel.graphics.WindowSettings;
+import org.pixel.core.WindowSettings;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;

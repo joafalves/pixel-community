@@ -3,11 +3,10 @@
  * Copyright (c) 2020
  */
 
-package org.pixel.graphics;
+package org.pixel.core;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.pixel.core.GameSettings;
 
 @Getter
 @Setter

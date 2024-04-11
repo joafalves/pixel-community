@@ -3,8 +3,8 @@ package org.pixel.demo.android
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import org.pixel.commons.Color
-import org.pixel.graphics.Game
-import org.pixel.graphics.MobileGameSettings
+import org.pixel.core.Game
+import org.pixel.core.MobileGameSettings
 
 
 class MainActivity : AppCompatActivity() {

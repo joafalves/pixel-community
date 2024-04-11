@@ -3,7 +3,7 @@ package org.pixel.demo.learning.misc;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.WindowSettings;
+import org.pixel.core.WindowSettings;
 import org.pixel.io.DataSerializer;
 import org.pixel.math.Vector2;
 

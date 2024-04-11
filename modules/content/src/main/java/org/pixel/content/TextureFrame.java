@@ -5,7 +5,7 @@
 
 package org.pixel.content;
 
-import org.pixel.commons.AttributeMap;
+import org.pixel.commons.DataHashMap;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 
@@ -14,7 +14,7 @@ public class TextureFrame {
     private Texture texture;
     private Rectangle source;
     private Vector2 pivot;
-    private AttributeMap attributes;
+    private DataHashMap attributes;
 
     /**
      * Constructor.
@@ -37,7 +37,7 @@ public class TextureFrame {
      * @param pivot      The pivot point.
      * @param attributes The attributes (usually the meta associated to the frame).
      */
-    public TextureFrame(Texture texture, Rectangle source, Vector2 pivot, AttributeMap attributes) {
+    public TextureFrame(Texture texture, Rectangle source, Vector2 pivot, DataHashMap attributes) {
         this.texture = texture;
         this.source = source;
         this.pivot = pivot;
@@ -85,7 +85,7 @@ public class TextureFrame {
      *
      * @return The attributes.
      */
-    public AttributeMap getAttributes() {
+    public DataHashMap getAttributes() {
         return attributes;
     }
 
@@ -94,7 +94,7 @@ public class TextureFrame {
      *
      * @param attributes The attributes.
      */
-    public void setAttributes(AttributeMap attributes) {
+    public void setAttributes(DataHashMap attributes) {
         this.attributes = attributes;
     }
 

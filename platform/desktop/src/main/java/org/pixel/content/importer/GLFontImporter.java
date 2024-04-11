@@ -8,11 +8,17 @@ import org.pixel.content.ImportContext;
 import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.content.opengl.GLFont;
 
+import java.nio.ByteBuffer;
+
+import static org.lwjgl.BufferUtils.createByteBuffer;
+
 @ContentImporterInfo(type = Font.class, extension = { ".ttf", ".otf" })
 public class GLFontImporter implements ContentImporter<Font> {
     @Override
     public Font process(ImportContext ctx) {
-        var fontData = new FontData(ctx.getBuffer());
+        ByteBuffer rawBuffer = createByteBuffer(ctx.getData().length);
+        rawBuffer.put(ctx.getData()).flip(); // reset position to 0
+        var fontData = new FontData(rawBuffer);
 
         if (ctx.getSettings() instanceof FontImporterSettings) {
             var settings = (FontImporterSettings) ctx.getSettings();

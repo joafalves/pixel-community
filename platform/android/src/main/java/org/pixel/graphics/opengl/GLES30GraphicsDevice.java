@@ -1,25 +1,25 @@
 package org.pixel.graphics.opengl;
 
 import android.content.Context;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.graphics.Game;
+import org.pixel.core.Game;
 import org.pixel.graphics.GraphicsDevice;
 
-public class GLESGraphicsDevice extends GLSurfaceView implements GraphicsDevice {
+public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevice {
 
-    private static final Logger log = LoggerFactory.getLogger(GLESGraphicsDevice.class);
+    private static final Logger log = LoggerFactory.getLogger(GLES30GraphicsDevice.class);
 
     private final Game game;
 
     private State state;
 
-    public GLESGraphicsDevice(Game game, Context context) {
+    public GLES30GraphicsDevice(Game game, Context context) {
         super(context);
         this.game = game;
         this.state = State.CREATED;
@@ -35,7 +35,7 @@ public class GLESGraphicsDevice extends GLSurfaceView implements GraphicsDevice 
         log.debug("Initializing OpenGL ES graphics device...");
         this.state = State.INITIALIZING;
 
-        this.setEGLContextClientVersion(2); // Setting OpenGL ES 2.0 as the rendering context.
+        this.setEGLContextClientVersion(3); // Setting OpenGL ES 2.0 as the rendering context.
         this.setRenderer(new GLSurfaceView.Renderer() {
             private final DeltaTime delta = new DeltaTime();
 
@@ -43,6 +43,9 @@ public class GLESGraphicsDevice extends GLSurfaceView implements GraphicsDevice 
             public void onSurfaceCreated(javax.microedition.khronos.opengles.GL10 gl, javax.microedition.khronos.egl.EGLConfig config) {
                 initGLESCapabilities();
                 setClearColor(game.getSettings().getBackgroundColor());
+
+                // Log the OpenGL ES version.
+                log.debug("OpenGL ES Version: '{}'.", GLES30.glGetString(GLES30.GL_VERSION));
 
                 // load assets here:
                 game.load();
@@ -66,8 +69,6 @@ public class GLESGraphicsDevice extends GLSurfaceView implements GraphicsDevice 
             }
         });
 
-        log.debug("OpenGL ES Version: '{}'.", GLES20.glGetString(GLES20.GL_VERSION));
-
         this.state = State.INITIALIZED;
 
         return true;
@@ -75,12 +76,12 @@ public class GLESGraphicsDevice extends GLSurfaceView implements GraphicsDevice 
 
     @Override
     public void clear() {
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
     }
 
     @Override
     public void setClearColor(Color color) {
-        GLES20.glClearColor(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        GLES30.glClearColor(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
     }
 
     @Override
@@ -95,16 +96,16 @@ public class GLESGraphicsDevice extends GLSurfaceView implements GraphicsDevice 
 
     private void initGLESCapabilities() {
         // Disable face culling.
-        GLES20.glDisable(GLES20.GL_CULL_FACE);
+        GLES30.glDisable(GLES30.GL_CULL_FACE);
 
         // Disable depth testing.
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST);
 
         // Enable blending for transparent pixels.
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
 
         // Stencil test settings (if you use stencil operations).
-        GLES20.glEnable(GLES20.GL_STENCIL_TEST);
+        GLES30.glEnable(GLES30.GL_STENCIL_TEST);
     }
 }

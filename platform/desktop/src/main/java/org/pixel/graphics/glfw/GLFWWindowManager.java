@@ -62,12 +62,12 @@ import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.io.FileUtils;
-import org.pixel.graphics.WindowSettings;
-import org.pixel.graphics.DesktopWindowManager;
+import org.pixel.core.WindowSettings;
+import org.pixel.core.DesktopWindowManager;
 import org.pixel.graphics.GraphicsBackend;
-import org.pixel.graphics.WindowCursorMode;
-import org.pixel.graphics.WindowDimensions;
-import org.pixel.graphics.WindowMode;
+import org.pixel.core.WindowCursorMode;
+import org.pixel.core.WindowDimensions;
+import org.pixel.core.WindowMode;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.mouse.Mouse;
 

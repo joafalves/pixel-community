@@ -36,8 +36,8 @@ import org.pixel.commons.Color;
 import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.graphics.DesktopWindowManager;
-import org.pixel.graphics.WindowSettings;
+import org.pixel.core.DesktopWindowManager;
+import org.pixel.core.WindowSettings;
 import org.pixel.graphics.GraphicsDevice;
 
 public class GLGraphicsDevice implements GraphicsDevice {

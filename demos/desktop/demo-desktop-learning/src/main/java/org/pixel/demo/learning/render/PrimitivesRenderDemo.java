@@ -3,7 +3,7 @@ package org.pixel.demo.learning.render;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.WindowSettings;
+import org.pixel.core.WindowSettings;
 import org.pixel.graphics.render.RenderEngine2D;
 import org.pixel.graphics.render.nanovg.NvgRenderEngine;
 

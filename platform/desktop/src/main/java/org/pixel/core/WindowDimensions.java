@@ -3,7 +3,7 @@
  * Copyright (c) 2020
  */
 
-package org.pixel.graphics;
+package org.pixel.core;
 
 import lombok.Builder;
 import lombok.Getter;

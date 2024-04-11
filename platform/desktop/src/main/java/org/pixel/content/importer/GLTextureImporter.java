@@ -1,5 +1,6 @@
 package org.pixel.content.importer;
 
+import static org.lwjgl.BufferUtils.createByteBuffer;
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.stb.STBImage.stbi_failure_reason;
 import static org.lwjgl.stb.STBImage.stbi_load_from_memory;
@@ -31,8 +32,11 @@ public class GLTextureImporter implements ContentImporter<Texture> {
             IntBuffer h = stack.mallocInt(1);
             IntBuffer comp = stack.mallocInt(1);
 
+            ByteBuffer rawBuffer = createByteBuffer(ctx.getData().length);
+            rawBuffer.put(ctx.getData()).flip(); // reset position to 0
+
             // load image data from buffer
-            ByteBuffer imageData = stbi_load_from_memory(ctx.getBuffer(), w, h, comp, 4);
+            ByteBuffer imageData = stbi_load_from_memory(rawBuffer, w, h, comp, 4);
             if (imageData == null) {
                 throw new RuntimeException("Failed to process texture file: " + stbi_failure_reason());
             }

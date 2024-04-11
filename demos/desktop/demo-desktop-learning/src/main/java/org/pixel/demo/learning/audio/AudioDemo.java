@@ -10,7 +10,7 @@ import org.pixel.commons.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Sound;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.WindowSettings;
+import org.pixel.core.WindowSettings;
 
 public class AudioDemo extends DemoGame {
 

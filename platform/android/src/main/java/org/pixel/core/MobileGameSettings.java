@@ -1,6 +1,4 @@
-package org.pixel.graphics;
-
-import org.pixel.core.GameSettings;
+package org.pixel.core;
 
 public class MobileGameSettings extends GameSettings {
     /**

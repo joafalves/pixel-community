@@ -3,7 +3,7 @@ package org.pixel.commons;
 import java.util.HashMap;
 import java.util.List;
 
-public class AttributeMap extends HashMap<String, Object> {
+public class DataHashMap extends HashMap<String, Object> {
 
     /**
      * Get the value of the key. If the key is not found, null is returned.

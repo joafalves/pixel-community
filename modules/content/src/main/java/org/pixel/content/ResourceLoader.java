@@ -1,13 +1,11 @@
 package org.pixel.content;
 
-import java.nio.ByteBuffer;
-
 public interface ResourceLoader {
     /**
      * Load a resource from the given path.
      * 
-     * @param path
-     * @return
+     * @param path The resource path.
+     * @return The resource data.
      */
-    ByteBuffer load(String path);
+    byte[] load(String path);
 }
