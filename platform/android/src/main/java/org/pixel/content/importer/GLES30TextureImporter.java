@@ -44,11 +44,12 @@ public class GLES30TextureImporter implements ContentImporter<Texture> {
         GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
 
         // Recycle the bitmap, as its data has been loaded into OpenGL
+        GLES30Texture texture = new GLES30Texture(textureId, bitmap.getWidth(), bitmap.getHeight());
         bitmap.recycle();
 
         // Unbind texture
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, 0);
 
-        return new GLES30Texture(textureId, bitmap.getWidth(), bitmap.getHeight());
+        return texture;
     }
 }

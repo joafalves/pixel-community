@@ -27,22 +27,22 @@ public class Camera2D implements Serializable {
     //region constructors
 
     /**
-     * Constructor. Sets the camera properties based on the given window virtual size.
+     * Constructor. Sets the camera properties based on the given game virtual size.
      *
-     * @param window The window instance.
+     * @param game The game instance.
      */
-    public Camera2D(GameContainer<?,?> window) {
-        this(0, 0, window.getVirtualWidth(), window.getVirtualHeight());
+    public Camera2D(GameContainer<?,?> game) {
+        this(0, 0, game.getVirtualWidth(), game.getVirtualHeight());
     }
 
     /**
-     * Constructor. Sets the camera properties based on the given window virtual size.
+     * Constructor. Sets the camera properties based on the given game virtual size.
      *
-     * @param window The window instance.
+     * @param game The game instance.
      * @param origin The camera view origin.
      */
-    public Camera2D(GameContainer<?,?> window, Vector2 origin) {
-        this(0, 0, window.getVirtualWidth(), window.getVirtualHeight(), 1.0f, origin);
+    public Camera2D(GameContainer<?,?> game, Vector2 origin) {
+        this(0, 0, game.getVirtualWidth(), game.getVirtualHeight(), 1.0f, origin);
     }
 
     /**

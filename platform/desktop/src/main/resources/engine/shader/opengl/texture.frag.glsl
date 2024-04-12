@@ -12,5 +12,5 @@ void main() {
     if (color.a <= 0) {
         discard;
     }
-    oFragColor = color;
+    oFragColor = vec4(color.rgb, 1.0);
 }

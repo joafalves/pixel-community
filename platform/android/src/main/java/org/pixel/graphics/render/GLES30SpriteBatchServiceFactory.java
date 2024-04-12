@@ -6,7 +6,11 @@ public class GLES30SpriteBatchServiceFactory implements ServiceFactory<SpriteBat
 
     @Override
     public SpriteBatch create() {
-        return new GLES30SpriteBatch();
+        GLES30SpriteBatch spriteBatch = new GLES30SpriteBatch();
+        if (!spriteBatch.init()) {
+            throw new RuntimeException("Failed to initialize GLES30SpriteBatch.");
+        }
+        return spriteBatch;
     }
 
 }

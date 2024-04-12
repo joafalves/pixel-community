@@ -35,7 +35,7 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
         log.debug("Initializing OpenGL ES graphics device...");
         this.state = State.INITIALIZING;
 
-        this.setEGLContextClientVersion(3); // Setting OpenGL ES 2.0 as the rendering context.
+        this.setEGLContextClientVersion(3); // Setting OpenGL ES 3.0 as the rendering context.
         this.setRenderer(new GLSurfaceView.Renderer() {
             private final DeltaTime delta = new DeltaTime();
 
@@ -65,7 +65,7 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
             @Override
             public void onSurfaceChanged(javax.microedition.khronos.opengles.GL10 gl, int width, int height) {
                 // Resize code here. For example, setting the viewport:
-                gl.glViewport(0, 0, width, height);
+                GLES30.glViewport(0, 0, width, height);
             }
         });
 
@@ -76,7 +76,7 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
 
     @Override
     public void clear() {
-        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
     }
 
     @Override

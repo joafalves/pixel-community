@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import org.lwjgl.system.MemoryUtil;
 import org.pixel.commons.Color;
+import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.Font;
@@ -65,8 +66,8 @@ public class GLSpriteBatch implements SpriteBatch {
     private final GLVertexBufferObject vbo;
     private final GLVertexArrayObject vao;
     private final FloatBuffer matrixBuffer;
+    private State state = State.CREATED;
 
-    private final Vector2 anchorZero = Vector2.zero();
     private final int shaderTextureCount;
 
     private FloatBuffer dataBuffer;
@@ -130,12 +131,16 @@ public class GLSpriteBatch implements SpriteBatch {
 
         log.trace("Buffer max size (units): '{}'.", this.bufferMaxSize);
         log.trace("Shader texture count: '{}'.", this.shaderTextureCount);
-
-        this.init();
     }
 
     @Override
     public boolean init() {
+        if (state.hasInitialized()) {
+            log.warn("SpriteBatch already initialized.");
+            return false;
+        }
+        state = State.INITIALIZING;
+
         shader = new GLMultiTextureShader(shaderTextureCount);
         shader.use();
 
@@ -170,6 +175,7 @@ public class GLSpriteBatch implements SpriteBatch {
 
         this.initBuffer();
 
+        state = State.INITIALIZED;
         return true;
     }
 
@@ -178,6 +184,7 @@ public class GLSpriteBatch implements SpriteBatch {
         shader.dispose();
         vbo.dispose();
         vao.dispose();
+        state = State.DISPOSED;
     }
 
     @Override
@@ -187,7 +194,7 @@ public class GLSpriteBatch implements SpriteBatch {
 
     @Override
     public void draw(Texture texture, Vector2 position, Color color) {
-        draw(texture, position, color, anchorZero, 1.0f);
+        draw(texture, position, color, Vector2.ZERO, 1.0f);
     }
 
     @Override
@@ -208,7 +215,7 @@ public class GLSpriteBatch implements SpriteBatch {
 
     @Override
     public void draw(Texture texture, Vector2 position, Rectangle source, Color color) {
-        this.draw(texture, position, source, color, anchorZero, 1.0f, 1.0f, 0.f, 0);
+        this.draw(texture, position, source, color, Vector2.ZERO, 1.0f, 1.0f, 0.f, 0);
     }
 
     @Override

@@ -7,7 +7,11 @@ public class GLSpriteBatchServiceFactory implements ServiceFactory<SpriteBatch> 
 
     @Override
     public SpriteBatch create() {
-        return new GLSpriteBatch();
+        var spriteBatch = new GLSpriteBatch();
+        if (!spriteBatch.init()) {
+            throw new RuntimeException("Failed to initialize GLSpriteBatch.");
+        }
+        return spriteBatch;
     }
 
 }

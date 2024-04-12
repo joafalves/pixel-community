@@ -9,21 +9,15 @@ import org.pixel.core.MobileGameSettings
 
 class MainActivity : AppCompatActivity() {
 
-    private val gameWindow: Game
-
-    init {
-        val settings = MobileGameSettings(300, 600)
-        settings.backgroundColor = Color.CORNFLOWER_BLUE
-
-        gameWindow = DemoGame(settings, this)
-    }
+    private val gameWindow: Game = AndroidDemoGame(
+        MobileGameSettings(720, 1280).apply {
+            title = "Pixel Engine Demo"
+            backgroundColor = Color.CORNFLOWER_BLUE
+        }, this
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val settings = MobileGameSettings(300, 600)
-        settings.backgroundColor = Color.CORNFLOWER_BLUE
-
         if (gameWindow.init()) {
             setContentView(gameWindow.graphicsDevice)
         }
