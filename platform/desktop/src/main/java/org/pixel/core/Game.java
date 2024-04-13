@@ -37,7 +37,7 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
     @Override
     protected boolean initWindowManager() {
         // TODO: make configurable when/if more options are available
-        this.windowManager = new GLFWWindowManager(this.settings);
+        this.windowManager = new GLFWWindowManager(this);
         return this.windowManager.init();
     }
 

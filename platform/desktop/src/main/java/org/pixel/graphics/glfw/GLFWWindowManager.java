@@ -61,13 +61,9 @@ import org.pixel.commons.data.ImageData;
 import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.core.*;
 import org.pixel.io.FileUtils;
-import org.pixel.core.WindowSettings;
-import org.pixel.core.DesktopWindowManager;
 import org.pixel.graphics.GraphicsBackend;
-import org.pixel.core.WindowCursorMode;
-import org.pixel.core.WindowDimensions;
-import org.pixel.core.WindowMode;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.mouse.Mouse;
 
@@ -79,6 +75,7 @@ public class GLFWWindowManager implements DesktopWindowManager {
     private static final int OPENGL_VERSION_MAJOR = 3;
     private static final int OPENGL_VERSION_MINOR = 3;
 
+    private final WindowGameContainer game;
     private final WindowSettings windowSettings;
 
     private State state;
@@ -86,8 +83,9 @@ public class GLFWWindowManager implements DesktopWindowManager {
     private long windowHandle;
     private boolean isWindowFocused;
 
-    public GLFWWindowManager(WindowSettings windowSettings) {
-        this.windowSettings = windowSettings;
+    public GLFWWindowManager(WindowGameContainer game) {
+        this.game = game;
+        this.windowSettings = (WindowSettings) game.getSettings();
         this.state = State.CREATED;
     }
 
@@ -185,8 +183,8 @@ public class GLFWWindowManager implements DesktopWindowManager {
             return;
         }
 
-        glfwSetWindowSize(windowHandle, width, height);  
-        
+        glfwSetWindowSize(windowHandle, width, height);
+
         // Update window dimensions
         this.windowDimensions.setWindowWidth(width);
         this.windowDimensions.setWindowHeight(height);
@@ -203,7 +201,7 @@ public class GLFWWindowManager implements DesktopWindowManager {
         }
 
         this.windowSettings.setWindowMode(mode);
-        this.updateWindowMode();        
+        this.updateWindowMode();
     }
 
     @Override
@@ -213,17 +211,11 @@ public class GLFWWindowManager implements DesktopWindowManager {
             return;
         }
 
-        int glfwMode;
-        switch (mode) {
-            case DISABLED:
-                glfwMode = GLFW_CURSOR_DISABLED;
-                break;
-            case HIDDEN:
-                glfwMode = GLFW_CURSOR_HIDDEN;
-                break;
-            default:
-                glfwMode = GLFW_CURSOR_NORMAL;
-        }
+        int glfwMode = switch (mode) {
+            case DISABLED -> GLFW_CURSOR_DISABLED;
+            case HIDDEN -> GLFW_CURSOR_HIDDEN;
+            default -> GLFW_CURSOR_NORMAL;
+        };
 
         glfwSetInputMode(windowHandle, GLFW_CURSOR, glfwMode);
     }
@@ -293,7 +285,7 @@ public class GLFWWindowManager implements DesktopWindowManager {
             return false;
         }
 
-        return !glfwWindowShouldClose(windowHandle) ;
+        return !glfwWindowShouldClose(windowHandle);
     }
 
     private void initGLFW() {
@@ -407,7 +399,7 @@ public class GLFWWindowManager implements DesktopWindowManager {
             this.windowDimensions.setPixelRatio(width / (float) windowDimensions.getWindowWidth());
             this.windowDimensions.setFrameWidth(width);
             this.windowDimensions.setFrameHeight(height);
-            // TODO: trigger event!
+            this.game.onViewportChanged(width, height);
         });
 
         // Window focus callback:

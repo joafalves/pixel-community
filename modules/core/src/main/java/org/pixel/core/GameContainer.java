@@ -95,6 +95,16 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
     }
 
     /**
+     * Called when the viewport changes.
+     *
+     * @param width  The new viewport width.
+     * @param height The new viewport height.
+     */
+    public void onViewportChanged(int width, int height) {
+        // empty by design (not abstract to make this optional)
+    }
+
+    /**
      * Clear the render window.
      */
     public void clear() {

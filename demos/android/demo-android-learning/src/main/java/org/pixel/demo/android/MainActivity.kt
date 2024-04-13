@@ -9,15 +9,20 @@ import org.pixel.core.MobileGameSettings
 
 class MainActivity : AppCompatActivity() {
 
-    private val gameWindow: Game = AndroidDemoGame(
-        MobileGameSettings(720, 1280).apply {
-            title = "Pixel Engine Demo"
-            backgroundColor = Color.CORNFLOWER_BLUE
-        }, this
-    )
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
+        supportActionBar?.hide()
+        window.decorView.windowInsetsController?.hide(android.view.WindowInsets.Type.navigationBars())
+
+        val gameWindow: Game = AndroidDemoGame(
+            MobileGameSettings(resources.displayMetrics.widthPixels, resources.displayMetrics.heightPixels).apply {
+                title = "Pixel Engine Demo"
+                backgroundColor = Color.CORNFLOWER_BLUE
+            }, this
+        )
+
         if (gameWindow.init()) {
             setContentView(gameWindow.graphicsDevice)
         }

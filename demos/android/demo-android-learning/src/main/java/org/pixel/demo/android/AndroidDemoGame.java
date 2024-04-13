@@ -35,7 +35,7 @@ public class AndroidDemoGame extends Game {
      * Constructor.
      *
      * @param settings The settings to use.
-     * @param context
+     * @param context The android context.
      */
     public AndroidDemoGame(MobileGameSettings settings, Context context) {
         super(settings, context);
@@ -83,9 +83,18 @@ public class AndroidDemoGame extends Game {
     @Override
     public void draw(DeltaTime delta) {
         spriteBatch.begin(camera.getViewMatrix());
-        spriteBatch.draw(spriteTexture, spritePositionA, Color.WHITE, Vector2.HALF, 3f);
-        spriteBatch.draw(spriteTexture, spritePositionB, Color.WHITE, Vector2.HALF, 3f);
+        spriteBatch.draw(spriteTexture, spritePositionA, Color.WHITE, Vector2.HALF, 4f);
+        spriteBatch.draw(spriteTexture, spritePositionB, Color.WHITE, Vector2.HALF, 4f);
         spriteBatch.end();
+    }
+
+    @Override
+    public void onViewportChanged(int width, int height) {
+        // For the sake of the demo, we will set the virtual resolution to the same as the viewport.
+        settings.setVirtualHeight(height);
+        settings.setVirtualWidth(width);
+        camera.setWidth(width);
+        camera.setHeight(height);
     }
 
     @Override

@@ -64,8 +64,13 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
 
             @Override
             public void onSurfaceChanged(javax.microedition.khronos.opengles.GL10 gl, int width, int height) {
+                log.debug("Surface changed: width={}, height={}.", width, height);
+
                 // Resize code here. For example, setting the viewport:
                 GLES30.glViewport(0, 0, width, height);
+
+                // Notify the game about the viewport change.
+                game.onViewportChanged(width, height);
             }
         });
 
