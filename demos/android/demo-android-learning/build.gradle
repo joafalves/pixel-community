@@ -41,6 +41,7 @@ android {
 
 dependencies {
     implementation project(":${rootProject.name}-android")
+    implementation project(":${rootProject.name}-ext-tween")
 
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.core:core-ktx:+'

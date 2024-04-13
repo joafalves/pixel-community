@@ -47,16 +47,18 @@ public class TweenDemo extends Game {
 
         spriteTexture = contentManager.loadTexture("images/earth-48x48.png");
 
-        spritePositionA = new Vector2();
-        tweenA = new Tween(200, 200)
+        spritePositionA = new Vector2(200, 200);
+        Tween tweenA = new Tween(spritePositionA.getX(), spritePositionA.getY())
+                .target(spritePositionA)
                 .to(200, -200)
                 .duration(1f)
                 .loopMode(TweenLoopMode.LOOP_REVERSE)
                 .easing(TweenEasingMode.SIN)
                 .on((tween, state) -> log.info("Tween A: " + state));
 
-        spritePositionB = new Vector2();
-        tweenB = new Tween(-200, 200)
+        spritePositionB = new Vector2(-200, 200);
+        Tween tweenB = new Tween(spritePositionB.getX(), spritePositionB.getY())
+                .target(spritePositionB)
                 .to(-200, -200)
                 .duration(1f)
                 .loopMode(TweenLoopMode.LOOP_REVERSE)
@@ -65,8 +67,8 @@ public class TweenDemo extends Game {
 
     @Override
     public void update(DeltaTime delta) {
-        tweenA.update(delta, spritePositionA);
-        tweenB.update(delta, spritePositionB);
+        tweenA.update(delta);
+        tweenB.update(delta);
     }
 
     @Override

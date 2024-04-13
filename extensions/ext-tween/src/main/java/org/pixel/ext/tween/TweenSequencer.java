@@ -27,17 +27,6 @@ public class TweenSequencer implements Updatable {
             return;
         }
 
-        if (!tweenSequence[currentTween].isPlaying()) {
-            changeCurrentTween(currentTween + 1);
-            if (currentTween >= tweenSequence.length) {
-                enabled = false;
-                if (listener != null) {
-                    listener.onSequencerCompleted();
-                }
-                return;
-            }
-        }
-
         tweenSequence[currentTween].update(delta);
     }
 
@@ -132,8 +121,21 @@ public class TweenSequencer implements Updatable {
     private void changeCurrentTween(int index) {
         this.currentTween = index;
         if (currentTween < tweenSequence.length) {
-            tweenSequence[currentTween].loopMode(TweenLoopMode.NONE);
-            tweenSequence[currentTween].restart();
+            // Set the event handler, so we can change the current tween when the current one finishes
+            tweenSequence[currentTween].on((tween, phase) -> {
+                if (phase == TweenPhase.END) {
+                    currentTween += 1;
+                    if (currentTween >= tweenSequence.length) {
+                        // no more tweens to play
+                        enabled = false;
+                        if (listener != null) {
+                            listener.onSequencerCompleted();
+                        }
+                    } else {
+                        changeCurrentTween(currentTween);
+                    }
+                }
+            });
         }
     }
 }
