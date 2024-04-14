@@ -44,7 +44,7 @@ import org.pixel.math.Matrix4;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 
-public class GLSpriteBatch implements SpriteBatch {
+public class GLSpriteBatch extends SpriteBatch {
 
     private static final Logger log = LoggerFactory.getLogger(GLSpriteBatch.class);
 
@@ -188,49 +188,6 @@ public class GLSpriteBatch implements SpriteBatch {
     }
 
     @Override
-    public void draw(Texture texture, Vector2 position) {
-        draw(texture, position, Color.WHITE);
-    }
-
-    @Override
-    public void draw(Texture texture, Vector2 position, Color color) {
-        draw(texture, position, color, Vector2.ZERO, 1.0f);
-    }
-
-    @Override
-    public void draw(Texture texture, Vector2 position, Color color, Vector2 anchor) {
-        draw(texture, position, color, anchor, 1.0f);
-    }
-
-    @Override
-    public void draw(Texture texture, Vector2 position, Color color, Vector2 anchor, float scale) {
-        draw(texture, position, color, anchor, scale, scale, 0.0f);
-    }
-
-    @Override
-    public void draw(Texture texture, Vector2 position, Color color, Vector2 anchor, float scaleX, float scaleY,
-            float rotation) {
-        this.draw(texture, position, null, color, anchor, scaleX, scaleY, rotation, 0);
-    }
-
-    @Override
-    public void draw(Texture texture, Vector2 position, Rectangle source, Color color) {
-        this.draw(texture, position, source, color, Vector2.ZERO, 1.0f, 1.0f, 0.f, 0);
-    }
-
-    @Override
-    public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scale,
-            float rotation) {
-        this.draw(texture, position, source, color, anchor, scale, scale, rotation, 0);
-    }
-
-    @Override
-    public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scaleX,
-            float scaleY, float rotation) {
-        this.draw(texture, position, source, color, anchor, scaleX, scaleY, rotation, 0);
-    }
-
-    @Override
     public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scaleX,
             float scaleY, float rotation, int depth) {
         if (lastDepthLevel >= 0 && depth != lastDepthLevel) {
@@ -257,32 +214,6 @@ public class GLSpriteBatch implements SpriteBatch {
         lastDepthLevel = depth;
 
         spriteDataAdded();
-    }
-
-    @Override
-    public void draw(Texture texture, Rectangle displayArea) {
-        this.draw(texture, displayArea, Color.WHITE, Vector2.ZERO, 0.f);
-    }
-
-    @Override
-    public void draw(Texture texture, Rectangle displayArea, Color color) {
-        this.draw(texture, displayArea, color, Vector2.ZERO, 0.f);
-    }
-
-    @Override
-    public void draw(Texture texture, Rectangle displayArea, Color color, Vector2 anchor, float rotation) {
-        this.draw(texture, displayArea, null, color, anchor, rotation);
-    }
-
-    @Override
-    public void draw(Texture texture, Rectangle displayArea, Rectangle source, Color color) {
-        this.draw(texture, displayArea, source, color, Vector2.ZERO, 0f);
-    }
-
-    @Override
-    public void draw(Texture texture, Rectangle displayArea, Rectangle source, Color color, Vector2 anchor,
-            float rotation) {
-        this.draw(texture, displayArea, source, color, anchor, rotation, 0);
     }
 
     @Override
@@ -313,11 +244,6 @@ public class GLSpriteBatch implements SpriteBatch {
     }
 
     @Override
-    public void drawText(Font font, String text, Vector2 position, Color color) {
-        this.drawText(font, text, position, color, font.getFontSize());
-    }
-
-    @Override
     public void drawText(Font font, String text, Vector2 position, Color color, int fontSize) {
         // we are going to create a sprite data for each text character:
         float computedScale = fontSize / (float) font.getComputedFontSize();
@@ -331,7 +257,7 @@ public class GLSpriteBatch implements SpriteBatch {
             }
 
             if (ch == '\n') {
-                y += font.getFontSize() * scale + font.getVerticalSpacing();
+                y += (int) (font.getFontSize() * scale + font.getVerticalSpacing());
                 x = (int) position.getX();
                 continue;
             }
@@ -350,7 +276,7 @@ public class GLSpriteBatch implements SpriteBatch {
             spriteData.color = color;
             spriteData.rotation = 0f;
 
-            x += glyph.getXAdvance() * scale + font.getHorizontalSpacing();
+            x += (int) (glyph.getXAdvance() * scale + font.getHorizontalSpacing());
 
             spriteDataAdded();
         }

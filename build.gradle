@@ -17,26 +17,10 @@ ext {
             junit  : "5.10.2",
             mockito: "4.8.0"
     ]
-    buildTargetList = determineBuildTargets()
-}
-
-static ArrayList<String> determineBuildTargets() {
-    // TODO: update this when android platform is fully supported
-    def buildTarget = System.properties["BUILD_TARGET"]
-    if (buildTarget == "all") {
-        return ["natives-windows", "natives-windows-x86", "natives-windows-arm64",
-                "natives-macos", "natives-macos-arm64",
-                "natives-linux", "natives-linux-arm64", "natives-linux-arm32"]
-    } else if (buildTarget != null) {
-        return [buildTarget]
-    } else {
-        return [getCurrentClassifier()]
-    }
 }
 
 println("Java Version: ${JavaVersion.current()}")
 println("Project Version: ${version}")
-println("Build Targets: ${project.ext.buildTargetList}")
 println("Android Home: ${System.getenv("ANDROID_HOME")}")
 
 buildscript {
@@ -156,24 +140,5 @@ subprojects { project ->
                 }
             }
         }
-    }
-}
-
-static def getCurrentClassifier() {
-    switch (OperatingSystem.current()) {
-        case OperatingSystem.LINUX:
-            def osArch = System.getProperty("os.arch")
-            return osArch.startsWith("arm") || osArch.startsWith("aarch64")
-                    ? "natives-linux-${osArch.contains("64") || osArch.startsWith("armv8") ? "arm64" : "arm32"}"
-                    : "natives-linux"
-
-        case OperatingSystem.MAC_OS:
-            return System.getProperty("os.arch").startsWith("aarch64") ? "natives-macos-arm64" : "natives-macos"
-
-        case OperatingSystem.WINDOWS:
-            def osArch = System.getProperty("os.arch")
-            return osArch.contains("64")
-                    ? "natives-windows${osArch.startsWith("aarch64") ? "-arm64" : ""}"
-                    : "natives-windows-x86"
     }
 }

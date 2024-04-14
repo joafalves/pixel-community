@@ -5,27 +5,16 @@
 
 package org.pixel.content;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.pixel.commons.lifecycle.Disposable;
+import org.pixel.math.Vector2;
 
+@Getter
+@Setter
 public abstract class Sound implements Disposable {
-
-    protected int sourcePointer;
-
-    /**
-     * Constructor.
-     *
-     * @param sourcePointer The native pointer to the sound source.
-     */
-    public Sound(int sourcePointer) {
-        this.sourcePointer = sourcePointer;
-    }
-
-    /**
-     * Get the native sound source pointer.
-     *
-     * @return The native sound source pointer.
-     */
-    public int getSourcePointer() {
-        return this.sourcePointer;
-    }
+    private float gain = 1.0f;
+    private float offset = 0.0f;
+    private float pitch = 1.0f;
+    private Vector2 spatialPosition = Vector2.zero();
 }

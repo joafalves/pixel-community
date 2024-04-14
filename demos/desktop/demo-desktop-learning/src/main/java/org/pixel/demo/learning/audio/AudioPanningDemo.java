@@ -5,7 +5,6 @@
 
 package org.pixel.demo.learning.audio;
 
-import org.pixel.audio.AudioEngine;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.ServiceProvider;
@@ -47,7 +46,13 @@ public class AudioPanningDemo extends AudioDemo {
         panningValue += 0.001f * delta.getElapsedMs(); // dummy panning reference
         texturePosition.set(MathHelper.cos(panningValue) * 100f, MathHelper.sin(panningValue) * 100f);
 
-        AudioEngine.setPosition(sound, MathHelper.cos(panningValue), MathHelper.sin(panningValue));
+        // This sets the panning value for the sound:
+        sound.getSpatialPosition().set(
+                MathHelper.cos(panningValue),
+                MathHelper.sin(panningValue)
+        );
+        // This synchronizes the sound properties with the audio player:
+        audioPlayer.sync(sound);
     }
 
     @Override
@@ -55,11 +60,8 @@ public class AudioPanningDemo extends AudioDemo {
         super.draw(delta);
 
         spriteBatch.begin(camera.getViewMatrix());
-
         spriteBatch.draw(texture, Vector2.ZERO, Color.WHITE, Vector2.HALF, 2f);
-
         spriteBatch.draw(texture, texturePosition, Color.WHITE, Vector2.HALF);
-
         spriteBatch.end();
     }
 
