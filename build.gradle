@@ -56,6 +56,7 @@ allprojects {
 
 subprojects { project ->
     apply plugin: "maven-publish"
+    apply plugin: "signing"
 
     publishing {
         repositories {
@@ -121,10 +122,21 @@ subprojects { project ->
             from javadoc.destinationDir
         }
 
+        tasks.withType(AbstractPublishToMaven).configureEach {
+            // only publish modules with "mavenPublish" set to "true"
+            it.enabled = (project.ext.has("mavenPublish") && project.ext.get("mavenPublish"))
+        }
+
         artifacts {
             archives jar
             archives sourceJar
             archives javadocJar
+        }
+
+        signing {
+            if (rootProject.hasProperty("signing.keyId")) {
+                sign(publishing.publications) // sign everything to be published
+            }
         }
 
         publishing {
@@ -132,11 +144,52 @@ subprojects { project ->
                 mavenJava(MavenPublication) {
                     from components.java
 
-                    groupId = project.namespace
-                    artifactId = 'your-java-library'
-                    version = '1.0.0'
+                    artifact(sourceJar) {
+                        classifier = "sources"
+                    }
 
-                    // Additional POM information goes here
+                    artifact(javadocJar) {
+                        classifier = "javadoc"
+                    }
+
+                    groupId = "io.github.joafalves"
+                    artifactId = project.name
+                    version = rootProject.version
+
+                    pom {
+                        name = "Pixel 2D Game Framework"
+                        description = "Modular Java/Kotlin 2D Game Framework."
+                        url = "https://github.com/joafalves/pixel-community"
+                        licenses {
+                            license {
+                                name = "The Apache License, Version 2.0"
+                                url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                            }
+                        }
+                        developers {
+                            developer {
+                                id = "jfalves"
+                                name = "João Alves"
+                                email = "joao.cpp.sca@gmail.com"
+                            }
+                        }
+                        scm {
+                            connection = "scm:git:git://github.com/joafalves/pixel-community.git"
+                            developerConnection = "scm:git:ssh://github.com/joafalves/pixel-community.git"
+                            url = "https://github.com/joafalves/pixel-community"
+                        }
+                    }
+                }
+            }
+            repositories {
+                if (rootProject.hasProperty("sonatypeUsername") && rootProject.hasProperty("sonatypePassword")) {
+                    maven {
+                        url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2"
+                        credentials {
+                            username sonatypeUsername
+                            password sonatypePassword
+                        }
+                    }
                 }
             }
         }
