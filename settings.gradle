@@ -6,6 +6,9 @@
 // main project settings:
 rootProject.name = "pixel"
 
+// include settings:
+var includeAndroid = false
+
 // modules:
 include "modules/commons",
         "modules/math",
@@ -16,7 +19,7 @@ include "modules/commons",
 
 // platform modules:
 include "platform/desktop"
-if (System.getenv("ANDROID_HOME") != null) {
+if (includeAndroid && System.getenv("ANDROID_HOME") != null) {
     include "platform/android"
 }
 
@@ -34,7 +37,7 @@ if (System.properties["PIXEL_RELEASE"] == null) {
             "demos/desktop/demo-desktop-imgui"
 
     // android:
-    if (System.getenv("ANDROID_HOME") != null) {
+    if (includeAndroid && System.getenv("ANDROID_HOME") != null) {
         include "demos/android/demo-android-learning"
     }
 }
