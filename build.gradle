@@ -12,7 +12,7 @@ if (version == null || version == "unspecified") {
 
 ext {
     dependencyMap = [
-            lwjgl  : "3.3.3",
+            lwjgl  : "3.3.4",
             lombok : "1.18.32",
             junit  : "5.10.2",
             mockito: "4.8.0"
