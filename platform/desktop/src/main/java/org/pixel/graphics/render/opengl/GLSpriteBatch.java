@@ -384,7 +384,6 @@ public class GLSpriteBatch extends SpriteBatch {
                 if (!o1.active || !o2.active) {
                     return Boolean.compare(o2.active, o1.active);
                 }
-
                 return o1.depth - o2.depth;
             });
         }
