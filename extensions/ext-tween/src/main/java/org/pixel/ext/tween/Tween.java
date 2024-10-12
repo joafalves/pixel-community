@@ -21,10 +21,11 @@ public class Tween implements Updatable {
     private TweenLoopMode loopMode;
     private float[] start;
     private float[] end;
-    private float[] current;
+    private float[] instant;
     private float pauseDelay;
     private float elapsedSeconds;
     private float durationInSeconds;
+    private Object target;
 
     /**
      * Constructor.
@@ -66,8 +67,8 @@ public class Tween implements Updatable {
         if (!enabled) {
             return;
         }
-        if (current == null || current.length != start.length) {
-            current = new float[start.length];
+        if (instant == null || instant.length != start.length) {
+            instant = new float[start.length];
         }
 
         if (pauseDelay > 0) {
@@ -84,8 +85,8 @@ public class Tween implements Updatable {
         elapsedSeconds = elapsedTmp;
 
         float timeNormalized = elapsedSeconds / durationInSeconds;
-        for (int i = 0; i < current.length; i++) {
-            current[i] = easingExecutors.execute(start[i], end[i], timeNormalized);
+        for (int i = 0; i < instant.length; i++) {
+            instant[i] = easingExecutors.execute(start[i], end[i], timeNormalized);
         }
 
         if (elapsedSeconds >= durationInSeconds) { // finished?
@@ -105,18 +106,10 @@ public class Tween implements Updatable {
                     break;
             }
         }
-    }
 
-    /**
-     * Update function. Copy the current values to the given target instance (if possible).
-     *
-     * @param delta  The delta time.
-     * @param target The target instance to receive the current values.
-     * @param <T>    The type of the target instance.
-     */
-    public <T> void update(DeltaTime delta, T target) {
-        this.update(delta);
-        this.copyTo(target);
+        if (target != null) {
+            copyTo(target);
+        }
     }
 
     /**
@@ -330,11 +323,11 @@ public class Tween implements Updatable {
      * @return The current value.
      */
     public float getValue(int index) {
-        if (index >= current.length) {
+        if (index >= instant.length) {
             throw new IllegalArgumentException("Index out of bounds.");
         }
 
-        return current[index];
+        return instant[index];
     }
 
     /**
@@ -346,42 +339,66 @@ public class Tween implements Updatable {
      * @return The current value or the default value if the index is out of bounds.
      */
     public float getValue(int index, float defaultValue) {
-        if (index >= current.length) {
+        if (index >= instant.length) {
             return defaultValue;
         }
 
-        return current[index];
+        return instant[index];
     }
 
     /**
      * Copy the current values of this instance to the given instance (if possible).
      *
      * @param container The instance to copy the values to.
-     * @param <T>       The type of the instance.
      */
-    public <T> void copyTo(T container) {
+    public void copyTo(Object container) {
         if (container == null) {
             throw new IllegalArgumentException("Container cannot be null.");
         }
 
-        if (container instanceof Vector2 && current.length >= 2) {
-            ((Vector2) container).set(current[0], current[1]);
+        if (container instanceof Vector2 && instant.length >= 2) {
+            ((Vector2) container).set(instant[0], instant[1]);
 
-        } else if (container instanceof Vector3 && current.length >= 3) {
-            ((Vector3) container).set(current[0], current[1], current[2]);
+        } else if (container instanceof Vector3 && instant.length >= 3) {
+            ((Vector3) container).set(instant[0], instant[1], instant[2]);
 
-        } else if (container instanceof Rectangle && current.length >= 4) {
-            ((Rectangle) container).set(current[0], current[1], current[2], current[4]);
+        } else if (container instanceof Rectangle && instant.length >= 4) {
+            ((Rectangle) container).set(instant[0], instant[1], instant[2], instant[4]);
 
-        } else if (container instanceof Size && current.length >= 2) {
-            ((Size) container).set(current[0], current[1]);
+        } else if (container instanceof Size && instant.length >= 2) {
+            ((Size) container).set(instant[0], instant[1]);
+
+        } else if (container instanceof float[]) {
+            System.arraycopy(instant, 0, ((float[]) container), 0, instant.length);
 
         } else {
             log.warn("Unsupported container type '{}'.", container.getClass().getName());
         }
     }
 
+    /**
+     * Reset the elapsed time of this instance.
+     */
     private void reset() {
         elapsedSeconds = 0;
+    }
+
+    /**
+     * Get the target instance of this tween.
+     *
+     * @return The target instance.
+     */
+    public Object  getTarget() {
+        return target;
+    }
+
+    /**
+     * Set the target instance of this tween.
+     *
+     * @param target The target instance.
+     */
+    public Tween target(Object target) {
+        this.target = target;
+        return this;
     }
 }

@@ -24,11 +24,11 @@ public class ContentManager implements Disposable {
     private final ConcurrentHashMap<String, Object> assetCache;
     private final ConcurrentHashMap<Class<?>, ContentImporter<?>> importers;
 
-    private DataPipeline<ByteBuffer> dataPipeline;
+    private DataPipeline<byte[]> dataPipeline;
 
     /**
      * Constructor. By default, includes all internal importers.
-     * 
+     *
      * @param resourceLoader The resource loader to use.
      */
     public ContentManager(ResourceLoader resourceLoader) {
@@ -102,8 +102,7 @@ public class ContentManager implements Disposable {
 
     /**
      * Load an image resource file with a custom importer settings - supports both
-     * absolute and relative paths (based on
-     * the project resource folder).
+     * absolute and relative paths (based on the project resource folder).
      *
      * @param filepath The filepath of the resource - supports both relative and
      *                 absolute paths.
@@ -115,8 +114,7 @@ public class ContentManager implements Disposable {
 
     /**
      * Load an image resource file with a custom importer settings - supports both
-     * absolute and relative paths (based on
-     * the project resource folder).
+     * absolute and relative paths (based on the project resource folder).
      *
      * @param filepath The filepath of the resource - supports both relative and
      *                 absolute paths.
@@ -130,8 +128,7 @@ public class ContentManager implements Disposable {
 
     /**
      * Load a texture pack resource file with a custom importer settings - supports
-     * both absolute and relative paths
-     * (based on the project resource folder).
+     * both absolute and relative paths (based on the project resource folder).
      *
      * @param filepath The filepath of the resource - supports both relative and
      *                 absolute paths.
@@ -143,8 +140,7 @@ public class ContentManager implements Disposable {
 
     /**
      * Load a texture pack resource file with a custom importer settings - supports
-     * both absolute and relative paths
-     * (based on the project resource folder).
+     * both absolute and relative paths (based on the project resource folder).
      *
      * @param filepath The filepath of the resource - supports both relative and
      *                 absolute paths.
@@ -158,8 +154,7 @@ public class ContentManager implements Disposable {
 
     /**
      * Load an audio resource file with a custom importer settings - supports both
-     * absolute and relative paths (based on
-     * the project resource folder).
+     * absolute and relative paths (based on the project resource folder).
      *
      * @param filepath The filepath of the resource - supports both relative and
      *                 absolute paths.
@@ -171,8 +166,7 @@ public class ContentManager implements Disposable {
 
     /**
      * Load a sound resource file with a custom importer settings - supports both
-     * absolute and relative paths (based on
-     * the project resource folder).
+     * absolute and relative paths (based on the project resource folder).
      *
      * @param filepath The filepath of the resource - supports both relative and
      *                 absolute paths.
@@ -186,8 +180,7 @@ public class ContentManager implements Disposable {
 
     /**
      * Load a font resource file with a custom importer settings - supports both
-     * absolute and relative paths (based on
-     * the project resource folder).
+     * absolute and relative paths (based on the project resource folder).
      *
      * @param filepath The filepath of the resource - supports both relative and
      *                 absolute paths.
@@ -199,8 +192,7 @@ public class ContentManager implements Disposable {
 
     /**
      * Load a font resource file with a custom importer settings - supports both
-     * absolute and relative paths (based on
-     * the project resource folder).
+     * absolute and relative paths (based on the project resource folder).
      *
      * @param filepath The filepath of the resource - supports both relative and
      *                 absolute paths.
@@ -210,6 +202,32 @@ public class ContentManager implements Disposable {
      */
     public Font loadFont(String filepath, @Nullable ContentImporterSettings settings, boolean useCache) {
         return load(filepath, Font.class, settings, useCache);
+    }
+
+    /**
+     * Load a text resource file with a custom importer settings - supports both
+     * absolute and relative paths (based on the project resource folder).
+     *
+     * @param filepath The filepath of the resource - supports both relative and
+     *                 absolute paths.
+     * @return The loaded resource or null if the resource could not be loaded.
+     */
+    public String loadText(String filepath) {
+        return load(filepath, String.class);
+    }
+
+    /**
+     * Load a text resource file with a custom importer settings - supports both
+     * absolute and relative paths (based on the project resource folder).
+     *
+     * @param filepath The filepath of the resource - supports both relative and
+     *                 absolute paths.
+     * @param settings The settings to use for the importer.
+     * @param useCache Whether to use the cache or not.
+     * @return The loaded resource or null if the resource could not be loaded.
+     */
+    public String loadText(String filepath, @Nullable ContentImporterSettings settings, boolean useCache) {
+        return load(filepath, String.class, settings, useCache);
     }
 
     /**
@@ -271,7 +289,7 @@ public class ContentManager implements Disposable {
             return null;
         }
 
-        ByteBuffer resourceData = this.resourceLoader.load(filepath);
+        byte[] resourceData = this.resourceLoader.load(filepath);
         if (resourceData == null) {
             log.warn("Unable to load asset '{}'; target could not be found.", filepath);
             return null;
@@ -301,7 +319,7 @@ public class ContentManager implements Disposable {
      *
      * @return The data pipeline.
      */
-    public DataPipeline<ByteBuffer> getDataPipeline() {
+    public DataPipeline<byte[]> getDataPipeline() {
         return dataPipeline;
     }
 
@@ -312,7 +330,7 @@ public class ContentManager implements Disposable {
      *
      * @param dataPipeline The data pipeline to use.
      */
-    public void setDataPipeline(DataPipeline<ByteBuffer> dataPipeline) {
+    public void setDataPipeline(DataPipeline<byte[]> dataPipeline) {
         this.dataPipeline = dataPipeline;
     }
 }

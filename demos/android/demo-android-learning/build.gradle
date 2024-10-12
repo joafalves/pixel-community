@@ -1,0 +1,48 @@
+apply plugin: 'com.android.application'
+apply plugin: 'org.jetbrains.kotlin.android'
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        // Add the classpath for the Android Gradle Plugin here
+        // Make sure to use a version compatible with your Gradle version
+        classpath 'com.android.tools.build:gradle:8.2.0'
+    }
+}
+
+android {
+    namespace "org.pixel.android"
+
+    defaultConfig {
+        compileSdk 34
+        minSdkVersion 34
+        buildToolsVersion = "34.0.0"
+
+        versionCode 1
+        versionName rootProject.version
+
+        consumerProguardFiles 'consumer-rules.pro'
+
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+dependencies {
+    implementation project(":${rootProject.name}-android")
+    implementation project(":${rootProject.name}-ext-tween")
+
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.core:core-ktx:1.12.0'
+}

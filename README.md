@@ -90,7 +90,6 @@ The framework functionality is divided into multiple modules which can be import
     .extensions/                    # Extensions for the framework (optional)
         ├── ext-ecs                 # Entity component system extension
         ├── ext-ecs-extra           # ECS utility components
-        ├── ext-ldtk                # LDTK extension
         ├── ext-log4j2              # Log4j2 extension
         └── ext-tween               # Tween extension
     .modules/                       # The principal modules of the framework

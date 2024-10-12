@@ -8,7 +8,7 @@ package org.pixel.content.importer;
 import java.util.HashMap;
 
 import org.json.JSONObject;
-import org.pixel.commons.AttributeMap;
+import org.pixel.commons.DataHashMap;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.commons.util.FileUtils;
@@ -29,7 +29,7 @@ public class TexturePackImporter implements ContentImporter<TexturePack> {
 
     @Override
     public TexturePack process(ImportContext ctx) {
-        String src = TextUtils.convertBufferToString(ctx.getBuffer());
+        String src = new String(ctx.getData());
         JSONObject json = new JSONObject(src);
         JSONObject frames = json.getJSONObject("frames");
         if (frames == null) {
@@ -72,7 +72,7 @@ public class TexturePackImporter implements ContentImporter<TexturePack> {
 
             TextureFrame textureFrame = new TextureFrame(frameTexture, source, pivot);
             if (frameInfo.has("attributes")) { // does it have attributes?
-                var attributeMap = new AttributeMap();
+                var attributeMap = new DataHashMap();
                 var attributes = frameInfo.getJSONObject("attributes");
                 attributes.keys().forEachRemaining(attrKey -> attributeMap.put(attrKey, attributes.get(attrKey)));
                 if (!attributeMap.isEmpty()) {

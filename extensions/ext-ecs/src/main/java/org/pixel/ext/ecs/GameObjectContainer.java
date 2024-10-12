@@ -7,13 +7,13 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.pixel.commons.AttributeMap;
+import org.pixel.commons.DataHashMap;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.ext.ecs.lifecycle.Attachable;
 
 public abstract class GameObjectContainer implements Attachable<GameObjectContainer>, Disposable, Serializable {
 
-    private transient AttributeMap attributeMap = new AttributeMap();
+    private transient DataHashMap dataHashMap = new DataHashMap();
 
     private final List<GameObject> children;
     private transient GameObjectContainer parent;
@@ -74,8 +74,8 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
             var in = new ObjectInputStream(bis);
 
             var copy = (GameObjectContainer) in.readObject();
-            copy.attributeMap = new AttributeMap();
-            copy.attributeMap.putAll(this.attributeMap);
+            copy.dataHashMap = new DataHashMap();
+            copy.dataHashMap.putAll(this.dataHashMap);
 
             return copy;
 
@@ -280,8 +280,8 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
      *
      * @return The attribute map of this game object.
      */
-    public AttributeMap getAttributeMap() {
-        return attributeMap;
+    public DataHashMap getAttributeMap() {
+        return dataHashMap;
     }
 
     /**

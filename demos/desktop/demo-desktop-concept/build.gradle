@@ -1,0 +1,30 @@
+/*
+ * This software is available under Apache License
+ * Copyright (c) 2020
+ */
+import org.gradle.internal.os.OperatingSystem
+
+plugins {
+    id "application"
+    id "edu.sc.seis.launch4j" version "2.5.0"
+}
+
+dependencies {
+    implementation project(":${rootProject.name}-desktop")
+    implementation project(":${rootProject.name}-ext-ecs")
+    implementation project(":${rootProject.name}-ext-ecs-extra")
+    implementation project(":${rootProject.name}-math")
+    implementation project(":${rootProject.name}-ext-log4j2")
+}
+
+application {
+    mainClass = 'org.pixel.demo.concept.performance.PerformanceGame'
+    if (OperatingSystem.current().isMacOsX()) {
+        applicationDefaultJvmArgs = ["-XstartOnFirstThread"]
+    }
+}
+
+launch4j {
+    mainClassName = 'org.pixel.demo.concept.performance.PerformanceGame'
+    // icon = "${projectDir}/icons/myApp.ico"
+}

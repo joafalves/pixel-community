@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
 public class ImportContext {
 
     private final ContentManager contentManager;
-    private final ByteBuffer buffer;
+    private final byte[] data;
     private final String filepath;
     private final ContentImporterSettings settings;
 
@@ -20,14 +20,14 @@ public class ImportContext {
      * Constructor.
      *
      * @param contentManager The content manager.
-     * @param buffer         The content data buffer.
+     * @param data           The content data.
      * @param filepath       The filepath.
      * @param settings       The settings.
      */
-    public ImportContext(ContentManager contentManager, ByteBuffer buffer, String filepath,
+    public ImportContext(ContentManager contentManager, byte[] data, String filepath,
             ContentImporterSettings settings) {
         this.contentManager = contentManager;
-        this.buffer = buffer;
+        this.data = data;
         this.filepath = filepath;
         this.settings = settings;
     }
@@ -45,8 +45,8 @@ public class ImportContext {
      * Get the content data buffer.
      * @return The content data buffer.
      */
-    public ByteBuffer getBuffer() {
-        return buffer;
+    public byte[] getData() {
+        return data;
     }
 
     /**

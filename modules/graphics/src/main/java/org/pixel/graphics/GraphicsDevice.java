@@ -7,16 +7,6 @@ import org.pixel.commons.lifecycle.Initializable;
 public interface GraphicsDevice extends Initializable, Disposable {
 
     /**
-     * Graphics device begin frame method.
-     */
-    void beginFrame();
-
-    /**
-     * Graphics device end frame method.
-     */
-    void endFrame();
-
-    /**
      * Clear the screen.
      */
     void clear();
@@ -24,7 +14,7 @@ public interface GraphicsDevice extends Initializable, Disposable {
     /**
      * Set the clear color.
      * 
-     * @param color
+     * @param color The clear color.
      */
     void setClearColor(Color color);
 

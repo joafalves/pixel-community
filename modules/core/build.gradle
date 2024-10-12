@@ -1,0 +1,13 @@
+/*
+ * This software is available under Apache License
+ * Copyright (c) 2020
+ */
+apply plugin: 'java-library'
+
+project.ext.mavenPublish = true
+
+dependencies {
+    api project(":${rootProject.name}-commons")
+    api project(":${rootProject.name}-content")
+    api project(":${rootProject.name}-graphics")
+}

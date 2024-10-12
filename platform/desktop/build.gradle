@@ -1,0 +1,68 @@
+/*
+ * This software is available under Apache License
+ * Copyright (c) 2020
+ */
+apply plugin: 'java'
+apply plugin: 'java-library'
+
+ext {
+    mavenPublish = true
+    buildTargetList = determineBuildTargets()
+}
+
+println("Desktop Build Targets: ${project.ext.buildTargetList}")
+
+dependencies {
+    api project(":${rootProject.name}-commons")
+    api project(":${rootProject.name}-content")
+    api project(":${rootProject.name}-graphics")
+    api project(":${rootProject.name}-core")
+
+    api group: "org.lwjgl", name: "lwjgl", version: rootProject.ext.dependencyMap["lwjgl"]
+    api group: "org.lwjgl", name: "lwjgl-glfw", version: rootProject.ext.dependencyMap["lwjgl"]
+    api group: "org.lwjgl", name: "lwjgl-opengl", version: rootProject.ext.dependencyMap["lwjgl"]
+    api group: "org.lwjgl", name: "lwjgl-openal", version: rootProject.ext.dependencyMap["lwjgl"]
+    api group: "org.lwjgl", name: "lwjgl-stb", version: rootProject.ext.dependencyMap["lwjgl"]
+    api group: "org.lwjgl", name: "lwjgl-nanovg", version: rootProject.ext.dependencyMap["lwjgl"]
+
+    project.ext.buildTargetList.forEach { classifier ->
+        runtimeOnly group: "org.lwjgl", name: "lwjgl", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
+        runtimeOnly group: "org.lwjgl", name: "lwjgl-opengl", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
+        runtimeOnly group: "org.lwjgl", name: "lwjgl-openal", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
+        runtimeOnly group: "org.lwjgl", name: "lwjgl-glfw", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
+        runtimeOnly group: "org.lwjgl", name: "lwjgl-stb", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
+        runtimeOnly group: "org.lwjgl", name: "lwjgl-nanovg", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
+    }
+}
+
+static ArrayList<String> determineBuildTargets() {
+    def buildTarget = System.properties["DESKTOP_BUILD_TARGET_PLATFORM"]
+    if (buildTarget == "all") {
+        return ["natives-windows", "natives-windows-x86", "natives-windows-arm64",
+                "natives-macos", "natives-macos-arm64",
+                "natives-linux", "natives-linux-arm64", "natives-linux-arm32"]
+    } else if (buildTarget != null) {
+        return [buildTarget]
+    } else {
+        return [getCurrentPlatformClassifier()] // Default to the current platform
+    }
+}
+
+static def getCurrentPlatformClassifier() {
+    switch (org.gradle.internal.os.OperatingSystem.current()) {
+        case org.gradle.internal.os.OperatingSystem.LINUX:
+            def osArch = System.getProperty("os.arch")
+            return osArch.startsWith("arm") || osArch.startsWith("aarch64")
+                    ? "natives-linux-${osArch.contains("64") || osArch.startsWith("armv8") ? "arm64" : "arm32"}"
+                    : "natives-linux"
+
+        case org.gradle.internal.os.OperatingSystem.MAC_OS:
+            return System.getProperty("os.arch").startsWith("aarch64") ? "natives-macos-arm64" : "natives-macos"
+
+        case org.gradle.internal.os.OperatingSystem.WINDOWS:
+            def osArch = System.getProperty("os.arch")
+            return osArch.contains("64")
+                    ? "natives-windows${osArch.startsWith("aarch64") ? "-arm64" : ""}"
+                    : "natives-windows-x86"
+    }
+}
