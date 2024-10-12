@@ -95,10 +95,13 @@ The framework functionality is divided into multiple modules which can be import
     .modules/                       # The principal modules of the framework
         ├── commons                 # Common utility classes
         ├── content                 # Common Content classes (Texture, Font, Audio, ...)
-        ├── desktop                 # Desktop implementation of graphics, content, windowing and others
+        ├── core                    # Core module (GameContainer, GameSettings, Camera2D, ...)
         ├── graphics                # Graphics API module
         ├── math                    # Math module (Vector, Matrix, ...)
         └── pipeline                # Generic Pipeline processing module
+    .platform/
+        ├── android                 # Android platform implementation (OpenGL ES)
+        └── desktop                 # Desktop platform implementation (LWJGL3)
     .resources/
         └── images                  # Project resource images
     .build.gradle                   # Gradle build file
@@ -118,7 +121,7 @@ The framework functionality is divided into multiple modules which can be import
 
 ### Runtime requirements ###
 
-- Java/JVM 17.x+
+- Java/JDK 17.x+
 
 ### Development requirements ###
 
