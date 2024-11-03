@@ -2,8 +2,6 @@
  * This software is available under Apache License
  * Copyright (c) 2020
  */
-import org.gradle.internal.os.OperatingSystem
-
 // Pixel Version:
 version = System.properties["PIXEL_RELEASE"]
 if (version == null || version == "unspecified") {
@@ -79,6 +77,10 @@ subprojects { project ->
             options.addStringOption("encoding", "UTF-8")
             options.addStringOption("charSet", "UTF-8")
         }
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.compilerArgs << '-parameters'
     }
 
     project.plugins.withType(JavaPlugin).whenPluginAdded {

@@ -1,11 +1,15 @@
 package org.pixel.demo.concept.spaceshooter;
 
+import org.pixel.blueprint.ComponentAssembler;
+import org.pixel.blueprint.annotation.Auto;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.ServiceProvider;
 import org.pixel.commons.event.EventManager;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
-import org.pixel.commons.InstanceRegistry;
+import org.pixel.core.Camera2D;
+import org.pixel.core.Game;
+import org.pixel.core.WindowSettings;
 import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.demo.concept.commons.component.PlayerBoundaryComponent;
 import org.pixel.demo.concept.spaceshooter.component.CollisionHandlingComponent;
@@ -21,10 +25,7 @@ import org.pixel.ext.ecs.Sprite;
 import org.pixel.ext.ecs.component.AutoDisposeComponent;
 import org.pixel.ext.ecs.component.ConstantVelocityComponent;
 import org.pixel.ext.ecs.component.SpriteAnimationComponent;
-import org.pixel.core.Camera2D;
-import org.pixel.core.WindowSettings;
 import org.pixel.graphics.render.SpriteBatch;
-import org.pixel.core.Game;
 import org.pixel.math.Boundary;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Rectangle;
@@ -36,11 +37,13 @@ public class SpaceShooterGame extends Game {
 
     private FpsCounter fpsCounter;
     private Camera2D gameCamera;
-    private EventManager eventManager;
 
     private GameScene gameScene;
     private Texture explosionTexture;
     private BackgroundTexture backgroundTexture;
+
+    @Auto
+    private EventManager eventManager;
 
     public SpaceShooterGame(WindowSettings settings) {
         super(settings);
@@ -53,10 +56,8 @@ public class SpaceShooterGame extends Game {
         var content = ServiceProvider.create(ContentManager.class);
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
-        eventManager = new EventManager();
 
-        // game services setup - make sure that this registers before any game component.
-        InstanceRegistry.register(EventManager.class, eventManager);
+        ComponentAssembler.assemble(this);
 
         // content load
         var texturePack = content.loadTexturePack("spaceshooter/spritemap.json");
@@ -115,10 +116,6 @@ public class SpaceShooterGame extends Game {
         collisionHandler.addComponent(new CollisionHandlingComponent());
 
         bindEvents();
-
-        // This function will check for any null fields (on the game objects associated to the scene) that have an
-        // @Auto annotation and will try to map the field value automatically (if it exists within the registry):
-        gameScene.bootstrap();
     }
 
     @Override
@@ -136,7 +133,6 @@ public class SpaceShooterGame extends Game {
     public void dispose() {
         backgroundTexture.dispose();
         gameScene.dispose();
-        InstanceRegistry.clear();
         super.dispose();
     }
 
@@ -167,6 +163,7 @@ public class SpaceShooterGame extends Game {
         settings.setDebugMode(false);
         settings.setWindowWidth(windowWidth);
         settings.setWindowHeight(windowHeight);
+        settings.setBlueprintPackages(new String[]{"org.pixel"});
 
         var window = new SpaceShooterGame(settings);
         window.start();

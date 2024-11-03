@@ -82,17 +82,6 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
         }
     }
 
-    @Override
-    public void bootstrap(boolean recursive) {
-        if (components != null) {
-            for (GameComponent component : components) {
-                component.bootstrap();
-            }
-        }
-
-        super.bootstrap(recursive);
-    }
-
     /**
      * Add a component to the game object.
      *

@@ -5,8 +5,8 @@
 
 package org.pixel.demo.concept.spaceshooter.component;
 
+import org.pixel.blueprint.annotation.Auto;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.annotations.Auto;
 import org.pixel.commons.event.EventManager;
 import org.pixel.demo.concept.spaceshooter.entity.PlayerSprite;
 import org.pixel.ext.ecs.GameComponent;

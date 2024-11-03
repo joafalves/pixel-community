@@ -1,8 +1,8 @@
 package org.pixel.demo.concept.spaceshooter.component;
 
+import org.pixel.blueprint.annotation.Auto;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.event.EventManager;
-import org.pixel.commons.InstanceRegistry;
 import org.pixel.demo.concept.spaceshooter.SpaceShooterAttribute;
 import org.pixel.demo.concept.spaceshooter.entity.PlayerSprite;
 import org.pixel.demo.concept.spaceshooter.entity.SpaceShipSprite;
@@ -19,6 +19,9 @@ public class CollisionHandlingComponent extends GameComponent {
     private GameObject bulletContainer;
     private GameObject enemyContainer;
     private GameObject miscContainer;
+
+    @Auto
+    private EventManager eventManager;
 
     @Override
     public void attached(GameObject parent, GameObject previousParent) {
@@ -74,11 +77,10 @@ public class CollisionHandlingComponent extends GameComponent {
         target.dispose();
 
         // Example on how to use the InstanceRegistry manually:
-        InstanceRegistry.get(EventManager.class)
-                .ifPresent(o -> o.publish(COLLISION,
-                        CollisionData.builder()
-                                .position(bullet.getTransform().getPosition())
-                                .target(target)
-                                .build()));
+        eventManager.publish(COLLISION,
+                CollisionData.builder()
+                        .position(bullet.getTransform().getPosition())
+                        .target(target)
+                        .build());
     }
 }

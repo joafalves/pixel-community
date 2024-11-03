@@ -30,6 +30,7 @@ public class GameSettings {
     private boolean debugMode;
     private boolean idleThrottle;
     private boolean autoClear;
+    private String[] blueprintPackages;
 
     //endregion
 

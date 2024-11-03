@@ -1,7 +1,6 @@
 package org.pixel.ext.ecs;
 
 import org.pixel.commons.DataHashMap;
-import org.pixel.commons.InstanceRegistry;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.ext.ecs.lifecycle.Attachable;
 
@@ -53,32 +52,6 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
             }
         }
         this.disposed = true;
-    }
-
-    /**
-     * Attempts to bootstrap all related GameObjectContainer instances, including itself and all descendants recursively.
-     * Any field that has an @Auto annotation and is NULL will attempt bootstrap.
-     */
-    public void bootstrap() {
-        bootstrap(true);
-    }
-
-    /**
-     * Attempts to bootstrap all related GameObjectContainer instances.
-     * Any field that has an @Auto annotation and is NULL will attempt bootstrap.
-     *
-     * @param recursive Determines if associated children are to be included on the bootstrap procedure.
-     */
-    public void bootstrap(boolean recursive) {
-        // Bootstrap the current GameObject
-        InstanceRegistry.bootstrap(this);
-
-        // Recursively bootstrap all children and their descendants
-        if (recursive) {
-            for (GameObject child : getChildren()) {
-                child.bootstrap();  // Each child will call bootstrap on its own children
-            }
-        }
     }
 
     /**

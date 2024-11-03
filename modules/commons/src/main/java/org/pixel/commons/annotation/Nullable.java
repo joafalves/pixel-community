@@ -3,7 +3,7 @@
  * Copyright (c) 2020
  */
 
-package org.pixel.commons.annotations;
+package org.pixel.commons.annotation;
 
 /**
  * Interface to quickly determine if a field is nullable.

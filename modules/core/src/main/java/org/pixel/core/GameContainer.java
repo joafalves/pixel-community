@@ -5,6 +5,7 @@
 
 package org.pixel.core;
 
+import org.pixel.blueprint.BlueprintLoader;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.*;
@@ -67,6 +68,11 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
         if (!initServices()) {
             log.error("Failed to initialize the services.");
             return false;
+        }
+
+        var blueprintPackages = settings.getBlueprintPackages();
+        if (blueprintPackages != null && blueprintPackages.length > 0) {
+            BlueprintLoader.load(blueprintPackages);
         }
 
         this.state = State.INITIALIZED;
