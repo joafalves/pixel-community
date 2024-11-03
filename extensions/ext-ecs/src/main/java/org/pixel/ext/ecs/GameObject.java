@@ -1,12 +1,13 @@
 package org.pixel.ext.ecs;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.Updatable;
 import org.pixel.graphics.SpriteDrawable;
 import org.pixel.graphics.render.SpriteBatch;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class GameObject extends GameObjectContainer implements Updatable, SpriteDrawable {
 
@@ -79,6 +80,17 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
                 }
             }
         }
+    }
+
+    @Override
+    public void bootstrap(boolean recursive) {
+        if (components != null) {
+            for (GameComponent component : components) {
+                component.bootstrap();
+            }
+        }
+
+        super.bootstrap(recursive);
     }
 
     /**

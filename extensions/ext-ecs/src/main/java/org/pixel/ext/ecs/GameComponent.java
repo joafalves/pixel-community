@@ -1,12 +1,14 @@
 package org.pixel.ext.ecs;
 
-import java.io.Serializable;
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.InstanceRegistry;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.commons.lifecycle.Updatable;
 import org.pixel.ext.ecs.lifecycle.Attachable;
 import org.pixel.graphics.SpriteDrawable;
 import org.pixel.graphics.render.SpriteBatch;
+
+import java.io.Serializable;
 
 public abstract class GameComponent implements Attachable<GameObject>, Updatable, SpriteDrawable, Disposable,
         Serializable {
@@ -62,6 +64,13 @@ public abstract class GameComponent implements Attachable<GameObject>, Updatable
     public void dispose() {
         this.enabled = false;
         this.disposed = true;
+    }
+
+    /**
+     * Any field that has an @Auto annotation and is NULL will attempt bootstrap.
+     */
+    public void bootstrap() {
+        InstanceRegistry.bootstrap(this);
     }
 
     /**

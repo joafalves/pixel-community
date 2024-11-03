@@ -115,6 +115,10 @@ public class SpaceShooterGame extends Game {
         collisionHandler.addComponent(new CollisionHandlingComponent());
 
         bindEvents();
+
+        // This function will check for any null fields (on the game objects associated to the scene) that have an
+        // @Auto annotation and will try to map the field value automatically (if it exists within the registry):
+        gameScene.bootstrap();
     }
 
     @Override

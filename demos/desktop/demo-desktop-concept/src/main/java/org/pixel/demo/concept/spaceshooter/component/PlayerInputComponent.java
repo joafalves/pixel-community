@@ -6,8 +6,8 @@
 package org.pixel.demo.concept.spaceshooter.component;
 
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.annotations.Auto;
 import org.pixel.commons.event.EventManager;
-import org.pixel.commons.InstanceRegistry;
 import org.pixel.demo.concept.spaceshooter.entity.PlayerSprite;
 import org.pixel.ext.ecs.GameComponent;
 import org.pixel.ext.ecs.component.SpriteAnimationComponent;
@@ -24,6 +24,9 @@ public class PlayerInputComponent extends GameComponent {
 
     private float shootElapsed = 0f;
 
+    @Auto
+    private EventManager eventManager;
+
     @Override
     public void update(DeltaTime delta) {
         handleMovement(delta);
@@ -34,7 +37,7 @@ public class PlayerInputComponent extends GameComponent {
         shootElapsed += delta.getElapsedMs();
         if (Keyboard.isKeyDown(KeyboardKey.SPACE) && shootElapsed > SHOOT_DELAY_MS) {
             shootElapsed = 0f;
-            InstanceRegistry.uget(EventManager.class).publish(SHOOT, null);
+            eventManager.publish(SHOOT, null);
         }
     }
 

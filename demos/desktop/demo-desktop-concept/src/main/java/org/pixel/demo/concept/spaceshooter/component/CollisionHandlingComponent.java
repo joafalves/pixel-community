@@ -73,6 +73,7 @@ public class CollisionHandlingComponent extends GameComponent {
         bullet.dispose();
         target.dispose();
 
+        // Example on how to use the InstanceRegistry manually:
         InstanceRegistry.get(EventManager.class)
                 .ifPresent(o -> o.publish(COLLISION,
                         CollisionData.builder()
