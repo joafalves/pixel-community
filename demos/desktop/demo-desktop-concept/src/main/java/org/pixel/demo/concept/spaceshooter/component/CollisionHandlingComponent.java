@@ -1,14 +1,17 @@
 package org.pixel.demo.concept.spaceshooter.component;
 
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.event.EventManager;
+import org.pixel.commons.InstanceRegistry;
 import org.pixel.demo.concept.spaceshooter.SpaceShooterAttribute;
-import org.pixel.demo.concept.spaceshooter.SpaceShooterGame;
 import org.pixel.demo.concept.spaceshooter.entity.PlayerSprite;
 import org.pixel.demo.concept.spaceshooter.entity.SpaceShipSprite;
 import org.pixel.demo.concept.spaceshooter.model.CollisionData;
 import org.pixel.ext.ecs.GameComponent;
 import org.pixel.ext.ecs.GameObject;
 import org.pixel.ext.ecs.Sprite;
+
+import static org.pixel.demo.concept.spaceshooter.SpaceShooterEvents.COLLISION;
 
 public class CollisionHandlingComponent extends GameComponent {
 
@@ -70,10 +73,11 @@ public class CollisionHandlingComponent extends GameComponent {
         bullet.dispose();
         target.dispose();
 
-        SpaceShooterGame.$.publish("collision",
-                CollisionData.builder()
-                        .position(bullet.getTransform().getPosition())
-                        .target(target)
-                        .build());
+        InstanceRegistry.get(EventManager.class)
+                .ifPresent(o -> o.publish(COLLISION,
+                        CollisionData.builder()
+                                .position(bullet.getTransform().getPosition())
+                                .target(target)
+                                .build()));
     }
 }

@@ -5,50 +5,68 @@
 
 package org.pixel.core;
 
-public interface DesktopWindowManager extends WindowManager {
+public abstract class DesktopWindowManager implements WindowManager {
 
     /**
      * Set the window dimensions.
-     * 
+     *
      * @param width  The width of the window.
      * @param height The height of the window.
      */
-    void setWindowDimensions(int width, int height);
+    public abstract void setWindowDimensions(int width, int height);
 
     /**
      * Set the window cursor mode.
-     * 
+     *
      * @param mode The cursor mode.
      */
-    void setWindowCursorMode(WindowCursorMode mode);
+    public abstract void setWindowCursorMode(WindowCursorMode mode);
 
     /**
      * Set the window mode.
-     * 
+     *
      * @param mode The window mode.
      */
-    void setWindowMode(WindowMode mode);
+    public abstract void setWindowMode(WindowMode mode);
 
     /**
      * Set the window title.
-     * 
+     *
      * @param title The title of the window.
      */
-    void setWindowTitle(String title);
+    public abstract void setWindowTitle(String title);
 
     /**
      * Set the window icon.
-     * 
+     *
      * @param iconPaths The icon filenames ordered from highest to lowest resolution
      *                  (at least one valid filepath must be provided). Supports
      *                  relative and absolute paths.
      */
-    void setWindowIcon(String... iconPaths);
+    public abstract void setWindowIcon(String... iconPaths);
 
     /**
      * Get window dimensions.
-     * 
+     *
      * @return The window dimensions.
      */
-    WindowDimensions getWindowDimensions();
+    public abstract WindowDimensions getWindowDimensions();
+
+    /**
+     * Get window width.
+     *
+     * @return The window width.
+     */
+    public int getWindowWidth() {
+        return getWindowDimensions().getWindowWidth();
+    }
+
+    /**
+     * Get window height.
+     *
+     * @return The window height.
+     */
+    public int getWindowHeight() {
+        return getWindowDimensions().getWindowHeight();
+    }
 }

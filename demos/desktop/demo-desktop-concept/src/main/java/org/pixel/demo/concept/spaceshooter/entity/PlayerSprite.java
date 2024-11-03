@@ -5,15 +5,18 @@
 
 package org.pixel.demo.concept.spaceshooter.entity;
 
+import org.pixel.commons.event.EventManager;
 import org.pixel.content.TextureFrame;
+import org.pixel.commons.InstanceRegistry;
 import org.pixel.demo.concept.spaceshooter.SpaceShooterAttribute;
-import org.pixel.demo.concept.spaceshooter.SpaceShooterGame;
 import org.pixel.ext.ecs.GameObject;
 import org.pixel.ext.ecs.Sprite;
 import org.pixel.ext.ecs.component.AutoDisposeComponent;
 import org.pixel.ext.ecs.component.ConstantVelocityComponent;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
+
+import static org.pixel.demo.concept.spaceshooter.SpaceShooterEvents.SHOOT;
 
 public class PlayerSprite extends SpaceShipSprite {
 
@@ -47,7 +50,8 @@ public class PlayerSprite extends SpaceShipSprite {
     }
 
     private void subscribeEvents() {
-        SpaceShooterGame.$.subscribe("player.shoot", $ -> shoot());
+        InstanceRegistry.get(EventManager.class)
+                .ifPresent(o -> o.subscribe(SHOOT, $ -> shoot()));
     }
 
 }

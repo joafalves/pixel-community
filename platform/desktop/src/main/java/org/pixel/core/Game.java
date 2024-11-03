@@ -10,7 +10,6 @@ import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ContentManager;
 import org.pixel.content.GLContentManagerFactory;
-import org.pixel.content.Sound;
 import org.pixel.graphics.glfw.GLFWWindowManager;
 import org.pixel.graphics.opengl.GLGraphicsDevice;
 import org.pixel.graphics.render.SpriteBatch;

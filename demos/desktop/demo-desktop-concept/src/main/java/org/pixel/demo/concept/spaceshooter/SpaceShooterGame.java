@@ -5,6 +5,7 @@ import org.pixel.commons.ServiceProvider;
 import org.pixel.commons.event.EventManager;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
+import org.pixel.commons.InstanceRegistry;
 import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.demo.concept.commons.component.PlayerBoundaryComponent;
 import org.pixel.demo.concept.spaceshooter.component.CollisionHandlingComponent;
@@ -29,13 +30,13 @@ import org.pixel.math.MathHelper;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 
-public class SpaceShooterGame extends Game {
+import static org.pixel.demo.concept.spaceshooter.SpaceShooterEvents.COLLISION;
 
-    public static final EventManager $ = new EventManager();
+public class SpaceShooterGame extends Game {
 
     private FpsCounter fpsCounter;
     private Camera2D gameCamera;
-    private ContentManager content;
+    private EventManager eventManager;
 
     private GameScene gameScene;
     private Texture explosionTexture;
@@ -52,6 +53,10 @@ public class SpaceShooterGame extends Game {
         var content = ServiceProvider.create(ContentManager.class);
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
+        eventManager = new EventManager();
+
+        // game services setup - make sure that this registers before any game component.
+        InstanceRegistry.register(EventManager.class, eventManager);
 
         // content load
         var texturePack = content.loadTexturePack("spaceshooter/spritemap.json");
@@ -126,13 +131,13 @@ public class SpaceShooterGame extends Game {
     @Override
     public void dispose() {
         backgroundTexture.dispose();
-        content.dispose();
         gameScene.dispose();
+        InstanceRegistry.clear();
         super.dispose();
     }
 
     private void bindEvents() {
-        $.subscribe("collision", CollisionData.class, (data) -> {
+        eventManager.subscribe(COLLISION, CollisionData.class, (data) -> {
             var explosionSprite = new Sprite("explosion", explosionTexture);
             explosionSprite.getTransform().setPosition(data.getPosition());
             var animationComponent = new SpriteAnimationComponent(9, 9, 5);

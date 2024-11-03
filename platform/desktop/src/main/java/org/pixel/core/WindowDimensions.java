@@ -17,7 +17,5 @@ public class WindowDimensions {
     private int virtualHeight;
     private int windowWidth;
     private int windowHeight;
-    private int frameWidth;
-    private int frameHeight;
     private float pixelRatio;
 }

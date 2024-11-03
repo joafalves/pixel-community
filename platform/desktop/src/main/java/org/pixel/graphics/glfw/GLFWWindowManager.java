@@ -67,7 +67,7 @@ import org.pixel.graphics.GraphicsBackend;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.mouse.Mouse;
 
-public class GLFWWindowManager implements DesktopWindowManager {
+public class GLFWWindowManager extends DesktopWindowManager {
 
     private static final Logger log = LoggerFactory.getLogger(GLFWWindowManager.class);
     private static final String DEFAULT_WINDOW_ICON_PATH_64 = "engine/images/app-icon@64.png";
@@ -75,7 +75,7 @@ public class GLFWWindowManager implements DesktopWindowManager {
     private static final int OPENGL_VERSION_MAJOR = 3;
     private static final int OPENGL_VERSION_MINOR = 3;
 
-    private final WindowGameContainer game;
+    private final WindowGameContainer<?, ?, ?> game;
     private final WindowSettings windowSettings;
 
     private State state;
@@ -83,7 +83,7 @@ public class GLFWWindowManager implements DesktopWindowManager {
     private long windowHandle;
     private boolean isWindowFocused;
 
-    public GLFWWindowManager(WindowGameContainer game) {
+    public GLFWWindowManager(WindowGameContainer<?, ?, ?> game) {
         this.game = game;
         this.windowSettings = (WindowSettings) game.getSettings();
         this.state = State.CREATED;
@@ -105,8 +105,6 @@ public class GLFWWindowManager implements DesktopWindowManager {
                 .virtualWidth(this.windowSettings.getVirtualWidth())
                 .virtualHeight(this.windowSettings.getVirtualHeight())
                 .pixelRatio(1f)
-                .frameWidth(this.windowSettings.getWindowWidth())
-                .frameHeight(this.windowSettings.getWindowHeight())
                 .build();
 
         // Initialize GLFW & setup render window:
@@ -189,8 +187,6 @@ public class GLFWWindowManager implements DesktopWindowManager {
         this.windowDimensions.setWindowWidth(width);
         this.windowDimensions.setWindowHeight(height);
         this.windowDimensions.setPixelRatio(width / (float) windowDimensions.getWindowWidth());
-        this.windowDimensions.setFrameWidth(width);
-        this.windowDimensions.setFrameHeight(height);
     }
 
     @Override
@@ -397,8 +393,8 @@ public class GLFWWindowManager implements DesktopWindowManager {
             this.windowSettings.setWindowWidth(width);
             this.windowSettings.setWindowHeight(height);
             this.windowDimensions.setPixelRatio(width / (float) windowDimensions.getWindowWidth());
-            this.windowDimensions.setFrameWidth(width);
-            this.windowDimensions.setFrameHeight(height);
+            this.windowDimensions.setWindowWidth(width);
+            this.windowDimensions.setWindowHeight(height);
             this.game.onViewportChanged(width, height);
         });
 

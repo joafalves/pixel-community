@@ -6,12 +6,15 @@
 package org.pixel.demo.concept.spaceshooter.component;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.demo.concept.spaceshooter.SpaceShooterGame;
+import org.pixel.commons.event.EventManager;
+import org.pixel.commons.InstanceRegistry;
 import org.pixel.demo.concept.spaceshooter.entity.PlayerSprite;
 import org.pixel.ext.ecs.GameComponent;
 import org.pixel.ext.ecs.component.SpriteAnimationComponent;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
+
+import static org.pixel.demo.concept.spaceshooter.SpaceShooterEvents.SHOOT;
 
 public class PlayerInputComponent extends GameComponent {
 
@@ -31,7 +34,7 @@ public class PlayerInputComponent extends GameComponent {
         shootElapsed += delta.getElapsedMs();
         if (Keyboard.isKeyDown(KeyboardKey.SPACE) && shootElapsed > SHOOT_DELAY_MS) {
             shootElapsed = 0f;
-            SpaceShooterGame.$.publish("player.shoot", null);
+            InstanceRegistry.uget(EventManager.class).publish(SHOOT, null);
         }
     }
 
