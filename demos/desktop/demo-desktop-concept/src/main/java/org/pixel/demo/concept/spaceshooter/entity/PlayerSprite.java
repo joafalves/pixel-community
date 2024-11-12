@@ -6,6 +6,7 @@
 package org.pixel.demo.concept.spaceshooter.entity;
 
 import org.pixel.blueprint.annotation.Auto;
+import org.pixel.blueprint.annotation.AfterAssembly;
 import org.pixel.commons.event.EventManager;
 import org.pixel.content.TextureFrame;
 import org.pixel.demo.concept.spaceshooter.SpaceShooterAttribute;
@@ -29,6 +30,10 @@ public class PlayerSprite extends SpaceShipSprite {
 
     public PlayerSprite(TextureFrame textureFrame) {
         super("Player", textureFrame, 10);
+    }
+
+    @AfterAssembly
+    private void init() {
         subscribeEvents();
     }
 

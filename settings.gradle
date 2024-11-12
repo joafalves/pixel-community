@@ -15,7 +15,8 @@ include "modules/commons",
         "modules/graphics",
         "modules/content",
         "modules/core",
-        "modules/pipeline"
+        "modules/pipeline",
+        "modules/blueprint"
 
 // platform modules:
 include "platform/desktop"

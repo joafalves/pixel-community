@@ -3,17 +3,14 @@
  * Copyright (c) 2020
  */
 // Pixel Version:
-version = System.properties["PIXEL_RELEASE"]
-if (version == null || version == "unspecified") {
-    version = "SNAPSHOT"
-}
+version = System.properties["PIXEL_RELEASE"] ?: "SNAPSHOT"
 
 ext {
     dependencyMap = [
             lwjgl  : "3.3.4",
-            lombok : "1.18.32",
-            junit  : "5.10.2",
-            mockito: "4.8.0"
+            lombok : "1.18.34",
+            junit  : "5.11.3",
+            mockito: "4.11.0"
     ]
 }
 

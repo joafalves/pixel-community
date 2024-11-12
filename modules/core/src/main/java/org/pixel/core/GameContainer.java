@@ -5,6 +5,7 @@
 
 package org.pixel.core;
 
+import org.pixel.blueprint.BlueprintAssembler;
 import org.pixel.blueprint.BlueprintLoader;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
@@ -73,6 +74,7 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
         var blueprintPackages = settings.getBlueprintPackages();
         if (blueprintPackages != null && blueprintPackages.length > 0) {
             BlueprintLoader.load(blueprintPackages);
+            BlueprintAssembler.assemble(this);
         }
 
         this.state = State.INITIALIZED;

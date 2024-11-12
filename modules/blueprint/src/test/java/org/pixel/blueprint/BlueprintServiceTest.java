@@ -1,71 +1,78 @@
 package org.pixel.blueprint;
 
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.pixel.blueprint.annotation.Auto;
 import org.pixel.blueprint.annotation.Blueprint;
 import org.pixel.blueprint.annotation.Component;
+import org.pixel.blueprint.annotation.Service;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class BlueprintServiceTest {
 
-    private static final String STR_A = "I'm a string!";
-    private static final String STR_B = "I'm another string!";
-
-    @Blueprint
-    public static class BlueprintConfig {
-
-        @Component
-        public String someString() {
-            return STR_A;
-        }
-
-        @Component("specificString")
-        public String anotherString() {
-            return STR_B;
-        }
-
-        @Component
-        public String proxyString(String someString) {
-            return someString;
-        }
-    }
-
-    public static class TestClass {
-        @Auto
-        private String someString;
-        @Auto("specificString")
-        private String anotherString;
-        @Auto
-        private String specificString;
-        @Auto
-        private String proxyString;
-
-        private final String constructorString;
-
-        public TestClass(@Auto("specificString") String constructorString) {
-            this.constructorString = constructorString;
-        }
-
-        public TestClass() {
-            this.constructorString = STR_B;
-            ComponentAssembler.assemble(this);
-        }
+    @BeforeAll
+    static void setup() {
+        // Initialize the global repository and load configurations in the test package
+        BlueprintLoader.load(new String[]{"org.pixel.blueprint"});
     }
 
     @Test
-    void load() {
-        BlueprintLoader.load(new String[]{"org.pixel"});
+    void testServiceInstantiation() {
+        // Retrieve the TestService from the repository
+        TestService testService = BlueprintRepository.getDefault().ugetService(TestService.class, "testService");
 
-        // Using AUTO proxy (automatic assignment):
-        var testClass = new TestClass();
+        assertNotNull(testService, "TestService should be instantiated and registered.");
+        assertEquals("Hello, World!", testService.greet(), "TestService should greet properly.");
+    }
 
-        Assertions.assertEquals(STR_A, testClass.someString);
-        Assertions.assertEquals(STR_B, testClass.anotherString);
-        Assertions.assertEquals(STR_B, testClass.specificString);
-        Assertions.assertEquals(STR_A, testClass.proxyString);
+    @Test
+    void testServiceDependencyInjection() {
+        // Retrieve the TestService with injected dependency (using default uget for test purposes)
+        TestService testService = BlueprintRepository.getDefault().uget(TestService.class, "testService");
 
-        // Alternative (if the class didn't have Auto):
-        var anotherTestClass = ComponentAssembler.assemble(TestClass.class);
-        Assertions.assertEquals(STR_B, anotherTestClass.constructorString);
+        assertNotNull(testService, "TestService should be instantiated and registered.");
+        assertNotNull(testService.getGreetingComponent(), "GreetingComponent should be injected into TestService.");
+        assertEquals("Hello, World!", testService.greet(), "Injected GreetingComponent should provide correct greeting.");
+    }
+
+    @Blueprint
+    static class TestConfiguration {
+
+        @Component("greetingComponent")
+        public GreetingComponent greetingComponent() {
+            return new GreetingComponent("Hello, World!");
+        }
+    }
+
+    @Service("testService")
+    static class TestService {
+
+        private final GreetingComponent greetingComponent;
+
+        // Constructor injection
+        public TestService(@Auto("greetingComponent") GreetingComponent greetingComponent) {
+            this.greetingComponent = greetingComponent;
+        }
+
+        public String greet() {
+            return greetingComponent.getMessage();
+        }
+
+        public GreetingComponent getGreetingComponent() {
+            return greetingComponent;
+        }
+    }
+
+    static class GreetingComponent {
+        private final String message;
+
+        public GreetingComponent(String message) {
+            this.message = message;
+        }
+
+        public String getMessage() {
+            return message;
+        }
     }
 }

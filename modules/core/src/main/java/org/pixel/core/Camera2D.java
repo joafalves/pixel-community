@@ -48,6 +48,16 @@ public class Camera2D implements Serializable {
     /**
      * Constructor.
      *
+     * @param width  The viewport width of the camera.
+     * @param height The viewport height of the camera.
+     */
+    public Camera2D(float width, float height) {
+        this(0, 0, width, height);
+    }
+
+    /**
+     * Constructor.
+     *
      * @param x      The x position of the camera.
      * @param y      The y position of the camera.
      * @param width  The viewport width of the camera.

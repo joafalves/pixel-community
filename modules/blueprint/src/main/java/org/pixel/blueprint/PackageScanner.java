@@ -24,21 +24,23 @@ public class PackageScanner {
             URL packageUrl = Thread.currentThread().getContextClassLoader().getResource(packagePath);
             if (packageUrl != null) {
                 Path path = Paths.get(packageUrl.toURI());
-                Files.walk(path).filter(Files::isRegularFile).forEach(file -> {
-                    String className = file.toString()
-                            .replace(path.toString() + File.separator, "") // Use File.separator for cross-platform compatibility
-                            .replace(".class", "") // Remove the .class extension
-                            .replace(File.separator, "."); // Replace path separators with dots
+                try (var pathStream = Files.walk(path)) {
+                    pathStream.filter(Files::isRegularFile).forEach(file -> {
+                        String className = file.toString()
+                                .replace(path + File.separator, "") // Use File.separator for cross-platform compatibility
+                                .replace(".class", "") // Remove the .class extension
+                                .replace(File.separator, "."); // Replace path separators with dots
 
-                    try {
-                        Class<?> clazz = Class.forName(packageName + '.' + className);
-                        if (clazz.isAnnotationPresent(annotationClass.asSubclass(java.lang.annotation.Annotation.class))) {
-                            classes.add(clazz);
+                        try {
+                            Class<?> clazz = Class.forName(packageName + '.' + className);
+                            if (clazz.isAnnotationPresent(annotationClass.asSubclass(java.lang.annotation.Annotation.class))) {
+                                classes.add(clazz);
+                            }
+                        } catch (ClassNotFoundException e) {
+                            log.error("Exception caught!", e);
                         }
-                    } catch (ClassNotFoundException e) {
-                        log.error("Exception caught!", e);
-                    }
-                });
+                    });
+                }
             }
         } catch (IOException | URISyntaxException e) {
             log.error("Exception caught!", e);

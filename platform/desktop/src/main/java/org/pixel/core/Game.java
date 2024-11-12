@@ -23,7 +23,7 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
 
     private static final Logger log = LoggerFactory.getLogger(Game.class);
 
-    private final int[] audioAttributes = { 0 };
+    private final int[] audioAttributes = {0};
     private long audioDevice;
     private long audioContext;
 
@@ -38,14 +38,13 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
 
     @Override
     protected boolean initWindowManager() {
-        // TODO: make configurable when/if more options are available
         this.windowManager = new GLFWWindowManager(this);
         return this.windowManager.init();
     }
 
     @Override
     protected boolean initGraphicsDevice() {
-        log.debug ("Initializing {} graphics device.", this.settings.getGraphicsBackend());
+        log.debug("Initializing '{}' graphics device.", this.settings.getGraphicsBackend());
 
         switch (this.settings.getGraphicsBackend()) {
             case OpenGL:
@@ -93,7 +92,7 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
     protected boolean initServices() {
         log.debug("Initializing services.");
 
-        switch (this.settings.getGraphicsBackend()) {
+       switch (this.settings.getGraphicsBackend()) {
             case OpenGL:
                 ServiceProvider.register(SpriteBatch.class, new GLSpriteBatchServiceFactory());
                 ServiceProvider.register(ContentManager.class, new GLContentManagerFactory());

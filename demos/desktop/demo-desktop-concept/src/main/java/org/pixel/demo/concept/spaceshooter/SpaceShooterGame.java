@@ -1,6 +1,6 @@
 package org.pixel.demo.concept.spaceshooter;
 
-import org.pixel.blueprint.ComponentAssembler;
+import org.pixel.blueprint.BlueprintAssembler;
 import org.pixel.blueprint.annotation.Auto;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.ServiceProvider;
@@ -57,7 +57,7 @@ public class SpaceShooterGame extends Game {
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
 
-        ComponentAssembler.assemble(this);
+        BlueprintAssembler.assemble(this);
 
         // content load
         var texturePack = content.loadTexturePack("spaceshooter/spritemap.json");
@@ -163,7 +163,7 @@ public class SpaceShooterGame extends Game {
         settings.setDebugMode(false);
         settings.setWindowWidth(windowWidth);
         settings.setWindowHeight(windowHeight);
-        settings.setBlueprintPackages(new String[]{"org.pixel"});
+        settings.setBlueprintPackages(new String[]{"org.pixel.demo.concept"});
 
         var window = new SpaceShooterGame(settings);
         window.start();

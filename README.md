@@ -11,8 +11,7 @@ This repository contains the Pixel Framework and associated modules/dependencies
 ### Description ###
 
 The Pixel Framework aims to provide a high performance and lightweight OpenGL 2D game development workflow. It is
-influenced by the popular XNA framework and is built on top of the [LWJGL](https://www.lwjgl.org/)
-and [GLFW](https://www.glfw.org/) projects.
+influenced by the popular XNA framework and is built on top of the [LWJGL](https://www.lwjgl.org/) (Desktop) and OpenGL ES (Android).
 
 > :book: For practical details on how to use this framework, please check the [wiki page](https://github.com/joafalves/pixel-community/wiki).
 
@@ -130,13 +129,15 @@ The framework functionality is divided into multiple modules which can be import
 
 ### Runtime OS compatibility ###
 
-Pretty much the same as the [LWJGL](https://www.lwjgl.org/) dependency, which includes:
+For desktop, the same support as the [LWJGL](https://www.lwjgl.org/) dependency, which includes:
 
 - Windows (x86, x64, arm64)
 - MacOS (x64, arm64)
 - Linux (x86, x64, arm64, arm32)
 
 > Requires OpenGL 3.3+ support.
+
+There is also an Android platform implementation available (OpenGL ES) - **Experimental**.
 
 ### FAQ ###
 

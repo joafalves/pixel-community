@@ -6,7 +6,7 @@ import java.lang.reflect.Parameter;
 import java.util.Arrays;
 
 public class BlueprintUtil {
-    public static Object[] resolveParameters(ComponentRepository repository, Parameter[] parameters) {
+    public static Object[] resolveParameters(BlueprintRepository repository, Parameter[] parameters) {
         if (parameters == null || parameters.length == 0) {
             return new Object[0];
         }

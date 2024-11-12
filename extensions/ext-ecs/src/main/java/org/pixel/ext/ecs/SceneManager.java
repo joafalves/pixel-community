@@ -16,7 +16,17 @@ public class SceneManager implements Updatable, Drawable, Disposable {
     }
 
     /**
+     * Constructor
+     *
+     * @param activeScene The initial active scene.
+     */
+    public SceneManager(GameScene activeScene) {
+        this.setActiveScene(activeScene);
+    }
+
+    /**
      * Set the active scene. If there is an active scene already, it will be disposed. The new scene will be loaded.
+     *
      * @param scene The scene to set as active.
      */
     public void setActiveScene(GameScene scene) {
@@ -29,6 +39,7 @@ public class SceneManager implements Updatable, Drawable, Disposable {
 
     /**
      * Swap the active scene with another scene. The current active scene will NOT be disposed and the new scene will NOT be loaded.
+     *
      * @param scene The scene to set as active.
      * @return The old active scene or null if no scene was active.
      */
@@ -40,6 +51,7 @@ public class SceneManager implements Updatable, Drawable, Disposable {
 
     /**
      * Get the active scene.
+     *
      * @return The active scene or null if no scene is active.
      */
     public GameScene getActiveScene() {
@@ -48,6 +60,7 @@ public class SceneManager implements Updatable, Drawable, Disposable {
 
     /**
      * Detach the current active scene from the scene manager.
+     *
      * @return The detached game scene.
      */
     public GameScene dettachGameScene() {
@@ -70,7 +83,7 @@ public class SceneManager implements Updatable, Drawable, Disposable {
             activeScene.draw(delta);
         }
     }
-    
+
     @Override
     public void dispose() {
         if (activeScene != null) {
