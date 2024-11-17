@@ -115,7 +115,13 @@ public class GLFWWindowManager extends DesktopWindowManager {
 
         // Swap buffers and poll events
         glfwSwapBuffers(this.windowHandle);
-        glfwPollEvents();
+
+        if (!isWindowFocused() && this.windowSettings.isIdleThrottle()) {
+            // Wait for direct events if the window is not focused to reduce unnecessary CPU usage
+            glfwWaitEventsTimeout(1); // Argument is in seconds
+        } else {
+            glfwPollEvents();
+        }
     }
 
     @Override

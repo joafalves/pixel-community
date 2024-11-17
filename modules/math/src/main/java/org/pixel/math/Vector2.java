@@ -459,8 +459,7 @@ public class Vector2 implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Vector2)) return false;
-        Vector2 vector2 = (Vector2) o;
+        if (!(o instanceof Vector2 vector2)) return false;
         return vector2.getX() == this.getX() && vector2.getY() == this.getY();
     }
     //endregion

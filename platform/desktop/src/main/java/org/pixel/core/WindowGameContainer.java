@@ -108,15 +108,6 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
 
             this.windowManager.endFrame();
 
-            if (!this.windowManager.isWindowFocused() && this.settings.isIdleThrottle()) {
-                try {
-                    Thread.sleep(100); // TODO: make idle period configurable
-
-                } catch (InterruptedException e) {
-                    log.error("Exception caught!", e);
-                }
-            }
-
             // TODO: study the feasibility/impact of implementing a multi-threaded mechanism
             // on the game loop, more info:
             // https://github.com/LWJGL/lwjgl3/blob/master/modules/samples/src/test/java/org/lwjgl/demo/glfw/Threads.java
