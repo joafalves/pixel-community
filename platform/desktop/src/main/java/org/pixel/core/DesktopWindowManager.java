@@ -23,6 +23,13 @@ public abstract class DesktopWindowManager implements WindowManager {
     public abstract void setWindowCursorMode(WindowCursorMode mode);
 
     /**
+     * Set the window cursor type.
+     *
+     * @param type The cursor type.
+     */
+    public abstract void setWindowCursorType(WindowCursorType type);
+
+    /**
      * Set the window mode.
      *
      * @param mode The window mode.

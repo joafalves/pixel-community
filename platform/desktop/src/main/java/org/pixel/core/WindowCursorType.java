@@ -1,0 +1,5 @@
+package org.pixel.core;
+
+public enum WindowCursorType {
+    ARROW, IBEAM, CROSSHAIR, HAND, HRESIZE, VRESIZE, POINTER, RESIZE_NWSE, RESIZE_NESW, RESIZE_ALL, NOT_ALLOWED
+}

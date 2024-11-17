@@ -3,6 +3,7 @@ package org.pixel.demo.learning.render;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.core.WindowCursorType;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.commons.Color;
@@ -38,6 +39,7 @@ public class IsometricGridDemo extends DemoGame {
 
         re = new NvgRenderEngine(windowWidth, windowHeight);
         gridOffset = new Vector2(windowWidth / 2.0f, windowHeight / 2.0f); // Start with no offset
+        dragStartPos = new Vector2();
 
         log.info("Drawing {} lines.", (COLUMNS * 2 + 1) * (ROWS * 2 + 1));
     }
@@ -47,7 +49,8 @@ public class IsometricGridDemo extends DemoGame {
         if (Mouse.isMouseButtonDown(MouseButton.LEFT)) {
             if (!dragging) {
                 dragging = true;
-                dragStartPos = Mouse.getPosition();
+                Mouse.getPosition(dragStartPos);
+                getWindowManager().setWindowCursorType(WindowCursorType.HAND);
                 log.info("Drag start: " + dragStartPos);
             } else {
                 Vector2 currentMousePos = Mouse.getPosition();
@@ -60,6 +63,7 @@ public class IsometricGridDemo extends DemoGame {
                 log.info("Drag end");
             }
             dragging = false;
+            getWindowManager().setWindowCursorType(WindowCursorType.ARROW);
         }
     }
 
