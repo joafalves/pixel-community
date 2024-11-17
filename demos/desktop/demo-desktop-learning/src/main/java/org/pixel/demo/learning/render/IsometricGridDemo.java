@@ -77,10 +77,10 @@ public class IsometricGridDemo extends DemoGame {
 
                 // Draw diamond-shaped tile
                 re.beginPath();
-                re.moveTo(isoX, isoY - halfTileHeight);
-                re.lineTo(isoX + halfTileWidth, isoY);
-                re.lineTo(isoX, isoY + halfTileHeight);
-                re.lineTo(isoX - halfTileWidth, isoY);
+                re.moveTo(isoX, isoY - TILE_HEIGHT);
+                re.lineTo(isoX + TILE_WIDTH, isoY);
+                re.lineTo(isoX, isoY + TILE_HEIGHT);
+                re.lineTo(isoX - TILE_WIDTH, isoY);
                 re.endPath();
                 re.strokeColor(Color.DARK_GRAY);
                 re.stroke();
