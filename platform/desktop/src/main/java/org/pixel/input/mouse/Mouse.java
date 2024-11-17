@@ -83,6 +83,24 @@ public class Mouse {
     //region getters & setters
 
     /**
+     * Get the current mouse position X.
+     *
+     * @return The current mouse position X.
+     */
+    public static float getX() {
+        return position.getX();
+    }
+
+    /**
+     * Get the current mouse position Y.
+     *
+     * @return The current mouse position Y.
+     */
+    public static float getY() {
+        return position.getY();
+    }
+
+    /**
      * Get the current mouse position.
      *
      * @return The current mouse position.
