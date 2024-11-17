@@ -11,6 +11,7 @@ public class Color implements Serializable {
 
     //region <static>
 
+    // Predefined colors
     public static final Color RED = new Color(0xff0000ff);
     public static final Color GREEN = new Color(0x00ff00ff);
     public static final Color BLUE = new Color(0x0000ffff);
@@ -37,6 +38,12 @@ public class Color implements Serializable {
     public static final Color VIOLET = new Color(0xee82eeff);
     public static final Color MAROON = new Color(0xb03060ff);
     public static final Color TRANSPARENT = new Color(0x00000000);
+
+    // Gray colors
+    public static final Color GRAY = new Color(0x808080ff);
+    public static final Color LIGHT_GRAY = new Color(0xd3d3d3ff);
+    public static final Color DARK_GRAY = new Color(0xa9a9a9ff);
+    public static final Color SILVER = new Color(0xc0c0c0ff);
 
     //endregion
 

@@ -75,7 +75,7 @@ public class Mouse {
      * @return MouseState snapshot.
      */
     public static MouseState getMouseState() {
-        return new MouseState((HashMap<Integer, Integer>) buttons.clone());
+        return new MouseState(new HashMap<>(buttons));
     }
 
     //endregion
@@ -88,7 +88,7 @@ public class Mouse {
      * @return The current mouse position.
      */
     public static Vector2 getPosition() {
-        return position;
+        return new Vector2(position);
     }
 
     /**
@@ -97,7 +97,7 @@ public class Mouse {
      * @return The current mouse position box.
      */
     public static Rectangle getPositionBox() {
-        return positionBox;
+        return new Rectangle(positionBox);
     }
 
     //endregion
