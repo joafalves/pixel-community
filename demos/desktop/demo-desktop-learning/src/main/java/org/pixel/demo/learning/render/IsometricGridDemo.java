@@ -17,9 +17,8 @@ public class IsometricGridDemo extends DemoGame {
 
     private static final Logger log = LoggerFactory.getLogger(IsometricGridDemo.class);
 
-    private static final float TILE_SIZE = 48; // Size of the diamond tiles
-    private static final int COLUMNS = 16;
-    private static final int ROWS = 16;
+    private static final int COLUMNS = 20;
+    private static final int ROWS = 20;
     private static final int TILE_WIDTH = 32;
     private static final int TILE_HEIGHT = TILE_WIDTH / 2;
 
@@ -34,8 +33,13 @@ public class IsometricGridDemo extends DemoGame {
 
     @Override
     public void load() {
-        re = new NvgRenderEngine(getSettings().getWindowWidth(), getSettings().getWindowHeight());
-        gridOffset = new Vector2(0, 0); // Start with no offset
+        int windowWidth = getWindowManager().getWindowWidth();
+        int windowHeight = getWindowManager().getWindowHeight();
+
+        re = new NvgRenderEngine(windowWidth, windowHeight);
+        gridOffset = new Vector2(windowWidth / 2.0f, windowHeight / 2.0f); // Start with no offset
+
+        log.info("Drawing {} lines.", (COLUMNS * 2 + 1) * (ROWS * 2 + 1));
     }
 
     @Override
@@ -94,11 +98,12 @@ public class IsometricGridDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        var settings = new WindowSettings(800, 640);
+        var settings = new WindowSettings(800, 600);
         settings.setWindowResizable(true);
         settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setBackgroundColor(Color.BLACK);
+        settings.setTitle("Isometric Grid Demo - Drag mouse to move grid");
 
         var window = new IsometricGridDemo(settings);
         window.start();
