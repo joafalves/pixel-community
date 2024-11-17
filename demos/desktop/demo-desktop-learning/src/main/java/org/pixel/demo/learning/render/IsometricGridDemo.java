@@ -64,8 +64,8 @@ public class IsometricGridDemo extends DemoGame {
         float halfTileWidth = TILE_SIZE / 2;
         float halfTileHeight = TILE_SIZE / 4;
 
-        int cols = (int) (getWindowManager().getWindowWidth() / TILE_SIZE) + 3;
-        int rows = (int) (getWindowManager().getWindowHeight() / TILE_SIZE) + 3;
+        int cols = (int) (getWindowManager().getWindowWidth() / TILE_SIZE);
+        int rows = (int) (getWindowManager().getWindowHeight() / TILE_SIZE);
 
         // Offset grid origin based on startX and startY
         for (int row = -rows; row <= rows; row++) {
