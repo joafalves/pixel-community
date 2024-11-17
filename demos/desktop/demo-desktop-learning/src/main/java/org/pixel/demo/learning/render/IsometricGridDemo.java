@@ -18,6 +18,10 @@ public class IsometricGridDemo extends DemoGame {
     private static final Logger log = LoggerFactory.getLogger(IsometricGridDemo.class);
 
     private static final float TILE_SIZE = 48; // Size of the diamond tiles
+    private static final int COLUMNS = 16;
+    private static final int ROWS = 16;
+    private static final int TILE_WIDTH = 32;
+    private static final int TILE_HEIGHT = TILE_WIDTH / 2;
 
     private RenderEngine2D re;
     private Vector2 gridOffset; // To keep track of the grid offset due to dragging
@@ -57,34 +61,29 @@ public class IsometricGridDemo extends DemoGame {
 
     @Override
     public void draw(DeltaTime delta) {
+        // Begin rendering
         re.begin();
         re.translate(gridOffset.getX(), gridOffset.getY());
 
-        // Calculate visible grid bounds
-        float halfTileWidth = TILE_SIZE / 2;
-        float halfTileHeight = TILE_SIZE / 4;
-
-        int cols = (int) (getWindowManager().getWindowWidth() / TILE_SIZE);
-        int rows = (int) (getWindowManager().getWindowHeight() / TILE_SIZE);
-
         // Offset grid origin based on startX and startY
-        for (int row = -rows; row <= rows; row++) {
-            for (int col = -cols; col <= cols; col++) {
-                float isoX = (col - row) * halfTileWidth;
-                float isoY = (col + row) * halfTileHeight;
+        for (int row = -ROWS; row <= ROWS; row++) {
+            for (int col = -COLUMNS; col <= COLUMNS; col++) {
+                float isoX = (col - row) * TILE_WIDTH;
+                float isoY = (col + row) * TILE_HEIGHT;
 
                 // Draw diamond-shaped tile
                 re.beginPath();
-                re.moveTo(isoX, isoY - halfTileHeight);
-                re.lineTo(isoX + halfTileWidth, isoY);
-                re.lineTo(isoX, isoY + halfTileHeight);
-                re.lineTo(isoX - halfTileWidth, isoY);
+                re.moveTo(isoX, isoY - TILE_HEIGHT);
+                re.lineTo(isoX + TILE_WIDTH, isoY);
+                re.lineTo(isoX, isoY + TILE_HEIGHT);
+                re.lineTo(isoX - TILE_WIDTH, isoY);
                 re.endPath();
                 re.strokeColor(Color.DARK_GRAY);
                 re.stroke();
             }
         }
 
+        // Draw grid lines
         re.end();
     }
 

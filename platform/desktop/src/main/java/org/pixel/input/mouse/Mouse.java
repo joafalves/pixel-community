@@ -92,12 +92,30 @@ public class Mouse {
     }
 
     /**
+     * Get the current mouse position.
+     *
+     * @param destination Destination vector to store the result.
+     */
+    public static void getPosition(Vector2 destination) {
+        destination.set(position);
+    }
+
+    /**
      * Get the current mouse position box.
      *
      * @return The current mouse position box.
      */
     public static Rectangle getPositionBox() {
         return new Rectangle(positionBox);
+    }
+
+    /**
+     * Get the current mouse position box.
+     *
+     * @param destination Destination rectangle to store the result.
+     */
+    public static void getPositionBox(Rectangle destination) {
+        destination.set(positionBox);
     }
 
     //endregion
