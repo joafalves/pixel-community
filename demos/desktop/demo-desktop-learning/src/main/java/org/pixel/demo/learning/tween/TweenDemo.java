@@ -48,18 +48,20 @@ public class TweenDemo extends Game {
         spriteTexture = contentManager.loadTexture("images/earth-48x48.png");
 
         spritePositionA = new Vector2(200, 200);
-        Tween tweenA = new Tween(spritePositionA.getX(), spritePositionA.getY())
-                .target(spritePositionA)
+        tweenA = new Tween()
+                .from(spritePositionA.getX(), spritePositionA.getY())
                 .to(200, -200)
+                .target(spritePositionA)
                 .duration(1f)
                 .loopMode(TweenLoopMode.LOOP_REVERSE)
                 .easing(TweenEasingMode.SIN)
                 .on((tween, state) -> log.info("Tween A: " + state));
 
         spritePositionB = new Vector2(-200, 200);
-        Tween tweenB = new Tween(spritePositionB.getX(), spritePositionB.getY())
-                .target(spritePositionB)
+        tweenB = new Tween()
+                .from(spritePositionB.getX(), spritePositionB.getY())
                 .to(-200, -200)
+                .target(spritePositionB)
                 .duration(1f)
                 .loopMode(TweenLoopMode.LOOP_REVERSE)
                 .easing(TweenEasingMode.ELASTIC);

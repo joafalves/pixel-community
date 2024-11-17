@@ -3,7 +3,7 @@
  * Copyright (c) 2020
  */
 // Pixel Version:
-version = System.properties["PIXEL_RELEASE"] ?: "SNAPSHOT"
+version = System.properties["PIXEL_RELEASE"] ?: "DEV-${getGitCommitHash()}"
 
 ext {
     dependencyMap = [
@@ -193,4 +193,10 @@ subprojects { project ->
             }
         }
     }
+}
+
+static def getGitCommitHash() {
+    def process = "git rev-parse --short HEAD".execute()
+    def gitHash = process.text.trim()
+    return gitHash
 }
