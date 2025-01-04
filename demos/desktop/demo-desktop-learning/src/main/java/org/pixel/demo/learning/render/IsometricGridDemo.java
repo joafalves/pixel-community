@@ -13,7 +13,6 @@ import org.pixel.input.mouse.Mouse;
 import org.pixel.input.mouse.MouseButton;
 import org.pixel.math.Vector2;
 
-
 public class IsometricGridDemo extends DemoGame {
 
     private static final Logger log = LoggerFactory.getLogger(IsometricGridDemo.class);
@@ -27,6 +26,7 @@ public class IsometricGridDemo extends DemoGame {
     private Vector2 gridOffset; // To keep track of the grid offset due to dragging
     private Vector2 dragStartPos; // Initial drag position
     private boolean dragging; // Whether the mouse is dragging
+    private Vector2 highlightedTile; // The tile currently being highlighted
 
     public IsometricGridDemo(WindowSettings settings) {
         super(settings);
@@ -40,6 +40,7 @@ public class IsometricGridDemo extends DemoGame {
         re = new NvgRenderEngine(windowWidth, windowHeight);
         gridOffset = new Vector2(windowWidth / 2.0f, windowHeight / 2.0f); // Start with no offset
         dragStartPos = new Vector2();
+        highlightedTile = new Vector2(-1, -1); // Initialize with an invalid tile index
 
         log.info("Drawing {} lines.", (COLUMNS * 2 + 1) * (ROWS * 2 + 1));
     }
@@ -65,6 +66,16 @@ public class IsometricGridDemo extends DemoGame {
             dragging = false;
             getWindowManager().setWindowCursorType(WindowCursorType.ARROW);
         }
+
+        // Calculate which tile is highlighted
+        Vector2 mousePos = Mouse.getPosition();
+        float localX = mousePos.getX() - gridOffset.getX();
+        float localY = mousePos.getY() - gridOffset.getY();
+
+        float col = (localX / TILE_WIDTH + localY / TILE_HEIGHT) / 2;
+        float row = (localY / TILE_HEIGHT - localX / TILE_WIDTH) / 2;
+
+        highlightedTile.set(Math.round(col), Math.round(row));
     }
 
     @Override
@@ -78,6 +89,18 @@ public class IsometricGridDemo extends DemoGame {
             for (int col = -COLUMNS; col <= COLUMNS; col++) {
                 float isoX = (col - row) * TILE_WIDTH;
                 float isoY = (col + row) * TILE_HEIGHT;
+
+                // Highlight the current tile
+                if (highlightedTile.getX() == col && highlightedTile.getY() == row) {
+                    re.beginPath();
+                    re.moveTo(isoX, isoY - TILE_HEIGHT);
+                    re.lineTo(isoX + TILE_WIDTH, isoY);
+                    re.lineTo(isoX, isoY + TILE_HEIGHT);
+                    re.lineTo(isoX - TILE_WIDTH, isoY);
+                    re.endPath();
+                    re.fillColor(Color.WHITE);
+                    re.fill();
+                }
 
                 // Draw diamond-shaped tile
                 re.beginPath();
@@ -112,5 +135,4 @@ public class IsometricGridDemo extends DemoGame {
         var window = new IsometricGridDemo(settings);
         window.start();
     }
-
 }

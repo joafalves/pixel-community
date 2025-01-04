@@ -7,7 +7,7 @@ version = System.properties["PIXEL_RELEASE"] ?: "DEV-${getGitCommitHash()}"
 
 ext {
     dependencyMap = [
-            lwjgl  : "3.3.4",
+            lwjgl  : "3.3.5",
             lombok : "1.18.34",
             junit  : "5.11.3",
             mockito: "4.11.0"
