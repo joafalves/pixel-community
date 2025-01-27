@@ -6,6 +6,45 @@ import java.util.List;
 public class DataHashMap extends HashMap<String, Object> {
 
     /**
+     * Associates the specified value with the specified key in this map.
+     * The key is automatically generated based on the package class name.
+     * If the map previously contained a mapping for the key, the old
+     * value is replaced.
+     *
+     * @param value value to be associated with the specified key
+     * @return the previous value associated with {@code key}, or
+     *         {@code null} if there was no mapping for {@code key}.
+     *         (A {@code null} return can also indicate that the map
+     *         previously associated {@code null} with {@code key}.)
+     */
+    public Object put(Object value) {
+        return put(value.getClass().getPackageName(), value);
+    }
+
+    /**
+     * Get the value (first element) of the given type. This function
+     * uses the class package-name as key (convention).
+     *
+     * @param type The type of the value.
+     * @return The value or null if not found.
+     */
+    public <T> T get(Class<T> type) {
+        // attempt to use the package-name of the class as per convention:
+        var value = get(type.getPackageName(), type);
+        if (value != null) {
+            return value;
+        }
+
+        // Couldn't find, try to do a manual lookup (first-find):
+        for (Object o : this.values()) {
+            if (type.isInstance(o)) {
+                return (T) o;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Get the value of the key. If the key is not found, null is returned.
      *
      * @param key  The key.

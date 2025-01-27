@@ -45,16 +45,16 @@ public class PlayerInputComponent extends GameComponent {
         var keyboardState = Keyboard.getState();
         if (keyboardState.isKeyDown(KeyboardKey.W)) { // forward
             getGameObject().getTransform().translate(0, -SPEED_Y * delta.getElapsed());
-            if (!getGameObject().getAttributeMap().getBoolean(PlayerSprite.IS_MOVING_FORWARD_ATTR)) {
-                getGameObject().getAttributeMap().put(PlayerSprite.IS_MOVING_FORWARD_ATTR, true);
+            if (!getGameObject().getData().getBoolean(PlayerSprite.IS_MOVING_FORWARD_ATTR)) {
+                getGameObject().getData().put(PlayerSprite.IS_MOVING_FORWARD_ATTR, true);
                 getGameObject().getChildren("EngineFire").forEach(o -> {
                     o.setEnabled(true);
                     o.getComponent(SpriteAnimationComponent.class).restart();
                 });
             }
         } else {
-            if (getGameObject().getAttributeMap().getBoolean(PlayerSprite.IS_MOVING_FORWARD_ATTR, true)) {
-                getGameObject().getAttributeMap().put(PlayerSprite.IS_MOVING_FORWARD_ATTR, false);
+            if (getGameObject().getData().getBoolean(PlayerSprite.IS_MOVING_FORWARD_ATTR, true)) {
+                getGameObject().getData().put(PlayerSprite.IS_MOVING_FORWARD_ATTR, false);
                 getGameObject().getChildren("EngineFire").forEach(o -> o.setEnabled(false));
             }
         }

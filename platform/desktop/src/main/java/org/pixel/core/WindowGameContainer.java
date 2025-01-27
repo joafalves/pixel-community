@@ -6,6 +6,10 @@ import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.graphics.GraphicsDevice;
 
+import java.util.concurrent.locks.LockSupport;
+
+import static org.lwjgl.glfw.GLFW.glfwGetTime;
+
 public abstract class WindowGameContainer<T extends WindowManager, S extends GraphicsDevice, Z extends GameSettings>
         extends GameContainer<S, Z>
         implements Initializable, Loadable, Updatable, Drawable, Disposable {
@@ -13,6 +17,8 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
     private static final Logger log = LoggerFactory.getLogger(GameContainer.class);
 
     protected T windowManager;
+
+    private double targetFpsTimeRef;
 
     /**
      * Constructor.
@@ -95,10 +101,35 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
         while (this.windowManager.isWindowActive()) {
             delta.tick();
 
+            // FPS Limiting Logic (VSYNC cannot be enabled)
+            if (settings.getTargetFps() > 0 && !settings.isVsync()) {
+                double currentTime = glfwGetTime();
+                double targetFrameDuration = 1.0 / settings.getTargetFps(); // e.g., 16.67ms for 60 FPS
+
+                // Calculate the next frame's target time
+                double nextFrameTime = targetFpsTimeRef + targetFrameDuration;
+
+                // Sleep if there's still time until the next frame
+                double sleepTime = nextFrameTime - currentTime;
+                if (sleepTime > 0) {
+                    LockSupport.parkNanos((long) (sleepTime * 1_000_000_000));
+                }
+
+                // Update lastFrameTime for the next frame
+                targetFpsTimeRef = nextFrameTime;
+            }
+
             this.windowManager.beginFrame();
+
+            // call container update
+            updateContainer(delta);
 
             // call game update
             update(delta);
+
+            if (!this.windowManager.isWindowActive()) {
+                break; // update code might kill the window...
+            }
 
             // call game draw
             if (this.settings.isAutoClear()) {

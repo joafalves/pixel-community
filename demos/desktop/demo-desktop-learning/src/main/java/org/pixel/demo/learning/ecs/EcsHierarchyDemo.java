@@ -3,18 +3,19 @@ package org.pixel.demo.learning.ecs;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.ServiceProvider;
 import org.pixel.content.ContentManager;
+import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.ext.ecs.GameComponent;
 import org.pixel.ext.ecs.GameScene;
 import org.pixel.ext.ecs.Sprite;
-import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
-import org.pixel.core.Game;
 import org.pixel.graphics.render.SpriteBatch;
 
-public class EcsHierarchyDemo extends Game {
+public class EcsHierarchyDemo extends DemoGame {
 
     private ContentManager contentManager;
     private GameScene gameScene;
+
+    private SpriteBatch spriteBatch;
 
     public EcsHierarchyDemo(WindowSettings settings) {
         super(settings);
@@ -22,7 +23,7 @@ public class EcsHierarchyDemo extends Game {
 
     @Override
     public void load() {
-        var spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        spriteBatch = ServiceProvider.create(SpriteBatch.class);
         contentManager = ServiceProvider.create(ContentManager.class);
 
         var parent = new Sprite("parent", contentManager.loadTexture("images/earth-48x48.png"));
@@ -37,7 +38,7 @@ public class EcsHierarchyDemo extends Game {
         subChild.getTransform().setPosition(80, 0);
         subChild.getTransform().setScale(0.5f);
 
-        gameScene = new GameScene("SampleScene", new Camera2D(this), spriteBatch);
+        gameScene = new GameScene("SampleScene", gameCamera, spriteBatch);
         gameScene.addChild(parent);
         parent.addChild(child);
         child.addChild(subChild);
@@ -45,17 +46,20 @@ public class EcsHierarchyDemo extends Game {
 
     @Override
     public void update(DeltaTime delta) {
+        super.update(delta);
         gameScene.update(delta);
     }
 
     @Override
     public void draw(DeltaTime delta) {
+        super.draw(delta);
         gameScene.draw(delta);
     }
 
     @Override
     public void dispose() {
         contentManager.dispose();
+        spriteBatch.dispose();
         super.dispose();
     }
 
@@ -73,7 +77,8 @@ public class EcsHierarchyDemo extends Game {
         var settings = new WindowSettings(600, 480);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
-        settings.setVsync(true);
+        settings.setVsync(false);
+        settings.setTargetFps(60);
         settings.setDebugMode(false);
 
         var window = new EcsHierarchyDemo(settings);

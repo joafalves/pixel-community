@@ -6,6 +6,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 import java.nio.IntBuffer;
+import java.util.concurrent.locks.LockSupport;
 
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
@@ -113,12 +114,13 @@ public class GLFWWindowManager extends DesktopWindowManager {
         // Clear single-frame mapped keys
         Keyboard.clear();
 
+        // NOTE: The following code, MUST be at the end of the render cycle:
         // Swap buffers and poll events
-        glfwSwapBuffers(this.windowHandle);
+        glfwSwapBuffers(windowHandle);
 
-        if (!isWindowFocused() && this.windowSettings.isIdleThrottle()) {
+        if (!isWindowFocused() && windowSettings.isIdleThrottle()) {
             // Wait for direct events if the window is not focused to reduce unnecessary CPU usage
-            glfwWaitEventsTimeout(1); // Argument is in seconds
+            glfwWaitEventsTimeout(.5); // Argument is in seconds
         } else {
             glfwPollEvents();
         }

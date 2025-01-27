@@ -3,18 +3,20 @@
  * Copyright (c) 2020
  */
 // Pixel Version:
+group = "io.github.joafalves"
 version = System.properties["PIXEL_RELEASE"] ?: "DEV-${getGitCommitHash()}"
 
 ext {
     dependencyMap = [
-            lwjgl  : "3.3.5",
-            lombok : "1.18.34",
-            junit  : "5.11.3",
+            lwjgl  : "3.3.6",
+            lombok : "1.18.36",
+            junit  : "5.11.4",
             mockito: "4.11.0"
     ]
 }
 
 println("Java Version: ${JavaVersion.current()}")
+println("Project Group: ${group}")
 println("Project Version: ${version}")
 println("Android Home: ${System.getenv("ANDROID_HOME")}")
 
@@ -151,7 +153,7 @@ subprojects { project ->
                         classifier = "javadoc"
                     }
 
-                    groupId = "io.github.joafalves"
+                    groupId = rootProject.group
                     artifactId = project.name
                     version = rootProject.version
 

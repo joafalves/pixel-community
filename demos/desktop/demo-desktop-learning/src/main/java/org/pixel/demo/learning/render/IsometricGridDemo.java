@@ -125,11 +125,14 @@ public class IsometricGridDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        var settings = new WindowSettings(800, 600);
+        var settings = new WindowSettings(1280, 720);
+        settings.setDebugMode(true);
         settings.setWindowResizable(true);
         settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setBackgroundColor(Color.BLACK);
+        settings.setWindowWidth(1920);
+        settings.setWindowHeight(1080);
         settings.setTitle("Isometric Grid Demo - Drag mouse to move grid");
 
         var window = new IsometricGridDemo(settings);

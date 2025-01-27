@@ -19,18 +19,16 @@ public abstract class DemoGame extends Game {
     protected final static Logger log = LoggerFactory.getLogger(DemoGame.class);
 
     protected final Camera2D gameCamera;
-    protected final FpsCounter fpsCounter;
 
     public DemoGame(WindowSettings settings) {
         super(settings);
 
         gameCamera = new Camera2D(this);
-        fpsCounter = new FpsCounter();
     }
 
     @Override
     public void update(DeltaTime delta) {
-        fpsCounter.update(delta);
+        log.debug("Instant FPS: {} - Smoothed FPS: {}", getFps(), getSmoothedFps());
 
         if (Keyboard.isKeyPressed(KeyboardKey.ESCAPE)) {
             dispose();

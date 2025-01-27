@@ -107,7 +107,7 @@ public class Text extends GameObject {
         var totalHeight = (fontSize + verticalSpacing) * lines.length;
         var lineMaxWidth = 0;
         for (String line : lines) {
-            var lineWidth = font.computeTextWidth(line, fontSize);
+            var lineWidth = font.measure(line, fontSize);
             if (lineWidth > lineMaxWidth) {
                 lineMaxWidth = lineWidth;
             }

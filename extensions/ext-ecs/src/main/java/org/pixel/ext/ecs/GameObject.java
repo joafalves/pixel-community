@@ -17,6 +17,13 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
 
     /**
      * Constructor.
+     */
+    public GameObject() {
+        this(GameObject.class.getSimpleName());
+    }
+
+    /**
+     * Constructor.
      *
      * @param name The name of the game object.
      */
@@ -27,8 +34,21 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
         this.enabled = true;
     }
 
+    /**
+     * Determines whether the update function shall be executed this frame.
+     * @param delta The time since the last update.
+     * @return True if it can and False if it cannot.
+     */
+    protected boolean canUpdate(DeltaTime delta) {
+        return true;
+    }
+
     @Override
     public void update(DeltaTime delta) {
+        if (!canUpdate(delta)) {
+            return;
+        }
+
         if (components != null && !components.isEmpty()) {
             for (Iterator<GameComponent> iterator = components.iterator(); iterator.hasNext();) {
                 var component = iterator.next();
@@ -62,8 +82,21 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
         }
     }
 
+    /**
+     * Determines whether the draw function shall be executed this frame.
+     * @param delta The time since the last update.
+     * @return True if it can and False if it cannot.
+     */
+    protected boolean canDraw(DeltaTime delta) {
+        return true;
+    }
+
     @Override
     public void draw(DeltaTime delta, SpriteBatch spriteBatch) {
+        if (!canDraw(delta)) {
+            return;
+        }
+
         if (components != null) {
             for (GameComponent component : components) {
                 if (component.isEnabled()) {

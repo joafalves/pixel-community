@@ -11,7 +11,7 @@ public enum State {
     DISPOSING(7),
     DISPOSED(8);
 
-    private int value;
+    private final int value;
 
     State(int value) {
         this.value = value;

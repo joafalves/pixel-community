@@ -230,6 +230,36 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
     }
 
     /**
+     * Get the top-most parent of this game object.
+     *
+     * @return The top-most parent of this game object (can be itself).
+     */
+    public GameObjectContainer getTopMostParent() {
+        GameObjectContainer currentParent = this.parent;
+        while (currentParent != null) {
+            if (currentParent.getParent() == null) {
+                return currentParent; // Top-most parent
+            }
+            currentParent = currentParent.getParent();
+        }
+        return this; // If no parent is found, return the current object itself
+    }
+
+    /**
+     * Get the associated game scene (if available).
+     *
+     * @return The associated game scene if the current instance is attached to one.
+     */
+    public BaseGameScene getGameScene() {
+        var parent = getTopMostParent();
+        if (parent instanceof BaseGameScene) {
+            return (BaseGameScene) parent;
+        }
+
+        return null;
+    }
+
+    /**
      * Get the parent of this game object.
      *
      * @return The parent of this game object.
@@ -277,7 +307,7 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
      *
      * @return The attribute map of this game object.
      */
-    public DataHashMap getAttributeMap() {
+    public DataHashMap getData() {
         return dataHashMap;
     }
 

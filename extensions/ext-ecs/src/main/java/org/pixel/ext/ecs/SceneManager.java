@@ -6,7 +6,7 @@ import org.pixel.commons.lifecycle.Drawable;
 import org.pixel.commons.lifecycle.Updatable;
 
 public class SceneManager implements Updatable, Drawable, Disposable {
-    private GameScene activeScene;
+    private BaseGameScene activeScene;
 
     /**
      * Constructor
@@ -20,7 +20,7 @@ public class SceneManager implements Updatable, Drawable, Disposable {
      *
      * @param activeScene The initial active scene.
      */
-    public SceneManager(GameScene activeScene) {
+    public SceneManager(BaseGameScene activeScene) {
         this.setActiveScene(activeScene);
     }
 
@@ -29,7 +29,7 @@ public class SceneManager implements Updatable, Drawable, Disposable {
      *
      * @param scene The scene to set as active.
      */
-    public void setActiveScene(GameScene scene) {
+    public void setActiveScene(BaseGameScene scene) {
         if (activeScene != null) {
             activeScene.dispose();
         }
@@ -43,8 +43,8 @@ public class SceneManager implements Updatable, Drawable, Disposable {
      * @param scene The scene to set as active.
      * @return The old active scene or null if no scene was active.
      */
-    public GameScene swapScene(GameScene scene) {
-        GameScene oldScene = activeScene;
+    public BaseGameScene swapScene(BaseGameScene scene) {
+        var oldScene = activeScene;
         activeScene = scene;
         return oldScene;
     }
@@ -54,7 +54,7 @@ public class SceneManager implements Updatable, Drawable, Disposable {
      *
      * @return The active scene or null if no scene is active.
      */
-    public GameScene getActiveScene() {
+    public BaseGameScene getActiveScene() {
         return activeScene;
     }
 
@@ -63,8 +63,8 @@ public class SceneManager implements Updatable, Drawable, Disposable {
      *
      * @return The detached game scene.
      */
-    public GameScene dettachGameScene() {
-        GameScene scene = activeScene;
+    public BaseGameScene dettachGameScene() {
+        BaseGameScene scene = activeScene;
         activeScene = null;
         return scene;
     }
@@ -75,7 +75,6 @@ public class SceneManager implements Updatable, Drawable, Disposable {
             activeScene.update(delta);
         }
     }
-
 
     @Override
     public void draw(DeltaTime delta) {
@@ -90,5 +89,4 @@ public class SceneManager implements Updatable, Drawable, Disposable {
             activeScene.dispose();
         }
     }
-
 }

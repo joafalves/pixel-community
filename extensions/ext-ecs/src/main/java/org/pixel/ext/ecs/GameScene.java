@@ -1,16 +1,13 @@
 package org.pixel.ext.ecs;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.lifecycle.Drawable;
-import org.pixel.commons.lifecycle.Loadable;
-import org.pixel.commons.lifecycle.Updatable;
 import org.pixel.core.Camera2D;
 import org.pixel.graphics.render.SpriteBatch;
 
-public class GameScene extends GameObjectContainer implements Loadable, Updatable, Drawable {
+public class GameScene extends BaseGameScene {
 
-    private SpriteBatch spriteBatch;
-    private Camera2D gameCamera;
+    protected SpriteBatch spriteBatch;
+    protected Camera2D gameCamera;
 
     /**
      * Constructor.
@@ -31,36 +28,13 @@ public class GameScene extends GameObjectContainer implements Loadable, Updatabl
     }
 
     @Override
-    public void update(DeltaTime delta) {
-        var children = getChildren();
-        // do not replace with for-each (can result in concurrent modification exception)
-        for (int i = 0; i < children.size(); i++) {
-            if (children.get(i).isEnabled()) {
-                children.get(i).update(delta);
-            }
-        }
-        getChildren().removeIf(GameObjectContainer::isDisposed);
-    }
-
-    @Override
     public void draw(DeltaTime delta) {
-        if (gameCamera == null || spriteBatch == null) {
-            return;
-        }
-
-        spriteBatch.begin(gameCamera.getViewMatrix());
-        for (GameObject child : getChildren()) {
-            if (child.isEnabled()) {
-                child.draw(delta, spriteBatch);
-            }
-        }
-        spriteBatch.end();
+        drawChildren(delta, spriteBatch, gameCamera);
     }
 
     @Override
     public void dispose() {
         super.dispose();
-        spriteBatch.dispose();
     }
 
     /**

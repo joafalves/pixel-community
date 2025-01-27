@@ -81,8 +81,8 @@ public class SpaceShooterGame extends Game {
         gameScene.addChild(bulletContainer);
 
         var playerSprite = new PlayerSprite(texturePack.getFrame("player-ship"));
-        playerSprite.getAttributeMap().put(SpaceShooterAttribute.BULLET_CONTAINER, bulletContainer);
-        playerSprite.getAttributeMap().put(SpaceShooterAttribute.BULLET1_FRAME, texturePack.getFrame("bullet1"));
+        playerSprite.getData().put(SpaceShooterAttribute.BULLET_CONTAINER, bulletContainer);
+        playerSprite.getData().put(SpaceShooterAttribute.BULLET1_FRAME, texturePack.getFrame("bullet1"));
         playerSprite.getTransform().setPosition(getVirtualWidth() / 2.f, getVirtualHeight() / 2.f);
         playerSprite.getTransform().setRotation(-MathHelper.PIo2);
         playerSprite.addComponent(new PlayerInputComponent());

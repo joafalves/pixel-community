@@ -25,6 +25,11 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
     protected Z settings;
     protected State state;
 
+    private float elapsed;
+    private int frameCount;
+    private int instantFps;
+    private float smoothFps;
+
     /**
      * Constructor.
      *
@@ -89,6 +94,19 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
     @Override
     public void update(DeltaTime delta) {
         // empty by design (not abstract to make this optional)
+    }
+
+    public final void updateContainer(DeltaTime delta) {
+        frameCount++;
+
+        elapsed += delta.getElapsed();
+        if (elapsed >= 1) {
+            // FPS calculation:
+            instantFps = (int) (frameCount / elapsed);
+            smoothFps = smoothFps * 0.4f + instantFps * 0.6f;
+            elapsed = 0;
+            frameCount = 0;
+        }
     }
 
     @Override
@@ -196,5 +214,21 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
      */
     public Z getSettings() {
         return settings;
+    }
+
+    /**
+     * Get the current FPS (Instant)
+     * @return The instant FPS
+     */
+    public int getFps() {
+        return this.instantFps;
+    }
+
+    /**
+     * Get the current FPS (Smoothed)
+     * @return The smoothed FPS
+     */
+    public int getSmoothedFps() {
+        return (int) this.smoothFps;
     }
 }

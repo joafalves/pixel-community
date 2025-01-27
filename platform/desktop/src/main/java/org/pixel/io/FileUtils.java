@@ -93,6 +93,7 @@ public class FileUtils {
 
         if (Files.isReadable(path)) {
             try (SeekableByteChannel fc = Files.newByteChannel(path)) {
+                // TODO: While unlikely, what happens if fc.size() > MAX_INT?
                 ByteBuffer buffer = createByteBuffer((int) fc.size());
                 while (fc.read(buffer) != -1) ; // write into our buffer
                 return buffer.array();

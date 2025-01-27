@@ -92,7 +92,8 @@ public class AnimatedSpriteDemo extends DemoGame {
         var settings = new WindowSettings(600, 480);
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
-        settings.setVsync(true);
+        settings.setVsync(false);
+        settings.setTargetFps(60);
         settings.setDebugMode(true);
 
         var window = new AnimatedSpriteDemo(settings);

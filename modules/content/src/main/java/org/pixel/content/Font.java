@@ -133,8 +133,8 @@ public abstract class Font implements Disposable {
      * @param text The text to compute the size of.
      * @return The width of the given text.
      */
-    public int computeTextWidth(String text) {
-        return computeTextWidth(text, fontSize);
+    public int measure(String text) {
+        return measure(text, fontSize);
     }
 
     /**
@@ -144,7 +144,7 @@ public abstract class Font implements Disposable {
      * @param fontSize The font size to use.
      * @return The width of the given text.
      */
-    public int computeTextWidth(String text, float fontSize) {
+    public int measure(String text, float fontSize) {
         int width = 0;
         float scale = fontSize / (float) getFontSize();
         for (char ch : text.toCharArray()) {
@@ -153,7 +153,7 @@ public abstract class Font implements Disposable {
                 continue; // cannot process this char data...
             }
 
-            width += glyph.getXAdvance() * scale + getHorizontalSpacing();
+            width += (int) (glyph.getXAdvance() * scale + getHorizontalSpacing());
         }
 
         return width;

@@ -26,6 +26,7 @@ public class GameSettings {
     private Color backgroundColor;
     private int virtualWidth, virtualHeight;
     private int multisampling;
+    private int targetFps;
     private boolean vsync;
     private boolean debugMode;
     private boolean idleThrottle;
@@ -59,10 +60,11 @@ public class GameSettings {
         this.virtualWidth = virtualWidth;
         this.virtualHeight = virtualHeight;
         this.idleThrottle = true;
-        this.vsync = true;
+        this.vsync = false;
         this.multisampling = 0;
         this.debugMode = false;
         this.autoClear = true;
+        this.targetFps = 0;
         this.backgroundColor = Color.CORNFLOWER_BLUE;
     }
 

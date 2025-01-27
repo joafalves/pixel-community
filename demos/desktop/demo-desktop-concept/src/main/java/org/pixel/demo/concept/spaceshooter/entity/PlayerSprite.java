@@ -41,14 +41,14 @@ public class PlayerSprite extends SpaceShipSprite {
         var bulletRight = createBullet(getTransform().getPosition().getX() + 12, getTransform().getPosition().getY());
         var bulletLeft = createBullet(getTransform().getPosition().getX() - 12, getTransform().getPosition().getY());
 
-        var container = (GameObject) getAttributeMap().get(SpaceShooterAttribute.BULLET_CONTAINER);
+        var container = (GameObject) getData().get(SpaceShooterAttribute.BULLET_CONTAINER);
         container.addChild(bulletRight);
         container.addChild(bulletLeft);
     }
 
     private Sprite createBullet(float x, float y) {
-        var bullet = new Sprite("bullet", (TextureFrame) getAttributeMap().get(SpaceShooterAttribute.BULLET1_FRAME));
-        bullet.getAttributeMap().put(SpaceShooterAttribute.BULLET_TYPE, 0); // 0 = player
+        var bullet = new Sprite("bullet", (TextureFrame) getData().get(SpaceShooterAttribute.BULLET1_FRAME));
+        bullet.getData().put(SpaceShooterAttribute.BULLET_TYPE, 0); // 0 = player
         bullet.getTransform().setPosition(x, y);
         bullet.getTransform().setRotation(-MathHelper.PIo2);
         bullet.addComponent(new ConstantVelocityComponent(new Vector2(0, -BULLET_SPEED)));

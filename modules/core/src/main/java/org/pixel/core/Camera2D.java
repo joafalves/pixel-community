@@ -82,7 +82,7 @@ public class Camera2D implements Serializable {
         this.height = height;
         this.zoom = zoom;
         this.dirty = true;
-        this.origin = new Vector2(0.5f);
+        this.origin = new Vector2(0.f);
     }
 
     /**

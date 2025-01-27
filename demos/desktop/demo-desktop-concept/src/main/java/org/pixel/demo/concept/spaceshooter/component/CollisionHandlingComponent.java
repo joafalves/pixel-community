@@ -48,7 +48,7 @@ public class CollisionHandlingComponent extends GameComponent {
                 return;
             }
 
-            var type = bullet.getAttributeMap().getInteger(SpaceShooterAttribute.BULLET_TYPE);
+            var type = bullet.getData().getInteger(SpaceShooterAttribute.BULLET_TYPE);
             if (type == 0) { // player bullet
                 var collisionTarget = collidesWithEnemy(bullet);
                 if (collisionTarget != null) {
