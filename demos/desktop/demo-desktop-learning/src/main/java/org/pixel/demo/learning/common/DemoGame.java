@@ -30,7 +30,9 @@ public abstract class DemoGame extends Game {
 
     @Override
     public void update(DeltaTime delta) {
-        log.debug("Instant FPS: {} - Smoothed FPS: {}", getFps(), getSmoothedFps());
+        if (settings.isDebugMode()) {
+            log.debug("Instant FPS: {} - Smoothed FPS: {}", getFps(), getSmoothedFps());
+        }
 
         if (Keyboard.isKeyPressed(KeyboardKey.ESCAPE)) {
             dispose();

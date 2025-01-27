@@ -17,16 +17,14 @@ public class DataSerializer {
      * @return True if executed successfully or false otherwise.
      */
     public static boolean write(Object instance, String path) {
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(path);
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+        try (FileOutputStream fileOutputStream = new FileOutputStream(path);
+             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream)) {
+
             objectOutputStream.writeObject(instance);
-            objectOutputStream.flush();
-            objectOutputStream.close();
             return true;
 
         } catch (IOException e) {
-            log.error("Exception caught!", e);
+            log.error("Failed to write object to file: {}", path, e);
         }
         return false;
     }
@@ -40,16 +38,20 @@ public class DataSerializer {
      * @return An instance of the given class type or null if unable to deserialize.
      */
     public static <T> T read(String path, Class<T> type) {
-        try {
-            FileInputStream fileInputStream = new FileInputStream(path);
-            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-            Object deserializedInstance = objectInputStream.readObject();
-            T instance = (T) deserializedInstance;
-            objectInputStream.close();
-            return instance;
+        try (FileInputStream fileInputStream = new FileInputStream(path);
+             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream)) {
 
-        } catch (ClassNotFoundException | IOException e) {
-            log.error("Exception caught!", e);
+            Object deserializedInstance = objectInputStream.readObject();
+
+            if (type.isInstance(deserializedInstance)) {
+                return type.cast(deserializedInstance);
+            } else {
+                log.warn("Deserialized object is not of the expected type: {}", type.getName());
+            }
+        } catch (ClassNotFoundException e) {
+            log.error("Failed to deserialize object. Class not found.", e);
+        } catch (IOException e) {
+            log.error("I/O error occurred while reading the file: {}", path, e);
         }
         return null;
     }

@@ -42,6 +42,7 @@ public class SerializationDemo extends DemoGame {
 
     public static void main(String[] args) {
         var settings = new WindowSettings(300, 300);
+        settings.setDebugMode(false);
         settings.setVsync(true);
 
         var window = new SerializationDemo(settings);

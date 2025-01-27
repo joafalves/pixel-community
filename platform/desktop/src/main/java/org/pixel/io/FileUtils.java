@@ -10,10 +10,7 @@ import org.pixel.commons.data.ImageData;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.channels.SeekableByteChannel;
@@ -74,33 +71,40 @@ public class FileUtils {
      */
     public static byte[] loadFile(String filepath) {
         Path path = Paths.get(filepath);
+
+        // Handle relative paths
         if (!path.isAbsolute()) {
-            InputStream in = org.pixel.commons.util.FileUtils.class.getClassLoader().getResourceAsStream(filepath);
-            if (in == null) {
-                log.warn("Unable to load local resource file '{}'.", filepath);
-                return null;
-            }
-
-            try {
+            try (InputStream in = org.pixel.commons.util.FileUtils.class.getClassLoader().getResourceAsStream(filepath)) {
+                if (in == null) {
+                    log.warn("Unable to load local resource file '{}'.", filepath);
+                    return null;
+                }
                 return in.readAllBytes();
-
             } catch (IOException e) {
                 log.error("Exception caught while loading relative path resource!", e);
+                return null;
             }
-
-            return null;
         }
 
+        // Handle absolute paths
         if (Files.isReadable(path)) {
-            try (SeekableByteChannel fc = Files.newByteChannel(path)) {
-                // TODO: While unlikely, what happens if fc.size() > MAX_INT?
-                ByteBuffer buffer = createByteBuffer((int) fc.size());
-                while (fc.read(buffer) != -1) ; // write into our buffer
-                return buffer.array();
+            try (SeekableByteChannel channel = Files.newByteChannel(path);
+                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+
+                ByteBuffer buffer = ByteBuffer.allocate(8192); // 8KB buffer
+                while (channel.read(buffer) > 0) {
+                    buffer.flip(); // Switch buffer from write to read mode
+                    outputStream.write(buffer.array(), 0, buffer.remaining());
+                    buffer.clear(); // Clear buffer for the next read
+                }
+
+                return outputStream.toByteArray();
 
             } catch (IOException e) {
-                log.error("Exception caught!", e);
+                log.error("Exception caught while reading file '{}': {}", filepath, e.getMessage(), e);
             }
+        } else {
+            log.warn("File '{}' is not readable or does not exist.", filepath);
         }
 
         return null;

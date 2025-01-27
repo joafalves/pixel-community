@@ -248,41 +248,26 @@ public class NvgRenderEngine extends RenderEngine2D {
     //region helper methods
 
     private int convert(Solidity solidity) {
-        switch (solidity) {
-            case HOLE:
-                return NVG_HOLE;
-
-            default:
-            case SOLID:
-                return NVG_SOLID;
-
-        }
+        return switch (solidity) {
+            case HOLE -> NVG_HOLE;
+            default -> NVG_SOLID;
+        };
     }
 
     private int convert(HorizontalAlignment alignment) {
-        switch (alignment) {
-            case LEFT:
-                return NVG_ALIGN_LEFT;
-            case CENTER:
-                return NVG_ALIGN_CENTER;
-            case RIGHT:
-                return NVG_ALIGN_RIGHT;
-        }
-
-        return 0;
+        return switch (alignment) {
+            case LEFT -> NVG_ALIGN_LEFT;
+            case CENTER -> NVG_ALIGN_CENTER;
+            case RIGHT -> NVG_ALIGN_RIGHT;
+        };
     }
 
     private int convert(VerticalAlignment alignment) {
-        switch (alignment) {
-            case BOTTOM:
-                return NVG_ALIGN_BOTTOM;
-            case MIDDLE:
-                return NVG_ALIGN_MIDDLE;
-            case TOP:
-                return NVG_ALIGN_TOP;
-        }
-
-        return 0;
+        return switch (alignment) {
+            case BOTTOM -> NVG_ALIGN_BOTTOM;
+            case MIDDLE -> NVG_ALIGN_MIDDLE;
+            case TOP -> NVG_ALIGN_TOP;
+        };
     }
 
     private NVGColor set(Color color, NVGColor out) {
