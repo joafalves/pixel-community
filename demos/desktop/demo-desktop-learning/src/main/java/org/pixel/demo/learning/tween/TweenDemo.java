@@ -7,6 +7,7 @@ import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
+import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.ext.tween.Tween;
 import org.pixel.ext.tween.TweenEasingMode;
 import org.pixel.ext.tween.TweenLoopMode;
@@ -16,13 +17,12 @@ import org.pixel.core.Game;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Vector2;
 
-public class TweenDemo extends Game {
+public class TweenDemo extends DemoGame {
 
     private final Logger log = LoggerFactory.getLogger(TweenDemo.class);
 
     private SpriteBatch spriteBatch;
     private ContentManager contentManager;
-    private Camera2D camera;
 
     private Vector2 spritePositionA;
     private Vector2 spritePositionB;
@@ -43,7 +43,6 @@ public class TweenDemo extends Game {
     public void load() {
         spriteBatch = ServiceProvider.create(SpriteBatch.class);
         contentManager = ServiceProvider.create(ContentManager.class);
-        camera = new Camera2D(this);
 
         spriteTexture = contentManager.loadTexture("images/earth-48x48.png");
 
@@ -75,7 +74,7 @@ public class TweenDemo extends Game {
 
     @Override
     public void draw(DeltaTime delta) {
-        spriteBatch.begin(camera.getViewMatrix());
+        spriteBatch.begin(gameCamera.getViewMatrix());
         spriteBatch.draw(spriteTexture, spritePositionA, Color.WHITE, Vector2.HALF, 3f);
         spriteBatch.draw(spriteTexture, spritePositionB, Color.WHITE, Vector2.HALF, 3f);
         spriteBatch.end();

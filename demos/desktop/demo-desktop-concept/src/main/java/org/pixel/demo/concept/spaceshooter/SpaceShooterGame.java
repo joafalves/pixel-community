@@ -33,6 +33,7 @@ import org.pixel.math.Vector2;
 
 import static org.pixel.demo.concept.spaceshooter.SpaceShooterEvents.COLLISION;
 
+@Deprecated()
 public class SpaceShooterGame extends Game {
 
     private FpsCounter fpsCounter;
@@ -66,6 +67,7 @@ public class SpaceShooterGame extends Game {
 
         // game scene
         gameScene = new GameScene("MainScene", gameCamera, spriteBatch);
+        gameScene.getData().put(eventManager);
 
         // instances
         backgroundTexture = new BackgroundTexture();

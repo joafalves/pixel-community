@@ -24,9 +24,6 @@ public class PlayerInputComponent extends GameComponent {
 
     private float shootElapsed = 0f;
 
-    @Auto
-    private EventManager eventManager;
-
     @Override
     public void update(DeltaTime delta) {
         handleMovement(delta);
@@ -37,7 +34,7 @@ public class PlayerInputComponent extends GameComponent {
         shootElapsed += delta.getElapsedMs();
         if (Keyboard.isKeyDown(KeyboardKey.SPACE) && shootElapsed > SHOOT_DELAY_MS) {
             shootElapsed = 0f;
-            eventManager.publish(SHOOT, null);
+            getGameObject().getTopMostParent().getData().get(EventManager.class).publish(SHOOT, null);
         }
     }
 

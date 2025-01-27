@@ -13,6 +13,7 @@ import org.pixel.core.WindowSettings;
 import org.pixel.core.Game;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
+import org.pixel.math.Vector2;
 
 public abstract class DemoGame extends Game {
 
@@ -24,6 +25,7 @@ public abstract class DemoGame extends Game {
         super(settings);
 
         gameCamera = new Camera2D(this);
+        gameCamera.setOrigin(Vector2.half());
     }
 
     @Override

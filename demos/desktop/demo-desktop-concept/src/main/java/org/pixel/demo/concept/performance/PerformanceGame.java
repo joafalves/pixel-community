@@ -66,6 +66,7 @@ public class PerformanceGame extends Game {
                     new ConstantVelocityBoundComponent(velocity, screenBoundary));
             sprite.addComponent(
                     new ConstantRotationComponent(MathHelper.random(-5f, 5f)));
+            sprite.setPivot(Vector2.half());
 
             gameScene.addChild(sprite);
         }

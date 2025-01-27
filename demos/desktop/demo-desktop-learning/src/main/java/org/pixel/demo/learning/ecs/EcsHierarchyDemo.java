@@ -9,6 +9,7 @@ import org.pixel.ext.ecs.GameScene;
 import org.pixel.ext.ecs.Sprite;
 import org.pixel.core.WindowSettings;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.math.Vector2;
 
 public class EcsHierarchyDemo extends DemoGame {
 
@@ -27,14 +28,17 @@ public class EcsHierarchyDemo extends DemoGame {
         contentManager = ServiceProvider.create(ContentManager.class);
 
         var parent = new Sprite("parent", contentManager.loadTexture("images/earth-48x48.png"));
+        parent.setPivot(Vector2.half());
         parent.getTransform().setScale(3f);
         parent.addComponent(new RotateComponent());
 
         var child = new Sprite("child", contentManager.loadTexture("images/earth-48x48.png"));
+        child.setPivot(Vector2.half());
         child.getTransform().setPosition(140, 0);
         child.getTransform().setScale(0.5f);
 
         var subChild = new Sprite("child", contentManager.loadTexture("images/earth-48x48.png"));
+        subChild.setPivot(Vector2.half());
         subChild.getTransform().setPosition(80, 0);
         subChild.getTransform().setScale(0.5f);
 

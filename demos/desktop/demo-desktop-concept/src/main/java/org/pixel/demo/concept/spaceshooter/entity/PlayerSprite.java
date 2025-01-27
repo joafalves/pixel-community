@@ -5,7 +5,6 @@
 
 package org.pixel.demo.concept.spaceshooter.entity;
 
-import org.pixel.blueprint.annotation.Auto;
 import org.pixel.blueprint.annotation.AfterAssembly;
 import org.pixel.commons.event.EventManager;
 import org.pixel.content.TextureFrame;
@@ -24,9 +23,6 @@ public class PlayerSprite extends SpaceShipSprite {
     public static final String IS_MOVING_FORWARD_ATTR = "isMovingForward";
 
     private static final float BULLET_SPEED = 350f;
-
-    @Auto
-    private EventManager eventManager;
 
     public PlayerSprite(TextureFrame textureFrame) {
         super("Player", textureFrame, 10);
@@ -58,7 +54,7 @@ public class PlayerSprite extends SpaceShipSprite {
     }
 
     private void subscribeEvents() {
-        eventManager.subscribe(SHOOT, $ -> shoot());
+        getTopMostParent().getData().get(EventManager.class).subscribe(SHOOT, $ -> shoot());
     }
 
 }

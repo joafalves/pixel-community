@@ -46,7 +46,7 @@ public class Sprite extends GameObject {
 
         this.texture = texture;
         this.textureSource = textureSource;
-        this.pivot = Vector2.half();
+        this.pivot = new Vector2(0, 0);
         this.overlayColor = new Color(Color.WHITE);
         this.sortingDepth = 0;
     }
