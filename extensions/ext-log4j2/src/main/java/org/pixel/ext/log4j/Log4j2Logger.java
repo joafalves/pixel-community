@@ -1,10 +1,15 @@
 package org.pixel.ext.log4j;
 
+import org.apache.logging.log4j.message.MessageFormatMessageFactory;
 import org.pixel.commons.logger.Logger;
 
 public class Log4j2Logger extends Logger {
 
+    private final static org.apache.logging.log4j.message.MessageFormatMessageFactory factory
+            = new MessageFormatMessageFactory();
+
     private final org.apache.logging.log4j.Logger logger;
+
 
     /**
      * Constructor.
@@ -12,7 +17,7 @@ public class Log4j2Logger extends Logger {
      * @param classRef The class reference.
      */
     public Log4j2Logger(Class<?> classRef) {
-        this.logger = org.apache.logging.log4j.LogManager.getLogger(classRef);
+        this.logger = org.apache.logging.log4j.LogManager.getLogger(classRef, factory);
     }
 
     /**
@@ -21,7 +26,7 @@ public class Log4j2Logger extends Logger {
      * @param context The logger context.
      */
     public Log4j2Logger(String context) {
-        this.logger = org.apache.logging.log4j.LogManager.getLogger(context);
+        this.logger = org.apache.logging.log4j.LogManager.getLogger(context, factory);
     }
 
     @Override

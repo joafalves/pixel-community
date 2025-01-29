@@ -44,7 +44,7 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
 
     @Override
     protected boolean initGraphicsDevice() {
-        log.debug("Initializing '{}' graphics device.", this.settings.getGraphicsBackend());
+        log.debug("Initializing {0} graphics device.", this.settings.getGraphicsBackend());
 
         switch (this.settings.getGraphicsBackend()) {
             case OpenGL:

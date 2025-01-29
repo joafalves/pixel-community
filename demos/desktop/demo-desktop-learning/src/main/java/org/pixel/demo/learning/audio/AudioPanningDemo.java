@@ -71,7 +71,7 @@ public class AudioPanningDemo extends AudioDemo {
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
-        settings.setDebugMode(true);
+        settings.setDevMode(true);
 
         var window = new AudioPanningDemo(settings);
         window.start();

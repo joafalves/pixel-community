@@ -90,7 +90,7 @@ public class TextDemo extends DemoGame {
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
-        settings.setDebugMode(false);
+        settings.setDevMode(false);
 
         var window = new TextDemo(settings);
         window.start();

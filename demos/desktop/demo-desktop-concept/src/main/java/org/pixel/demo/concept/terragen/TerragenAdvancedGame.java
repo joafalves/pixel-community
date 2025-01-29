@@ -88,7 +88,7 @@ public class TerragenAdvancedGame extends Game {
         generateTextures();
         final var elapsed = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanoTimestamp);
         final var totalTiles = COLUMNS * ROWS;
-        log.info("Noise map initialized in {}ms with seed '{}' (tiles: {}).", elapsed, seed, totalTiles);
+        log.info("Noise map initialized in {0}ms with seed {1} (tiles: {2}).", elapsed, seed, totalTiles);
     }
 
     private void generateColorMap() {
@@ -165,8 +165,8 @@ public class TerragenAdvancedGame extends Game {
 
         log.info("Distribution:");
         distributionMap.forEach((key, count) ->
-                log.info("{} -> {}", key, count));
-        log.info("Elevation (min: {}, max {})", new BigDecimal(min).toPlainString(),
+                log.info("{0} -> {1}", key, count));
+        log.info("Elevation (min: {0}, max: {1})", new BigDecimal(min).toPlainString(),
                 new BigDecimal(max).toPlainString());
 
         assignBufferToTexture(colorData, colorTexture);
@@ -291,7 +291,7 @@ public class TerragenAdvancedGame extends Game {
         settings.setWindowResizable(true);
         settings.setMultisampling(2);
         settings.setVsync(true);
-        settings.setDebugMode(false);
+        settings.setDevMode(false);
         settings.setWindowWidth(SCREEN_WIDTH);
         settings.setWindowHeight(SCREEN_HEIGHT);
         settings.setIdleThrottle(false);

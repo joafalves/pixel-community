@@ -34,7 +34,7 @@ public class SerializationDemo extends DemoGame {
         // hypothetical scenario of loading a save data...
         var gameDataLoad = DataSerializer.read(DATA_PATH, SaveData.class);
         if (gameDataLoad != null) {
-            log.info("Loaded Game Data (Position: {}; Gold: {}).", gameDataLoad.position, gameDataLoad.gold);
+            log.info("Loaded Game Data (Position: {0}; Gold: {1}).", gameDataLoad.position, gameDataLoad.gold);
         } else {
             log.warn("Failed to load Game Data!");
         }
@@ -42,7 +42,7 @@ public class SerializationDemo extends DemoGame {
 
     public static void main(String[] args) {
         var settings = new WindowSettings(300, 300);
-        settings.setDebugMode(false);
+        settings.setDevMode(false);
         settings.setVsync(true);
 
         var window = new SerializationDemo(settings);

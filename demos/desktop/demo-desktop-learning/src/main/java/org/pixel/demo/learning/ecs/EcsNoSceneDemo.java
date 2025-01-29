@@ -6,9 +6,7 @@ import org.pixel.content.ContentManager;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.ext.ecs.GameComponent;
 import org.pixel.ext.ecs.Sprite;
-import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
-import org.pixel.core.Game;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
@@ -73,7 +71,7 @@ public class EcsNoSceneDemo extends DemoGame {
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
-        settings.setDebugMode(false);
+        settings.setDevMode(false);
 
         var window = new EcsNoSceneDemo(settings);
         window.start();

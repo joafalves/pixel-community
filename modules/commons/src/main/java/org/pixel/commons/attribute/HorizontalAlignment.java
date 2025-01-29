@@ -15,18 +15,11 @@ public enum HorizontalAlignment {
      * @return The horizontal alignment instance.
      */
     public static HorizontalAlignment fromString(String value) {
-        switch (value.toLowerCase()) {
-            case "left":
-                return LEFT;
-
-            case "center":
-                return CENTER;
-
-            case "right":
-                return RIGHT;
-
-            default:
-                return null;
-        }
+        return switch (value.toLowerCase()) {
+            case "left" -> LEFT;
+            case "center" -> CENTER;
+            case "right" -> RIGHT;
+            default -> null;
+        };
     }
 }

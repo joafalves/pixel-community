@@ -93,7 +93,7 @@ public class ContentManager implements Disposable {
                 return;
             }
 
-            log.trace("Adding content importer '{}'.", importer.getClass().getSimpleName());
+            log.trace("Adding content importer {0}.", importer.getClass().getSimpleName());
 
             this.importers.put(importerDetails.type(), importer);
         }
@@ -284,13 +284,13 @@ public class ContentManager implements Disposable {
 
         ContentImporter<T> fileImporter = (ContentImporter<T>) this.importers.get(type);
         if (fileImporter == null) {
-            log.warn("Unable to load asset due to unavailable importer for '{}'.", type.getCanonicalName());
+            log.warn("Unable to load asset due to unavailable importer for {0}.", type.getCanonicalName());
             return null;
         }
 
         byte[] resourceData = this.resourceLoader.load(filepath);
         if (resourceData == null) {
-            log.warn("Unable to load asset '{}'; target could not be found.", filepath);
+            log.warn("Unable to load asset {0}; target could not be found.", filepath);
             return null;
         }
 
@@ -299,7 +299,7 @@ public class ContentManager implements Disposable {
                 resourceData = dataPipeline.begin(resourceData).get();
 
             } catch (InterruptedException | ExecutionException e) {
-                log.error("Unable to execute data pipeline on asset '{}'.", filepath, e);
+                log.error("Unable to execute data pipeline on asset {0}.", filepath, e);
                 return null;
             }
         }

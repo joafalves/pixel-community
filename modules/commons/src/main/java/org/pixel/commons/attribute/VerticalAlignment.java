@@ -15,18 +15,11 @@ public enum VerticalAlignment {
      * @return The vertical alignment instance.
      */
     public static VerticalAlignment fromString(String value) {
-        switch (value.toLowerCase()) {
-            case "top":
-                return TOP;
-
-            case "middle":
-                return MIDDLE;
-
-            case "bottom":
-                return BOTTOM;
-
-            default:
-                return null;
-        }
+        return switch (value.toLowerCase()) {
+            case "top" -> TOP;
+            case "middle" -> MIDDLE;
+            case "bottom" -> BOTTOM;
+            default -> null;
+        };
     }
 }

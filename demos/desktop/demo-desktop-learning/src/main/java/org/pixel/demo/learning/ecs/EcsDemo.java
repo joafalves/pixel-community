@@ -70,7 +70,7 @@ public class EcsDemo extends Game {
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
-        settings.setDebugMode(false);
+        settings.setDevMode(false);
 
         var window = new EcsDemo(settings);
         window.start();

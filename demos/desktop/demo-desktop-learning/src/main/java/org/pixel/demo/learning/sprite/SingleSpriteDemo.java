@@ -70,7 +70,7 @@ public class SingleSpriteDemo extends DemoGame {
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
-        settings.setDebugMode(true);
+        settings.setDevMode(true);
 
         var window = new SingleSpriteDemo(settings);
         window.start();

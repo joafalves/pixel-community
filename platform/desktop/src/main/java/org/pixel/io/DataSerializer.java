@@ -24,7 +24,7 @@ public class DataSerializer {
             return true;
 
         } catch (IOException e) {
-            log.error("Failed to write object to file: {}", path, e);
+            log.error("Failed to write object to file: {0}.", path, e);
         }
         return false;
     }
@@ -46,12 +46,12 @@ public class DataSerializer {
             if (type.isInstance(deserializedInstance)) {
                 return type.cast(deserializedInstance);
             } else {
-                log.warn("Deserialized object is not of the expected type: {}", type.getName());
+                log.warn("Deserialized object is not of the expected type: {0}.", type.getName());
             }
         } catch (ClassNotFoundException e) {
             log.error("Failed to deserialize object. Class not found.", e);
         } catch (IOException e) {
-            log.error("I/O error occurred while reading the file: {}", path, e);
+            log.error("I/O error occurred while reading the file: {0}.", path, e);
         }
         return null;
     }

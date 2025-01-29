@@ -14,8 +14,7 @@ import static org.lwjgl.opengl.GL11C.glDrawArrays;
 import static org.lwjgl.opengl.GL11C.glGetIntegerv;
 import static org.lwjgl.opengl.GL13C.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13C.glActiveTexture;
-import static org.lwjgl.opengl.GL15C.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15C.GL_STATIC_DRAW;
+import static org.lwjgl.opengl.GL15C.*;
 import static org.lwjgl.opengl.GL20C.GL_MAX_TEXTURE_IMAGE_UNITS;
 import static org.lwjgl.opengl.GL20C.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20C.glUniform1iv;
@@ -25,6 +24,7 @@ import static org.lwjgl.opengl.GL20C.glUniformMatrix4fv;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
+
 import org.lwjgl.system.MemoryUtil;
 import org.pixel.commons.Color;
 import org.pixel.commons.lifecycle.State;
@@ -50,7 +50,7 @@ public class GLSpriteBatch extends SpriteBatch {
 
     private static final int BUFFER_UNIT_LENGTH = 256; // maximum sprites per batch
     private static final int SPRITE_UNIT_LENGTH = 54; // number of attribute information units per sprite
-                                                      // (uploadBufferData * each inner put)
+    // (uploadBufferData * each inner put)
     private static final int ATTRIBUTE_STRIDE = 36; // attribute stride (bytes) between each vertex info
 
     private static final Matrix4 spriteViewMatrix = new Matrix4();
@@ -102,9 +102,9 @@ public class GLSpriteBatch extends SpriteBatch {
      * @param bufferMaxSize      The maximum number of sprites that can be drawn in
      *                           a single batch.
      * @param shaderTextureCount The number of textures to be used by the shader (if
-     *                           the parameter is set to '0', the
+     *                           the parameter is set to '0' or lower, the
      *                           value will be set based on the device maximum
-     *                           capacity).
+     *                           capacity - recommended).
      */
     public GLSpriteBatch(int bufferMaxSize, int shaderTextureCount) {
         if (bufferMaxSize <= 0) {
@@ -129,8 +129,8 @@ public class GLSpriteBatch extends SpriteBatch {
             this.shaderTextureCount = shaderTextureCount;
         }
 
-        log.trace("Buffer max size (units): '{}'.", this.bufferMaxSize);
-        log.trace("Shader texture count: '{}'.", this.shaderTextureCount);
+        log.trace("Buffer max size (units): {0}.", this.bufferMaxSize);
+        log.trace("Shader texture count: {0}.", this.shaderTextureCount);
     }
 
     @Override
@@ -189,7 +189,7 @@ public class GLSpriteBatch extends SpriteBatch {
 
     @Override
     public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scaleX,
-            float scaleY, float rotation, int depth) {
+                     float scaleY, float rotation, int depth) {
         if (lastDepthLevel >= 0 && depth != lastDepthLevel) {
             hasDifferentDepthLevels = true;
         }
@@ -218,7 +218,7 @@ public class GLSpriteBatch extends SpriteBatch {
 
     @Override
     public void draw(Texture texture, Rectangle displayArea, Rectangle source, Color color, Vector2 anchor,
-            float rotation, int depth) {
+                     float rotation, int depth) {
         if (lastDepthLevel >= 0 && depth != lastDepthLevel) {
             hasDifferentDepthLevels = true;
         }
@@ -374,7 +374,7 @@ public class GLSpriteBatch extends SpriteBatch {
 
     private void flushBatch(int count) {
         dataBuffer.flip();
-        vbo.uploadData(GL_ARRAY_BUFFER, dataBuffer, GL_STATIC_DRAW);
+        vbo.uploadData(GL_ARRAY_BUFFER, dataBuffer, GL_STREAM_DRAW);
         glDrawArrays(GL_TRIANGLES, 0, 6 * count);
     }
 
@@ -388,7 +388,7 @@ public class GLSpriteBatch extends SpriteBatch {
             });
         }
 
-        // draw the sprite data..
+        // draw the sprite data...
         int count = 0;
         for (int i = 0; i < bufferWriteIndex; ++i) {
             SpriteData spriteData = this.spriteData[i];
@@ -480,7 +480,7 @@ public class GLSpriteBatch extends SpriteBatch {
     }
 
     private void uploadTriangleData(Vector2 v1, Vector2 v2, Vector2 v3, Vector2 t1, Vector2 t2, Vector2 t3, Color color,
-            int textureId) {
+                                    int textureId) {
         this.uploadBufferData(v1.getX(), v1.getY(), t1.getX(), t1.getY(), color, textureId);
         this.uploadBufferData(v2.getX(), v2.getY(), t2.getX(), t2.getY(), color, textureId);
         this.uploadBufferData(v3.getX(), v3.getY(), t3.getX(), t3.getY(), color, textureId);

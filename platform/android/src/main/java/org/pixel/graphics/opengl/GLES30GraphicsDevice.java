@@ -45,7 +45,7 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
                 setClearColor(game.getSettings().getBackgroundColor());
 
                 // Log the OpenGL ES version.
-                log.debug("OpenGL ES Version: '{}'.", GLES30.glGetString(GLES30.GL_VERSION));
+                log.debug("OpenGL ES Version: {0}.", GLES30.glGetString(GLES30.GL_VERSION));
 
                 // load assets here:
                 game.load();
@@ -64,7 +64,7 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
 
             @Override
             public void onSurfaceChanged(javax.microedition.khronos.opengles.GL10 gl, int width, int height) {
-                log.debug("Surface changed: width={}, height={}.", width, height);
+                log.debug("Surface changed: width={0}, height={1}.", width, height);
 
                 // Resize code here. For example, setting the viewport:
                 GLES30.glViewport(0, 0, width, height);

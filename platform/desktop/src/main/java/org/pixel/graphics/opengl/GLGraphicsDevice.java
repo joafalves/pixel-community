@@ -77,7 +77,7 @@ public class GLGraphicsDevice implements GraphicsDevice {
         // TODO: call glViewport when window is resized (sync with window manager)
 
         // Debug-specific initialization
-        if (this.windowSettings.isDebugMode()) {
+        if (this.windowSettings.isGlfwDebugMode()) {
             this.debugLocalCallback = GLUtil.setupDebugMessageCallback(); // must be called after "createCapabilities()"
             Configuration.DISABLE_CHECKS.set(false);
         } else {
@@ -88,10 +88,10 @@ public class GLGraphicsDevice implements GraphicsDevice {
         setClearColor(windowSettings.getBackgroundColor());
 
         // Show version information
-        log.debug("OpenGL Vendor: '{}'.", glGetString(GL_VENDOR));
-        log.debug("OpenGL Renderer: '{}'.", glGetString(GL_RENDERER));
-        log.debug("OpenGL Version: '{}'.", glGetString(GL_VERSION));
-        log.debug("LWJGL Version: '{}'.", org.lwjgl.Version.getVersion());
+        log.debug("OpenGL Vendor: {0}.", glGetString(GL_VENDOR));
+        log.debug("OpenGL Renderer: {0}.", glGetString(GL_RENDERER));
+        log.debug("OpenGL Version: {0}.", glGetString(GL_VERSION));
+        log.debug("LWJGL Version: {0}.", org.lwjgl.Version.getVersion());
 
         this.state = State.INITIALIZED;
         return true;

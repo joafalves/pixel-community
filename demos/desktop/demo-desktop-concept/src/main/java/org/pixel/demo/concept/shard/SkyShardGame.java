@@ -42,7 +42,7 @@ public class SkyShardGame extends Game {
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(false);
-        settings.setDebugMode(false);
+        settings.setDevMode(false);
         settings.setWindowWidth(windowWidth);
         settings.setWindowHeight(windowHeight);
 

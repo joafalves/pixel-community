@@ -237,7 +237,7 @@ public class RoadCarGame extends Game {
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
-        settings.setDebugMode(false);
+        settings.setDevMode(false);
         settings.setWindowWidth(width);
         settings.setWindowHeight(height);
 

@@ -83,7 +83,7 @@ public class EcsHierarchyDemo extends DemoGame {
         settings.setMultisampling(2);
         settings.setVsync(false);
         settings.setTargetFps(60);
-        settings.setDebugMode(false);
+        settings.setDevMode(false);
 
         var window = new EcsHierarchyDemo(settings);
         window.start();

@@ -16,6 +16,7 @@ public class WindowSettings extends GameSettings {
 
     private int windowWidth, windowHeight;
     private boolean windowResizable;
+    private boolean glfwDebugMode;
     private WindowMode windowMode;
 
     /**

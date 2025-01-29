@@ -48,7 +48,7 @@ public class AudioDemo extends DemoGame {
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
-        settings.setDebugMode(true);
+        settings.setDevMode(true);
 
         var window = new AudioDemo(settings);
         window.start();

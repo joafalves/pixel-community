@@ -13,11 +13,11 @@ import org.pixel.core.Game;
 public class FpsCounter {
 
     private static final Logger log = LoggerFactory.getLogger(FpsCounter.class);
+    private static final float logPeriodSec = 3f;
 
     private final Game window;
     private final String suffix;
 
-    private final float logPeriodSec = 5;
     private float logPeriodElapsed = 0;
 
     private float elapsed = 0;

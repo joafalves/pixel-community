@@ -37,7 +37,7 @@ public class FileUtils {
     public static ImageData loadImage(String filepath) {
         byte[] data = loadFile(filepath);
         if (data == null) {
-            log.warn("Unable to load image due to IO failure (cannot read file from '{}').", filepath);
+            log.warn("Unable to load image due to IO failure (cannot read file from {0}).", filepath);
             return null;
         }
 
@@ -76,7 +76,7 @@ public class FileUtils {
         if (!path.isAbsolute()) {
             try (InputStream in = org.pixel.commons.util.FileUtils.class.getClassLoader().getResourceAsStream(filepath)) {
                 if (in == null) {
-                    log.warn("Unable to load local resource file '{}'.", filepath);
+                    log.warn("Unable to load local resource file {0}.", filepath);
                     return null;
                 }
                 return in.readAllBytes();
@@ -101,10 +101,10 @@ public class FileUtils {
                 return outputStream.toByteArray();
 
             } catch (IOException e) {
-                log.error("Exception caught while reading file '{}': {}", filepath, e.getMessage(), e);
+                log.error("Exception caught while reading file {0}: {1}", filepath, e.getMessage(), e);
             }
         } else {
-            log.warn("File '{}' is not readable or does not exist.", filepath);
+            log.warn("File {0} is not readable or does not exist.", filepath);
         }
 
         return null;

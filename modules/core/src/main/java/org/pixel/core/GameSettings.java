@@ -28,7 +28,7 @@ public class GameSettings {
     private int multisampling;
     private int targetFps;
     private boolean vsync;
-    private boolean debugMode;
+    private boolean devMode;
     private boolean idleThrottle;
     private boolean autoClear;
     private String[] blueprintPackages;
@@ -62,7 +62,7 @@ public class GameSettings {
         this.idleThrottle = true;
         this.vsync = false;
         this.multisampling = 0;
-        this.debugMode = false;
+        this.devMode = false;
         this.autoClear = true;
         this.targetFps = 0;
         this.backgroundColor = Color.CORNFLOWER_BLUE;

@@ -87,7 +87,7 @@ public class TerragenTextureGame extends Game {
         generateTextures();
         final var elapsed = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanoTimestamp);
         final var totalTiles = COLUMNS * ROWS;
-        log.info("Noise map initialized in {}ms with seed '{}' (tiles: {}).", elapsed, seed, totalTiles);
+        log.info("Noise map initialized in {0}ms with seed {1} (tiles: {2}).", elapsed, seed, totalTiles);
     }
 
     private double noise(double x, double y) {
@@ -242,7 +242,7 @@ public class TerragenTextureGame extends Game {
         settings.setWindowResizable(true);
         settings.setMultisampling(2);
         settings.setVsync(true);
-        settings.setDebugMode(false);
+        settings.setDevMode(false);
         settings.setWindowWidth(SCREEN_WIDTH);
         settings.setWindowHeight(SCREEN_HEIGHT);
         settings.setIdleThrottle(false);

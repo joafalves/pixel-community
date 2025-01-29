@@ -162,7 +162,7 @@ public class SpaceShooterGame extends Game {
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
-        settings.setDebugMode(false);
+        settings.setDevMode(false);
         settings.setWindowWidth(windowWidth);
         settings.setWindowHeight(windowHeight);
         settings.setBlueprintPackages(new String[]{"org.pixel.demo.concept"});

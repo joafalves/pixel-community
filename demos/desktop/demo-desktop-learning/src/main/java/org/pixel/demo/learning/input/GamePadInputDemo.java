@@ -96,7 +96,7 @@ public class GamePadInputDemo extends DemoGame {
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
-        settings.setDebugMode(true);
+        settings.setDevMode(true);
 
         var window = new GamePadInputDemo(settings);
         window.start();

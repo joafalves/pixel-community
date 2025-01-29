@@ -6,6 +6,7 @@
 package org.pixel.demo.learning.common;
 
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.Timer;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.core.Camera2D;
@@ -21,6 +22,8 @@ public abstract class DemoGame extends Game {
 
     protected final Camera2D gameCamera;
 
+    private final Timer debugTimer = new Timer(1000);
+
     public DemoGame(WindowSettings settings) {
         super(settings);
 
@@ -30,8 +33,8 @@ public abstract class DemoGame extends Game {
 
     @Override
     public void update(DeltaTime delta) {
-        if (settings.isDebugMode()) {
-            log.debug("Instant FPS: {} - Smoothed FPS: {}", getFps(), getSmoothedFps());
+        if (settings.isDevMode() && debugTimer.check(delta)) {
+            log.debug("Instant FPS: {0} - Smoothed FPS: {1}", getFps(), getSmoothedFps());
         }
 
         if (Keyboard.isKeyPressed(KeyboardKey.ESCAPE)) {

@@ -6,7 +6,6 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 import java.nio.IntBuffer;
-import java.util.concurrent.locks.LockSupport;
 
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
@@ -233,12 +232,12 @@ public class GLFWWindowManager extends DesktopWindowManager {
         for (int i = 0; i < iconPaths.length; i++) {
             ImageData imgData = FileUtils.loadImage(iconPaths[i]);
             if (imgData == null) {
-                log.warn("Unable to set window icon, cannot load image from given file path '{}'.", iconPaths[i]);
+                log.warn("Unable to set window icon, cannot load image from given file path {0}.", iconPaths[i]);
                 return;
             }
 
             GLFWImage glfwImage = GLFWImage.malloc();
-            glfwImage.set(imgData.getWidth(), imgData.getHeight(), imgData.getData());
+            glfwImage.set(imgData.width(), imgData.height(), imgData.data());
             imageDataArray[i] = glfwImage;
         }
 
@@ -296,7 +295,7 @@ public class GLFWWindowManager extends DesktopWindowManager {
             glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
             glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GL_TRUE);
 
-            if (this.windowSettings.isDebugMode()) {
+            if (this.windowSettings.isGlfwDebugMode()) {
                 glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
             }
         }
@@ -386,7 +385,7 @@ public class GLFWWindowManager extends DesktopWindowManager {
 
         // Window focus callback:
         glfwSetWindowFocusCallback(windowHandle, ((window, focused) -> {
-            log.debug("Render window focus changed: '{}'.", focused);
+            log.debug("Render window focus changed: {0}.", focused);
             this.isWindowFocused = focused;
         }));
 

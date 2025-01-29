@@ -2,12 +2,10 @@ package org.pixel.demo.imgui;
 
 import imgui.ImGui;
 import imgui.ImGuiStyle;
-import imgui.ImVec4;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
-import imgui.type.ImString;
 import org.pixel.commons.DeltaTime;
 import org.pixel.core.WindowSettings;
 import org.pixel.core.Game;
@@ -100,7 +98,7 @@ public class ImGuiDemo extends Game {
         settings.setWindowResizable(true);
         settings.setMultisampling(2);
         settings.setVsync(true);
-        settings.setDebugMode(false);
+        settings.setDevMode(false);
         settings.setWindowWidth(width);
         settings.setWindowHeight(height);
 

@@ -42,7 +42,7 @@ public class IsometricGridDemo extends DemoGame {
         dragStartPos = new Vector2();
         highlightedTile = new Vector2(-1, -1); // Initialize with an invalid tile index
 
-        log.info("Drawing {} lines.", (COLUMNS * 2 + 1) * (ROWS * 2 + 1));
+        log.info("Drawing {0} lines.", (COLUMNS * 2 + 1) * (ROWS * 2 + 1));
     }
 
     @Override
@@ -126,7 +126,7 @@ public class IsometricGridDemo extends DemoGame {
 
     public static void main(String[] args) {
         var settings = new WindowSettings(1280, 720);
-        settings.setDebugMode(true);
+        settings.setDevMode(true);
         settings.setWindowResizable(true);
         settings.setMultisampling(2);
         settings.setVsync(true);

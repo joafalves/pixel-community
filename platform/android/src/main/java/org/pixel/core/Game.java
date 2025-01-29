@@ -32,7 +32,7 @@ public abstract class Game
 
     @Override
     protected boolean initGraphicsDevice() {
-        log.debug ("Initializing '{}' graphics device.", this.settings.getGraphicsBackend());
+        log.debug ("Initializing {0} graphics device.", this.settings.getGraphicsBackend());
 
         if (Objects.requireNonNull(this.settings.getGraphicsBackend()) == GraphicsBackend.OpenGL) {
             this.graphicsDevice = new GLES30GraphicsDevice(this, this.androidContext);

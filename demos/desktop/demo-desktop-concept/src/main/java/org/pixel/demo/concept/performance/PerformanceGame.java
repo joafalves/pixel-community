@@ -8,11 +8,13 @@ package org.pixel.demo.concept.performance;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.ServiceProvider;
+import org.pixel.commons.Timer;
 import org.pixel.commons.logger.ConsoleLogger;
 import org.pixel.commons.logger.LogLevel;
+import org.pixel.commons.logger.Logger;
+import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
-import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.demo.concept.performance.component.ConstantVelocityBoundComponent;
 import org.pixel.ext.ecs.GameScene;
 import org.pixel.ext.ecs.Sprite;
@@ -21,20 +23,25 @@ import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
 import org.pixel.core.Game;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.input.keyboard.Keyboard;
+import org.pixel.input.keyboard.KeyboardKey;
 import org.pixel.math.Boundary;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
 
 public class PerformanceGame extends Game {
 
+    private static final Logger log = LoggerFactory.getLogger(PerformanceGame.class);
+
     private static final int SPRITE_COUNT = 5000;
     private static final float SPRITE_MOVEMENT_SPEED = 100f;
     private static final boolean MULTI_TEXTURE = true;
 
     private ContentManager contentManager;
-    private FpsCounter fpsCounter;
     private GameScene gameScene;
     private SpriteBatch spriteBatch;
+
+    private final Timer debugTimer = new Timer(1000);
 
     public PerformanceGame(WindowSettings settings) {
         super(settings);
@@ -42,13 +49,12 @@ public class PerformanceGame extends Game {
 
     @Override
     public void load() {
-        fpsCounter = new FpsCounter(this);
         spriteBatch = ServiceProvider.create(SpriteBatch.class);
         contentManager = ServiceProvider.create(ContentManager.class);
         gameScene = new GameScene("GameScene01", new Camera2D(this, Vector2.zero()), spriteBatch);
 
         var screenBoundary = new Boundary(0, 0, getVirtualWidth(), getVirtualHeight());
-        var textureArray = new Texture[] {
+        var textureArray = new Texture[]{
                 contentManager.loadTexture("images/circle.png"),
                 contentManager.loadTexture("images/triangle.png"),
                 contentManager.loadTexture("images/rounded_square.png"),
@@ -70,12 +76,21 @@ public class PerformanceGame extends Game {
 
             gameScene.addChild(sprite);
         }
+
+        log.info("Drawing {0} sprites.", SPRITE_COUNT);
     }
 
     @Override
     public void update(DeltaTime delta) {
-        fpsCounter.update(delta);
         gameScene.update(delta);
+
+        if (debugTimer.check(delta)) {
+            log.info("FPS: {0} - Smoothed FPS: {1}.", getFps(), getSmoothedFps());
+        }
+
+        if (Keyboard.isKeyPressed(KeyboardKey.ESCAPE)) {
+            dispose();
+        }
     }
 
     @Override

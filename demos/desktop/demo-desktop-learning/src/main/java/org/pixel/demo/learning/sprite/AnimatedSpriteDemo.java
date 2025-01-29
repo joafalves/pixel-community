@@ -56,7 +56,7 @@ public class AnimatedSpriteDemo extends DemoGame {
 
         animDelay += delta.getElapsed();
         if (animDelay > ANIM_DELAY) {
-            log.debug("Animation yield exceeded '{}'.", animDelay);
+            log.debug("Animation yield exceeded {0}.", animDelay);
 
             animDelay = 0;
             animStep++;
@@ -94,7 +94,7 @@ public class AnimatedSpriteDemo extends DemoGame {
         settings.setMultisampling(2);
         settings.setVsync(false);
         settings.setTargetFps(60);
-        settings.setDebugMode(true);
+        settings.setDevMode(true);
 
         var window = new AnimatedSpriteDemo(settings);
         window.start();

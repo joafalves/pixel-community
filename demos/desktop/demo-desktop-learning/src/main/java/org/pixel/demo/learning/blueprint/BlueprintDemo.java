@@ -61,7 +61,7 @@ public class BlueprintDemo extends DemoGame {
         settings.setWindowResizable(false);
         settings.setMultisampling(2);
         settings.setVsync(true);
-        settings.setDebugMode(true);
+        settings.setDevMode(true);
         // Note: Given packages are recursively resolved:
         settings.setBlueprintPackages(new String[]{"org.pixel.demo.learning.blueprint"});
 

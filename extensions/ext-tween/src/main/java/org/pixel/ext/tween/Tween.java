@@ -267,7 +267,7 @@ public class Tween implements Updatable {
             this.start = new float[]{((Vector3) instance).getX(), ((Vector3) instance).getY(),
                     ((Vector3) instance).getZ()};
         } else {
-            log.warn("Unsupported instance type '{}'.", instance.getClass().getName());
+            log.warn("Unsupported instance type {0}.", instance.getClass().getName());
         }
 
         return this;
@@ -301,7 +301,7 @@ public class Tween implements Updatable {
             this.end = new float[]{((Vector3) instance).getX(), ((Vector3) instance).getY(),
                     ((Vector3) instance).getZ()};
         } else {
-            log.warn("Unsupported instance type '{}'.", instance.getClass().getName());
+            log.warn("Unsupported instance type {0}.", instance.getClass().getName());
         }
 
         return this;
@@ -372,7 +372,7 @@ public class Tween implements Updatable {
             System.arraycopy(instant, 0, ((float[]) container), 0, instant.length);
 
         } else {
-            log.warn("Unsupported container type '{}'.", container.getClass().getName());
+            log.warn("Unsupported container type {0}.", container.getClass().getName());
         }
     }
 

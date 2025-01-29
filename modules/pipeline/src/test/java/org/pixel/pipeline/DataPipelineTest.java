@@ -57,7 +57,7 @@ public class DataPipelineTest {
 
         @Override
         public void process(PipelineContext<String> ctx, String data) {
-            log.debug("Received data: '{}'.", data);
+            log.debug("Received data: {0}.", data);
             new Thread(() -> ctx.next(DataPipelineTest.class.getSimpleName())).start();
         }
     }
