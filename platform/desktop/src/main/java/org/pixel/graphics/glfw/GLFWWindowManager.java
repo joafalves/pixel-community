@@ -286,6 +286,8 @@ public class GLFWWindowManager extends DesktopWindowManager {
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the windowHnd will stay hidden after creation
         glfwWindowHint(GLFW_RESIZABLE, this.windowSettings.isWindowResizable() ? GLFW_TRUE : GLFW_FALSE);
         glfwWindowHint(GLFW_SAMPLES, this.windowSettings.getMultisampling());
+        glfwWindowHint(GLFW_SCALE_TO_MONITOR, this.windowSettings.isWindowHighDpi() ? GLFW_TRUE : GLFW_FALSE);
+        glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, this.windowSettings.isWindowHighDpi() ? GLFW_TRUE : GLFW_FALSE);
 
         if (this.windowSettings.getGraphicsBackend() == GraphicsBackend.OpenGL) {
             // OpenGL specific settings
@@ -293,7 +295,6 @@ public class GLFWWindowManager extends DesktopWindowManager {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, OPENGL_VERSION_MINOR);
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
             glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-            glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GL_TRUE);
 
             if (this.windowSettings.isGlfwDebugMode()) {
                 glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);

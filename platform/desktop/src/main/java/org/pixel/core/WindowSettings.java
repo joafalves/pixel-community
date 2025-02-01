@@ -17,6 +17,7 @@ public class WindowSettings extends GameSettings {
     private int windowWidth, windowHeight;
     private boolean windowResizable;
     private boolean glfwDebugMode;
+    private boolean windowHighDpi;
     private WindowMode windowMode;
 
     /**
@@ -42,5 +43,7 @@ public class WindowSettings extends GameSettings {
         this.windowHeight = virtualHeight;
         this.windowResizable = false;
         this.windowMode = WindowMode.WINDOWED;
+        this.windowHighDpi = true;
+        this.glfwDebugMode = false;
     }
 }
