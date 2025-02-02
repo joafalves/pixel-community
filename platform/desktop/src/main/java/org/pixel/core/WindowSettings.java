@@ -16,6 +16,7 @@ public class WindowSettings extends GameSettings {
 
     private int windowWidth, windowHeight;
     private boolean windowResizable;
+    private boolean windowDecorated;
     private boolean glfwDebugMode;
     private boolean windowHighDpi;
     private boolean highPriorityProcess;
@@ -44,6 +45,7 @@ public class WindowSettings extends GameSettings {
         this.windowHeight = virtualHeight;
         this.windowResizable = false;
         this.windowMode = WindowMode.WINDOWED;
+        this.windowDecorated = false;
         this.windowHighDpi = true;
         this.glfwDebugMode = false;
         this.highPriorityProcess = true;

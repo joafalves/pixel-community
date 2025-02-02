@@ -348,7 +348,9 @@ public class GLFWWindowManager extends DesktopWindowManager {
     }
 
     private void updateWindowMode() {
-        if (this.windowSettings.getWindowMode() != WindowMode.WINDOWED) {
+        if (this.windowSettings.getWindowMode() == WindowMode.WINDOWED) {
+            glfwWindowHint(GLFW_DECORATED, windowSettings.isWindowDecorated() ? GLFW_TRUE : GLFW_FALSE);
+        } else {
             glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
         }
 
@@ -382,12 +384,19 @@ public class GLFWWindowManager extends DesktopWindowManager {
 
         // Window resize callback:
         glfwSetWindowSizeCallback(windowHandle, (window, width, height) -> {
-            this.windowSettings.setWindowWidth(width);
-            this.windowSettings.setWindowHeight(height);
-            this.windowDimensions.setPixelRatio(width / (float) windowDimensions.getWindowWidth());
-            this.windowDimensions.setWindowWidth(width);
-            this.windowDimensions.setWindowHeight(height);
-            this.game.onViewportChanged(width, height);
+            try (MemoryStack stack = stackPush()) {
+                IntBuffer fbWidth = stack.mallocInt(1);
+                IntBuffer fbHeight = stack.mallocInt(1);
+                glfwGetFramebufferSize(window, fbWidth, fbHeight);
+                int actualWidth = fbWidth.get(0);
+                int actualHeight = fbHeight.get(0);
+                this.windowSettings.setWindowWidth(actualWidth);
+                this.windowSettings.setWindowHeight(actualHeight);
+                this.windowDimensions.setPixelRatio(actualWidth / (float) windowDimensions.getVirtualWidth());
+                this.windowDimensions.setWindowWidth(actualWidth);
+                this.windowDimensions.setWindowHeight(actualHeight);
+                this.game.onViewportChanged(actualWidth, actualHeight);
+            }
         });
 
         // Window focus callback:
