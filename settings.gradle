@@ -28,7 +28,8 @@ if (includeAndroid && System.getenv("ANDROID_HOME") != null) {
 include "extensions/ext-log4j2",
         "extensions/ext-ecs",
         "extensions/ext-ecs-extra",
-        "extensions/ext-tween"
+        "extensions/ext-tween",
+        "extensions/ext-network"
 
 // demos:
 if (System.properties["PIXEL_RELEASE"] == null) {

@@ -10,6 +10,7 @@ dependencies {
     implementation project(":${rootProject.name}-ext-ecs");
     implementation project(":${rootProject.name}-ext-ecs-extra");
     implementation project(":${rootProject.name}-ext-tween");
+    implementation project(":${rootProject.name}-ext-network");
 }
 
 application {
