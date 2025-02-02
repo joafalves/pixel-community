@@ -6,6 +6,7 @@ import static org.lwjgl.opengl.GL11C.GL_TRUE;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -13,6 +14,7 @@ import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.system.MemoryStack;
 import org.pixel.commons.data.ImageData;
+import org.pixel.commons.data.Pair;
 import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
@@ -36,6 +38,7 @@ public class GLFWWindowManager extends DesktopWindowManager {
     private State state;
     private WindowDimensions windowDimensions;
     private long windowHandle;
+    private long monitorHandle;
     private boolean isWindowFocused;
 
     public GLFWWindowManager(WindowGameContainer<?, ?, ?> game) {
@@ -69,8 +72,8 @@ public class GLFWWindowManager extends DesktopWindowManager {
         // Initialize GLFW & setup render window:
         this.initGLFW();
         this.windowHandle = this.createWindow();
-        this.centerWindow();
         this.updateWindowMode();
+        this.centerWindow();
 
         // Make the OpenGL context current
         glfwMakeContextCurrent(windowHandle);
@@ -287,6 +290,10 @@ public class GLFWWindowManager extends DesktopWindowManager {
             throw new RuntimeException("Unable to initialize GLFW");
         }
 
+        // Assign the active monitor:
+        // TODO: make this configurable
+        this.monitorHandle = glfwGetPrimaryMonitor();
+
         // Configure GLFW
         glfwDefaultWindowHints(); // optional, the current windowHnd hints are already the default
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the windowHnd will stay hidden after creation
@@ -309,10 +316,13 @@ public class GLFWWindowManager extends DesktopWindowManager {
     }
 
     private long createWindow() {
-        long monitorHandle = this.windowSettings.getWindowMode() == WindowMode.FULLSCREEN ? glfwGetPrimaryMonitor() : 0;
+        // Note: For some reason, if you define the monitorHandle on glfwCreateWindow, it assumes that the window is
+        // fullscreen. So, we need to set it to NULL if the window is not fullscreen.
+        long windowCreateMonitorHandle =
+                this.windowSettings.getWindowMode().equals(WindowMode.FULLSCREEN) ? monitorHandle : NULL;
         long windowHandle = glfwCreateWindow(
                 this.windowSettings.getWindowWidth(), this.windowSettings.getWindowHeight(),
-                this.windowSettings.getTitle(), monitorHandle, 0);
+                this.windowSettings.getTitle(), windowCreateMonitorHandle, 0);
         if (windowHandle == 0) {
             // CRITICAL ERROR: Failed to create the GLFW window, application will be
             // terminated.
@@ -324,26 +334,35 @@ public class GLFWWindowManager extends DesktopWindowManager {
     }
 
     private void centerWindow() {
-        // Get the thread stack and push a new frame
         try (MemoryStack stack = stackPush()) {
-            IntBuffer pWidth = stack.mallocInt(1); // int*
-            IntBuffer pHeight = stack.mallocInt(1); // int*
+            // Get monitor work area (usable space excluding taskbars/docks)
+            IntBuffer xPos = stack.mallocInt(1);
+            IntBuffer yPos = stack.mallocInt(1);
+            IntBuffer width = stack.mallocInt(1);
+            IntBuffer height = stack.mallocInt(1);
+            glfwGetMonitorWorkarea(monitorHandle, xPos, yPos, width, height);
 
-            // Get the windowHnd size passed to glfwCreateWindow
-            glfwGetWindowSize(windowHandle, pWidth, pHeight);
+            // Get window size in screen coordinates
+            IntBuffer winWidth = stack.mallocInt(1);
+            IntBuffer winHeight = stack.mallocInt(1);
+            glfwGetWindowSize(windowHandle, winWidth, winHeight);
 
-            // Get the resolution of the primary monitor
-            GLFWVidMode videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-            if (videoMode == null) {
-                log.warn("Failure to center window (unable to get resolution from the primary monitor).");
-                return;
-            }
+            // Calculate centered position
+            int centerX = xPos.get(0) + (width.get(0) - winWidth.get(0)) / 2;
+            int centerY = yPos.get(0) + (height.get(0) - winHeight.get(0)) / 2;
 
-            // Center the windowHnd
-            glfwSetWindowPos(
-                    windowHandle,
-                    (videoMode.width() - pWidth.get(0)) / 2,
-                    (videoMode.height() - pHeight.get(0)) / 2);
+            glfwSetWindowPos(windowHandle, centerX, centerY);
+        }
+    }
+
+    private Pair<Float, Float> getMonitorContentScale() {
+        // Note: On Linux this function may return unexpected values for fractional scaling as it depends on the
+        // window manager and compositor. For example, a fractional scaling of 125% might return 2.0f.
+        try (MemoryStack stack = stackPush()) {
+            FloatBuffer xScale = stack.mallocFloat(1);
+            FloatBuffer yScale = stack.mallocFloat(1);
+            glfwGetWindowContentScale(windowHandle, xScale, yScale);
+            return new Pair<>(xScale.get(), yScale.get());
         }
     }
 
@@ -356,8 +375,8 @@ public class GLFWWindowManager extends DesktopWindowManager {
 
         GLFWVidMode videoMode;
         if (this.windowSettings.getWindowMode().equals(WindowMode.WINDOWED)) {
-            // Get the resolution of the primary monitor
-            videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            // Get the resolution of the monitor
+            videoMode = glfwGetVideoMode(monitorHandle);
             // Set to windowed mode and center on the user screen:
             assert videoMode != null;
             glfwSetWindowMonitor(windowHandle, NULL,
@@ -366,7 +385,7 @@ public class GLFWWindowManager extends DesktopWindowManager {
                     this.windowSettings.getWindowWidth(), this.windowSettings.getWindowHeight(), GLFW_DONT_CARE);
 
         } else if (this.windowSettings.getWindowMode().equals(WindowMode.WINDOWED_BORDERLESS)) {
-            videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            videoMode = glfwGetVideoMode(monitorHandle);
             // Set to windowed mode and center on the user screen:
             assert videoMode != null;
             glfwSetWindowMonitor(windowHandle, NULL, (videoMode.width() - this.windowSettings.getWindowWidth()) / 2,
