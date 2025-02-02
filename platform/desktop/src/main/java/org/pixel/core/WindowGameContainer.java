@@ -64,7 +64,7 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
         super.start();
 
         if (this.state.hasInitialized()) {
-            this.renderLoop();
+            this.gameLoop();
             this.dispose();
         }
     }
@@ -96,7 +96,7 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
     /**
      * The render loop.
      */
-    protected void renderLoop() {
+    protected void gameLoop() {
         var delta = new DeltaTime();
         while (this.windowManager.isWindowActive()) {
             delta.tick();

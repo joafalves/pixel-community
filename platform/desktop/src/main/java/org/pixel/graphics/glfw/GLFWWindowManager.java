@@ -1,5 +1,6 @@
 package org.pixel.graphics.glfw;
 
+import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11C.GL_TRUE;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -52,6 +53,10 @@ public class GLFWWindowManager extends DesktopWindowManager {
 
         log.debug("Initializing GLFW window manager...");
 
+        if (this.windowSettings.isHighPriorityProcess()) {
+            Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+        }
+
         // Pre-calculate window dimensions
         this.windowDimensions = WindowDimensions.builder()
                 .windowWidth(this.windowSettings.getWindowWidth())
@@ -67,7 +72,6 @@ public class GLFWWindowManager extends DesktopWindowManager {
         this.centerWindow();
         this.updateWindowMode();
 
-        // TODO: does it make sense to expose this functionality?
         // Make the OpenGL context current
         glfwMakeContextCurrent(windowHandle);
 
@@ -97,6 +101,8 @@ public class GLFWWindowManager extends DesktopWindowManager {
         this.state = State.DISPOSING;
 
         glfwSetWindowShouldClose(windowHandle, true);
+
+        glfwFreeCallbacks(windowHandle);
         glfwDestroyWindow(windowHandle);
         glfwTerminate();
 
