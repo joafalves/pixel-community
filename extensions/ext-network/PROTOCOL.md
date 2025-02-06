@@ -1,7 +1,6 @@
 # Pixel Framework Network Protocol (PFNP)
 
-Version: 1.0
-Status: DRAFT
+Version: 1.0 - Status: DRAFT
 
 ---
 
@@ -57,8 +56,6 @@ Where a message has a **Payload Length** field, it indicates the size in **bytes
 payload (not including headers).
 
 ### 3.1 Control Messages
-
-Here’s the **revised section** with parameters grouped by encryption strategy and clarified dependencies:
 
 ---
 
