@@ -8,7 +8,7 @@ Version: 1.0 - Status: DRAFT
 
 The Pixel Framework Network Protocol (PFNP) is a lightweight binary protocol designed for real‑time communication in
 multiplayer games. PFNP is engineered for efficiency, security, and adaptability. It supports dynamic key‑value
-parameters with explicit type tags, fragmentation, extended sequence numbering, and multiplexing of application data
+parameters, fragmentation, extended sequence numbering, and multiplexing of application data
 over configurable streams. PFNP is transport‑agnostic (usable over UDP or TCP) and negotiates session parameters (
 including optional encryption) during an initial handshake.
 
@@ -27,7 +27,7 @@ level.
 ## 2. Control and Data Messages
 
 **Control messages** are **ordered** and share a single, global 16-bit sequence number space (Message ID). That number
-is incremented (modulo 65,536) for each new outgoing control message. The first control Message ID number SHOULD be
+is incremented (modulo `65,536`) for each new outgoing control message. The first control Message ID number SHOULD be
 randomly generated for unpredictability.
 
 Because sequence numbers are 16-bit, they eventually overflow. When a sequence number reaches 65,535 and increments, it
@@ -49,8 +49,8 @@ unique sequence number.
 
 ## 3. Message Formats
 
-All messages have an 8-bit **Message Type**, plus other fields depending on the type. The **Flags** byte (also 8 bits)
-can serve multiple purposes - more information is provided in the specific message types below.
+All messages have an 8-bit **Message Type**, plus other fields depending on the type. The **Flags** (4 bits) can serve
+multiple purposes - more information is provided in the specific message types below.
 
 Where a message has a **Payload Length** field, it indicates the size in **bytes** of that particular fragment’s
 payload (not including headers).
@@ -134,56 +134,6 @@ If Bit 0 (error) is set:
 
 - `"failure_reason"` (string): Error code (e.g., `"invalid_psk"`, `"unsupported_encryption"`).
 - Additional parameters MAY clarify requirements (e.g., `"allowed_encryption"`, `"psk_hint"`).
-
----
-
-#### 3.1.1 Handshake Request (Type 1)
-
-| Field              | Size (bits) | Description                                                                                     |
-|--------------------|-------------|-------------------------------------------------------------------------------------------------|
-| **Message Type**   | 8           | `0x01`.                                                                                         |
-| **Message ID**     | 16          | Global control message sequence, randomly initialized for the session, incremented per message. |
-| **Payload Length** | 16          | Size in bytes of the payload.                                                                   |
-
-**Payload**: A set of key‑value parameters (format explained on Section 3.3).
-Here are some standard keys:
-
-- `"api_version"` (string)
-- `"encryption"` (e.g., `"AES-GCM"`, `"none"`, or a comma-separated list)
-- `"dh_public"` if doing Diffie-Hellman for key agreement
-- `"dh_group` "X25519" (or another named curve/group)
-- `"client_nonce"` "base64_random_16B" (client-generated nonce for replay protection)
-- `"kdf"` "HKDF-SHA256" (proposed key derivation function)
-- `"context"` (optional, for additional context like the game name)
-- `"psk_id"` (optional, pre-shared key identifier if encryption="none".
-
----
-
-#### 3.1.2 Handshake Answer (Type 2)
-
-| Field              | Size (bits) | Description                                  |
-|--------------------|-------------|----------------------------------------------|
-| **Message Type**   | 8           | `0x02`.                                      |
-| **Message ID Ref** | 16          | Must match the Handshake Request’s sequence. |
-| **Flags**          | 4           | Bit 0 is '1' if error. Others (reserved)     |
-| **Payload Length** | 16          | Size in bytes of the payload.                |
-
-**Payload**: A set of key-value parameters, such as:
-
-- `"dh_public"` (if using DH)
-- `"session_id"` (32-bit user session identification number)
-- `"encryption"` (the selected cipher or `"none"`)
-- `"auth_type"` (e.g., `"none"`, `"basic"`, `"digest-hmac"`)
-- `"server_nonce"` "base64_random_16B" (server-generated nonce)
-- `"kdf"` "HKDF-SHA256" (confirming key derivation function)
-- `"signature"` "base64_sig" (recommended, for server authentication)
-
-If the handshake fails (bit 0 in **Flags** = 1), a `"failure_reason"` MAY be included. Depending on the error, the
-client **SHOULD** try the handshake again with the necessary requirements.
-One example of an error answer would be encryption incompatibility.
-
-Note that the client might suggest the encryption strategy (for example: `none`) but it's up to the server to
-define the minimum requirements.
 
 ---
 
@@ -372,19 +322,23 @@ fragment, respectively.
 
 - Bit 0: First message fragment.
 - Bit 1: Last message fragment.
-- Bit 2-3: Reserved (0).
+- Bit 2: Ordered flag - Replicates the stream configuration, can be useful for stateless proxies.
+- Bit 3: Reliable flag - Replicates the stream configuration, can be useful for stateless proxies.
 
 Fragmentation is used for large payloads. The message ID and the flags are used to reassemble fragments. The payload
 length is the size of the fragment’s payload, not the total message size. A message that is not fragmented, will have
 both bits 0 and 1 set to 1 (first and last fragment).
 
+Stateful proxies or receivers **MUST** prioritize the negotiated stream configuration over the fragment ordered and
+reliable flags.
+
 Payload is opaque. Applications define the scope and structure (e.g., JSON, plain-text).
 
-Example uses:
+Payload examples:
 
 ```
-Chat messages: chat|some_username|hello!
-Positional updates: pos|player_id|x=123.45,y=67.89
+(1) Chat messages: chat|some_username|hello!
+(2) Positional updates: pos|player_id|x=123.45,y=67.89
 ```
 
 ---
@@ -543,18 +497,20 @@ D. **Per-Message Nonce**:
   nonce = nonce_base XOR (session_id || message_id || sequence_number || 0x0000)  
   ```
 - session_id: 32-bit session identifier (from the message header).
-- message_id: 16-bit Message ID from the Data Message header (identifies the message). 
-- sequence_number: 32-bit Sequence Number from the Data Message header (incremented per fragment). 
+- message_id: 16-bit Message ID from the Data Message header (identifies the message).
+- sequence_number: 32-bit Sequence Number from the Data Message header (incremented per fragment).
 - 0x0000: 2-byte padding (16 bits) to fill the 12-byte nonce.
 
 **Example:**
 
 For a Data Message with:
+
 - `session_id` = 0xA1B2C3D4
 - `message_id` = 0x1234
 - `sequence_number` = 0x56789ABC
 
 The concatenated value is XORed with the 12-byte nonce_base to produce the final nonce:
+
 ```
 A1 B2 C3 D4   12 34   56 78 9A BC   00 00  
 ^^^^^^^^^^^   ^^^^^   ^^^^^^^^^^^   ^^^^^  
