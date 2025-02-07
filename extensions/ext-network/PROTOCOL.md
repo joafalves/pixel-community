@@ -86,7 +86,14 @@ payload (not including headers).
 
 #### **Pre-Shared Key (PSK) Parameters (Required if `encryption = "none"`)**
 
-- `"psk_id"` (string): Identifier for a pre-shared key registered with the server.
+- `"psk_id"` (string): Identifier for a pre-shared key registered with the server. When encryption is disabled, this
+  serves as a way to prevent session id tampering.
+
+The PSK itself should be a securely generated random key. This can be done using a cryptographic library to ensure it is
+strong and unpredictable.
+
+The PSK should be stored securely on the client side, such as in a secure storage mechanism provided by the operating
+system or application framework.
 
 #### **Optional Parameters**
 
