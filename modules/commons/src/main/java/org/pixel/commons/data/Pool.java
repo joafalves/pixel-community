@@ -1,4 +1,4 @@
-package org.pixel.commons;
+package org.pixel.commons.data;
 
 import java.util.ArrayDeque;
 import java.util.Queue;

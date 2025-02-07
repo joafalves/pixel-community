@@ -5,7 +5,7 @@
 
 package org.pixel.content;
 
-import org.pixel.commons.DataHashMap;
+import org.pixel.commons.data.DataHashMap;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 

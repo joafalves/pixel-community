@@ -8,12 +8,12 @@ package org.pixel.commons.logger;
 public enum LogLevel {
     //region Fields & Properties
 
-    OFF((byte) 0b1),    // 1
-    TRACE((byte) 0b10), // 2
-    DEBUG((byte) 0b11), // 3
-    INFO((byte) 0b100), // 4
-    WARN((byte) 0b101), // 5
-    ERROR((byte) 0b110);// 6
+    OFF((byte) 0b001),      // 1
+    TRACE((byte) 0b010),    // 2
+    DEBUG((byte) 0b011),    // 3
+    INFO((byte) 0b100),     // 4
+    WARN((byte) 0b101),     // 5
+    ERROR((byte) 0b110);    // 6
 
     private final byte value;
 

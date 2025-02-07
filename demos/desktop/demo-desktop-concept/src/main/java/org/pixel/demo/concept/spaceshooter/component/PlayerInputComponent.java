@@ -5,7 +5,6 @@
 
 package org.pixel.demo.concept.spaceshooter.component;
 
-import org.pixel.blueprint.annotation.Auto;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.event.EventManager;
 import org.pixel.demo.concept.spaceshooter.entity.PlayerSprite;
@@ -18,9 +17,9 @@ import static org.pixel.demo.concept.spaceshooter.SpaceShooterEvents.SHOOT;
 
 public class PlayerInputComponent extends GameComponent {
 
-    private final float SPEED_Y = 150f;
-    private final float SPEED_X = 165f;
-    private final float SHOOT_DELAY_MS = 150f;
+    private static final float SPEED_Y = 150f;
+    private static final float SPEED_X = 165f;
+    private static final float SHOOT_DELAY_MS = 150f;
 
     private float shootElapsed = 0f;
 

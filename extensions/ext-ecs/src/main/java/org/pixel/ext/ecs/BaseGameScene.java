@@ -4,7 +4,7 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.Drawable;
 import org.pixel.commons.lifecycle.Loadable;
 import org.pixel.commons.lifecycle.Updatable;
-import org.pixel.core.Camera2D;
+import org.pixel.core.Camera;
 import org.pixel.graphics.render.SpriteBatch;
 
 import java.util.Iterator;
@@ -45,7 +45,7 @@ public abstract class BaseGameScene extends GameObjectContainer implements Loada
     /**
      * Draws the children associated to the game scene.
      */
-    protected void drawChildren(DeltaTime delta, SpriteBatch spriteBatch, Camera2D gameCamera) {
+    protected void drawChildren(DeltaTime delta, SpriteBatch spriteBatch, Camera gameCamera) {
         if (gameCamera == null || spriteBatch == null) {
             return;
         }

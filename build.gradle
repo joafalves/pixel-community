@@ -22,7 +22,7 @@ println("Android Home: ${System.getenv("ANDROID_HOME")}")
 
 buildscript {
     ext {
-        kotlin_version = '1.9.20'
+        kotlin_version = '1.9.25'
     }
     repositories {
         mavenLocal()
@@ -88,7 +88,7 @@ subprojects { project ->
             compileOnly "org.projectlombok:lombok:${rootProject.ext.dependencyMap["lombok"]}"
             annotationProcessor "org.projectlombok:lombok:${rootProject.ext.dependencyMap["lombok"]}"
 
-            // test:
+            // test
             testImplementation "org.mockito:mockito-core:${rootProject.ext.dependencyMap["mockito"]}"
             testImplementation "org.junit.jupiter:junit-jupiter-api:${rootProject.ext.dependencyMap["junit"]}"
             testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${rootProject.ext.dependencyMap["junit"]}"

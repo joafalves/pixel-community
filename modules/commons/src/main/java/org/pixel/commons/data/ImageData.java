@@ -5,10 +5,7 @@
 
 package org.pixel.commons.data;
 
-import lombok.Builder;
-
 import java.nio.ByteBuffer;
 
-@Builder
 public record ImageData(ByteBuffer data, int width, int height) {
 }

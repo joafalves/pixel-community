@@ -1,6 +1,6 @@
 package org.pixel.ext.ecs;
 
-import org.pixel.commons.DataHashMap;
+import org.pixel.commons.data.DataHashMap;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.ext.ecs.lifecycle.Attachable;
 
@@ -156,7 +156,7 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
         List<T> result = new ArrayList<>();
         for (var child : children) {
             if (type.isAssignableFrom(child.getClass())) {
-                result.add((T) child);
+                result.add(type.cast(child));
             }
 
             var childResult = child.getAllChildren(type);
@@ -178,7 +178,7 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
     public <T> T getChild(Class<T> type) {
         for (var child : children) {
             if (type.isAssignableFrom(child.getClass())) {
-                return (T) child;
+                return type.cast(child);
             }
         }
 
@@ -196,7 +196,7 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
         List<T> result = new ArrayList<>();
         for (var child : children) {
             if (type.isAssignableFrom(child.getClass())) {
-                result.add((T) child);
+                result.add(type.cast(child));
             }
         }
 

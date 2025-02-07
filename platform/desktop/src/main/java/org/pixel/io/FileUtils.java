@@ -55,11 +55,7 @@ public class FileUtils {
                 throw new RuntimeException("Failed to process texture file: " + stbi_failure_reason());
             }
 
-            return ImageData.builder()
-                    .data(imageData)
-                    .width(w.get(0))
-                    .height(h.get(0))
-                    .build();
+            return new ImageData(imageData, w.get(), h.get());
         }
     }
 

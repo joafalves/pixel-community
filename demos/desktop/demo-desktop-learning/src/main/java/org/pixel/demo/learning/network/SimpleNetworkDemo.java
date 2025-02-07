@@ -2,35 +2,37 @@ package org.pixel.demo.learning.network;
 
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.network.NettyUdpClient;
-import org.pixel.network.NettyUdpServer;
-import org.pixel.network.command.HelloCommand;
 
 public class SimpleNetworkDemo extends DemoGame {
 
     private static final String SERVER_HOST = "localhost";
     private static final int SERVER_PORT = 8888;
 
-    private static final NettyUdpServer server;
-    private static final NettyUdpClient client;
+    /*private static final UdpServer networkServer;
+    private static final UdpClient networkClient;
+    private static final Thread networkThread;
 
     static {
-        server = new NettyUdpServer(SERVER_HOST, SERVER_PORT);
-        if (!server.start()) {
+        networkServer = new UdpServer(SERVER_HOST, SERVER_PORT);
+        networkServer.setAuthenticationResolver(new PermissiveAuthenticationResolver());
+        if (!networkServer.start()) {
             System.out.println("Failed to start server");
         }
 
-        client = new NettyUdpClient(); // ephemeral port
-        if (!client.start()) {
+        networkClient = new UdpClient(); // ephemeral port
+        if (!networkClient.start()) {
             System.out.println("Failed to start client");
         }
 
-        client.send(SERVER_HOST, SERVER_PORT,
-                HelloCommand.builder()
-                        .username("admin")
-                        .password("admin")
-                        .build());
-    }
+        networkThread = new Thread(() -> {
+            networkClient.send(SERVER_HOST, SERVER_PORT,
+                    BasicAuthenticationCommand.builder()
+                            .username("demo")
+                            .password("demo")
+                            .build());
+        });
+        networkThread.start();
+    }*/
 
     /**
      * Constructor
@@ -39,6 +41,16 @@ public class SimpleNetworkDemo extends DemoGame {
      */
     public SimpleNetworkDemo(WindowSettings settings) {
         super(settings);
+    }
+
+    @Override
+    public void dispose() {
+        /*if (networkThread.isAlive()) {
+            networkThread.interrupt();
+        }
+        networkServer.stop();
+        networkClient.stop();*/
+        super.dispose();
     }
 
     public static void main(String[] args) {

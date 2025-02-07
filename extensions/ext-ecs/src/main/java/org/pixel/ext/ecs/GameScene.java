@@ -1,13 +1,13 @@
 package org.pixel.ext.ecs;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.Camera2D;
+import org.pixel.core.Camera;
 import org.pixel.graphics.render.SpriteBatch;
 
 public class GameScene extends BaseGameScene {
 
     protected SpriteBatch spriteBatch;
-    protected Camera2D gameCamera;
+    protected Camera gameCamera;
 
     /**
      * Constructor.
@@ -16,7 +16,7 @@ public class GameScene extends BaseGameScene {
      * @param gameCamera  The camera to use for this game scene.
      * @param spriteBatch The sprite batch to use for this game scene.
      */
-    public GameScene(String name, Camera2D gameCamera, SpriteBatch spriteBatch) {
+    public GameScene(String name, Camera gameCamera, SpriteBatch spriteBatch) {
         super(name);
         this.gameCamera = gameCamera;
         this.spriteBatch = spriteBatch;
@@ -42,7 +42,7 @@ public class GameScene extends BaseGameScene {
      *
      * @return The game camera.
      */
-    public Camera2D getGameCamera() {
+    public Camera getGameCamera() {
         return gameCamera;
     }
 
@@ -51,7 +51,7 @@ public class GameScene extends BaseGameScene {
      *
      * @param gameCamera The game camera.
      */
-    public void setGameCamera(Camera2D gameCamera) {
+    public void setGameCamera(Camera gameCamera) {
         this.gameCamera = gameCamera;
     }
 

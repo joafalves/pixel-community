@@ -11,6 +11,7 @@ import org.pixel.core.WindowSettings;
 import org.pixel.core.Game;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.MathHelper;
+import org.pixel.math.Vector2;
 
 /**
  * Entity Component System demo.
@@ -30,10 +31,11 @@ public class EcsDemo extends Game {
         contentManager = ServiceProvider.create(ContentManager.class);
 
         Sprite sprite = new Sprite("earth", contentManager.loadTexture("images/earth-48x48.png"));
+        sprite.setPivot(Vector2.half());
         sprite.getTransform().setScale(3f);
         sprite.addComponent(new MovementComponent());
 
-        gameScene = new GameScene("SampleScene", new Camera2D(this), spriteBatch);
+        gameScene = new GameScene("SampleScene", new Camera2D(this, Vector2.half()), spriteBatch);
         gameScene.addChild(sprite);
     }
 

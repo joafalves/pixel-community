@@ -8,11 +8,10 @@ package org.pixel.content.importer;
 import java.util.HashMap;
 
 import org.json.JSONObject;
-import org.pixel.commons.DataHashMap;
+import org.pixel.commons.data.DataHashMap;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.commons.util.FileUtils;
-import org.pixel.commons.util.TextUtils;
 import org.pixel.content.ContentImporter;
 import org.pixel.content.ContentImporterInfo;
 import org.pixel.content.ImportContext;

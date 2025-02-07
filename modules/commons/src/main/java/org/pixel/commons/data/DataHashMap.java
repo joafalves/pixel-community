@@ -1,4 +1,4 @@
-package org.pixel.commons;
+package org.pixel.commons.data;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +38,7 @@ public class DataHashMap extends HashMap<String, Object> {
         // Couldn't find, try to do a manual lookup (first-find):
         for (Object o : this.values()) {
             if (type.isInstance(o)) {
-                return (T) o;
+                return type.cast(o);
             }
         }
         return null;
@@ -66,7 +66,7 @@ public class DataHashMap extends HashMap<String, Object> {
     public <T> T get(String key, Class<T> type, T defaultValue) {
         Object o = get(key);
         if (type.isInstance(o)) {
-            return (T) o;
+            return type.cast(o);
         }
 
         return defaultValue;

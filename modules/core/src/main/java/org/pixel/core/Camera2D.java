@@ -10,7 +10,7 @@ import org.pixel.math.Vector2;
 
 import java.io.Serializable;
 
-public class Camera2D implements Serializable {
+public class Camera2D implements Camera, Serializable {
 
     //region private properties
 
@@ -31,17 +31,17 @@ public class Camera2D implements Serializable {
      *
      * @param game The game instance.
      */
-    public Camera2D(GameContainer<?,?> game) {
+    public Camera2D(GameContainer<?, ?> game) {
         this(0, 0, game.getVirtualWidth(), game.getVirtualHeight());
     }
 
     /**
      * Constructor. Sets the camera properties based on the given game virtual size.
      *
-     * @param game The game instance.
+     * @param game   The game instance.
      * @param origin The camera view origin.
      */
-    public Camera2D(GameContainer<?,?> game, Vector2 origin) {
+    public Camera2D(GameContainer<?, ?> game, Vector2 origin) {
         this(0, 0, game.getVirtualWidth(), game.getVirtualHeight(), 1.0f, origin);
     }
 
@@ -130,6 +130,7 @@ public class Camera2D implements Serializable {
      *
      * @return The view matrix.
      */
+    @Override
     public Matrix4 getViewMatrix() {
         if (matrixCache == null || dirty) {
             computeMatrix();
