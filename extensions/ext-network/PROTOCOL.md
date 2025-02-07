@@ -26,12 +26,12 @@ level.
 
 ## 2. Control and Data Messages
 
-**Control messages** are **ordered** and share a single, global 16-bit sequence number space (Message ID). That number
-is incremented (modulo `65,536`) for each new outgoing control message. The first control Message ID number SHOULD be
-randomly generated for unpredictability.
+**Control messages** are **ordered** and share a single, **global 16-bit sequence number space (Message ID)**. 
+That number is incremented (modulo `65,536`) for each new outgoing control message. The first control Message ID number 
+SHOULD be randomly generated for unpredictability.
 
 Because sequence numbers are 16-bit, they eventually overflow. When a sequence number reaches 65,535 and increments, it
-wraps around to 0. Implementations MUST handle wrap-around carefully (including for acknowledgements).
+wraps around to `0`. Implementations MUST handle wrap-around carefully (including for acknowledgements).
 
 **Data messages** are transmitted over "application streams." Each stream maintains its own **16-bit Message ID sequence
 numbering**, distinct from control messages.
@@ -245,7 +245,7 @@ The implementation is free to modify or add purpose codes or to reserve specific
 |------------------|-------------|------------------------|
 | **Message Type** | 8           | `0x05`.                |
 | **Session Id**   | 32          | Session identification |
-| **Message Id**   | 32          | Message ID             |
+| **Message Id**   | 16          | Message ID             |
 
 A **heartbeat message** has no payload and does not require a length field.
 
@@ -334,7 +334,7 @@ fragment, respectively.
 
 Fragmentation is used for large payloads. The message ID and the flags are used to reassemble fragments. The payload
 length is the size of the fragment’s payload, not the total message size. A message that is not fragmented, will have
-both bits 0 and 1 set to 1 (first and last fragment).
+both bits 0 and 1 set to 1 (meaning that is both first and last fragment).
 
 Stateful proxies or receivers **MUST** prioritize the negotiated stream configuration over the fragment ordered and
 reliable flags.
