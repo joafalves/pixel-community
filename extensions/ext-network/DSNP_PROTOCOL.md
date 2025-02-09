@@ -140,7 +140,7 @@ values use HTTP‑like codes (e.g., `"200"` for success, `"401"` for unauthorize
 **Example Payload:**
 
 ```
-status=ok
+status=200,heartbeat=30
 ```
 
 ---
