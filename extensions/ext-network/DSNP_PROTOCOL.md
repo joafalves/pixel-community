@@ -171,8 +171,8 @@ key=value format as above or more comprehensive formats like JSON.)
 **Purpose:**
 A simple keep-alive message to ensure the connection is still active.
 
-Has no payload (payload length is 0).
-Some implementations might include data if required, e.g., a timestamp.
+Has no payload (payload length is 0) for most use-cases.
+Some implementations might include data if required, e.g., a timestamp and set the payload length accordingly.
 
 ---
 
