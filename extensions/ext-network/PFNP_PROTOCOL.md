@@ -1,3 +1,20 @@
+## Author Note:
+
+This document outlines a work-in-progress concept for a complete network protocol tailored for real-time multiplayer
+games. The goal is to create a flexible solution suitable for a wide range of game types, from simple 2D platformers to
+complex shooters and MMOs including reliable and non-reliable streams.
+
+After careful consideration, we have decided to adopt a much simpler—essentially dead-simple—protocol that will cover
+the majority of our needs. This decision was made based on practical constraints: for a protocol of this nature to
+perform efficiently, it would ideally require native & driver support. Enforcing its features in Java (or any
+user-space) would introduce significant performance overhead that under certain circumstances, have worse performance
+than using TCP.
+
+That said, we are preserving this draft protocol as a reference for future use, should a more advanced implementation be
+required in a complex scenario.
+
+---
+
 # Pixel Framework Network Protocol (PFNP)
 
 Version: 1.0 - Status: DRAFT
@@ -26,8 +43,8 @@ level.
 
 ## 2. Control and Data Messages
 
-**Control messages** are **ordered** and share a single, **global 16-bit sequence number space (Message ID)**. 
-That number is incremented (modulo `65,536`) for each new outgoing control message. The first control Message ID number 
+**Control messages** are **ordered** and share a single, **global 16-bit sequence number space (Message ID)**.
+That number is incremented (modulo `65,536`) for each new outgoing control message. The first control Message ID number
 SHOULD be randomly generated for unpredictability.
 
 Because sequence numbers are 16-bit, they eventually overflow. When a sequence number reaches 65,535 and increments, it
@@ -412,6 +429,8 @@ Note that a message in this context, is the sum of all fragments of a data messa
                 - If the gap is filled before timeout: Deliver messages in order.
                 - If the timeout expires: Deliver all buffered messages with `seq ≥ expected_seq`, update `expected_seq`
                   to `highest_delivered_seq + 1`, and discard older buffered messages.
+            - Alternatively, the sender can simply update the expected_seq to the highest delivered seq + 1 and
+              discard gaps. This is a simpler approach than the previous point but may lead to unexpected scenarios.
             - If a message arrives with `seq < expected_seq`: Discard (stale).
         - Ensures **monotonic delivery** (no older messages delivered after newer ones).
     - **Use Case**: Time-sensitive state updates where recentness > completeness (e.g., player positions, physics

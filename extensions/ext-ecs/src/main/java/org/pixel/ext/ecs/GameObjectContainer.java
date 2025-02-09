@@ -10,11 +10,13 @@ import java.util.List;
 
 public abstract class GameObjectContainer implements Attachable<GameObjectContainer>, Disposable, Serializable {
 
+    private transient GameObjectContainer parent;
     private transient DataHashMap dataHashMap = new DataHashMap();
 
     private final List<GameObject> children;
-    private transient GameObjectContainer parent;
     private String name;
+    private String tag;
+    private String group;
     private boolean disposed;
 
     /**
@@ -300,6 +302,42 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
      */
     public void setName(String name) {
         this.name = name;
+    }
+
+    /**
+     * Get the tag of this game object.
+     *
+     * @return The tag of this game object.
+     */
+    public String getTag() {
+        return tag;
+    }
+
+    /**
+     * Set the tag of this game object.
+     *
+     * @param tag The tag of this game object.
+     */
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    /**
+     * Get the group of this game object.
+     *
+     * @return The group of this game object.
+     */
+    public String getGroup() {
+        return group;
+    }
+
+    /**
+     * Set the group of this game object.
+     *
+     * @param group The group of this game object.
+     */
+    public void setGroup(String group) {
+        this.group = group;
     }
 
     /**
