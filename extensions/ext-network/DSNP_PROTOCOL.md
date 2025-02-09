@@ -7,9 +7,9 @@ Version: 1.0.0-alpha
 ## 1. Overview
 
 **DSNP Dead Simple Network Protocol** is a minimal, TCP‑only binary protocol designed for multiplayer game engines. It
-leverages TCP’s inherent reliability and ordered delivery while keeping the protocol framing and message set extremely
-simple. For secure communications, DSNP can be run over TLS. The protocol defines a basic handshake, authentication,
-arbitrary in‑game data, and disconnect messages.
+leverages TCP inherent reliability and ordered delivery while keeping the protocol framing and message set extremely
+simple. For secure communications, DSNP can be run over TLS. The protocol defines handshake, arbitrary in‑game data,
+heartbeat and disconnect messages.
 
 ---
 
@@ -30,14 +30,16 @@ Every DSNP message is framed as follows:
 
 - **Payload Length (4 bytes):**  
   An unsigned 32‑bit integer in big‑endian order specifying the length (in bytes) of the payload only (excluding the
-  type field). This field enables precise extraction of the payload even if it is arbitrary binary data.
+  type field). This field enables precise extraction of the payload even if it is arbitrary binary data. The maximum
+  theoretical payload size is 4 GB (`2^32 bytes`), but in practice, it should be limited to a reasonable size to avoid
+  overloading the network stack.
 
 - **Payload (variable):**  
   The message data. Its structure depends on the message type. It can be arbitrary binary, a simple ASCII/UTF‑8
   encoded key=value string for control messages or any other format defined by the application (e.g. JSON).
 
 *Example:*  
-If a handshake request has a payload of 20 bytes, the sender writes:
+If a handshake request has a payload of `20 bytes`, the sender writes:
 
 - Magic header: `0xDE 0xAD`
 - Message Type: e.g. `0x01`
@@ -158,9 +160,9 @@ key=value format as above or more comprehensive formats like JSON.)
 
 ```json
 {
-    "type": "chat",
-    "from": "Alice",
-    "message": "Hello, Bob!"
+  "type": "chat",
+  "from": "Alice",
+  "message": "Hello, Bob!"
 }
 ```
 
@@ -171,7 +173,7 @@ key=value format as above or more comprehensive formats like JSON.)
 **Purpose:**
 A simple keep-alive message to ensure the connection is still active.
 
-Has no payload (payload length is 0) for most use-cases.
+Has no payload (payload length is `0`) for most use-cases.
 Some implementations might include data if required, e.g., a timestamp and set the payload length accordingly.
 
 ---
@@ -200,22 +202,22 @@ reason=Maintenance;timeout=300
    The client opens a TCP connection to the server.
 
 2. **Handshake Phase:**
-    - **Client:** Sends a Handshake Request (Type 0x01) with its protocol version, TCP settings, and client ID.
-    - **Server:** Replies with a Handshake Response (Type 0x02).
+    - **Client:** Sends a Handshake Request (Type `0x01`) with its protocol version, TCP settings, and client ID.
+    - **Server:** Replies with a Handshake Response (Type `0x02`).
     - If the status in the Handshake Response is not successful, the connection is terminated.
-   
+
 3. **Game Session:**  
-   After successful handshake, both parties exchange Data Messages (Type 0x03) carrying all game-related data.
+   After successful handshake, both parties exchange Data Messages (Type `0x03`) carrying all game-related data.
 
 4. **Disconnect:**  
-   Either party can send a Disconnect message (Type 0x05) with an optional reason to gracefully end the session.
+   Either party can send a Disconnect message (Type `0x05`) with an optional reason to gracefully end the session.
 
 ---
 
 ## 6. Implementation Considerations
 
 - **Message Parsing:**  
-  The receiver scans the TCP stream for DSNP messages by first detecting the 2‑byte magic header (0xDEAD). After that,
+  The receiver scans the TCP stream for DSNP messages by first detecting the 2‑byte magic header (`0xDEAD`). After that,
   it reads the 1‑byte message type and the next 4 bytes to obtain the payload length. The receiver then reads exactly
   that many bytes for the payload.
 
@@ -231,4 +233,5 @@ reason=Maintenance;timeout=300
   ```
 
 - **Encryption:**  
-  DSNP does not incorporate its own encryption. To secure DSNP communications, run it over TLS.
+  DSNP does not incorporate its own encryption. To secure DSNP communications, run it over TLS which is widely supported
+  and battle-tested.
