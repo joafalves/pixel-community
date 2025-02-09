@@ -11,6 +11,11 @@ leverages TCP inherent reliability and ordered delivery while keeping the protoc
 simple. For secure communications, DSNP can be run over TLS. The protocol defines handshake, arbitrary in‑game data,
 heartbeat and disconnect messages.
 
+Please note that for really intensive real‑time games (or for scenarios where internet connectivity is unreliable), you
+might need to consider UDP or a more sophisticated protocol on top of UDP. However, for many games, TCP is sufficient
+and much easier and safer to work with. Protocols like QUIC and SCTP are great in theory, but since they lack native
+support, over-the-top implementations can be complex and inefficient.
+
 ---
 
 ## 2. Message Framing
