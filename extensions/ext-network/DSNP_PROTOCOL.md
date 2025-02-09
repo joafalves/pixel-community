@@ -202,7 +202,7 @@ reason=Maintenance;timeout=300
 2. **Handshake Phase:**
     - **Client:** Sends a Handshake Request (Type 0x01) with its protocol version, TCP settings, and client ID.
     - **Server:** Replies with a Handshake Response (Type 0x02).
-    - If the status in the Handshake Response is not `"ok"`, the connection is terminated.
+    - If the status in the Handshake Response is not successful, the connection is terminated.
    
 3. **Game Session:**  
    After successful handshake, both parties exchange Data Messages (Type 0x03) carrying all game-related data.
