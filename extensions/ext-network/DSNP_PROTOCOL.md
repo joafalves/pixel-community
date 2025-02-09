@@ -9,7 +9,7 @@ Version: 1.0.0-alpha
 **DSNP Dead Simple Network Protocol** is a minimal, TCP‑only binary protocol designed for multiplayer game engines. It
 leverages TCP’s inherent reliability and ordered delivery while keeping the protocol framing and message set extremely
 simple. For secure communications, DSNP can be run over TLS. The protocol defines a basic handshake, authentication,
-generic in‑game data, and disconnect messages.
+arbitrary in‑game data, and disconnect messages.
 
 ---
 
@@ -48,16 +48,15 @@ If a handshake request has a payload of 20 bytes, the sender writes:
 
 ## 3. Message Types
 
-DSNP defines six message types (each represented by 1 byte):
+DSNP defines the following message types (each represented by 1 byte):
 
-| **Type (Hex)** | **Name**                | **Direction**   | **Purpose**                                                        |
-|----------------|-------------------------|-----------------|--------------------------------------------------------------------|
-| **0x01**       | Handshake Request       | Client → Server | Initiate connection and advertise basic protocol/network settings. |
-| **0x02**       | Handshake Response      | Server → Client | Acknowledge the handshake and return a status message.             |
-| **0x03**       | Authentication Request  | Client → Server | Send credentials for client authentication.                        |
-| **0x04**       | Authentication Response | Server → Client | Return the result of authentication (success or failure).          |
-| **0x05**       | Generic Message         | Bidirectional   | Carry any in‑game data (commands, state updates, chat, etc.).      |
-| **0x06**       | Disconnect              | Bidirectional   | Gracefully terminate the connection.                               |
+| **Type (Hex)** | **Name**           | **Direction**   | **Purpose**                                                        |
+|----------------|--------------------|-----------------|--------------------------------------------------------------------|
+| **0x01**       | Handshake Request  | Client → Server | Initiate connection and advertise basic protocol/network settings. |
+| **0x02**       | Handshake Response | Server → Client | Acknowledge the handshake and return a status message.             |
+| **0x03**       | Data Message       | Bidirectional   | Carry any in‑game data (commands, state updates, chat, etc.).      |
+| **0x04**       | Heartbeat          | Bidirectional   | Connection app-level heartbeat.                                    |
+| **0x05**       | Disconnect         | Bidirectional   | Gracefully terminate the connection.                               |
 
 ---
 
@@ -69,17 +68,41 @@ ASCII/UTF‑8 key=value string. For game data, the payload is an arbitrary binar
 ### 4.1 Handshake Request (Type 0x01)
 
 **Purpose:**  
-The client initiates a connection and provides its basic settings.
+The client initiates a connection and provides its basic settings and authentication depending on the client and
+server configuration.
+
+This handshake might happen multiple times before the client connection is accepted. For example, if the authentication
+method is `"digest"`, the server may challenge the client with a nonce, and the client must respond with a digest
 
 **Payload Format (ASCII key=value pairs):**
 
-- **ver:** Protocol version (e.g., `"1"`)
-- **id:** A short client identifier (e.g., `"PIXEL"`).
+- **ver:** API version (e.g., `"1.0"`)
+- **scope:** A scope identifier (e.g., `"game"`, `"lobby"`)
+- **auth:** Authentication method (e.g., `"none"`, `"basic"`, `"digest"`)
+
+**Payload Auth fields (basic):**
+
+- **auth**: `"basic"`
+- **username:** Username for basic authentication.
+- **password:** Password for basic authentication.
+
+**Payload Auth fields (digest, first-request):**
+
+- **auth:** `"digest"`
+
+**Payload Auth fields (digest, subsequent-request):**
+
+- **auth:** `"digest"`
+- **nonce:** Server nonce.
+- **cnonce:** Client nonce.
+- **response:** Digest response.
+- **qop:** Quality of protection (e.g., `"auth"`, `"auth-int"`) - based on the server challenge.
+- **nc:** Nonce count (incremented for each new handshake).
 
 **Example Payload String:**
 
 ```
-ver=1;id=PIXEL
+ver=1.0;scope=game;auth=basic;username=player1;password=secret
 ```
 
 *On the wire, DSNP sends:*
@@ -87,7 +110,7 @@ ver=1;id=PIXEL
 - Magic Header: `0xDE 0xAD`
 - Message Type: `0x01`
 - Payload Length: (length of the above ASCII string in bytes)
-- Payload: the ASCII bytes for `"ver=1;id=PIXEL"`
+- Payload: the ASCII bytes for `"..."`
 
 ---
 
@@ -96,82 +119,77 @@ ver=1;id=PIXEL
 **Purpose:**  
 The server replies to the handshake.
 
+The response contains a status field indicating the result of the handshake. For simplicity purposes, the status field
+values use HTTP‑like codes (e.g., `"200"` for success, `"401"` for unauthorized, ...).
+
 **Payload Format (ASCII key=value pairs):**
 
-- **status:** `"ok"` or `"error"`.
--
-    - **auth:** Authentication method (e.g., `"none"`,`"basic"`, `"digest"`).
+- **status:** `"200"`, `"401"` or any HTTP‑like status code.
 - **reason:** (optional) A message on error (e.g., `"Invalid version"`).
+- **heartbeat:** (optional) Heartbeat interval in seconds.
+
+**Payload Auth fields (digest, challenge):**
+
+- **auth:** `"digest"`
+- **nonce:** Server nonce.
+- **qop:** Quality of protection (e.g., `"auth"`, `"auth-int"`).
+- **realm:** Authentication realm.
+- **opaque:** Opaque value.
+- **algorithm:** Hash algorithm (e.g., `"MD5"`, `"SHA-256"`).
 
 **Example Payload:**
 
 ```
-status=ok;auth=basic
+status=ok
 ```
 
 ---
 
-### 4.3 Authentication Request (Type 0x03)
+### 4.3 Data Message (Type 0x03)
 
 **Purpose:**  
-The client sends credentials for authentication.
-
-**Payload Format (ASCII key=value pairs):**
-
-- **auth:** Authentication method (e.g., `"userpass"`).
-- **user:** Username.
-- **pass:** Password.
-
-**Example Payload:**
-
-```
-auth=userpass;user=player1;pass=secret
-```
-
----
-
-### 4.4 Authentication Response (Type 0x04)
-
-**Purpose:**  
-The server returns the result of authentication.
-
-**Payload Format (ASCII key=value pairs):**
-
-- **status:** `"ok"` if authenticated; `"fail"` otherwise.
-- **msg:** An optional message (e.g., `"Authenticated"`, `"Invalid credentials"`).
-
-**Example Payload:**
-
-```
-status=ok;msg=Authenticated
-```
-
----
-
-### 4.5 Generic Message (Type 0x05)
-
-**Purpose:**  
-Used for all in‑game communication, including commands, state updates, and chat.
+Used for all in‑game communication, including commands, state updates, chat, and so on.
 
 **Payload:**  
-An arbitrary binary blob whose structure is defined by your application. (For text-based messages, you may use the
-key=value format as above or more complex formats like JSON.)
+An arbitrary data blob whose structure is defined by your application. (For text-based messages, you may use the
+key=value format as above or more comprehensive formats like JSON.)
+
+**Example Payload (JSON):**
+
+```json
+{
+    "type": "chat",
+    "from": "Alice",
+    "message": "Hello, Bob!"
+}
+```
 
 ---
 
-### 4.6 Disconnect (Type 0x06)
+### 4.4 Heartbeat (Type 0x04)
+
+**Purpose:**
+A simple keep-alive message to ensure the connection is still active.
+
+Has no payload (payload length is 0).
+Some implementations might include data if required, e.g., a timestamp.
+
+---
+
+### 4.5 Disconnect (Type 0x05)
 
 **Purpose:**  
 Gracefully close the connection.
 
 **Payload Format (ASCII, optional):**
 
-- **reason:** An optional disconnect reason.
+- **reason:** (optional) Disconnect reason.
+- **timeout:** (optional) Timeout in seconds before the shutdown sender closes the connection.
 
 **Example Payload:**
 
 ```
-reason=Goodbye
+reason=Maintenance;timeout=300
 ```
 
 ---
@@ -185,17 +203,12 @@ reason=Goodbye
     - **Client:** Sends a Handshake Request (Type 0x01) with its protocol version, TCP settings, and client ID.
     - **Server:** Replies with a Handshake Response (Type 0x02).
     - If the status in the Handshake Response is not `"ok"`, the connection is terminated.
+   
+3. **Game Session:**  
+   After successful handshake, both parties exchange Data Messages (Type 0x03) carrying all game-related data.
 
-3. **Authentication Phase:**
-    - **Client:** Sends an Authentication Request (Type 0x03) with its credentials.
-    - **Server:** Replies with an Authentication Response (Type 0x04).
-    - If authentication fails (status is `"fail"`), the connection is closed.
-
-4. **Game Session:**  
-   After successful authentication, both parties exchange Generic Messages (Type 0x05) carrying all game-related data.
-
-5. **Disconnect:**  
-   Either party can send a Disconnect message (Type 0x06) with an optional reason to gracefully end the session.
+4. **Disconnect:**  
+   Either party can send a Disconnect message (Type 0x05) with an optional reason to gracefully end the session.
 
 ---
 
@@ -204,14 +217,14 @@ reason=Goodbye
 - **Message Parsing:**  
   The receiver scans the TCP stream for DSNP messages by first detecting the 2‑byte magic header (0xDEAD). After that,
   it reads the 1‑byte message type and the next 4 bytes to obtain the payload length. The receiver then reads exactly
-  that many bytes for the payload. This method is robust for arbitrary binary data.
+  that many bytes for the payload.
 
 - **TCP Settings (Java):**  
   For low latency, disable Nagle’s algorithm:
   ```java
   socket.setTcpNoDelay(true);
   ```
-  You can also adjust the send/receive buffer sizes:
+  You can also adjust the send/receive buffer sizes, example:
   ```java
   socket.setReceiveBufferSize(64 * 1024);
   socket.setSendBufferSize(64 * 1024);
