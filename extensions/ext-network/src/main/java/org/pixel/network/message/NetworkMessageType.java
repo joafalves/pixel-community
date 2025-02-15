@@ -1,4 +1,4 @@
-package org.pixel.network.dsnp;
+package org.pixel.network.message;
 
 import lombok.Getter;
 

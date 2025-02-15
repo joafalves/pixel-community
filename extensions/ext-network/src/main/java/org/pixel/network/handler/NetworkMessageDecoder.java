@@ -5,8 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.network.dsnp.NetworkMessage;
-import org.pixel.network.dsnp.NetworkMessageType;
+import org.pixel.network.message.*;
 
 import java.util.List;
 
@@ -45,11 +44,47 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
 
         try {
             NetworkMessageType type = NetworkMessageType.fromValue(typeValue);
-            out.add(new NetworkMessage(type, payload));
+            NetworkMessage message = createMessage(type, payload);
+            out.add(message);
 
         } catch (IllegalArgumentException e) {
             log.error("Invalid message type: 0x" + Integer.toHexString(typeValue));
             ctx.close(); // TODO: Close the connection?
         }
+    }
+
+    private NetworkMessage createMessage(NetworkMessageType type, byte[] payload) {
+        log.trace("Creating message: type={0}.", type);
+
+        return switch (type) {
+            case DATA -> new DataMessage(type, payload);
+            case HANDSHAKE_REQUEST, HANDSHAKE_RESPONSE, HEARTBEAT, DISCONNECT -> createKeyValueMessage(type, payload);
+            default -> throw new IllegalArgumentException("Unknown message type: " + type);
+        };
+    }
+
+    private KeyValueMessage createKeyValueMessage(NetworkMessageType type, byte[] payload) {
+        KeyValueMessage message = switch (type) {
+            case HANDSHAKE_REQUEST -> new HandshakeRequest();
+            case HANDSHAKE_RESPONSE -> new HandshakeResponse();
+            case HEARTBEAT -> new HeartbeatMessage();
+            case DISCONNECT -> new DisconnectMessage();
+            default -> throw new IllegalArgumentException("Unknown message type: " + type);
+        };
+
+        if (payload.length > 0) {
+            String content = new String(payload);
+            String[] pairs = content.split(";");
+            for (String pair : pairs) {
+                if (!pair.isEmpty()) {
+                    String[] keyValue = pair.split("=", 2);
+                    if (keyValue.length == 2) {
+                        log.trace("Parsed key-value pair: {0}={1}.", keyValue[0], keyValue[1]);
+                        message.add(keyValue[0], keyValue[1]);
+                    }
+                }
+            }
+        }
+        return message;
     }
 }

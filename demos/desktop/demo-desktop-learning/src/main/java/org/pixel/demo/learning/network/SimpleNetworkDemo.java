@@ -1,11 +1,12 @@
 package org.pixel.demo.learning.network;
 
+import org.pixel.commons.logger.ConsoleLogger;
+import org.pixel.commons.logger.LogLevel;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.network.*;
 import org.pixel.network.data.SocketAddress;
-import org.pixel.network.dsnp.NetworkMessage;
-import org.pixel.network.dsnp.NetworkMessageType;
+import org.pixel.network.message.HandshakeRequest;
 
 public class SimpleNetworkDemo extends DemoGame {
 
@@ -22,6 +23,8 @@ public class SimpleNetworkDemo extends DemoGame {
      */
     public SimpleNetworkDemo(WindowSettings settings) {
         super(settings);
+        // set log level:
+        ConsoleLogger.setLogLevel(LogLevel.TRACE);
     }
 
     @Override
@@ -38,7 +41,6 @@ public class SimpleNetworkDemo extends DemoGame {
                 .serverAddress(new SocketAddress(SERVER_HOST, SERVER_PORT))
                 .build());
 
-
         if (!gameServer.init()) {
             throw new RuntimeException("Failed to initialize server");
         }
@@ -47,7 +49,11 @@ public class SimpleNetworkDemo extends DemoGame {
             throw new RuntimeException("Failed to initialize client");
         }
 
-        var handshake = new NetworkMessage(NetworkMessageType.HANDSHAKE_REQUEST, null);
+        var handshake = new HandshakeRequest();
+        handshake.add("username", "player1");
+
+        gameClient.write(handshake);
+        gameClient.write(handshake);
         gameClient.write(handshake);
     }
 
