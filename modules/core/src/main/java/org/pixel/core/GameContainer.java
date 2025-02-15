@@ -40,7 +40,7 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
             throw new IllegalArgumentException("Game settings cannot be null.");
         }
         this.settings = settings;
-        this.state = State.CREATED;
+        this.state = State.NEW;
     }
 
     /**

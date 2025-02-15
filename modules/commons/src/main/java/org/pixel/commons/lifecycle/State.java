@@ -1,7 +1,7 @@
 package org.pixel.commons.lifecycle;
 
 public enum State {
-    CREATED(0),
+    NEW(0),
     INITIALIZING(1),
     INITIALIZED(2),
     LOADING(3),
@@ -19,6 +19,7 @@ public enum State {
 
     /**
      * Get the value of the state
+     *
      * @return The value of the state
      */
     public int getValue() {
@@ -27,6 +28,7 @@ public enum State {
 
     /**
      * Determines whether the state is initialized
+     *
      * @return True if the state is initialized, false otherwise
      */
     public boolean hasInitialized() {
@@ -35,6 +37,7 @@ public enum State {
 
     /**
      * Determines whether the state is loaded
+     *
      * @return True if the state is loaded, false otherwise
      */
     public boolean hasLoaded() {
@@ -43,9 +46,19 @@ public enum State {
 
     /**
      * Determines whether the state is updated
+     *
      * @return True if the state is updated, false otherwise
      */
     public boolean isDisposed() {
         return value >= DISPOSING.value;
+    }
+
+    /**
+     * Determines whether the state is active (initialized and not disposed)
+     *
+     * @return True if the state is active, false otherwise
+     */
+    public boolean isActive() {
+        return value >= INITIALIZED.value && value < DISPOSING.value;
     }
 }

@@ -1,4 +1,4 @@
-# DSNP Dead Simple Network Protocol
+# DSNP - Dead Simple Network Protocol
 
 Version: 1.0.0-alpha
 

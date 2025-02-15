@@ -56,7 +56,7 @@ public class GLGraphicsDevice implements GraphicsDevice {
     public GLGraphicsDevice(DesktopWindowManager windowManager, WindowSettings windowSettings) {
         this.windowManager = windowManager;
         this.windowSettings = windowSettings;
-        this.state = State.CREATED;
+        this.state = State.NEW;
     }
 
     @Override
