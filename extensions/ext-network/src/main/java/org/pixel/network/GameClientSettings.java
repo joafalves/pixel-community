@@ -7,5 +7,5 @@ import org.pixel.network.data.SocketAddress;
 @Builder
 @Getter
 public class GameClientSettings {
-    private final SocketAddress remoteAddress;
+    private final SocketAddress serverAddress;
 }

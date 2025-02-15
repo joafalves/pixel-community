@@ -1,12 +1,10 @@
 package org.pixel.network.handler;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import org.pixel.network.dsnp.NetworkMessage;
 
-@ChannelHandler.Sharable
 public class NetworkMessageEncoder extends MessageToByteEncoder<NetworkMessage> {
 
     @Override

@@ -16,12 +16,19 @@ public class NetworkMessage {
     private NetworkMessageType type;
     private byte[] payload;
 
+    public int getPayloadLength() {
+        return payload != null ? payload.length : 0;
+    }
+
     public byte[] toBytes() {
-        ByteBuffer buffer = ByteBuffer.allocate(HEADER_SIZE + payload.length);
+        int payloadLength = getPayloadLength();
+        ByteBuffer buffer = ByteBuffer.allocate(HEADER_SIZE + payloadLength);
         buffer.putShort(MAGIC_HEADER);
         buffer.put(type.getValue());
-        buffer.putInt(payload.length);
-        buffer.put(payload);
+        buffer.putInt(payloadLength);
+        if (payload != null) {
+            buffer.put(payload);
+        }
         return buffer.array();
     }
 }

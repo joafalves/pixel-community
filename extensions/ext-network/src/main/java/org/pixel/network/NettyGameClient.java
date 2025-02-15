@@ -1,11 +1,7 @@
 package org.pixel.network;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.MultiThreadIoEventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -13,11 +9,12 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.network.handler.ExceptionHandler;
 import org.pixel.network.handler.NetworkMessageDecoder;
 import org.pixel.network.handler.NetworkMessageEncoder;
 import org.pixel.network.handler.NetworkMessageLogger;
 
-public class NettyGameClient extends GameClient {
+public class NettyGameClient extends GameClient implements ChannelFutureListener {
 
     private static final Logger log = LoggerFactory.getLogger(NettyGameClient.class);
 
@@ -43,20 +40,24 @@ public class NettyGameClient extends GameClient {
             var bootstrap = new Bootstrap()
                     .group(group)
                     .channel(NioSocketChannel.class)
+                    .option(ChannelOption.SO_KEEPALIVE, true)
                     .option(ChannelOption.TCP_NODELAY, true)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) {
                             var p = ch.pipeline();
+
                             p.addLast(new NetworkMessageDecoder());
                             p.addLast(new NetworkMessageEncoder());
                             p.addLast(new NetworkMessageLogger());
+
+                            p.addLast(new ExceptionHandler());
                         }
                     });
 
             // Connect to the server
-            channel = bootstrap.connect(settings.getRemoteAddress().getHost(),
-                    settings.getRemoteAddress().getPort()).sync().channel();
+            channel = bootstrap.connect(settings.getServerAddress().getHost(), settings.getServerAddress().getPort())
+                    .sync().channel();
 
         } catch (Exception e) {
             log.error("Failed to initialize client: {0}.", e.getMessage(), e);
@@ -91,5 +92,19 @@ public class NettyGameClient extends GameClient {
     @Override
     public State getState() {
         return state;
+    }
+
+    @Override
+    public void write(Object msg) {
+        if (channel != null) {
+            channel.writeAndFlush(msg).addListener(this);
+        }
+    }
+
+    @Override
+    public void operationComplete(ChannelFuture channelFuture) throws Exception {
+        if (!channelFuture.isSuccess()) {
+            log.error("Failed to write message: {0}.", channelFuture.cause().getMessage(), channelFuture.cause());
+        }
     }
 }

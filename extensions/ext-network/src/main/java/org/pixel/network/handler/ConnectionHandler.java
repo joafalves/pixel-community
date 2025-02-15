@@ -1,6 +1,5 @@
 package org.pixel.network.handler;
 
-import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.pixel.commons.logger.Logger;
@@ -8,7 +7,6 @@ import org.pixel.commons.logger.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Sharable
 public class ConnectionHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(ConnectionHandler.class);

@@ -17,4 +17,11 @@ public abstract class GameClient implements Initializable, Updatable, Disposable
     protected GameClient(GameClientSettings settings) {
         this.settings = settings;
     }
+
+    /**
+     * Write message to the server
+     *
+     * @param msg - The message to be sent
+     */
+    public abstract void write(Object msg);
 }

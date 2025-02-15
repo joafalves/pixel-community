@@ -1,7 +1,6 @@
 package org.pixel.network.handler;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import org.pixel.commons.logger.Logger;
@@ -11,7 +10,6 @@ import org.pixel.network.dsnp.NetworkMessageType;
 
 import java.util.List;
 
-@ChannelHandler.Sharable
 public class NetworkMessageDecoder extends ByteToMessageDecoder {
     private static final Logger log = LoggerFactory.getLogger(NetworkMessageDecoder.class);
 

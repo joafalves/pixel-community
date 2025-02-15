@@ -3,6 +3,7 @@ package org.pixel.network.handler;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelPromise;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.network.dsnp.NetworkMessage;
@@ -15,19 +16,19 @@ public class NetworkMessageLogger extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         if (msg instanceof NetworkMessage message) {
-            log.debug("Received message: type={}, payload_length={}",
+            log.debug("Received message: type={0}, payload_length={1}.",
                     message.getType(),
-                    message.getPayload().length);
+                    message.getPayloadLength());
         }
         ctx.fireChannelRead(msg);
     }
 
     @Override
-    public void write(ChannelHandlerContext ctx, Object msg, io.netty.channel.ChannelPromise promise) {
+    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
         if (msg instanceof NetworkMessage message) {
-            log.debug("Sending message: type={}, payload_length={}",
+            log.debug("Sending message: type={0}, payload_length={1}.",
                     message.getType(),
-                    message.getPayload().length);
+                    message.getPayloadLength());
         }
         ctx.write(msg, promise);
     }

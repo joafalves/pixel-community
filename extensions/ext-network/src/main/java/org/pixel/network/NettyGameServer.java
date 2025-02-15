@@ -13,10 +13,7 @@ import org.pixel.commons.Timer;
 import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.network.handler.ConnectionHandler;
-import org.pixel.network.handler.NetworkMessageDecoder;
-import org.pixel.network.handler.NetworkMessageEncoder;
-import org.pixel.network.handler.NetworkMessageLogger;
+import org.pixel.network.handler.*;
 
 public class NettyGameServer extends GameServer {
 
@@ -33,7 +30,7 @@ public class NettyGameServer extends GameServer {
      *
      * @param settings - The game server settings
      */
-    protected NettyGameServer(GameServerSettings settings) {
+    public NettyGameServer(GameServerSettings settings) {
         super(settings);
         this.statsTimer = new Timer(settings.getStatsLogYieldSeconds() * 1000L);
     }
@@ -55,15 +52,18 @@ public class NettyGameServer extends GameServer {
             var bootstrap = new ServerBootstrap()
                     .group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .option(ChannelOption.TCP_NODELAY, true)
+                    .childOption(ChannelOption.TCP_NODELAY, true)
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) {
                             var p = socketChannel.pipeline();
+
                             p.addLast(new ConnectionHandler(settings.getMaxConnections()));
                             p.addLast(new NetworkMessageDecoder());
                             p.addLast(new NetworkMessageEncoder());
                             p.addLast(new NetworkMessageLogger());
+
+                            p.addLast(new ExceptionHandler());
                         }
                     });
 

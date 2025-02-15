@@ -2,37 +2,18 @@ package org.pixel.demo.learning.network;
 
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
+import org.pixel.network.*;
+import org.pixel.network.data.SocketAddress;
+import org.pixel.network.dsnp.NetworkMessage;
+import org.pixel.network.dsnp.NetworkMessageType;
 
 public class SimpleNetworkDemo extends DemoGame {
 
     private static final String SERVER_HOST = "localhost";
     private static final int SERVER_PORT = 8888;
 
-    /*private static final UdpServer networkServer;
-    private static final UdpClient networkClient;
-    private static final Thread networkThread;
-
-    static {
-        networkServer = new UdpServer(SERVER_HOST, SERVER_PORT);
-        networkServer.setAuthenticationResolver(new PermissiveAuthenticationResolver());
-        if (!networkServer.start()) {
-            System.out.println("Failed to start server");
-        }
-
-        networkClient = new UdpClient(); // ephemeral port
-        if (!networkClient.start()) {
-            System.out.println("Failed to start client");
-        }
-
-        networkThread = new Thread(() -> {
-            networkClient.send(SERVER_HOST, SERVER_PORT,
-                    BasicAuthenticationCommand.builder()
-                            .username("demo")
-                            .password("demo")
-                            .build());
-        });
-        networkThread.start();
-    }*/
+    private GameServer gameServer;
+    private GameClient gameClient;
 
     /**
      * Constructor
@@ -44,12 +25,34 @@ public class SimpleNetworkDemo extends DemoGame {
     }
 
     @Override
-    public void dispose() {
-        /*if (networkThread.isAlive()) {
-            networkThread.interrupt();
+    public void load() {
+        super.load();
+
+        gameServer = new NettyGameServer(GameServerSettings.builder()
+                .bindAddress(new SocketAddress(SERVER_HOST, SERVER_PORT))
+                .maxConnections(10)
+                .numThreads(5)
+                .build());
+
+        gameClient = new NettyGameClient(GameClientSettings.builder()
+                .serverAddress(new SocketAddress(SERVER_HOST, SERVER_PORT))
+                .build());
+
+
+        if (!gameServer.init()) {
+            throw new RuntimeException("Failed to initialize server");
         }
-        networkServer.stop();
-        networkClient.stop();*/
+
+        if (!gameClient.init()) {
+            throw new RuntimeException("Failed to initialize client");
+        }
+
+        var handshake = new NetworkMessage(NetworkMessageType.HANDSHAKE_REQUEST, null);
+        gameClient.write(handshake);
+    }
+
+    @Override
+    public void dispose() {
         super.dispose();
     }
 
