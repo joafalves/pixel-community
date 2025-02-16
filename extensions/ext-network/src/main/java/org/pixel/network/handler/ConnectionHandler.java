@@ -22,7 +22,8 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         int numConnections = connectionCount.incrementAndGet();
         if (maxConnections > 0 && numConnections > maxConnections) {
-            log.warn("Connection rejected: maximum connections ({}) reached", maxConnections);
+            // TODO: Implement a queue for handling connection requests when the maximum number of connections is reached
+            log.warn("Connection rejected: maximum connections ({0}) reached.", maxConnections);
             ctx.close();
             return;
         }

@@ -1,4 +1,4 @@
-package org.pixel.network;
+package org.pixel.network.io;
 
 import lombok.Builder;
 import lombok.Getter;

@@ -1,11 +1,12 @@
 package org.pixel.demo.learning.network;
 
+import org.pixel.commons.Color;
 import org.pixel.commons.logger.ConsoleLogger;
 import org.pixel.commons.logger.LogLevel;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.network.*;
 import org.pixel.network.data.SocketAddress;
+import org.pixel.network.io.*;
 import org.pixel.network.message.HandshakeRequest;
 
 public class SimpleNetworkDemo extends DemoGame {
@@ -30,6 +31,8 @@ public class SimpleNetworkDemo extends DemoGame {
     @Override
     public void load() {
         super.load();
+
+        // Note: This demo contains both the server and clients in the same application for demonstration purposes.
 
         gameServer = new NettyGameServer(GameServerSettings.builder()
                 .bindAddress(new SocketAddress(SERVER_HOST, SERVER_PORT))
@@ -59,11 +62,14 @@ public class SimpleNetworkDemo extends DemoGame {
 
     @Override
     public void dispose() {
+        gameClient.dispose();
+        gameServer.dispose();
         super.dispose();
     }
 
     public static void main(String[] args) {
         final WindowSettings settings = new WindowSettings(800, 600);
+        settings.setBackgroundColor(Color.INDIGO);
         settings.setTitle("Chat Demo");
         settings.setTargetFps(60);
 

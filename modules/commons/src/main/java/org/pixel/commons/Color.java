@@ -37,6 +37,8 @@ public class Color implements Serializable {
     public static final Color PURPLE = new Color(0xa020f0ff);
     public static final Color VIOLET = new Color(0xee82eeff);
     public static final Color MAROON = new Color(0xb03060ff);
+    public static final Color CRIMSON = new Color(0xdc143cff);
+    public static final Color INDIGO = new Color(0x4b0082ff);
     public static final Color TRANSPARENT = new Color(0x00000000);
 
     // Gray colors

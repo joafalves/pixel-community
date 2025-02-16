@@ -10,19 +10,27 @@ public class ServiceProvider {
     private static final ConcurrentHashMap<Class<?>, ServiceFactory<?>> serviceFactoryMap = new ConcurrentHashMap<>();
 
     /**
+     * Private constructor to prevent instantiation.
+     */
+    private ServiceProvider() {
+        // private constructor
+    }
+
+    /**
      * Register a service.
-     * 
+     *
      * @param <T>         The service type
      * @param serviceType The service type
      * @param factory     The service factory
      */
     public static <T> void register(Class<T> serviceType, ServiceFactory<T> factory) {
+        log.info("Registering service: {0} ({1}).", serviceType.getSimpleName(), factory.getClass().getSimpleName());
         serviceFactoryMap.put(serviceType, factory);
     }
 
     /**
      * Get a service.
-     * 
+     *
      * @param <T>         The service type
      * @param serviceType The service type
      * @return The service instance

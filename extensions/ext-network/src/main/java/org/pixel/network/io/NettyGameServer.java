@@ -1,4 +1,4 @@
-package org.pixel.network;
+package org.pixel.network.io;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
