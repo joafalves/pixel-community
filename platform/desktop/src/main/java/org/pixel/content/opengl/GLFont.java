@@ -1,18 +1,8 @@
 package org.pixel.content.opengl;
 
 import static org.lwjgl.BufferUtils.createByteBuffer;
-import static org.lwjgl.opengl.GL11C.GL_LINEAR;
-import static org.lwjgl.opengl.GL11C.GL_RGBA;
-import static org.lwjgl.opengl.GL11C.GL_RGBA8;
-import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MAG_FILTER;
-import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MIN_FILTER;
-import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_BYTE;
-import static org.lwjgl.opengl.GL11C.glBindTexture;
-import static org.lwjgl.opengl.GL11C.glDeleteTextures;
-import static org.lwjgl.opengl.GL11C.glGenTextures;
-import static org.lwjgl.opengl.GL11C.glTexImage2D;
-import static org.lwjgl.opengl.GL11C.glTexParameteri;
+import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL12C.GL_CLAMP_TO_EDGE;
 import static org.lwjgl.stb.STBImageWrite.stbi_write_bmp;
 import static org.lwjgl.stb.STBImageWrite.stbi_write_png;
 import static org.lwjgl.stb.STBTruetype.stbtt_PackBegin;
@@ -59,48 +49,59 @@ public class GLFont extends Font {
         }
 
         // calculate texture size:
-        // note: since stbtt optimizes the glyph placing on the bitmap, we don't need to
-        // go for 1:1 ratio here
         float maxGlyphSize = this.fontSize * oversampling;
-        float tmpTextureSize = (maxGlyphSize + GLYPH_TEXTURE_PADDING_COMPENSATION) * 8;
-        if (tmpTextureSize % 2 != 0) {
-            tmpTextureSize++; // let's keep this in multiples of 2
-        }
+        int glyphsPerSide = (int)Math.sqrt(95); // 95 printable ASCII chars (32-127)
+        int requiredSize = (int)(maxGlyphSize * glyphsPerSide * 1.2f); // 20% padding
 
-        this.textureWidth = (int) tmpTextureSize;
-        this.textureHeight = (int) tmpTextureSize;
+        // Round up to nearest power of 2
+        int textureSize = Integer.highestOneBit(requiredSize - 1) << 1;
+
+        // Set both width and height to the same power-of-2 size
+        this.textureWidth = textureSize;
+        this.textureHeight = textureSize;
 
         glyphCache.clear(); // clear the glyph cache
         packedBuffer.clear(); // clear char data buffer
-        STBTTPackContext pc = STBTTPackContext.malloc();
-        ByteBuffer alphaBitmap = createByteBuffer(this.textureWidth * this.textureHeight);
-        stbtt_PackBegin(pc, alphaBitmap, this.textureWidth, this.textureHeight, 0, GLYPH_TEXTURE_PADDING, NULL);
-        // load up data to our buffer:
-        packedBuffer.limit(255); // text ascii range (32-127)
-        packedBuffer.position(32);
-        stbtt_PackSetOversampling(pc, oversampling, oversampling);
-        stbtt_PackFontRange(pc, fontData.getSource(), 0, getFontSize(), 32, packedBuffer);
-        stbtt_PackEnd(pc);
-        packedBuffer.clear();
 
-        // convert gray scale to rgba
-        bitmap = createByteBuffer(alphaBitmap.limit() * 4);
-        for (int i = 0; i < alphaBitmap.limit(); ++i) {
-            bitmap.put((byte) 255);
-            bitmap.put((byte) 255);
-            bitmap.put((byte) 255);
-            bitmap.put(alphaBitmap.get());
+        STBTTPackContext pc = null;
+        try {
+            pc = STBTTPackContext.malloc();
+            ByteBuffer alphaBitmap = createByteBuffer(this.textureWidth * this.textureHeight);
+            stbtt_PackBegin(pc, alphaBitmap, this.textureWidth, this.textureHeight, 0, GLYPH_TEXTURE_PADDING, NULL);
+            // load up data to our buffer:
+            packedBuffer.limit(127); // text ascii range (32-127) - standard ascii
+            packedBuffer.position(32); // first printable char
+            stbtt_PackSetOversampling(pc, oversampling, oversampling);
+            stbtt_PackFontRange(pc, fontData.getSource(), 0, getFontSize(), 32, packedBuffer);
+            stbtt_PackEnd(pc);
+
+            // convert gray scale to rgba bitmap (4 byte per pixel):
+            bitmap = createByteBuffer(alphaBitmap.limit() * 4);
+            for (int i = 0; i < alphaBitmap.limit(); ++i) {
+                bitmap.put((byte) 255);
+                bitmap.put((byte) 255);
+                bitmap.put((byte) 255);
+                bitmap.put((byte) (alphaBitmap.get() & 0xFF));
+            }
+            bitmap.clear();
+
+            // bind char data to our texture:
+            glBindTexture(GL_TEXTURE_2D, getTextureId());
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, this.textureWidth, this.textureHeight, 0, GL_RGBA,
+                    GL_UNSIGNED_BYTE, bitmap);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+            // unbind the texture
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+        } finally {
+            if (pc != null) {
+                pc.free();
+            }
         }
-        bitmap.clear();
-
-        // bind char data to our texture:
-        glBindTexture(GL_TEXTURE_2D, getTextureId());
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, this.textureWidth, this.textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                bitmap);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
 
     @Override
@@ -126,7 +127,7 @@ public class GLFont extends Font {
         FontGlyph glyph = this.glyphCache.get(ch);
         if (glyph == null) {
             STBTTPackedchar pc = this.packedBuffer.get(ch);
-            if (ch == 258) {
+            if (ch == 9) {
                 // tab
                 return null;
             }

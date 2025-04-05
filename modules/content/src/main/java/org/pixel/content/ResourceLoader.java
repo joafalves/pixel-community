@@ -1,6 +1,9 @@
 package org.pixel.content;
 
 public interface ResourceLoader {
+
+    /* TODO: might be useful to have a ByteBuffer variant for performance reasons (allowing native-only mem alloc). */
+
     /**
      * Load a resource from the given path.
      * 

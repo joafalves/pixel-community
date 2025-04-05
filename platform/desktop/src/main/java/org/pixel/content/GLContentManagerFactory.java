@@ -1,11 +1,7 @@
 package org.pixel.content;
 
 import org.pixel.commons.ServiceFactory;
-import org.pixel.content.importer.GLFontImporter;
-import org.pixel.content.importer.GLTextureImporter;
-import org.pixel.content.importer.TextImporter;
-import org.pixel.content.importer.TexturePackImporter;
-import org.pixel.content.importer.ALVorbisAudioImporter;
+import org.pixel.content.importer.*;
 
 public class GLContentManagerFactory implements ServiceFactory<ContentManager> {
 
@@ -19,7 +15,8 @@ public class GLContentManagerFactory implements ServiceFactory<ContentManager> {
 
                 // COMMON IMPORTERS
                 new TextImporter(),
-                new TexturePackImporter()
+                new TexturePackImporter(),
+                new ByteBufferImporter()
         );
     }
 

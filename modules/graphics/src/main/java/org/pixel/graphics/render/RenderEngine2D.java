@@ -374,6 +374,16 @@ public abstract class RenderEngine2D extends StatefulRenderEngine {
     public abstract void strokeText(String text, Vector2 position, float maxRowWidth);
 
     /**
+     * Strokes the text.
+     *
+     * @param text        The text to stroke.
+     * @param x           The x-coordinate of the position to draw the text.
+     * @param y           The y-coordinate of the position to draw the text.
+     * @param maxRowWidth The maximum width of a row.
+     */
+    public abstract void strokeText(String text, float x, float y, float maxRowWidth);
+
+    /**
      * Measures the text dimensions.
      *
      * @param text        The text to measure.
