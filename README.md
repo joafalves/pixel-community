@@ -90,8 +90,10 @@ The framework functionality is divided into multiple modules which can be import
         ├── ext-ecs                 # Entity component system extension
         ├── ext-ecs-extra           # ECS utility components
         ├── ext-log4j2              # Log4j2 extension
+        ├── ext-network             # Network extension
         └── ext-tween               # Tween extension
     .modules/                       # The principal modules of the framework
+        ├── blueprint               # Blueprint configuration classes
         ├── commons                 # Common utility classes
         ├── content                 # Common Content classes (Texture, Font, Audio, ...)
         ├── core                    # Core module (GameContainer, GameSettings, Camera2D, ...)
@@ -120,7 +122,7 @@ The framework functionality is divided into multiple modules which can be import
 
 ### Runtime requirements ###
 
-- Java/JDK 17.x+
+- Java/JDK 21.x+
 
 ### Development requirements ###
 
