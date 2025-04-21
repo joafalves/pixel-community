@@ -11,6 +11,6 @@ dependencies {
     api project(":${rootProject.name}-commons")
     api project(":${rootProject.name}-pipeline")
 
-    implementation "io.netty:netty-all:4.2.0.RC3"
+    implementation "io.netty:netty-all:4.2.0.Final"
 }
 

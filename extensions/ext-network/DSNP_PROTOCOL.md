@@ -1,12 +1,12 @@
-# DSNP - Dead Simple Network Protocol
+#  DSNP
 
-Version: 1.0.0-alpha
+### Version: 1.0.0-alpha
 
 ---
 
 ## 1. Overview
 
-**DSNP Dead Simple Network Protocol** is a minimal, TCP‑only binary protocol designed for multiplayer game engines. It
+**DSNP (0xDEAD Simple Network Protocol)** is a minimal, TCP‑only binary protocol designed for multiplayer game engines. It
 leverages TCP inherent reliability and ordered delivery while keeping the protocol framing and message set extremely
 simple. For secure communications, DSNP can be run over TLS. The protocol defines handshake, arbitrary in‑game data,
 heartbeat and disconnect messages.
@@ -175,18 +175,21 @@ key=value format as above or more comprehensive formats like JSON.)
 
 ### 4.4 Heartbeat (Type 0x04)
 
-**Purpose:**
-A simple keep-alive message to ensure the connection is still active.
+**Purpose:** 
+Application layer keep-alive message to ensure the connection remains active.
 
 Has no payload (payload length is `0`) for most use-cases.
-Some implementations might include data if required, e.g., a timestamp and set the payload length accordingly.
+Some implementations might include data, e.g., a timestamp or service status, with payload length defined accordingly.
 
 ---
 
 ### 4.5 Disconnect (Type 0x05)
 
 **Purpose:**  
-Gracefully close the connection.
+Gracefully close the connection. This does not necessarily end the session, as the session's lifecycle is managed by 
+the implementation.
+
+This message can be sent by any party, server or client.
 
 **Payload Format (ASCII, optional):**
 
@@ -214,8 +217,14 @@ reason=Maintenance;timeout=300
 3. **Game Session:**  
    After successful handshake, both parties exchange Data Messages (Type `0x03`) carrying all game-related data.
 
-4. **Disconnect:**  
-   Either party can send a Disconnect message (Type `0x05`) with an optional reason to gracefully end the session.
+4. **Connection Maintenance:**
+   Both parties SHOULD have a configurable idle-timeout (time without data transfer), which, if reached, SHALL trigger
+   a Hearbeat (Type `0x04`) message to ensure the connection isn't closed prematurely. The idle-timeout SHOULD be
+   configured to no longer than 30 seconds, a value widely adopted in network protocols and load balancers to maintain 
+   NAT bindings and keep-alive states across intermediate devices.
+
+5. **Disconnect:**  
+   Either party can send a Disconnect message (Type `0x05`) with an optional reason to gracefully end the connection.
 
 ---
 
@@ -227,7 +236,7 @@ reason=Maintenance;timeout=300
   that many bytes for the payload.
 
 - **TCP Settings (Java):**  
-  For low latency, disable Nagle’s algorithm:
+  For lower latency, disable Nagle’s algorithm:
   ```java
   socket.setTcpNoDelay(true);
   ```
