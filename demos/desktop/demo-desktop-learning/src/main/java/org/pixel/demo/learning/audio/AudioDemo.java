@@ -25,8 +25,8 @@ public class AudioDemo extends DemoGame {
     @Override
     public void load() {
         // general game instances
-        contentManager = ServiceProvider.create(ContentManager.class);
-        audioPlayer = ServiceProvider.create(AudioPlayer.class);
+        contentManager = ServiceProvider.get(ContentManager.class);
+        audioPlayer = ServiceProvider.get(AudioPlayer.class);
 
         // load the audio source into memory
         sound = contentManager.load("audio/sfx_step_grass.ogg", Sound.class);

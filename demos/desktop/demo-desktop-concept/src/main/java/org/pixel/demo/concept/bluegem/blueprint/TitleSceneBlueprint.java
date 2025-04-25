@@ -14,7 +14,7 @@ public class TitleSceneBlueprint {
 
     @Component("title.contentManager")
     public ContentManager contentManager() {
-        return ServiceProvider.create(ContentManager.class);
+        return ServiceProvider.get(ContentManager.class);
     }
 
     @Component("title.scene")

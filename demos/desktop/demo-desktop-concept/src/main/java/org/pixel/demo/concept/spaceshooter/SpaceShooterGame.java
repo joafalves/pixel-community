@@ -53,8 +53,8 @@ public class SpaceShooterGame extends Game {
     @Override
     public void load() {
         fpsCounter = new FpsCounter(this);
-        var spriteBatch = ServiceProvider.create(SpriteBatch.class);
-        var content = ServiceProvider.create(ContentManager.class);
+        var spriteBatch = ServiceProvider.get(SpriteBatch.class);
+        var content = ServiceProvider.get(ContentManager.class);
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
 

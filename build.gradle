@@ -18,7 +18,6 @@ ext {
 println("Java Version: ${JavaVersion.current()}")
 println("Project Group: ${group}")
 println("Project Version: ${version}")
-println("Android Home: ${System.getenv("ANDROID_HOME")}")
 
 buildscript {
     ext {

@@ -10,6 +10,6 @@ public class GameSceneBlueprint {
 
     @Component("game.contentManager")
     public ContentManager contentManager() {
-        return ServiceProvider.create(ContentManager.class);
+        return ServiceProvider.get(ContentManager.class);
     }
 }

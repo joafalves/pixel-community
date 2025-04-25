@@ -73,7 +73,7 @@ public class TerragenTextureGame extends Game {
 
     @Override
     public void load() {
-        spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        spriteBatch = ServiceProvider.get(SpriteBatch.class);
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
         fpsCounter = new FpsCounter(this, "Press R to reset seed");

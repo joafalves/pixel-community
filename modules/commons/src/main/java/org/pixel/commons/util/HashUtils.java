@@ -19,7 +19,7 @@ public class HashUtils {
     //region public static methods
 
     /**
-     * Generate a unique identification value.
+     * Generate a unique identification value (local only).
      *
      * @return A unique identification value.
      */
@@ -28,7 +28,7 @@ public class HashUtils {
     }
 
     /**
-     * Generate a numeric unique identification value.
+     * Generate a numeric unique identification value (local only).
      *
      * @return A numeric unique identification value.
      */

@@ -49,8 +49,8 @@ public class PerformanceGame extends Game {
 
     @Override
     public void load() {
-        spriteBatch = ServiceProvider.create(SpriteBatch.class);
-        contentManager = ServiceProvider.create(ContentManager.class);
+        spriteBatch = ServiceProvider.get(SpriteBatch.class);
+        contentManager = ServiceProvider.get(ContentManager.class);
         gameScene = new GameScene("GameScene01", new Camera2D(this, Vector2.zero()), spriteBatch);
 
         var screenBoundary = new Boundary(0, 0, getVirtualWidth(), getVirtualHeight());

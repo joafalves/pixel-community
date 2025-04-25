@@ -32,7 +32,7 @@ public class AudioPanningDemo extends AudioDemo {
     public void load() {
         super.load();
 
-        spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        spriteBatch = ServiceProvider.get(SpriteBatch.class);
         camera = new Camera2D(this);
         texturePosition = new Vector2();
 

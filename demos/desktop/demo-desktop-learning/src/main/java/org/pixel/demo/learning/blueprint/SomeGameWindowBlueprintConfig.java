@@ -12,7 +12,7 @@ public class SomeGameWindowBlueprintConfig {
     @Component(value = "someGameWindowContentManager")
     public ContentManager contentManager() {
         // Tip: You could have a different blueprint for each game window in your game...
-        return ServiceProvider.create(ContentManager.class);
+        return ServiceProvider.get(ContentManager.class);
     }
 
     @Component

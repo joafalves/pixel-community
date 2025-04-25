@@ -94,9 +94,9 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
 
        switch (this.settings.getGraphicsBackend()) {
             case OpenGL:
-                ServiceProvider.register(SpriteBatch.class, new GLSpriteBatchServiceFactory());
-                ServiceProvider.register(ContentManager.class, new GLContentManagerFactory());
-                ServiceProvider.register(AudioPlayer.class, new ALAudioPlayerFactory());
+                ServiceProvider.set(SpriteBatch.class, new GLSpriteBatchServiceFactory());
+                ServiceProvider.set(ContentManager.class, new GLContentManagerFactory());
+                ServiceProvider.set(AudioPlayer.class, new ALAudioPlayerFactory());
                 break;
             case Vulkan:
                 throw new UnsupportedOperationException("Vulkan is not supported yet.");

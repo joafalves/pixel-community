@@ -39,8 +39,8 @@ public class TextDemo extends DemoGame {
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
-        spriteBatch = ServiceProvider.create(SpriteBatch.class);
-        content = ServiceProvider.create(ContentManager.class);
+        spriteBatch = ServiceProvider.get(SpriteBatch.class);
+        content = ServiceProvider.get(ContentManager.class);
 
         // load font into memory
         font = content.load("fonts/gidole-regular.ttf", Font.class);

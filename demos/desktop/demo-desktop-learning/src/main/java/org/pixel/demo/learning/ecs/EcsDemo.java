@@ -31,8 +31,8 @@ public class EcsDemo extends Game {
 
     @Override
     public void load() {
-        var spriteBatch = ServiceProvider.create(SpriteBatch.class);
-        contentManager = ServiceProvider.create(ContentManager.class);
+        var spriteBatch = ServiceProvider.get(SpriteBatch.class);
+        contentManager = ServiceProvider.get(ContentManager.class);
 
         Sprite sprite = new Sprite("earth", contentManager.loadTexture("images/earth-48x48.png"));
         sprite.setPivot(Vector2.half());

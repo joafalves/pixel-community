@@ -24,8 +24,8 @@ public class EcsHierarchyDemo extends DemoGame {
 
     @Override
     public void load() {
-        spriteBatch = ServiceProvider.create(SpriteBatch.class);
-        contentManager = ServiceProvider.create(ContentManager.class);
+        spriteBatch = ServiceProvider.get(SpriteBatch.class);
+        contentManager = ServiceProvider.get(ContentManager.class);
 
         var parent = new Sprite("parent", contentManager.loadTexture("images/earth-48x48.png"));
         parent.setPivot(Vector2.half());

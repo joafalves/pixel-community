@@ -6,7 +6,7 @@
 package org.pixel.commons.annotation;
 
 /**
- * Interface to quickly determine if a field is nullable.
+ * Interface to quickly determine if a field can be nullable.
  */
 public @interface Nullable {
 

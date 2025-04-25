@@ -33,21 +33,25 @@ public class SimpleNetworkDemo extends DemoGame {
         super.load();
 
         // Note: This demo contains both the server and clients in the same application for demonstration purposes.
+        // Please note that the game-server, in a real scenario, MIGHT actually be executed on the game-side (for e.g.
+        // the player is hosting the game session).
 
+        // Create a new SERVER instance:
         gameServer = new NettyGameServer(GameServerSettings.builder()
                 .bindAddress(new SocketAddress(SERVER_HOST, SERVER_PORT))
                 .maxConnections(10)
                 .numThreads(5)
                 .build());
 
+        // Create a new CLIENT instance:
         gameClient = new NettyGameClient(GameClientSettings.builder()
                 .serverAddress(new SocketAddress(SERVER_HOST, SERVER_PORT))
                 .build());
 
+        // Initialize both SERVER and CLIENT
         if (!gameServer.init()) {
             throw new RuntimeException("Failed to initialize server");
         }
-
         if (!gameClient.init()) {
             throw new RuntimeException("Failed to initialize client");
         }

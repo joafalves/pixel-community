@@ -8,7 +8,7 @@ import org.pixel.content.importer.TexturePackImporter;
 public class GLES30ContentManagerFactory implements ServiceFactory<ContentManager> {
 
     @Override
-    public ContentManager create() {
+    public ContentManager get() {
         return new ContentManager(new MobileResourceLoader(),
                 // MOBILE SPECIFIC IMPORTERS
                 new GLES30TextureImporter(),

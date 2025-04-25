@@ -75,7 +75,7 @@ public class TerragenAdvancedGame extends Game {
 
     @Override
     public void load() {
-        spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        spriteBatch = ServiceProvider.get(SpriteBatch.class);
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
         seed = ThreadLocalRandom.current().nextLong();

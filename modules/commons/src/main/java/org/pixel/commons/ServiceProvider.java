@@ -23,26 +23,26 @@ public class ServiceProvider {
      * @param serviceType The service type
      * @param factory     The service factory
      */
-    public static <T> void register(Class<T> serviceType, ServiceFactory<T> factory) {
+    public static <T> void set(Class<T> serviceType, ServiceFactory<T> factory) {
         log.info("Registering service: {0} ({1}).", serviceType.getSimpleName(), factory.getClass().getSimpleName());
         serviceFactoryMap.put(serviceType, factory);
     }
 
     /**
-     * Get a service.
+     * Get a service by type.
      *
      * @param <T>         The service type
      * @param serviceType The service type
-     * @return The service instance
+     * @return The service instance if available
      */
-    public static <T> T create(Class<T> serviceType) {
+    public static <T> T get(Class<T> serviceType) {
         ServiceFactory<?> factory = serviceFactoryMap.get(serviceType);
         if (factory == null) {
             log.error("Service not registered: " + serviceType.getName());
             throw new RuntimeException("Service not registered: " + serviceType.getName());
         }
 
-        return serviceType.cast(factory.create());
+        return serviceType.cast(factory.get());
     }
 
     /**

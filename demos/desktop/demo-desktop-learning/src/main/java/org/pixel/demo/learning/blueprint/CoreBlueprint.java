@@ -10,7 +10,7 @@ public class CoreBlueprint {
 
     @Component
     public SpriteBatch spriteBatch() {
-        var spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        var spriteBatch = ServiceProvider.get(SpriteBatch.class);
         spriteBatch.resizeBuffer(128);
 
         return spriteBatch;

@@ -1,7 +1,8 @@
 package org.pixel.io;
 
 import android.content.Context;
-import org.pixel.commons.GameContext;
+
+import org.pixel.commons.ServiceProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.core.MobileTags;
@@ -21,7 +22,7 @@ public class FileUtils {
      * @return The file content.
      */
     public static InputStream loadAsset(String path) {
-        return loadAsset(GameContext.getData().get(MobileTags.ACTIVE_CONTEXT, Context.class), path);
+        return loadAsset(ServiceProvider.get(Context.class), path);
     }
 
     /**
@@ -52,7 +53,7 @@ public class FileUtils {
      * @return The file content.
      */
     public static String loadTextAsset(String path) {
-        return loadTextAsset(GameContext.getData().get(MobileTags.ACTIVE_CONTEXT, Context.class), path);
+        return loadTextAsset(ServiceProvider.get(Context.class), path);
     }
 
     /**

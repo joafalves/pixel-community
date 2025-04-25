@@ -19,7 +19,7 @@ public class CoreBlueprint {
 
     @Component
     public SpriteBatch spriteBatch() {
-        return ServiceProvider.create(SpriteBatch.class);
+        return ServiceProvider.get(SpriteBatch.class);
     }
 
     @Component

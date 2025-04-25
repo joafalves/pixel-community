@@ -6,7 +6,7 @@ import org.pixel.content.importer.*;
 public class GLContentManagerFactory implements ServiceFactory<ContentManager> {
 
     @Override
-    public ContentManager create() {
+    public ContentManager get() {
         return new ContentManager(new DesktopResourceLoader(),
                 // DESKTOP SPECIFIC IMPORTERS
                 new GLTextureImporter(),
