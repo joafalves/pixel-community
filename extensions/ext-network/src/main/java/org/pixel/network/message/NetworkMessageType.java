@@ -6,9 +6,9 @@ import lombok.Getter;
 public enum NetworkMessageType {
     HANDSHAKE_REQUEST((byte) 0x01),
     HANDSHAKE_RESPONSE((byte) 0x02),
-    DATA((byte) 0x03),
-    HEARTBEAT((byte) 0x04),
-    DISCONNECT((byte) 0x05);
+    DATA((byte) 0xA0),
+    HEARTBEAT((byte) 0xF0),
+    DISCONNECT((byte) 0xFA);
 
     private final byte value;
 

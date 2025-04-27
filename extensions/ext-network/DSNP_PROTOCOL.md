@@ -65,9 +65,9 @@ DSNP defines the following message types (each represented by 1 byte):
 |----------------|--------------------|-----------------|--------------------------------------------------------------------|
 | **0x01**       | Handshake Request  | Client → Server | Initiate connection and advertise basic protocol/network settings. |
 | **0x02**       | Handshake Response | Server → Client | Acknowledge the handshake and return a status message.             |
-| **0x03**       | Data Message       | Bidirectional   | Carry any in‑game data (commands, state updates, chat, etc.).      |
-| **0x04**       | Heartbeat          | Bidirectional   | Connection app-level heartbeat.                                    |
-| **0x05**       | Disconnect         | Bidirectional   | Gracefully terminate the connection.                               |
+| **0xA0**       | Data Message       | Bidirectional   | Carry any in‑game data (commands, state updates, chat, etc.).      |
+| **0xF0**       | Heartbeat          | Bidirectional   | Connection app-level heartbeat.                                    |
+| **0xFA**       | Disconnect         | Bidirectional   | Gracefully terminate the connection.                               |
 
 ---
 
@@ -156,7 +156,7 @@ status=200;heartbeat=30
 
 ---
 
-### 4.3 Data Message (Type 0x03)
+### 4.3 Data Message (Type 0xA0)
 
 **Purpose:**  
 Used for all in‑game communication, including commands, state updates, chat, and so on.
@@ -177,7 +177,7 @@ key=value format as above or more comprehensive formats like JSON.)
 
 ---
 
-### 4.4 Heartbeat (Type 0x04)   
+### 4.4 Heartbeat (Type 0xF0)   
 
 **Purpose:** 
 Application layer keep-alive message to ensure the connection remains active.
@@ -187,7 +187,7 @@ Some implementations might include data, e.g., a timestamp or service status, wi
 
 ---
 
-### 4.5 Disconnect (Type 0x05)
+### 4.5 Disconnect (Type 0xFA)
 
 **Purpose:**  
 Gracefully close the connection. This does not necessarily end the session, as the session's lifecycle is managed by 
@@ -219,16 +219,16 @@ reason=Maintenance;timeout=300
     - If the status in the Handshake Response is not successful, the connection is terminated.
 
 3. **Game Session:**  
-   After successful handshake, both parties exchange Data Messages (Type `0x03`) carrying all game-related data.
+   After successful handshake, both parties exchange Data Messages (Type `0xA0`) carrying all game-related data.
 
 4. **Connection Maintenance:**
    Both parties SHOULD have a configurable idle-timeout (time without data transfer), which, if reached, SHALL trigger
-   a Hearbeat (Type `0x04`) message to ensure the connection isn't closed prematurely. The idle-timeout SHOULD be
+   a Hearbeat (Type `0xF0`) message to ensure the connection isn't closed prematurely. The idle-timeout SHOULD be
    configured to no longer than 30 seconds, a value widely adopted in network protocols and load balancers to maintain 
    NAT bindings and keep-alive states across intermediate devices.
 
 5. **Disconnect:**  
-   Either party can send a Disconnect message (Type `0x05`) with an optional reason to gracefully end the connection.
+   Either party can send a Disconnect message (Type `0xFA`) with an optional reason to gracefully end the connection.
 
 ---
 
