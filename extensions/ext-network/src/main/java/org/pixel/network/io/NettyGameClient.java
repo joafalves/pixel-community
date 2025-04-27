@@ -12,7 +12,7 @@ import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.network.handler.ExceptionHandler;
 import org.pixel.network.handler.NetworkMessageDecoder;
 import org.pixel.network.handler.NetworkMessageEncoder;
-import org.pixel.network.handler.NetworkMessageLogger;
+import org.pixel.network.handler.NetworkLoggerHandler;
 
 public class NettyGameClient extends GameClient implements ChannelFutureListener {
 
@@ -49,7 +49,7 @@ public class NettyGameClient extends GameClient implements ChannelFutureListener
 
                             p.addLast(new NetworkMessageDecoder());
                             p.addLast(new NetworkMessageEncoder());
-                            p.addLast(new NetworkMessageLogger());
+                            p.addLast(new NetworkLoggerHandler());
 
                             p.addLast(new ExceptionHandler());
                         }

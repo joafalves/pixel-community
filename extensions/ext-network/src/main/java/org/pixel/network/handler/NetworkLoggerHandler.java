@@ -9,9 +9,9 @@ import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.network.message.NetworkMessage;
 
 @Sharable
-public class NetworkMessageLogger extends ChannelDuplexHandler {
+public class NetworkLoggerHandler extends ChannelDuplexHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(NetworkMessageLogger.class);
+    private static final Logger log = LoggerFactory.getLogger(NetworkLoggerHandler.class);
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {

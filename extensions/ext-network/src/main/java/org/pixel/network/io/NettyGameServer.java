@@ -61,7 +61,7 @@ public class NettyGameServer extends GameServer {
                             p.addLast(new ConnectionHandler(settings.getMaxConnections()));
                             p.addLast(new NetworkMessageDecoder());
                             p.addLast(new NetworkMessageEncoder());
-                            p.addLast(new NetworkMessageLogger());
+                            p.addLast(new NetworkLoggerHandler());
 
                             p.addLast(new ExceptionHandler());
                         }

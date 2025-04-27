@@ -1,6 +1,6 @@
 #  DSNP
 
-### Version: 1.0.0-alpha
+### Version: 1.0.0
 
 ---
 
@@ -15,6 +15,10 @@ Please note that for really intensive real‑time games (or for scenarios where 
 might need to consider UDP or a more sophisticated protocol on top of UDP. However, for many games, TCP is sufficient
 and much easier and safer to work with. Protocols like QUIC and SCTP are great in theory, but since they lack native
 support, over-the-top implementations can be complex and inefficient.
+
+Additionally, if needed, a UDP-based layer can work alongside DSNP. The DSNP handshake can be extended to exchange 
+additional security parameters, which would then be used to encode and decode data sent over a connectionless 
+transport like UDP.
 
 ---
 
@@ -41,13 +45,13 @@ Every DSNP message is framed as follows:
 
 - **Payload (variable):**  
   The message data. Its structure depends on the message type. It can be arbitrary binary, a simple ASCII/UTF‑8
-  encoded key=value string for control messages or any other format defined by the application (e.g. JSON).
+  encoded key=value string for control messages or any other format defined by the application (e.g., JSON).
 
 *Example:*  
 If a handshake request has a payload of `20 bytes`, the sender writes:
 
 - Magic header: `0xDE 0xAD`
-- Message Type: e.g. `0x01`
+- Message Type: e.g., `0x01`
 - Payload Length: 20 (encoded as 4 bytes, big‑endian)
 - Payload: 20 bytes of data
 
@@ -79,7 +83,7 @@ The client initiates a connection and provides its basic settings and authentica
 server configuration.
 
 This handshake might happen multiple times before the client connection is accepted. For example, if the authentication
-method is `"digest"`, the server may challenge the client with a nonce, and the client must respond with a digest
+method is `"digest"`, the server may challenge the client with a nonce, and the client must respond with a digest.
 
 **Payload Format (ASCII key=value pairs):**
 
@@ -173,12 +177,12 @@ key=value format as above or more comprehensive formats like JSON.)
 
 ---
 
-### 4.4 Heartbeat (Type 0x04)
+### 4.4 Heartbeat (Type 0x04)   
 
 **Purpose:** 
 Application layer keep-alive message to ensure the connection remains active.
 
-Has no payload (payload length is `0`) for most use-cases.
+By default, has no payload (payload length is `0`).
 Some implementations might include data, e.g., a timestamp or service status, with payload length defined accordingly.
 
 ---

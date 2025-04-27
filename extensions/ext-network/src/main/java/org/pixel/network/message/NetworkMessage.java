@@ -1,19 +1,17 @@
 package org.pixel.network.message;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-
-import java.nio.ByteBuffer;
 
 @Getter
 @Setter
-@AllArgsConstructor
+@RequiredArgsConstructor
 public abstract class NetworkMessage {
     public static final short MAGIC_HEADER = (short) 0xDEAD;
     public static final int HEADER_SIZE = 7; // 2 (magic) + 1 (type) + 4 (length)
 
-    private NetworkMessageType type;
+    private final NetworkMessageType type;
 
     public abstract byte[] getPayload();
 

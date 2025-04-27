@@ -57,7 +57,7 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
         log.trace("Creating message: type={0}.", type);
 
         return switch (type) {
-            case DATA -> new DataMessage(type, payload);
+            case DATA -> new DataMessage(payload);
             case HANDSHAKE_REQUEST, HANDSHAKE_RESPONSE, HEARTBEAT, DISCONNECT -> createKeyValueMessage(type, payload);
             default -> throw new IllegalArgumentException("Unknown message type: " + type);
         };
