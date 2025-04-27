@@ -5,8 +5,7 @@ android {
 
     defaultConfig {
         compileSdk 34
-        minSdk 34
-        buildToolsVersion = "34.0.0"
+        minSdk 30
 
         versionCode 1
         versionName rootProject.version

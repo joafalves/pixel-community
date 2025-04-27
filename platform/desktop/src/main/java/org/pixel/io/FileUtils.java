@@ -35,7 +35,13 @@ public class FileUtils {
      * @return The image data.
      */
     public static ImageData loadImage(String filepath) {
-        byte[] data = loadFile(filepath);
+        byte[] data;
+        try {
+            data = loadFile(filepath);
+        } catch (IOException e) {
+           log.error("Exception caught while reading file {0}: {1}", filepath, e.getMessage(), e);
+           return null;
+        }
         if (data == null) {
             log.warn("Unable to load image due to IO failure (cannot read file from {0}).", filepath);
             return null;
@@ -65,7 +71,7 @@ public class FileUtils {
      * @param filepath The file path (relative paths allowed).
      * @return The byte buffer.
      */
-    public static byte[] loadFile(String filepath) {
+    public static byte[] loadFile(String filepath) throws IOException {
         Path path = Paths.get(filepath);
 
         // Handle relative paths
@@ -76,9 +82,6 @@ public class FileUtils {
                     return null;
                 }
                 return in.readAllBytes();
-            } catch (IOException e) {
-                log.error("Exception caught while loading relative path resource!", e);
-                return null;
             }
         }
 

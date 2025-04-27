@@ -1,6 +1,6 @@
 ![Pixel - Java Game Framework](./.github/IMAGES/banner.png)
 
-![](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20MacOS-lightgrey) ![](https://img.shields.io/badge/java-%3E%3D%2011-green)
+![](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20MacOS-lightgrey)
 
 ## Pixel Framework ##
 
@@ -122,7 +122,7 @@ The framework functionality is divided into multiple modules which can be import
 
 ### Runtime requirements ###
 
-- Java/JDK 21.x+
+- Java/JDK 17.x+
 
 ### Development requirements ###
 

@@ -5,7 +5,6 @@ import android.content.Context;
 import org.pixel.commons.ServiceProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.core.MobileTags;
 
 import java.io.BufferedReader;
 import java.io.IOException;

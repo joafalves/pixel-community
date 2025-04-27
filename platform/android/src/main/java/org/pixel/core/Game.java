@@ -69,7 +69,7 @@ public abstract class Game
                         "Unsupported graphics backend: " + this.settings.getGraphicsBackend());
         }
 
-        // Register the android context.
+        // Register the android context:
         ServiceProvider.set(Context.class, () -> androidContext);
 
         return true;
