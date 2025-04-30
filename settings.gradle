@@ -53,6 +53,9 @@ include "extensions/ext-log4j2",
         "extensions/ext-tween",
         "extensions/ext-network"
 
+// tools:
+include "tools/arkade"
+
 // demos:
 if (System.properties["PIXEL_RELEASE"] == null) {
     // desktop:
@@ -68,7 +71,7 @@ if (System.properties["PIXEL_RELEASE"] == null) {
 
 // bootstrap module names:
 rootProject.children.each(({
-    def parts = it.name.split(File.separator)
+    def parts = it.name.split("/")
     def prefix = rootProject.name + "-"
     it.name = prefix + parts.last()
 } as Closure))

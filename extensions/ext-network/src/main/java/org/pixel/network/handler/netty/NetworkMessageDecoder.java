@@ -1,4 +1,4 @@
-package org.pixel.network.handler;
+package org.pixel.network.handler.netty;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -7,6 +7,8 @@ import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.network.message.*;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class NetworkMessageDecoder extends ByteToMessageDecoder {
@@ -73,18 +75,29 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
         };
 
         if (payload.length > 0) {
-            String content = new String(payload);
-            String[] pairs = content.split(";");
-            for (String pair : pairs) {
-                if (!pair.isEmpty()) {
-                    String[] keyValue = pair.split("=", 2);
-                    if (keyValue.length == 2) {
-                        log.trace("Parsed key-value pair: {0}={1}.", keyValue[0], keyValue[1]);
-                        message.add(keyValue[0], keyValue[1]);
-                    }
+            String content = new String(payload, StandardCharsets.UTF_8);
+            int start = 0;
+            int len = content.length();
+
+            while (start < len) {
+                int sepIndex = content.indexOf('=', start);
+                if (sepIndex == -1) break;
+
+                int endIndex = content.indexOf(';', sepIndex);
+                if (endIndex == -1) endIndex = len;
+
+                String key = content.substring(start, sepIndex);
+                String value = content.substring(sepIndex + 1, endIndex);
+
+                if (!key.isEmpty() && !value.isEmpty()) {
+                    log.trace("Parsed key-value pair: {}={}.", key, value);
+                    message.add(key, value);
                 }
+
+                start = endIndex + 1;
             }
         }
+
         return message;
     }
 }

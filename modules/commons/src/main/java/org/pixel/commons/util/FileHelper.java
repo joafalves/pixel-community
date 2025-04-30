@@ -7,7 +7,7 @@ package org.pixel.commons.util;
 
 import java.io.File;
 
-public class FileUtils {
+public class FileHelper {
 
     public static final String FILE_SEPARATOR = "/";
     public static final String SYSTEM_FILE_SEPARATOR = File.separator;
@@ -22,7 +22,7 @@ public class FileUtils {
         int index = path.lastIndexOf(FILE_SEPARATOR);
         if (index < 0) {
             // try with system separator...
-            index = path.lastIndexOf(File.separator);
+            index = path.lastIndexOf(SYSTEM_FILE_SEPARATOR);
         }
 
         return index < 0 ? path : path.substring(0, index);

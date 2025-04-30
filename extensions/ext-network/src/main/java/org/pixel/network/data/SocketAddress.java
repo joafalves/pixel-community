@@ -27,4 +27,11 @@ public class SocketAddress implements Serializable {
         this.host = host;
         this.port = port;
     }
+
+    public static SocketAddress from(java.net.SocketAddress socketAddress) {
+        if (socketAddress instanceof java.net.InetSocketAddress inetSocketAddress) {
+            return new SocketAddress(inetSocketAddress.getHostString(), inetSocketAddress.getPort());
+        }
+        throw new IllegalArgumentException("Unsupported socket address type: " + socketAddress.getClass());
+    }
 }

@@ -1,4 +1,4 @@
-package org.pixel.network.handler;
+package org.pixel.network.handler.netty;
 
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
@@ -16,7 +16,12 @@ public class NetworkLoggerHandler extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         if (msg instanceof NetworkMessage message) {
-            log.debug("Received message: type={0}.", message.getType());
+            if (log.isTraceEnabled()) {
+                log.trace("Received message: type -> {0}, payload -> {1}",
+                        message.getType(), new String(message.getPayload()));
+            } else {
+                log.debug("Received message: type -> {0}.", message.getType());
+            }
         }
         ctx.fireChannelRead(msg);
     }
@@ -24,7 +29,13 @@ public class NetworkLoggerHandler extends ChannelDuplexHandler {
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
         if (msg instanceof NetworkMessage message) {
-            log.debug("Sending message: type={0}.", message.getType());
+            if (log.isTraceEnabled()) {
+                log.trace("Sending message: type -> {0}, payload -> {1}",
+                        message.getType(), new String(message.getPayload()));
+            }
+            else {
+                log.debug("Sending message: type -> {0}.", message.getType());
+            }
         }
         ctx.write(msg, promise);
     }

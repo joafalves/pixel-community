@@ -1,15 +1,28 @@
 package org.pixel.demo.learning.network;
 
 import org.pixel.commons.Color;
+import org.pixel.commons.data.DataMap;
 import org.pixel.commons.logger.ConsoleLogger;
 import org.pixel.commons.logger.LogLevel;
+import org.pixel.commons.util.TextHelper;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
+import org.pixel.network.api.NetworkAuthenticator;
 import org.pixel.network.data.SocketAddress;
 import org.pixel.network.io.*;
+import org.pixel.network.io.netty.NettyGameClient;
+import org.pixel.network.io.netty.NettyGameServer;
 import org.pixel.network.message.HandshakeRequest;
+import org.pixel.network.security.AuthType;
 
-public class SimpleNetworkDemo extends DemoGame {
+import java.util.List;
+
+/**
+ * This is a simple network demo that demonstrates how to use the *core* network library.
+ * Use this demo as an example to create your own networked game with full control over the network layer.
+ * Please check Arkade for a more complete and higher-level network solution.
+ */
+public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator {
 
     private static final String SERVER_HOST = "localhost";
     private static final int SERVER_PORT = 8888;
@@ -29,6 +42,16 @@ public class SimpleNetworkDemo extends DemoGame {
     }
 
     @Override
+    public DataMap authenticate(String username, String password, SocketAddress userAddress) {
+        // In a real application, you would check the username and password against a database or other authentication:
+        var userData = new DataMap();
+        userData.put("username", username);
+        userData.put("email", username + "@example.com");
+
+        return userData;
+    }
+
+    @Override
     public void load() {
         super.load();
 
@@ -41,7 +64,9 @@ public class SimpleNetworkDemo extends DemoGame {
                 .bindAddress(new SocketAddress(SERVER_HOST, SERVER_PORT))
                 .maxConnections(10)
                 .numThreads(5)
+                .allowedAuthTypes(List.of(AuthType.BASIC))
                 .build());
+        gameServer.setAuthenticator(this);
 
         // Create a new CLIENT instance:
         gameClient = new NettyGameClient(GameClientSettings.builder()
@@ -56,11 +81,10 @@ public class SimpleNetworkDemo extends DemoGame {
             throw new RuntimeException("Failed to initialize client");
         }
 
+        var auth = "myUsername:myPassword";
         var handshake = new HandshakeRequest();
-        handshake.add("username", "player1");
+        handshake.add("auth", "basic " + TextHelper.encodeBase64(auth)) ;
 
-        gameClient.write(handshake);
-        gameClient.write(handshake);
         gameClient.write(handshake);
     }
 

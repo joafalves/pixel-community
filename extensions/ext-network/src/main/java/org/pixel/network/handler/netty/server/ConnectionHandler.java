@@ -1,4 +1,4 @@
-package org.pixel.network.handler;
+package org.pixel.network.handler.netty.server;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;

@@ -5,6 +5,11 @@ import org.pixel.commons.logger.Logger;
 
 public class Log4j2Logger extends Logger {
 
+    /**
+     * The Log4j2 message factory.
+     * This is used to format messages with parameters using the MessageFormat.
+     * E.g. "Hello {0}" will be formatted with the first parameter.
+     */
     private final static org.apache.logging.log4j.message.MessageFormatMessageFactory factory
             = new MessageFormatMessageFactory();
 

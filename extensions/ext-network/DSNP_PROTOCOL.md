@@ -89,31 +89,27 @@ method is `"digest"`, the server may challenge the client with a nonce, and the 
 
 - **ver:** API version (e.g., `"1.0"`)
 - **scope:** A scope identifier (e.g., `"game"`, `"lobby"`)
-- **auth:** Authentication method (e.g., `"none"`, `"basic"`, `"digest"`)
+- **auth:** Authentication line (e.g., `"basic <base64(username:password)>"`)
 
-**Payload Auth fields (basic):**
+> Not setting the `auth` field means that the client doesn't suggest any authentication method. The server may
+> respond with a challenge or accept the connection without authentication.
 
-- **auth**: `"basic"`
-- **username:** Username for basic authentication.
-- **password:** Password for basic authentication.
+**Payload Auth fields (BASIC example):**
 
-**Payload Auth fields (digest, first-request):**
+- **auth**: `"basic <base64(username:password)>"`
 
-- **auth:** `"digest"`
+**Payload Auth fields (DIGEST example):**
 
-**Payload Auth fields (digest, subsequent-request):**
+DIGEST authentication may be started when the server doesn't support BASIC authentication or the client does not
+provide the `auth` field. The server will respond with a challenge, and the client must respond with a digest.
 
-- **auth:** `"digest"`
-- **nonce:** Server nonce.
-- **cnonce:** Client nonce.
-- **response:** Digest response.
-- **qop:** Quality of protection (e.g., `"auth"`, `"auth-int"`) - based on the server challenge.
-- **nc:** Nonce count (incremented for each new handshake).
+- **auth:** `"digest username="<username>", realm="<realm>", nonce="<server-nonce>", uri="<scope>", 
+response="<MD5(username:realm:password:nonce:cnonce:nc)>", nc="<nonce-count>", cnonce="<client-nonce>"
 
 **Example Payload String:**
 
 ```
-ver=1.0;scope=game;auth=basic;username=player1;password=secret
+ver=1.0;scope=game;auth=basic dXNlcm5hbWU6cGFzc3dvcmQ=
 ```
 
 *On the wire, DSNP sends:*
@@ -121,7 +117,7 @@ ver=1.0;scope=game;auth=basic;username=player1;password=secret
 - Magic Header: `0xDE 0xAD`
 - Message Type: `0x01`
 - Payload Length: (length of the above ASCII string in bytes)
-- Payload: the ASCII bytes for `"..."`
+- Payload: `...`
 
 ---
 
@@ -138,20 +134,19 @@ values use HTTP‑like codes (e.g., `"200"` for success, `"401"` for unauthorize
 - **status:** `"200"`, `"401"` or any HTTP‑like status code.
 - **reason:** (optional) A message on error (e.g., `"Invalid version"`).
 - **heartbeat:** (optional) Heartbeat interval in seconds.
+- **auth:** (optional) Authentication challenge line (e.g., `"digest realm=game,nonce=<server-nonce>,..."`).
 
-**Payload Auth fields (digest, challenge):**
-
-- **auth:** `"digest"`
-- **nonce:** Server nonce.
-- **qop:** Quality of protection (e.g., `"auth"`, `"auth-int"`).
-- **realm:** Authentication realm.
-- **opaque:** Opaque value.
-- **algorithm:** Hash algorithm (e.g., `"MD5"`, `"SHA-256"`).
-
-**Example Payload:**
+**Example Payload (simple):**
 
 ```
 status=200;heartbeat=30
+```
+
+**Example Payload (with DIGEST auth challenge):**
+
+```
+status=401;reason=Unauthorized;auth=digest realm="dsnp",nonce="5d41402abc4b2a76b9719d911017c592",qop="auth",
+algorithm=MD5,opaque="3b4f1e2d9a7c6f5b8e1d2c3a4b5e6f7a"
 ```
 
 ---

@@ -1,6 +1,6 @@
 package org.pixel.ext.ecs;
 
-import org.pixel.commons.data.DataHashMap;
+import org.pixel.commons.data.DataMap;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.ext.ecs.lifecycle.Attachable;
 
@@ -11,7 +11,7 @@ import java.util.List;
 public abstract class GameObjectContainer implements Attachable<GameObjectContainer>, Disposable, Serializable {
 
     private transient GameObjectContainer parent;
-    private transient DataHashMap dataHashMap = new DataHashMap();
+    private transient DataMap dataMap = new DataMap();
 
     private final List<GameObject> children;
     private String name;
@@ -73,8 +73,8 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
             var in = new ObjectInputStream(bis);
 
             var copy = (GameObjectContainer) in.readObject();
-            copy.dataHashMap = new DataHashMap();
-            copy.dataHashMap.putAll(this.dataHashMap);
+            copy.dataMap = new DataMap();
+            copy.dataMap.putAll(this.dataMap);
 
             return copy;
 
@@ -345,8 +345,8 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
      *
      * @return The attribute map of this game object.
      */
-    public DataHashMap getData() {
-        return dataHashMap;
+    public DataMap getData() {
+        return dataMap;
     }
 
     /**

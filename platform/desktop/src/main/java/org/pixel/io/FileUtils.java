@@ -9,6 +9,7 @@ import org.lwjgl.system.MemoryStack;
 import org.pixel.commons.data.ImageData;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.commons.util.FileHelper;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -76,7 +77,7 @@ public class FileUtils {
 
         // Handle relative paths
         if (!path.isAbsolute()) {
-            try (InputStream in = org.pixel.commons.util.FileUtils.class.getClassLoader().getResourceAsStream(filepath)) {
+            try (InputStream in = FileHelper.class.getClassLoader().getResourceAsStream(filepath)) {
                 if (in == null) {
                     log.warn("Unable to load local resource file {0}.", filepath);
                     return null;

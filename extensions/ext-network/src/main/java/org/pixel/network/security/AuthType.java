@@ -1,6 +1,8 @@
 package org.pixel.network.security;
 
-public enum AuthenticationType {
+public enum AuthType {
+    NONE,
     BASIC,
+    BEARER,
     DIGEST
 }

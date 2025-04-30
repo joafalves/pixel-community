@@ -1,4 +1,4 @@
-package org.pixel.network.handler;
+package org.pixel.network.handler.netty;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;

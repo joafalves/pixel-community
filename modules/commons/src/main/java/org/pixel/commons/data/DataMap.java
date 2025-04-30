@@ -3,7 +3,7 @@ package org.pixel.commons.data;
 import java.util.HashMap;
 import java.util.List;
 
-public class DataHashMap extends HashMap<String, Object> {
+public class DataMap extends HashMap<String, Object> {
 
     /**
      * Associates the specified value with the specified key in this map.
@@ -224,5 +224,19 @@ public class DataHashMap extends HashMap<String, Object> {
      */
     public List<?> getList(String key) {
         return get(key, List.class, null);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        for (String key : this.keySet()) {
+            sb.append(key).append("=").append(this.get(key)).append(", ");
+        }
+        if (sb.length() > 1) {
+            sb.setLength(sb.length() - 2); // remove last comma and space
+        }
+        sb.append("}");
+        return sb.toString();
     }
 }

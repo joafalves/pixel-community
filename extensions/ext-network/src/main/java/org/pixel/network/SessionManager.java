@@ -1,6 +1,6 @@
 package org.pixel.network;
 
-import org.pixel.network.data.Session;
+import org.pixel.network.data.NetworkSession;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SessionManager {
 
     // Session map where the key is the session token and the value is the session object
-    private final Map<String, Session> sessions = new ConcurrentHashMap<>();
+    private final Map<String, NetworkSession> sessions = new ConcurrentHashMap<>();
 
     /**
      * Add session to the session manager.
@@ -16,8 +16,8 @@ public class SessionManager {
      * @param session - session object
      * @return session object if there was a session with the same token, null otherwise
      */
-    public Session addSession(Session session) {
-        return sessions.put(session.getSessionToken(), session);
+    public NetworkSession addSession(NetworkSession session) {
+        return sessions.put(session.getId(), session);
     }
 
     /**
@@ -26,8 +26,8 @@ public class SessionManager {
      * @param session - session object
      * @return session object if there was a session with the same token, null otherwise
      */
-    public Session removeSession(Session session) {
-        return sessions.remove(session.getSessionToken());
+    public NetworkSession removeSession(NetworkSession session) {
+        return sessions.remove(session.getId());
     }
 
     /**
@@ -36,7 +36,7 @@ public class SessionManager {
      * @param token - session token
      * @return session object if there was a session with the same token, null otherwise
      */
-    public Session getSession(String token) {
+    public NetworkSession getSession(String token) {
         return sessions.get(token);
     }
 }

@@ -1,4 +1,4 @@
-package org.pixel.network.io;
+package org.pixel.network.io.netty;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -9,10 +9,12 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.network.handler.ExceptionHandler;
-import org.pixel.network.handler.NetworkMessageDecoder;
-import org.pixel.network.handler.NetworkMessageEncoder;
-import org.pixel.network.handler.NetworkLoggerHandler;
+import org.pixel.network.handler.netty.ExceptionHandler;
+import org.pixel.network.handler.netty.NetworkMessageDecoder;
+import org.pixel.network.handler.netty.NetworkMessageEncoder;
+import org.pixel.network.handler.netty.NetworkLoggerHandler;
+import org.pixel.network.io.GameClient;
+import org.pixel.network.io.GameClientSettings;
 
 public class NettyGameClient extends GameClient implements ChannelFutureListener {
 
