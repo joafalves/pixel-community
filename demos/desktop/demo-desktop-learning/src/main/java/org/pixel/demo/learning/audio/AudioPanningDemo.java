@@ -34,6 +34,7 @@ public class AudioPanningDemo extends AudioDemo {
 
         spriteBatch = ServiceProvider.get(SpriteBatch.class);
         camera = new Camera2D(this);
+        camera.setOrigin(0.5f);
         texturePosition = new Vector2();
 
         texture = contentManager.load("images/earth-48x48.png", Texture.class);

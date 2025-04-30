@@ -122,7 +122,7 @@ The framework functionality is divided into multiple modules which can be import
 
 ### Runtime requirements ###
 
-- Java/JDK 17.x+
+- Java/JDK 21.x+
 
 ### Development requirements ###
 

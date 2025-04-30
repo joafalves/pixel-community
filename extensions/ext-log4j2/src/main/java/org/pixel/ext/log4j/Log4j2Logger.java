@@ -9,8 +9,7 @@ public class Log4j2Logger extends Logger {
             = new MessageFormatMessageFactory();
 
     private final org.apache.logging.log4j.Logger logger;
-
-
+    
     /**
      * Constructor.
      *

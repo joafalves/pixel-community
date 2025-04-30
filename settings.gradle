@@ -67,8 +67,8 @@ if (System.properties["PIXEL_RELEASE"] == null) {
 }
 
 // bootstrap module names:
-rootProject.children.each {
-    def parts = it.name.split("/")
+rootProject.children.each(({
+    def parts = it.name.split(File.separator)
     def prefix = rootProject.name + "-"
     it.name = prefix + parts.last()
-}
+} as Closure))

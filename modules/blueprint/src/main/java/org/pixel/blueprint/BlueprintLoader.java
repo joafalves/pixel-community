@@ -47,19 +47,30 @@ public class BlueprintLoader {
         // Step 1: Register components from Blueprint classes
         for (Class<?> blueprint : blueprintClasses) {
             for (var method : blueprint.getDeclaredMethods()) {
-                if (method.isAnnotationPresent(Component.class)) {
-                    String componentName = getComponentName(method);
-                    dependencyGraph.putIfAbsent(componentName, new HashSet<>());
-
-                    // Collect dependencies based on parameters annotated with @Auto
-                    for (Parameter parameter : method.getParameters()) {
-                        if (parameter.isAnnotationPresent(Auto.class)) {
-                            String dependencyName = getDependencyName(parameter);
-                            dependencyGraph.get(componentName).add(dependencyName);
-                        }
-                    }
-                    componentMethods.put(componentName, method);
+                if (!method.isAnnotationPresent(Component.class)) {
+                    continue;
                 }
+
+                String componentName = getComponentName(method);
+                if (componentName == null || componentName.isEmpty()) {
+                    log.warn("Blueprint {0} has unnamed Component annotation!", blueprint.getSimpleName());
+                    continue;
+                }
+
+                dependencyGraph.putIfAbsent(componentName, new HashSet<>());
+
+                // Collect dependencies based on parameters annotated with @Auto
+                for (Parameter parameter : method.getParameters()) {
+                    if (parameter.isAnnotationPresent(Auto.class)) {
+                        String dependencyName = getDependencyName(parameter);
+                        if (dependencyName == null || dependencyName.isEmpty()) {
+                            continue;
+                        }
+
+                        dependencyGraph.get(componentName).add(dependencyName);
+                    }
+                }
+                componentMethods.put(componentName, method);
             }
         }
 
@@ -67,6 +78,12 @@ public class BlueprintLoader {
         Map<String, Class<?>> serviceClassesMap = new HashMap<>();
         for (Class<?> serviceClass : serviceClasses) {
             String serviceName = getServiceName(serviceClass);
+            if (serviceName == null || serviceName.isEmpty()) {
+                continue;
+            }
+
+
+
             serviceClassesMap.put(serviceName, serviceClass);
             dependencyGraph.putIfAbsent(serviceName, new HashSet<>());
 
@@ -76,6 +93,9 @@ public class BlueprintLoader {
                     .filter(parameter -> parameter.isAnnotationPresent(Auto.class))
                     .forEach(parameter -> {
                         String dependencyName = getDependencyName(parameter);
+                        if (dependencyName == null) {
+                            return;
+                        }
                         dependencyGraph.get(serviceName).add(dependencyName);
                     });
         }
@@ -95,17 +115,29 @@ public class BlueprintLoader {
 
     private static String getComponentName(Method method) {
         Component annotation = method.getAnnotation(Component.class);
+        if (annotation == null) {
+            return null;
+        }
+
         return annotation.value().isEmpty() ? method.getName() : annotation.value();
     }
 
     private static String getServiceName(Class<?> serviceClass) {
         Service annotation = serviceClass.getAnnotation(Service.class);
+        if (annotation == null) {
+            return null;
+        }
+
         return annotation.value().isEmpty() ? serviceClass.getSimpleName() : annotation.value();
     }
 
     private static String getDependencyName(Parameter parameter) {
-        Auto autoAnnotation = parameter.getAnnotation(Auto.class);
-        return !autoAnnotation.value().isEmpty() ? autoAnnotation.value() : parameter.getName();
+        Auto annotation = parameter.getAnnotation(Auto.class);
+        if (annotation == null) {
+            return null;
+        }
+
+        return !annotation.value().isEmpty() ? annotation.value() : parameter.getName();
     }
 
     public static List<String> topologicalSort(Map<String, Set<String>> dependencyGraph) {
@@ -126,7 +158,7 @@ public class BlueprintLoader {
             Set<String> visited, Set<String> resolved, List<String> sorted) {
 
         if (visited.contains(component)) {
-            throw new IllegalStateException("Circular dependency detected involving " + component);
+            throw new IllegalStateException("Circular dependency detected involving component: " + component);
         }
 
         if (!resolved.contains(component)) {
@@ -147,7 +179,7 @@ public class BlueprintLoader {
             Object result = method.invoke(blueprintInstance, params);
             repository.registerComponent(result.getClass(), result, componentName);
         } catch (Exception e) {
-            log.error("Failed to instantiate component: " + componentName, e);
+            log.error("Failed to instantiate component: {0}.", componentName, e);
         }
     }
 
@@ -156,7 +188,7 @@ public class BlueprintLoader {
             Object serviceInstance = BlueprintAssembler.assemble(repository, serviceClass);
             repository.registerService(serviceClass, serviceInstance, serviceName);
         } catch (Exception e) {
-            log.error("Failed to instantiate service: " + serviceName, e);
+            log.error("Failed to instantiate service: {0}.", serviceName, e);
         }
     }
 }
