@@ -6,9 +6,9 @@ import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.network.data.SocketAddress;
-import org.pixel.network.io.GameServer;
-import org.pixel.network.io.GameServerSettings;
-import org.pixel.network.io.netty.NettyGameServer;
+import org.pixel.network.io.NetworkServer;
+import org.pixel.network.io.NetworkServerSettings;
+import org.pixel.network.io.netty.NettyNetworkServer;
 
 public class Arkade implements Initializable, Runnable, Disposable {
 
@@ -17,7 +17,7 @@ public class Arkade implements Initializable, Runnable, Disposable {
     private final ArkadeSettings settings;
 
     private State state = State.NEW;
-    private GameServer gameServer = null;
+    private NetworkServer networkServer = null;
 
     public Arkade(ArkadeSettings settings) {
         this.settings = settings;
@@ -38,7 +38,7 @@ public class Arkade implements Initializable, Runnable, Disposable {
         );
 
         // Bootstrap the game server
-        gameServer = new NettyGameServer(GameServerSettings.builder()
+        networkServer = new NettyNetworkServer(NetworkServerSettings.builder()
                 .bindAddress(bindingAddress)
                 .maxConnections(settings.getNetwork().getMaxConnections())
                 .forceSSL(settings.getNetwork().isForceSSL())
@@ -49,7 +49,7 @@ public class Arkade implements Initializable, Runnable, Disposable {
 
 
 
-        if (!gameServer.init()) {
+        if (!networkServer.init()) {
             throw new RuntimeException("Failed to initialize game server");
         }
 

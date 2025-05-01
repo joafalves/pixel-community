@@ -16,7 +16,7 @@ public class NetworkLoggerHandler extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         if (msg instanceof NetworkMessage message) {
-            if (log.isTraceEnabled()) {
+            if (log.isTraceEnabled() && message.getPayload() != null && message.getPayload().length > 0) {
                 log.trace("Received message: type -> {0}, payload -> {1}",
                         message.getType(), new String(message.getPayload()));
             } else {
@@ -29,7 +29,7 @@ public class NetworkLoggerHandler extends ChannelDuplexHandler {
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
         if (msg instanceof NetworkMessage message) {
-            if (log.isTraceEnabled()) {
+            if (log.isTraceEnabled() && message.getPayload() != null && message.getPayload().length > 0) {
                 log.trace("Sending message: type -> {0}, payload -> {1}",
                         message.getType(), new String(message.getPayload()));
             }

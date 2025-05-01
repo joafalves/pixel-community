@@ -5,9 +5,9 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import org.pixel.commons.DeltaTime;
-import org.pixel.commons.Timer;
-import org.pixel.commons.lifecycle.State;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.network.data.NetworkSession;
@@ -15,17 +15,19 @@ import org.pixel.network.handler.netty.*;
 import org.pixel.network.handler.netty.server.ConnectionHandler;
 import org.pixel.network.handler.netty.server.HandshakeRequestHandler;
 import org.pixel.network.handler.netty.server.InboundSecurityHandler;
-import org.pixel.network.io.GameServer;
-import org.pixel.network.io.GameServerSettings;
+import org.pixel.network.io.NetworkServer;
+import org.pixel.network.io.NetworkServerSettings;
 import org.pixel.network.security.AuthType;
 
-public class NettyGameServer extends GameServer {
+import java.util.concurrent.atomic.AtomicInteger;
 
-    private static final Logger log = LoggerFactory.getLogger(NettyGameServer.class);
+public class NettyNetworkServer extends NetworkServer {
 
-    private final Timer statsTimer;
+    private static final Logger log = LoggerFactory.getLogger(NettyNetworkServer.class);
 
-    private State state = State.NEW;
+    private final AtomicInteger connectionCount = new AtomicInteger(0);
+
+    private Channel channel;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
@@ -34,27 +36,25 @@ public class NettyGameServer extends GameServer {
      *
      * @param settings - The game server settings
      */
-    public NettyGameServer(GameServerSettings settings) {
+    public NettyNetworkServer(NetworkServerSettings settings) {
         super(settings);
-        this.statsTimer = new Timer(settings.getStatsLogYieldSeconds() * 1000L);
     }
 
     @Override
     public boolean init() {
-        if (state.isActive()) {
-            log.warn("Server already initialized.");
+        if (isActive()) {
+            log.warn("Server already active, dispose before re-initializing.");
             return false;
         }
 
         if (authenticator == null && !settings.getAllowedAuthTypes().contains(AuthType.NONE)) {
-            log.warn("Authenticator is not set.");
+            log.warn("Authenticator is not set!");
             return false;
         }
 
-        state = State.INITIALIZING;
-
         bossGroup = new MultiThreadIoEventLoopGroup(settings.getNumThreads(), NioIoHandler.newFactory());
         workerGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());
+        connectionCount.set(0);
 
         try {
             // TODO: support SSL
@@ -77,6 +77,7 @@ public class NettyGameServer extends GameServer {
                             p.addLast(new InboundSecurityHandler());
 
                             p.addLast(new ExceptionHandler());
+                            p.addLast(new IdleStateHandler(settings.getMaxIdleTimeSeconds(), 0, 0));
 
                             // GameServer clean-up handler:
                             p.addLast(new ChannelInboundHandlerAdapter() {
@@ -92,33 +93,50 @@ public class NettyGameServer extends GameServer {
                                     ctx.channel().attr(NettyUtils.SESSION).set(null);
                                     super.channelInactive(ctx);
                                 }
+
+                                @Override
+                                public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+                                    connectionCount.incrementAndGet();
+                                    super.channelRegistered(ctx);
+                                }
+
+                                @Override
+                                public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
+                                    connectionCount.decrementAndGet();
+                                    super.channelUnregistered(ctx);
+                                }
+
+                                @Override
+                                public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+                                    if (evt instanceof IdleStateEvent e) {
+                                        if (e.state() == IdleState.READER_IDLE) {
+                                            NetworkSession session = NettyUtils.getSession(ctx.channel());
+                                            if (session != null) {
+                                                log.info("Closing idle session {0}", session.getId());
+                                            }
+                                            ctx.close(); // or custom session purge logic
+                                        }
+                                    } else {
+                                        super.userEventTriggered(ctx, evt);
+                                    }
+                                }
                             });
                         }
                     });
 
             // bind the server and accept incoming connections:
-            bootstrap.bind(settings.getBindAddress().getHost(), settings.getBindAddress().getPort()).sync();
+            var future = bootstrap.bind(settings.getBindAddress().getHost(), settings.getBindAddress().getPort()).sync();
+            channel = future.channel();
+
+            log.info("Server started on {0}:{1}.",
+                    settings.getBindAddress().getHost(), settings.getBindAddress().getPort());
 
         } catch (Exception e) {
             log.error("Failed to initialize server: {0}.", e.getMessage(), e);
-            state = State.NEW;
             return false;
         }
 
-        state = State.INITIALIZED;
-
         return true;
-    }
-
-    @Override
-    public void update(DeltaTime delta) {
-        if (!state.isActive()) {
-            return;
-        }
-
-        if (statsTimer.check(delta)) {
-            logStats();
-        }
     }
 
     @Override
@@ -132,16 +150,19 @@ public class NettyGameServer extends GameServer {
             workerGroup.shutdownGracefully();
             workerGroup = null;
         }
-
-        state = State.DISPOSED;
     }
 
     @Override
-    public State getState() {
-        return state;
+    public boolean isActive() {
+        return channel != null && channel.isActive();
     }
 
-    private void logStats() {
-        log.info("Active connections: {0}.", 0);
+    @Override
+    public int getConnectionCount() {
+        if (!isActive()) {
+            return 0;
+        }
+
+        return connectionCount.get();
     }
 }

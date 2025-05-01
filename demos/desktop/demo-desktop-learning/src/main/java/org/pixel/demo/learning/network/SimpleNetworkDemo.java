@@ -4,16 +4,16 @@ import org.pixel.commons.Color;
 import org.pixel.commons.data.DataMap;
 import org.pixel.commons.logger.ConsoleLogger;
 import org.pixel.commons.logger.LogLevel;
-import org.pixel.commons.util.TextHelper;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.network.api.NetworkAuthenticator;
 import org.pixel.network.data.SocketAddress;
 import org.pixel.network.io.*;
-import org.pixel.network.io.netty.NettyGameClient;
-import org.pixel.network.io.netty.NettyGameServer;
+import org.pixel.network.io.netty.NettyNetworkClient;
+import org.pixel.network.io.netty.NettyNetworkServer;
 import org.pixel.network.message.HandshakeRequest;
 import org.pixel.network.security.AuthType;
+import org.pixel.network.security.BasicAuth;
 
 import java.util.List;
 
@@ -27,8 +27,9 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator 
     private static final String SERVER_HOST = "localhost";
     private static final int SERVER_PORT = 8888;
 
-    private GameServer gameServer;
-    private GameClient gameClient;
+    private NetworkServer networkServer;
+    private NetworkClient networkClientA;
+    private NetworkClient networkClientB;
 
     /**
      * Constructor
@@ -43,12 +44,15 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator 
 
     @Override
     public DataMap authenticate(String username, String password, SocketAddress userAddress) {
-        // In a real application, you would check the username and password against a database or other authentication:
+        // In a real application, you would check the username and password against a proper authentication system...
         var userData = new DataMap();
         userData.put("username", username);
         userData.put("email", username + "@example.com");
+        userData.put("credits", 1000);
+        userData.put("host", userAddress.getHost());
+        // ...
 
-        return userData;
+        return userData; // You MUST return null if authentication fails.
     }
 
     @Override
@@ -56,42 +60,54 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator 
         super.load();
 
         // Note: This demo contains both the server and clients in the same application for demonstration purposes.
-        // Please note that the game-server, in a real scenario, MIGHT actually be executed on the game-side (for e.g.
-        // the player is hosting the game session).
 
         // Create a new SERVER instance:
-        gameServer = new NettyGameServer(GameServerSettings.builder()
+        networkServer = new NettyNetworkServer(NetworkServerSettings.builder()
                 .bindAddress(new SocketAddress(SERVER_HOST, SERVER_PORT))
                 .maxConnections(10)
                 .numThreads(5)
                 .allowedAuthTypes(List.of(AuthType.BASIC))
+                .maxIdleTimeSeconds(60)
                 .build());
-        gameServer.setAuthenticator(this);
+        networkServer.setAuthenticator(this);
 
         // Create a new CLIENT instance:
-        gameClient = new NettyGameClient(GameClientSettings.builder()
+        networkClientA = new NettyNetworkClient(NetworkClientSettings.builder()
                 .serverAddress(new SocketAddress(SERVER_HOST, SERVER_PORT))
+                .heartbeatIntervalSeconds(30)
                 .build());
 
-        // Initialize both SERVER and CLIENT
-        if (!gameServer.init()) {
+        // Create a new CLIENT instance:
+        networkClientB = new NettyNetworkClient(NetworkClientSettings.builder()
+                .serverAddress(new SocketAddress(SERVER_HOST, SERVER_PORT))
+                .heartbeatIntervalSeconds(30)
+                .build());
+
+        // TODO: add network state listener (clients)
+
+        // Initialize both SERVER and CLIENTS
+        if (!networkServer.init()) {
             throw new RuntimeException("Failed to initialize server");
         }
-        if (!gameClient.init()) {
-            throw new RuntimeException("Failed to initialize client");
+        if (!networkClientA.init() || !networkClientB.init()) {
+            throw new RuntimeException("Failed to initialize clients");
         }
 
-        var auth = "myUsername:myPassword";
-        var handshake = new HandshakeRequest();
-        handshake.add("auth", "basic " + TextHelper.encodeBase64(auth)) ;
-
-        gameClient.write(handshake);
+        // Authenticate player A:
+        var handshakeA = new HandshakeRequest();
+        handshakeA.add("auth", new BasicAuth("joe", "pwd").toString());
+        networkClientA.write(handshakeA);
+        // Authenticate player B:
+        var handshakeB = new HandshakeRequest();
+        handshakeB.add("auth", new BasicAuth("jane", "pwd").toString());
+        networkClientB.write(handshakeB);
     }
 
     @Override
     public void dispose() {
-        gameClient.dispose();
-        gameServer.dispose();
+        networkClientA.dispose();
+        networkClientB.dispose();
+        networkServer.dispose();
         super.dispose();
     }
 

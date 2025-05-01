@@ -8,7 +8,7 @@ import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.network.api.NetworkAuthenticator;
 import org.pixel.network.data.NetworkSession;
 import org.pixel.network.data.SocketAddress;
-import org.pixel.network.io.GameServerSettings;
+import org.pixel.network.io.NetworkServerSettings;
 import org.pixel.network.io.netty.NettyUtils;
 import org.pixel.network.message.HandshakeRequest;
 import org.pixel.network.message.HandshakeResponse;
@@ -20,7 +20,7 @@ public class HandshakeRequestHandler extends SimpleChannelInboundHandler<Handsha
 
     private static final Logger log = LoggerFactory.getLogger(HandshakeRequestHandler.class);
 
-    private final GameServerSettings serverSettings;
+    private final NetworkServerSettings settings;
     private final NetworkAuthenticator authenticator;
 
     @Override
@@ -74,7 +74,7 @@ public class HandshakeRequestHandler extends SimpleChannelInboundHandler<Handsha
     }
 
     private void handleNoneAuth(ChannelHandlerContext ctx, HandshakeRequest request, NetworkSession session) {
-        if (!serverSettings.getAllowedAuthTypes().contains(AuthType.NONE)) {
+        if (!settings.getAllowedAuthTypes().contains(AuthType.NONE)) {
             log.debug("Blocking handshake request to {0} because anonymous access is disabled.",
                     session.getId());
 
@@ -97,7 +97,7 @@ public class HandshakeRequestHandler extends SimpleChannelInboundHandler<Handsha
     }
 
     private void handleBasicAuth(ChannelHandlerContext ctx, HandshakeRequest request, NetworkSession session) {
-        if (!serverSettings.getAllowedAuthTypes().contains(AuthType.BASIC)) {
+        if (!settings.getAllowedAuthTypes().contains(AuthType.BASIC)) {
             log.debug("Blocking handshake request to {0} because basic authentication is disabled.",
                     session.getId());
 
