@@ -1,11 +1,17 @@
 package org.pixel.demo.learning.network;
 
 import org.pixel.commons.Color;
+import org.pixel.commons.DeltaTime;
+import org.pixel.commons.ServiceProvider;
 import org.pixel.commons.data.DataMap;
 import org.pixel.commons.logger.ConsoleLogger;
 import org.pixel.commons.logger.LogLevel;
+import org.pixel.content.ContentManager;
+import org.pixel.content.Font;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
+import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.math.Vector2;
 import org.pixel.network.api.NetworkAuthenticator;
 import org.pixel.network.data.SocketAddress;
 import org.pixel.network.io.*;
@@ -30,6 +36,10 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator 
     private NetworkServer networkServer;
     private NetworkClient networkClientA;
     private NetworkClient networkClientB;
+
+    private ContentManager content;
+    private SpriteBatch spriteBatch;
+    private Font debugFont;
 
     /**
      * Constructor
@@ -101,6 +111,24 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator 
         var handshakeB = new HandshakeRequest();
         handshakeB.add("auth", new BasicAuth("jane", "pwd").toString());
         networkClientB.write(handshakeB);
+
+        // Complementary assets:
+        content = ServiceProvider.get(ContentManager.class);
+        spriteBatch = ServiceProvider.get(SpriteBatch.class);
+        gameCamera.setOrigin(Vector2.ZERO);
+
+        debugFont = content.load("fonts/gidole-regular.ttf", Font.class);
+        debugFont.setFontSize(24); // the base font-size (as it will be applied on the generated texture)
+    }
+
+    @Override
+    public void draw(DeltaTime delta) {
+        spriteBatch.begin(gameCamera.getViewMatrix());
+
+        // draw connection count in the top left corner:
+        spriteBatch.drawText(debugFont, "Players: " + networkServer.getConnectionCount(), Vector2.ZERO, Color.WHITE);
+
+        spriteBatch.end();
     }
 
     @Override
@@ -108,6 +136,7 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator 
         networkClientA.dispose();
         networkClientB.dispose();
         networkServer.dispose();
+        content.dispose();
         super.dispose();
     }
 
