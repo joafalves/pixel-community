@@ -133,13 +133,12 @@ values use HTTP‑like codes (e.g., `"200"` for success, `"401"` for unauthorize
 
 - **status:** `"200"`, `"401"` or any HTTP‑like status code.
 - **reason:** (optional) A message on error (e.g., `"Invalid version"`).
-- **heartbeat:** (optional) Heartbeat interval in seconds.
 - **auth:** (optional) Authentication challenge line (e.g., `"digest realm=game,nonce=<server-nonce>,..."`).
 
 **Example Payload (simple):**
 
 ```
-status=200;heartbeat=30
+status=200;
 ```
 
 **Example Payload (with DIGEST auth challenge):**
