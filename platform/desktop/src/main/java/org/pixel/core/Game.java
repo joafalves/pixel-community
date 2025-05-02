@@ -5,7 +5,7 @@ import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;
 import org.pixel.audio.ALAudioPlayerFactory;
 import org.pixel.audio.AudioPlayer;
-import org.pixel.commons.ServiceProvider;
+import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ContentManager;
@@ -94,9 +94,9 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
 
        switch (this.settings.getGraphicsBackend()) {
             case OpenGL:
-                ServiceProvider.set(SpriteBatch.class, new GLSpriteBatchServiceFactory());
-                ServiceProvider.set(ContentManager.class, new GLContentManagerFactory());
-                ServiceProvider.set(AudioPlayer.class, new ALAudioPlayerFactory());
+                ServiceProvider.register(SpriteBatch.class, new GLSpriteBatchServiceFactory());
+                ServiceProvider.register(ContentManager.class, new GLContentManagerFactory());
+                ServiceProvider.register(AudioPlayer.class, new ALAudioPlayerFactory());
                 break;
             case Vulkan:
                 throw new UnsupportedOperationException("Vulkan is not supported yet.");

@@ -1,6 +1,6 @@
 package org.pixel.audio;
 
-import org.pixel.commons.ServiceFactory;
+import org.pixel.commons.service.ServiceFactory;
 
 public class ALAudioPlayerFactory implements ServiceFactory<AudioPlayer> {
     @Override

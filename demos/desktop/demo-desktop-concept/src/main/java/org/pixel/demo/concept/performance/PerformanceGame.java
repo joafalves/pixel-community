@@ -7,7 +7,7 @@ package org.pixel.demo.concept.performance;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.ServiceProvider;
+import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.Timer;
 import org.pixel.commons.logger.ConsoleLogger;
 import org.pixel.commons.logger.LogLevel;

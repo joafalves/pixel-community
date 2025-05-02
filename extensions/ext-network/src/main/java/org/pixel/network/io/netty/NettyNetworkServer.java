@@ -5,20 +5,26 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.network.data.NetworkSession;
+import org.pixel.network.data.NetworkPlayer;
 import org.pixel.network.handler.netty.*;
 import org.pixel.network.handler.netty.server.ConnectionHandler;
 import org.pixel.network.handler.netty.server.HandshakeRequestHandler;
+import org.pixel.network.handler.netty.server.InboundDataMessageServerHandler;
 import org.pixel.network.handler.netty.server.InboundSecurityHandler;
 import org.pixel.network.io.NetworkServer;
 import org.pixel.network.io.NetworkServerSettings;
+import org.pixel.network.io.netty.event.PlayerStateChangeEvent;
+import org.pixel.network.message.NetworkMessage;
 import org.pixel.network.security.AuthType;
 
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class NettyNetworkServer extends NetworkServer {
@@ -47,7 +53,7 @@ public class NettyNetworkServer extends NetworkServer {
             return false;
         }
 
-        if (authenticator == null && !settings.getAllowedAuthTypes().contains(AuthType.NONE)) {
+        if (settings.getAuthenticator() == null && !settings.getAllowedAuthTypes().contains(AuthType.NONE)) {
             log.warn("Authenticator is not set!");
             return false;
         }
@@ -64,8 +70,13 @@ public class NettyNetworkServer extends NetworkServer {
                     .childOption(ChannelOption.TCP_NODELAY, true)
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
-                        protected void initChannel(SocketChannel socketChannel) {
+                        protected void initChannel(SocketChannel socketChannel) throws Exception {
                             var p = socketChannel.pipeline();
+
+                            if (settings.isSecure()) {
+                                var sslContext = createSslContext();
+                                p.addLast(sslContext.newHandler(socketChannel.alloc()));
+                            }
 
                             p.addLast(new ConnectionHandler(settings.getMaxConnections()));
                             p.addLast(new NetworkMessageDecoder());
@@ -73,24 +84,25 @@ public class NettyNetworkServer extends NetworkServer {
                             p.addLast(new NetworkLoggerHandler());
 
                             // Handshake is *special* and HAS TO be added before the security handler:
-                            p.addLast(new HandshakeRequestHandler(settings, authenticator));
+                            p.addLast(new HandshakeRequestHandler(settings));
                             p.addLast(new InboundSecurityHandler());
+                            p.addLast(new InboundDataMessageServerHandler(settings));
 
                             p.addLast(new ExceptionHandler());
                             p.addLast(new IdleStateHandler(settings.getMaxIdleTimeSeconds(), 0, 0));
 
-                            // GameServer clean-up handler:
+                            // State handler:
                             p.addLast(new ChannelInboundHandlerAdapter() {
                                 @Override
                                 public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-                                    NetworkSession session = NettyUtils.getSession(ctx.channel());
+                                    NettyNetworkSession session = NettyHelper.getNetworkSession(ctx.channel());
                                     if (session != null) {
                                         log.debug("Session {0} inactive.", session.getId());
                                     } else {
                                         log.debug("Session inactive from {0}.", ctx.channel().remoteAddress());
                                     }
                                     // Called when the channel becomes inactive...
-                                    ctx.channel().attr(NettyUtils.SESSION).set(null);
+                                    ctx.channel().attr(NettyHelper.NETWORK_SESSION).set(null);
                                     super.channelInactive(ctx);
                                 }
 
@@ -108,15 +120,7 @@ public class NettyNetworkServer extends NetworkServer {
 
                                 @Override
                                 public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-                                    if (evt instanceof IdleStateEvent e) {
-                                        if (e.state() == IdleState.READER_IDLE) {
-                                            NetworkSession session = NettyUtils.getSession(ctx.channel());
-                                            if (session != null) {
-                                                log.info("Closing idle session {0}", session.getId());
-                                            }
-                                            ctx.close(); // or custom session purge logic
-                                        }
-                                    } else {
+                                    if (!handlePipelineEvent(ctx, evt)) {
                                         super.userEventTriggered(ctx, evt);
                                     }
                                 }
@@ -153,6 +157,11 @@ public class NettyNetworkServer extends NetworkServer {
     }
 
     @Override
+    public boolean send(NetworkPlayer player, NetworkMessage message) throws IOException {
+        throw new UnsupportedOperationException("Not implemented yet.");
+    }
+
+    @Override
     public boolean isActive() {
         return channel != null && channel.isActive();
     }
@@ -164,5 +173,50 @@ public class NettyNetworkServer extends NetworkServer {
         }
 
         return connectionCount.get();
+    }
+
+    private boolean handlePipelineEvent(ChannelHandlerContext ctx, Object event) {
+        if (event instanceof IdleStateEvent e) {
+            if (e.state() == IdleState.READER_IDLE) {
+                var session = NettyHelper.getNetworkSession(ctx.channel());
+                if (session != null) {
+                    log.info("Closing idle session {0}", session.getId());
+                }
+                ctx.close(); // or custom session purge logic
+            }
+            return true;
+
+        } else if (event instanceof PlayerStateChangeEvent e) {
+            var session = e.getSession();
+            switch (session.getState()) {
+                case ACTIVE -> {
+                    log.info("Session {0} active.", session.getId());
+                    if (settings.getServerListener() != null) {
+                        settings.getServerListener().onPlayerActive(session.getPlayer());
+                    }
+                }
+                case INACTIVE -> {
+                    log.info("Session {0} inactive.", session.getId());
+                    if (settings.getServerListener() != null) {
+                        settings.getServerListener().onPlayerInactive(session.getPlayer());
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private SslContext createSslContext() throws Exception {
+        if (settings.getCertChainFile() != null) {
+            // user-provided certs
+            return SslContextBuilder.forServer(
+                    settings.getCertChainFile(),
+                    settings.getPrivateKeyFile(),
+                    settings.getPrivateKeyPassword()
+            ).build();
+        } else {
+            throw new UnsupportedOperationException("SSL is not supported without user-provided certs.");
+        }
     }
 }

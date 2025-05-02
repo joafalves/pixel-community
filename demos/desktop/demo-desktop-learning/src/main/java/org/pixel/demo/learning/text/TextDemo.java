@@ -7,7 +7,7 @@ package org.pixel.demo.learning.text;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.ServiceProvider;
+import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
 import org.pixel.demo.learning.common.DemoGame;

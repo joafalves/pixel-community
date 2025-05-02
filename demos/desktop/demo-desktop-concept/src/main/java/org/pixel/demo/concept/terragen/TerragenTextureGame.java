@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 import org.lwjgl.BufferUtils;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.ServiceProvider;
+import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.Texture;

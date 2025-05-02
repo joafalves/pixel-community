@@ -1,9 +1,41 @@
 package org.pixel.commons.data;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class DataMap extends HashMap<String, Object> {
+/**
+ * A type-safe data container that uses a delegate Map<String, Object> internally.
+ * This refactoring allows for backend flexibility and thread-safe variants.
+ */
+public class DataMap implements Map<String, Object> {
+
+    protected final Map<String, Object> delegate;
+
+    /**
+     * Factory method to create a new DataMap instance with a ConcurrentHashMap as the delegate.
+     * This is useful for thread-safe operations where multiple threads may access the map concurrently.
+     *
+     * @return A new DataMap instance.
+     */
+    public static DataMap createConcurrent() {
+        return new DataMap(new ConcurrentHashMap<>());
+    }
+
+    /**
+     * Default constructor that initializes the delegate map to a new HashMap.
+     */
+    public DataMap() {
+        this.delegate = new HashMap<>();
+    }
+
+    /**
+     * Constructor that accepts a delegate map.
+     *
+     * @param delegate The delegate map to use.
+     */
+    public DataMap(Map<String, Object> delegate) {
+        this.delegate = delegate;
+    }
 
     /**
      * Associates the specified value with the specified key in this map.
@@ -13,9 +45,7 @@ public class DataMap extends HashMap<String, Object> {
      *
      * @param value value to be associated with the specified key
      * @return the previous value associated with {@code key}, or
-     *         {@code null} if there was no mapping for {@code key}.
-     *         (A {@code null} return can also indicate that the map
-     *         previously associated {@code null} with {@code key}.)
+     * {@code null} if there was no mapping for {@code key}.
      */
     public Object put(Object value) {
         return put(value.getClass().getPackageName(), value);
@@ -29,7 +59,6 @@ public class DataMap extends HashMap<String, Object> {
      * @return The value or null if not found.
      */
     public <T> T get(Class<T> type) {
-        // attempt to use the package-name of the class as per convention:
         var value = get(type.getPackageName(), type);
         if (value != null) {
             return value;
@@ -226,6 +255,71 @@ public class DataMap extends HashMap<String, Object> {
         return get(key, List.class, null);
     }
 
+    @Override
+    public int size() {
+        return delegate.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return delegate.isEmpty();
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+        return delegate.containsKey(key);
+    }
+
+    @Override
+    public boolean containsValue(Object value) {
+        return delegate.containsValue(value);
+    }
+
+    @Override
+    public Object get(Object key) {
+        return delegate.get(key);
+    }
+
+    @Override
+    public Object put(String key, Object value) {
+        return delegate.put(key, value);
+    }
+
+    @Override
+    public Object remove(Object key) {
+        return delegate.remove(key);
+    }
+
+    @Override
+    public void putAll(Map<? extends String, ?> m) {
+        delegate.putAll(m);
+    }
+
+    @Override
+    public void clear() {
+        delegate.clear();
+    }
+
+    @Override
+    public Set<String> keySet() {
+        return delegate.keySet();
+    }
+
+    @Override
+    public Collection<Object> values() {
+        return delegate.values();
+    }
+
+    @Override
+    public Set<Entry<String, Object>> entrySet() {
+        return delegate.entrySet();
+    }
+
+    /**
+     * Returns a string representation of the map.
+     *
+     * @return A string in the form {key1=value1, key2=value2, ...}
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

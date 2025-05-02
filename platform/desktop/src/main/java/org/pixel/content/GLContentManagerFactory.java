@@ -1,6 +1,6 @@
 package org.pixel.content;
 
-import org.pixel.commons.ServiceFactory;
+import org.pixel.commons.service.ServiceFactory;
 import org.pixel.content.importer.*;
 
 public class GLContentManagerFactory implements ServiceFactory<ContentManager> {

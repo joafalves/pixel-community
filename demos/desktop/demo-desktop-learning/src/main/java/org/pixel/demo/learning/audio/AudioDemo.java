@@ -6,7 +6,7 @@
 package org.pixel.demo.learning.audio;
 
 import org.pixel.audio.AudioPlayer;
-import org.pixel.commons.ServiceProvider;
+import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Sound;
 import org.pixel.demo.learning.common.DemoGame;

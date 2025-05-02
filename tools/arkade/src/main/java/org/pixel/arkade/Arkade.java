@@ -41,10 +41,8 @@ public class Arkade implements Initializable, Runnable, Disposable {
         networkServer = new NettyNetworkServer(NetworkServerSettings.builder()
                 .bindAddress(bindingAddress)
                 .maxConnections(settings.getNetwork().getMaxConnections())
-                .forceSSL(settings.getNetwork().isForceSSL())
                 .numThreads(settings.getNetwork().getThreads())
                 .build());
-
 
 
 

@@ -5,19 +5,26 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.network.handler.netty.ExceptionHandler;
+import org.pixel.network.handler.netty.NetworkLoggerHandler;
 import org.pixel.network.handler.netty.NetworkMessageDecoder;
 import org.pixel.network.handler.netty.NetworkMessageEncoder;
-import org.pixel.network.handler.netty.NetworkLoggerHandler;
+import org.pixel.network.handler.netty.client.HandshakeResponseHandler;
+import org.pixel.network.handler.netty.client.InboundDataMessageClientHandler;
 import org.pixel.network.io.NetworkClient;
 import org.pixel.network.io.NetworkClientSettings;
 import org.pixel.network.message.HeartbeatMessage;
 import org.pixel.network.message.NetworkMessage;
+
+import javax.net.ssl.SSLException;
+import java.io.IOException;
 
 public class NettyNetworkClient extends NetworkClient implements ChannelFutureListener {
 
@@ -47,12 +54,22 @@ public class NettyNetworkClient extends NetworkClient implements ChannelFutureLi
                     .option(ChannelOption.TCP_NODELAY, true)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
-                        protected void initChannel(SocketChannel ch) {
+                        protected void initChannel(SocketChannel ch) throws Exception {
                             var p = ch.pipeline();
+
+                            if (settings.isSecure()) {
+                                // hostname and port help SNI and host verification:
+                                var sslContext = createClientSslContext();
+                                p.addLast(sslContext.newHandler(ch.alloc(), settings.getServerAddress().getHost(),
+                                        settings.getServerAddress().getPort()));
+                            }
 
                             p.addLast(new NetworkMessageDecoder());
                             p.addLast(new NetworkMessageEncoder());
                             p.addLast(new NetworkLoggerHandler());
+
+                            p.addLast(new HandshakeResponseHandler());
+                            p.addLast(new InboundDataMessageClientHandler(settings));
 
                             p.addLast(new ExceptionHandler());
                             p.addLast(new IdleStateHandler(0, settings.getHeartbeatIntervalSeconds(), 0));
@@ -62,8 +79,6 @@ public class NettyNetworkClient extends NetworkClient implements ChannelFutureLi
                                 @Override
                                 public void channelInactive(ChannelHandlerContext ctx) throws Exception {
                                     log.info("Connection to server closed: {0}.", ctx.channel().remoteAddress());
-
-                                    // TODO: reconnection logic here
 
                                     super.channelInactive(ctx);
                                 }
@@ -80,7 +95,7 @@ public class NettyNetworkClient extends NetworkClient implements ChannelFutureLi
                                     if (evt instanceof IdleStateEvent e) {
                                         if (e.state() == IdleState.WRITER_IDLE) {
                                             // Write idle time has passed, send a heartbeat message:
-                                            write(new HeartbeatMessage());
+                                            send(new HeartbeatMessage());
                                         }
                                     } else {
                                         super.userEventTriggered(ctx, evt);
@@ -122,13 +137,16 @@ public class NettyNetworkClient extends NetworkClient implements ChannelFutureLi
     }
 
     @Override
-    public void write(NetworkMessage msg) {
+    public boolean send(NetworkMessage msg) throws IOException {
+        // TODO: implement buffering of messages (priority queue)
+
         if (!isConnected()) {
-            log.warn("Client not connected. Cannot send message!");
-            return;
+            throw new IOException("Client is not connected.");
         }
 
         channel.writeAndFlush(msg).addListener(this);
+
+        return true;
     }
 
     @Override
@@ -136,5 +154,19 @@ public class NettyNetworkClient extends NetworkClient implements ChannelFutureLi
         if (!channelFuture.isSuccess()) {
             log.error("Failed to write message: {0}.", channelFuture.cause().getMessage(), channelFuture.cause());
         }
+    }
+
+    private SslContext createClientSslContext() throws SSLException {
+        SslContextBuilder builder = SslContextBuilder.forClient();
+        if (settings.getTrustCertChainFile() != null) {
+            // production: trust a specific CA chain
+            builder.trustManager(settings.getTrustCertChainFile());
+        } // by default, if no trust manager is set, the default system trust manager is used
+
+        // Note: dev/testing: trust all (self-signed) — NOT for production!
+        //builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
+        //log.warn("Client is in insecure trust‐all mode; only for testing!");
+
+        return builder.build();
     }
 }

@@ -5,11 +5,12 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.RequiredArgsConstructor;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.network.api.NetworkAuthenticator;
-import org.pixel.network.data.NetworkSession;
+import org.pixel.network.data.NetworkPlayer;
 import org.pixel.network.data.SocketAddress;
 import org.pixel.network.io.NetworkServerSettings;
-import org.pixel.network.io.netty.NettyUtils;
+import org.pixel.network.io.netty.NettyHelper;
+import org.pixel.network.io.netty.NettyNetworkSession;
+import org.pixel.network.io.netty.NettySessionState;
 import org.pixel.network.message.HandshakeRequest;
 import org.pixel.network.message.HandshakeResponse;
 import org.pixel.network.security.AuthType;
@@ -21,11 +22,10 @@ public class HandshakeRequestHandler extends SimpleChannelInboundHandler<Handsha
     private static final Logger log = LoggerFactory.getLogger(HandshakeRequestHandler.class);
 
     private final NetworkServerSettings settings;
-    private final NetworkAuthenticator authenticator;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HandshakeRequest request) {
-        NetworkSession session = getOrCreateSession(ctx, request);
+        NettyNetworkSession session = getOrCreateSession(ctx, request);
         if (session.isActive()) {
             log.debug("Received handshake request from an already active session: {0}.", session.getId());
 
@@ -41,12 +41,14 @@ public class HandshakeRequestHandler extends SimpleChannelInboundHandler<Handsha
         handleHandshake(ctx, request, session);
     }
 
-    private void handleHandshake(ChannelHandlerContext ctx, HandshakeRequest request, NetworkSession session) {
+    private void handleHandshake(ChannelHandlerContext ctx, HandshakeRequest request, NettyNetworkSession session) {
         // Handshake the session...
         AuthType clientAuth = getAuthType(request);
-        if (clientAuth != AuthType.NONE && authenticator == null) {
+        if (clientAuth != AuthType.NONE && settings.getAuthenticator() == null) {
             log.warn("Blocking handshake request to {0} because no authenticator is set.",
                     session.getId());
+
+            NettyHelper.changeSessionState(ctx, session, NettySessionState.INACTIVE);
 
             var response = new HandshakeResponse();
             response.setStatus("500");
@@ -58,7 +60,7 @@ public class HandshakeRequestHandler extends SimpleChannelInboundHandler<Handsha
         }
 
         if (clientAuth == AuthType.NONE) {
-            handleNoneAuth(ctx, request, session);
+            handleNoneAuth(ctx, session);
 
         } else if (clientAuth == AuthType.BASIC) {
             handleBasicAuth(ctx, request, session);
@@ -68,15 +70,17 @@ public class HandshakeRequestHandler extends SimpleChannelInboundHandler<Handsha
             throw new IllegalStateException("Unsupported authentication type: " + clientAuth);
         }
 
-        if (session.getUserData() != null && log.isTraceEnabled()) {
-            log.trace("User data: {0}", session.getUserData());
+        if (log.isTraceEnabled() && session.getPlayer().getData() != null) {
+            log.trace("User data: {0}", session.getPlayer().getData());
         }
     }
 
-    private void handleNoneAuth(ChannelHandlerContext ctx, HandshakeRequest request, NetworkSession session) {
+    private void handleNoneAuth(ChannelHandlerContext ctx, NettyNetworkSession session) {
         if (!settings.getAllowedAuthTypes().contains(AuthType.NONE)) {
             log.debug("Blocking handshake request to {0} because anonymous access is disabled.",
                     session.getId());
+
+            NettyHelper.changeSessionState(ctx, session, NettySessionState.INACTIVE);
 
             var response = new HandshakeResponse();
             response.setStatus("403");
@@ -88,7 +92,7 @@ public class HandshakeRequestHandler extends SimpleChannelInboundHandler<Handsha
         }
 
         log.debug("Allowing anonymous access to {0}.", session.getId());
-        session.setState(NetworkSession.State.ACTIVE);
+        session.setState(NettySessionState.ACTIVE);
 
         var response = new HandshakeResponse();
         response.setStatus("200");
@@ -96,30 +100,34 @@ public class HandshakeRequestHandler extends SimpleChannelInboundHandler<Handsha
         ctx.writeAndFlush(response);
     }
 
-    private void handleBasicAuth(ChannelHandlerContext ctx, HandshakeRequest request, NetworkSession session) {
+    private void handleBasicAuth(ChannelHandlerContext ctx, HandshakeRequest request, NettyNetworkSession session) {
         if (!settings.getAllowedAuthTypes().contains(AuthType.BASIC)) {
-            log.debug("Blocking handshake request to {0} because basic authentication is disabled.",
+            log.debug("Blocking handshake request to {0} because BASIC authentication is disabled.",
                     session.getId());
+
+            NettyHelper.changeSessionState(ctx, session, NettySessionState.INACTIVE);
 
             var response = new HandshakeResponse();
             response.setStatus("403");
-            response.setReason("Basic authentication is not allowed");
+            response.setReason("BASIC authentication is not allowed");
             ctx.writeAndFlush(response);
             ctx.close();
 
             return;
         }
 
-        log.debug("Handling basic authentication to {0}.", session.getId());
+        log.debug("Handling BASIC authentication to {0}.", session.getId());
 
-        if (authenticator != null) {
+        if (settings.getAuthenticator() != null) {
             try {
                 var credentials = BasicAuth.fromString(request.getAuth());
-                var userData = authenticator.authenticate(credentials.getUsername(), credentials.getPassword(),
-                        session.getUserAddress());
+                var userData = settings.getAuthenticator().authenticate(
+                        credentials.getUsername(), credentials.getPassword(), session.getUserAddress());
 
                 if (userData == null) {
                     log.debug("Authentication failed for session {0}: user not found.", session.getId());
+
+                    NettyHelper.changeSessionState(ctx, session, NettySessionState.INACTIVE);
 
                     var response = new HandshakeResponse();
                     response.setStatus("401");
@@ -129,14 +137,17 @@ public class HandshakeRequestHandler extends SimpleChannelInboundHandler<Handsha
                     return;
                 }
 
-                session.setUserData(userData);
-                session.setState(NetworkSession.State.ACTIVE);
+                session.getPlayer().setData(userData);
+
+                NettyHelper.changeSessionState(ctx, session, NettySessionState.ACTIVE);
 
                 log.debug("User {0} authenticated successfully for session {1}.",
                         credentials.getUsername(), session.getId());
 
             } catch (Exception e) {
                 log.error("Authentication failed for session {0}: {1}.", session.getId(), e.getMessage(), e);
+
+                NettyHelper.changeSessionState(ctx, session, NettySessionState.INACTIVE);
 
                 var response = new HandshakeResponse();
                 response.setStatus("500");
@@ -164,22 +175,30 @@ public class HandshakeRequestHandler extends SimpleChannelInboundHandler<Handsha
         return AuthType.NONE;
     }
 
-    private NetworkSession getOrCreateSession(ChannelHandlerContext ctx, HandshakeRequest request) {
+    private NettyNetworkSession getOrCreateSession(ChannelHandlerContext ctx, HandshakeRequest request) {
         // Check if the session already exists
-        NetworkSession session = NettyUtils.getSession(ctx.channel());
+        NettyNetworkSession session = NettyHelper.getNetworkSession(ctx.channel());
         if (session == null) {
-            // Create a new session:
+            var channel = ctx.channel();
+
+            // Create a new network session:
             session = createSession(ctx);
-            NettyUtils.attachSession(ctx.channel(), session);
+            NettyHelper.attachNetworkSession(channel, session);
         }
         return session;
     }
 
-    private NetworkSession createSession(ChannelHandlerContext ctx) {
-        return NetworkSession.builder()
-                .id(ctx.channel().id().asLongText())
+    private NettyNetworkSession createSession(ChannelHandlerContext ctx) {
+        var playerId = ctx.channel().id().asLongText();
+        var player = NetworkPlayer.builder()
+                .id(playerId)
+                .build();
+
+        return NettyNetworkSession.builder()
+                .id(playerId)
                 .lastRemoteActivity(System.currentTimeMillis())
                 .userAddress(SocketAddress.from(ctx.channel().remoteAddress()))
+                .player(player)
                 .build();
     }
 }

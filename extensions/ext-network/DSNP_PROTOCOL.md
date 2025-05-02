@@ -24,7 +24,9 @@ transport like UDP.
 
 ## 2. Message Framing
 
-Every DSNP message is framed as follows:
+### 2.1 Single-Message Framing
+
+Every single-message DSNP message (without fragmentation) is framed as follows:
 
 ```
 [Magic Header (2 bytes)] [Message Type (1 byte)] [Payload Length (4 bytes)] [Payload (variable)]
