@@ -106,7 +106,8 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator,
 
         // Initialize both SERVER and CLIENTS
         if (!networkServer.init()) {
-            throw new RuntimeException("Failed to initialize server");
+            // Do not throw an exception here, since the server is already running in a separate thread.
+            log.warn("Failed to initialize server, it may already be running.");
         }
         if (!networkClientA.init() || !networkClientB.init()) {
             throw new RuntimeException("Failed to initialize clients");
