@@ -6,7 +6,7 @@ public interface NetworkClientListener {
     /**
      * Called when the client is ready to send and receive packets.
      */
-    void onConnect();
+    void onReady();
 
     /**
      * Called when the client is disconnected from the server.

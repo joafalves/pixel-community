@@ -68,7 +68,7 @@ public class NettyNetworkClient extends NetworkClient implements ChannelFutureLi
                             p.addLast(new NetworkMessageEncoder());
                             p.addLast(new NetworkLoggerHandler());
 
-                            p.addLast(new HandshakeResponseHandler());
+                            p.addLast(new HandshakeResponseHandler(settings));
                             p.addLast(new InboundDataMessageClientHandler(settings));
 
                             p.addLast(new ExceptionHandler());
@@ -79,6 +79,8 @@ public class NettyNetworkClient extends NetworkClient implements ChannelFutureLi
                                 @Override
                                 public void channelInactive(ChannelHandlerContext ctx) throws Exception {
                                     log.info("Connection to server closed: {0}.", ctx.channel().remoteAddress());
+
+                                    settings.getClientListener().onDisconnect();
 
                                     super.channelInactive(ctx);
                                 }

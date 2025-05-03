@@ -141,6 +141,10 @@ public class HandshakeRequestHandler extends SimpleChannelInboundHandler<Handsha
 
                 NettyHelper.changeSessionState(ctx, session, NettySessionState.ACTIVE);
 
+                var response = new HandshakeResponse();
+                response.setStatus("200");
+                ctx.writeAndFlush(response);
+
                 log.debug("User {0} authenticated successfully for session {1}.",
                         credentials.getUsername(), session.getId());
 

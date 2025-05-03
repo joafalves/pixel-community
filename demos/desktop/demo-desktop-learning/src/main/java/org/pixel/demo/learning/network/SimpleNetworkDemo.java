@@ -213,7 +213,7 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator,
         private final PlayerData player;
 
         @Override
-        public void onConnect() {
+        public void onReady() {
             log.info("I (player {0}), connected to the server!", player.username);
         }
 
