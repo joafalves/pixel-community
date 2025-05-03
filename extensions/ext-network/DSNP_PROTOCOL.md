@@ -24,8 +24,6 @@ transport like UDP.
 
 ## 2. Message Framing
 
-### 2.1 Single-Message Framing
-
 Every single-message DSNP message (without fragmentation) is framed as follows:
 
 ```
@@ -160,6 +158,9 @@ Used for all in‑game communication, including commands, state updates, chat, a
 **Payload:**  
 An arbitrary data blob whose structure is defined by your application. (For text-based messages, you may use the
 key=value format as above or more comprehensive formats like JSON.)
+
+> You may use any serialization format you prefer (e.g., Protocol Buffers, FlatBuffers, JSON, etc.) on the application
+> layer. The DSNP protocol does not impose any specific serialization format.
 
 **Example Payload (JSON):**
 

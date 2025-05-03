@@ -51,7 +51,7 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
 
         } catch (IllegalArgumentException e) {
             log.error("Invalid message type: 0x" + Integer.toHexString(typeValue));
-            ctx.close(); // TODO: Close the connection?
+            ctx.close();
         }
     }
 
