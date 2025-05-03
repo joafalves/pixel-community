@@ -84,7 +84,7 @@ public class PerformanceGame extends Game {
     public void update(DeltaTime delta) {
         gameScene.update(delta);
 
-        if (debugTimer.check(delta)) {
+        if (debugTimer.elapsed()) {
             log.info("FPS: {0} - Smoothed FPS: {1}.", getFps(), getSmoothedFps());
         }
 

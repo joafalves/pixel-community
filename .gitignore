@@ -7,9 +7,6 @@
 # BlueJ files
 *.ctxt
 
-# Local environment properties
-local.properties
-
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 

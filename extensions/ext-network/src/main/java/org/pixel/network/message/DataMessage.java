@@ -8,6 +8,11 @@ public class DataMessage extends NetworkMessage {
         this.payload = payload;
     }
 
+    public DataMessage(String payload) {
+        super(NetworkMessageType.DATA);
+        this.payload = payload.getBytes();
+    }
+
     @Override
     public byte[] getPayload() {
         return payload;

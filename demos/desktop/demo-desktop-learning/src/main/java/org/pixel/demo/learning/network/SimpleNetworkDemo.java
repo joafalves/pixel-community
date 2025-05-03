@@ -1,8 +1,10 @@
 package org.pixel.demo.learning.network;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.Timer;
 import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.data.DataMap;
 import org.pixel.commons.logger.ConsoleLogger;
@@ -43,12 +45,14 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator,
     private static final int SERVER_PORT = 8888;
 
     private NetworkServer networkServer;
+
     private NetworkClient networkClientA;
     private NetworkClient networkClientB;
 
     private ContentManager content;
     private SpriteBatch spriteBatch;
     private Font debugFont;
+    private Timer testTimer = new Timer(5000);
 
     /**
      * Constructor
@@ -84,20 +88,20 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator,
                 .build());
 
         // Create a new CLIENT instance:
+        var handlerA = new PlayerEventHandler(playerA);
         networkClientA = ServiceProvider.get(NetworkClient.class, NetworkClientSettings.builder()
                 .serverAddress(new SocketAddress(SERVER_HOST, SERVER_PORT))
                 .heartbeatIntervalSeconds(30)
-                .clientListener(new PlayerEventHandler(playerA))
+                .clientListener(handlerA)
                 .build());
 
         // Create a new CLIENT instance:
+        var handlerB = new PlayerEventHandler(playerB);
         networkClientB = ServiceProvider.get(NetworkClient.class, NetworkClientSettings.builder()
                 .serverAddress(new SocketAddress(SERVER_HOST, SERVER_PORT))
                 .heartbeatIntervalSeconds(30)
-                .clientListener(new PlayerEventHandler(playerB))
+                .clientListener(handlerB)
                 .build());
-
-        // TODO: add network state listener (clients)
 
         // Initialize both SERVER and CLIENTS
         if (!networkServer.init()) {
@@ -122,7 +126,15 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator,
         gameCamera.setOrigin(Vector2.ZERO);
 
         debugFont = content.load("fonts/gidole-regular.ttf", Font.class);
-        debugFont.setFontSize(24); // the base font-size (as it will be applied on the generated texture)
+        debugFont.setFontSize(28); // the base font-size (as it will be applied on the generated texture)
+    }
+
+    @Override
+    public void update(DeltaTime delta) {
+        if (testTimer.elapsed()) {
+            sendToServer(networkClientA, new DataMessage("Hello from client A!"));
+            sendToServer(networkClientB, new DataMessage("Hello from client B!"));
+        }
     }
 
     @Override
@@ -179,7 +191,7 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator,
 
     private void sendToServer(NetworkClient client, NetworkMessage message) {
         try {
-            if (client.send(message)) {
+            if (client.isConnected() && client.send(message)) {
                 log.trace("Message queued for sending: {0}", message);
             }
         } catch (IOException e) {
@@ -208,18 +220,23 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator,
     }
 
     @RequiredArgsConstructor
+    @Getter
     static class PlayerEventHandler implements NetworkClientListener {
 
         private final PlayerData player;
 
+        private boolean isActive = false;
+
         @Override
         public void onReady() {
             log.info("I (player {0}), connected to the server!", player.username);
+            isActive = true;
         }
 
         @Override
         public void onDisconnect() {
             log.info("I (player {0}), disconnected from the server!", player.username);
+            isActive = false;
         }
 
         @Override
