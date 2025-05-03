@@ -43,4 +43,20 @@ public class TextHelper {
         return new String(array);
     }
 
+    /**
+     * Generate a random string of lowercase letters.
+     *
+     * @param length The length of the string to generate.
+     * @return A random string of lowercase letters.
+     */
+    public static String randomString(int length) {
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            int randomIndex = (int) (Math.random() * 26);
+            char randomChar = (char) ('a' + randomIndex);
+            sb.append(randomChar);
+        }
+        return sb.toString();
+    }
+
 }

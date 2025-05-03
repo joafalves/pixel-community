@@ -1,7 +1,5 @@
 package org.pixel.demo.learning.network;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.Timer;
@@ -9,6 +7,7 @@ import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.data.DataMap;
 import org.pixel.commons.logger.ConsoleLogger;
 import org.pixel.commons.logger.LogLevel;
+import org.pixel.commons.util.TextHelper;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
 import org.pixel.core.WindowSettings;
@@ -39,17 +38,19 @@ import java.util.List;
  * Use this demo as an example to create your own networked game with full control over the network layer.
  * Please check Arkade for a more complete and higher-level network solution.
  */
-public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator, NetworkServerListener {
+public class SimpleNetworkDemo extends DemoGame
+        implements NetworkAuthenticator, NetworkServerListener, NetworkClientListener {
 
     private static final String SERVER_HOST = "localhost";
     private static final int SERVER_PORT = 8888;
+
+    private final String playerName = TextHelper.randomString(8);
 
     private final Timer testTimer = new Timer(5000);
 
     private NetworkServer networkServer;
 
-    private NetworkClient networkClientA;
-    private NetworkClient networkClientB;
+    private NetworkClient networkClient;
 
     private ContentManager content;
     private SpriteBatch spriteBatch;
@@ -74,8 +75,11 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator,
         super.load();
 
         // Note: This demo contains both the server and clients in the same application for demonstration purposes.
-        var playerA = new PlayerData("joe");
-        var playerB = new PlayerData("jane");
+
+        // YOU MAY RUN THIS APPLICATION MULTIPLE TIMES TO TEST THE SERVER WITH MULTIPLE CLIENTS.
+        // THE APPLICATION WON'T CRASH IF YOU TRY TO REBIND THE SAME SERVER PORT.
+
+        var playerData = new PlayerData(playerName);
 
         // Create a new SERVER instance:
         networkServer = ServiceProvider.get(NetworkServer.class, NetworkServerSettings.builder()
@@ -89,19 +93,10 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator,
                 .build());
 
         // Create a new CLIENT instance:
-        var handlerA = new PlayerEventHandler(playerA);
-        networkClientA = ServiceProvider.get(NetworkClient.class, NetworkClientSettings.builder()
+        networkClient = ServiceProvider.get(NetworkClient.class, NetworkClientSettings.builder()
                 .serverAddress(new SocketAddress(SERVER_HOST, SERVER_PORT))
                 .heartbeatIntervalSeconds(30)
-                .clientListener(handlerA)
-                .build());
-
-        // Create a new CLIENT instance:
-        var handlerB = new PlayerEventHandler(playerB);
-        networkClientB = ServiceProvider.get(NetworkClient.class, NetworkClientSettings.builder()
-                .serverAddress(new SocketAddress(SERVER_HOST, SERVER_PORT))
-                .heartbeatIntervalSeconds(30)
-                .clientListener(handlerB)
+                .clientListener(this)
                 .build());
 
         // Initialize both SERVER and CLIENTS
@@ -109,18 +104,14 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator,
             // Do not throw an exception here, since the server is already running in a separate thread.
             log.warn("Failed to initialize server, it may already be running.");
         }
-        if (!networkClientA.init() || !networkClientB.init()) {
+        if (!networkClient.init()) {
             throw new RuntimeException("Failed to initialize clients");
         }
 
         // Authenticate player A:
         var handshakeA = new HandshakeRequest();
-        handshakeA.add("auth", new BasicAuth(playerA.username(), "pwd").toString());
-        sendToServer(networkClientA, handshakeA);
-        // Authenticate player B:
-        var handshakeB = new HandshakeRequest();
-        handshakeB.add("auth", new BasicAuth(playerB.username(), "pwd").toString());
-        sendToServer(networkClientB, handshakeB);
+        handshakeA.add("auth", new BasicAuth(playerData.username(), "pwd").toString());
+        sendToServer(networkClient, handshakeA);
 
         // Complementary assets:
         content = ServiceProvider.get(ContentManager.class);
@@ -134,8 +125,7 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator,
     @Override
     public void update(DeltaTime delta) {
         if (testTimer.elapsed()) {
-            sendToServer(networkClientA, new DataMessage("Hello from client A!"));
-            sendToServer(networkClientB, new DataMessage("Hello from client B!"));
+            sendToServer(networkClient, new DataMessage("Hello from " + playerName));
         }
     }
 
@@ -144,10 +134,14 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator,
         spriteBatch.begin(gameCamera.getViewMatrix());
 
         // draw connection count in the top left corner:
-        spriteBatch.drawText(debugFont, "Players: " + networkServer.getConnectionCount(), Vector2.ZERO, Color.WHITE);
+        if (networkServer.isActive()) {
+            spriteBatch.drawText(debugFont, "Players: " + networkServer.getConnectionCount(), Vector2.ZERO, Color.WHITE);
+        }
 
         spriteBatch.end();
     }
+
+    //region server listener & authenticator
 
     @Override
     public DataMap authenticate(String username, String password, SocketAddress userAddress) {
@@ -160,7 +154,8 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator,
         userData.put("email", username + "@example.com");
         userData.put("credits", 1000);
         userData.put("host", userAddress.getHost());
-        // ...
+        // THE DATA DEFINED ABOVE IS ONLY AVAILABLE ON THE SERVER. YOU MUST HANDLE WHAT INFO YOU SHARE WITH YOUR
+        // PLAYERS MANUALLY (via DataMessage or other means).
 
         // You MUST return null if authentication fails (you can return an empty map if you want to allow the connection
         // but with no data for the user at this point):
@@ -170,6 +165,9 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator,
     @Override
     public void onPlayerActive(NetworkPlayer player) {
         log.info("Player [{0}] connected.", player.getData().getString("username"));
+
+        // TODO: share back some data to the player:
+
     }
 
     @Override
@@ -182,10 +180,30 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator,
         log.info("Player [{0}] sent message: {1}", player.getData().getString("username"), message);
     }
 
+    //endregion server listener
+
+    //region client listener
+
+    @Override
+    public void onReady() {
+        log.info("I'm connected to the server!");
+    }
+
+    @Override
+    public void onDisconnect() {
+        log.info("I'm disconnected from the server!");
+    }
+
+    @Override
+    public void onMessage(DataMessage message) {
+        log.info("Received message from server: {0}", message);
+    }
+
+    //endregion client listener
+
     @Override
     public void dispose() {
-        networkClientA.dispose();
-        networkClientB.dispose();
+        networkClient.dispose();
         networkServer.dispose();
         content.dispose();
         super.dispose();
@@ -219,32 +237,6 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator,
 
         var game = new SimpleNetworkDemo(settings);
         game.start();
-    }
-
-    @RequiredArgsConstructor
-    @Getter
-    static class PlayerEventHandler implements NetworkClientListener {
-
-        private final PlayerData player;
-
-        private boolean isActive = false;
-
-        @Override
-        public void onReady() {
-            log.info("I (player {0}), connected to the server!", player.username);
-            isActive = true;
-        }
-
-        @Override
-        public void onDisconnect() {
-            log.info("I (player {0}), disconnected from the server!", player.username);
-            isActive = false;
-        }
-
-        @Override
-        public void onMessage(DataMessage message) {
-            log.info("I (player {0}), received message: {1}", player.username, message);
-        }
     }
 
     record PlayerData(String username) {
