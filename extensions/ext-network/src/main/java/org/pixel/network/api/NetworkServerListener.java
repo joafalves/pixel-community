@@ -6,14 +6,14 @@ import org.pixel.network.message.DataMessage;
 public interface NetworkServerListener {
 
     /**
-     * Called when a player becomes active (e.g, connected & authenticated).
+     * Called when a player becomes active (e.g., connected and authenticated).
      *
      * @param player The player that became active.
      */
     void onPlayerActive(NetworkPlayer player);
 
     /**
-     * Called when a player becomes inactive (e.g, disconnected).
+     * Called when a player becomes inactive (e.g., disconnected).
      *
      * @param player The player that became inactive.
      */

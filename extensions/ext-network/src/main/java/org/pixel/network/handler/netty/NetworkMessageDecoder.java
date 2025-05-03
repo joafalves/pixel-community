@@ -7,7 +7,6 @@ import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.network.message.*;
 
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -35,7 +34,6 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
 
         // Check if the complete payload is available
         if (in.readableBytes() < payloadLength) {
-            // TODO: support partial / streaming of message payloads (e.g. large files)
             in.resetReaderIndex();
             return; // Need more data
         }
