@@ -44,6 +44,8 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator,
     private static final String SERVER_HOST = "localhost";
     private static final int SERVER_PORT = 8888;
 
+    private final Timer testTimer = new Timer(5000);
+
     private NetworkServer networkServer;
 
     private NetworkClient networkClientA;
@@ -52,7 +54,6 @@ public class SimpleNetworkDemo extends DemoGame implements NetworkAuthenticator,
     private ContentManager content;
     private SpriteBatch spriteBatch;
     private Font debugFont;
-    private Timer testTimer = new Timer(5000);
 
     /**
      * Constructor

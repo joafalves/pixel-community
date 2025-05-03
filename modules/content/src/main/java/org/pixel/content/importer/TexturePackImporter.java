@@ -83,6 +83,6 @@ public class TexturePackImporter implements ContentImporter<TexturePack> {
             frameMap.put(key, textureFrame);
         });
 
-        return frameMap.size() > 0 ? new TexturePack(texture, frameMap) : null;
+        return !frameMap.isEmpty() ? new TexturePack(texture, frameMap) : null;
     }
 }
