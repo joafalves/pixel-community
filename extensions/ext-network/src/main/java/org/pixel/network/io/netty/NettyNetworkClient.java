@@ -24,7 +24,6 @@ import org.pixel.network.message.HeartbeatMessage;
 import org.pixel.network.message.NetworkMessage;
 
 import javax.net.ssl.SSLException;
-import java.io.IOException;
 
 public class NettyNetworkClient extends NetworkClient implements ChannelFutureListener {
 
@@ -44,6 +43,7 @@ public class NettyNetworkClient extends NetworkClient implements ChannelFutureLi
             return false;
         }
 
+        // TODO: RECONNECT
         group = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());
 
         try {
@@ -74,7 +74,6 @@ public class NettyNetworkClient extends NetworkClient implements ChannelFutureLi
                             p.addLast(new ExceptionHandler());
                             p.addLast(new IdleStateHandler(0, settings.getHeartbeatIntervalSeconds(), 0));
 
-                            // GameServer clean-up handler:
                             p.addLast(new ChannelInboundHandlerAdapter() {
                                 @Override
                                 public void channelInactive(ChannelHandlerContext ctx) throws Exception {
@@ -139,11 +138,11 @@ public class NettyNetworkClient extends NetworkClient implements ChannelFutureLi
     }
 
     @Override
-    public boolean send(NetworkMessage msg) throws IOException {
+    public boolean send(NetworkMessage msg) {
         // TODO: implement buffering of messages (priority queue)
-
         if (!isConnected()) {
-            throw new IOException("Client is not connected.");
+            log.warn("Client is not connected, cannot send message: {0}.", msg);
+            return false;
         }
 
         channel.writeAndFlush(msg).addListener(this);

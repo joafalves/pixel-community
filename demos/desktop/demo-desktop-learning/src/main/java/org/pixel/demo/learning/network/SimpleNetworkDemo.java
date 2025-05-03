@@ -2,11 +2,10 @@ package org.pixel.demo.learning.network;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.Timer;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.data.DataMap;
 import org.pixel.commons.logger.ConsoleLogger;
 import org.pixel.commons.logger.LogLevel;
+import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.util.TextHelper;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
@@ -14,9 +13,8 @@ import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Vector2;
-import org.pixel.network.api.NetworkClientListener;
-import org.pixel.network.service.NetworkServiceRegistrar;
 import org.pixel.network.api.NetworkAuthenticator;
+import org.pixel.network.api.NetworkClientListener;
 import org.pixel.network.api.NetworkServerListener;
 import org.pixel.network.data.NetworkPlayer;
 import org.pixel.network.data.SocketAddress;
@@ -29,9 +27,12 @@ import org.pixel.network.message.HandshakeRequest;
 import org.pixel.network.message.NetworkMessage;
 import org.pixel.network.security.AuthType;
 import org.pixel.network.security.BasicAuth;
+import org.pixel.network.service.NetworkServiceRegistrar;
 
-import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * This is a simple network demo that demonstrates how to use the *core* network library.
@@ -44,12 +45,10 @@ public class SimpleNetworkDemo extends DemoGame
     private static final String SERVER_HOST = "localhost";
     private static final int SERVER_PORT = 8888;
 
-    private final String playerName = TextHelper.randomString(8);
-
-    private final Timer testTimer = new Timer(5000);
+    private final PlayerData player = new PlayerData(TextHelper.randomString(8), new Vector2());
+    private final ConcurrentHashMap<String, PlayerData> others = new ConcurrentHashMap<>();
 
     private NetworkServer networkServer;
-
     private NetworkClient networkClient;
 
     private ContentManager content;
@@ -78,8 +77,6 @@ public class SimpleNetworkDemo extends DemoGame
 
         // YOU MAY RUN THIS APPLICATION MULTIPLE TIMES TO TEST THE SERVER WITH MULTIPLE CLIENTS.
         // THE APPLICATION WON'T CRASH IF YOU TRY TO REBIND THE SAME SERVER PORT.
-
-        var playerData = new PlayerData(playerName);
 
         // Create a new SERVER instance:
         networkServer = ServiceProvider.get(NetworkServer.class, NetworkServerSettings.builder()
@@ -110,7 +107,7 @@ public class SimpleNetworkDemo extends DemoGame
 
         // Authenticate player A:
         var handshakeA = new HandshakeRequest();
-        handshakeA.add("auth", new BasicAuth(playerData.username(), "pwd").toString());
+        handshakeA.add("auth", new BasicAuth(player.username(), "doesnotmatter").toString());
         sendToServer(networkClient, handshakeA);
 
         // Complementary assets:
@@ -124,9 +121,7 @@ public class SimpleNetworkDemo extends DemoGame
 
     @Override
     public void update(DeltaTime delta) {
-        if (testTimer.elapsed()) {
-            sendToServer(networkClient, new DataMessage("Hello from " + playerName));
-        }
+
     }
 
     @Override
@@ -136,6 +131,14 @@ public class SimpleNetworkDemo extends DemoGame
         // draw connection count in the top left corner:
         if (networkServer.isActive()) {
             spriteBatch.drawText(debugFont, "Players: " + networkServer.getConnectionCount(), Vector2.ZERO, Color.WHITE);
+        }
+
+        // draw our player:
+        spriteBatch.drawText(debugFont, "Player: " + player.username, player.position, Color.WHITE);
+
+        // draw other players (if any):
+        for (var other : others.values()) {
+            spriteBatch.drawText(debugFont, "Player: " + other.username, other.position, Color.YELLOW);
         }
 
         spriteBatch.end();
@@ -152,8 +155,10 @@ public class SimpleNetworkDemo extends DemoGame
         var userData = DataMap.createConcurrent();
         userData.put("username", username);
         userData.put("email", username + "@example.com");
-        userData.put("credits", 1000);
+        userData.put("money", 1000);
         userData.put("host", userAddress.getHost());
+        userData.put("posX", ThreadLocalRandom.current().nextFloat(50, getVirtualWidth() - 50));
+        userData.put("posY", ThreadLocalRandom.current().nextFloat(50, getVirtualHeight() - 50));
         // THE DATA DEFINED ABOVE IS ONLY AVAILABLE ON THE SERVER. YOU MUST HANDLE WHAT INFO YOU SHARE WITH YOUR
         // PLAYERS MANUALLY (via DataMessage or other means).
 
@@ -166,8 +171,16 @@ public class SimpleNetworkDemo extends DemoGame
     public void onPlayerActive(NetworkPlayer player) {
         log.info("Player [{0}] connected.", player.getData().getString("username"));
 
-        // TODO: share back some data to the player:
+        for (var activePlayer : networkServer.getPlayers()) {
+            var simplifiedPlayerData = new DataMap();
+            simplifiedPlayerData.put("username", activePlayer.getData().get("username"));
+            simplifiedPlayerData.put("posX", activePlayer.getData().get("posX"));
+            simplifiedPlayerData.put("posY", activePlayer.getData().get("posY"));
 
+            // Send the new player the data of all other players:
+            var playerInfoMsg = new GameMessage(GameMessage.TYPE_PLAYER_DATA, simplifiedPlayerData);
+            broadcast(new DataMessage(playerInfoMsg.toBytes()));
+        }
     }
 
     @Override
@@ -196,7 +209,18 @@ public class SimpleNetworkDemo extends DemoGame
 
     @Override
     public void onMessage(DataMessage message) {
-        log.info("Received message from server: {0}", message);
+        var gameMessage = GameMessage.fromBytes(message.getPayload());
+        if (gameMessage.type().equals(GameMessage.TYPE_PLAYER_DATA)) {
+            // This is a player data message, we can use it to update the client state.
+            log.info("Received player data: {0}", gameMessage.data());
+            handlePlayerDataUpdate(gameMessage);
+
+        } else if (gameMessage.type().equals(GameMessage.TYPE_PLAYER_MESSAGE)) {
+            // This is a player message, we can use it to update the client state.
+            log.info("Received player message: {0}", gameMessage.data());
+        } else {
+            log.warn("Unknown message type: {0}", gameMessage.type());
+        }
     }
 
     //endregion client listener
@@ -209,12 +233,33 @@ public class SimpleNetworkDemo extends DemoGame
         super.dispose();
     }
 
+    private void handlePlayerDataUpdate(GameMessage playerDataMsg) {
+        // check if the username is ours (our data) or not (other players):
+        var username = playerDataMsg.data().getString("username");
+
+        if (username.equals(player.username)) {
+            // This is our data, we can update our state.
+            player.position.set(
+                    Float.parseFloat(playerDataMsg.data().getString("posX")),
+                    Float.parseFloat(playerDataMsg.data().getString("posY"))
+            );
+        } else {
+            // This is another player's data, we can update the other players list.
+            var otherPlayer = new PlayerData(username,
+                    new Vector2(
+                            Float.parseFloat(playerDataMsg.data().getString("posX")),
+                            Float.parseFloat(playerDataMsg.data().getString("posY"))
+                    ));
+            others.put(username, otherPlayer);
+        }
+    }
+
     private void sendToServer(NetworkClient client, NetworkMessage message) {
         try {
             if (client.isConnected() && client.send(message)) {
                 log.trace("Message queued for sending: {0}", message);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Failed to send message: {0}", e.getMessage(), e);
         }
     }
@@ -224,11 +269,77 @@ public class SimpleNetworkDemo extends DemoGame
             if (networkServer.send(player, message)) {
                 log.trace("Message queued for sending: {0}", message);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Failed to send message: {0}", e.getMessage(), e);
         }
     }
 
+    private void broadcast(NetworkMessage message) {
+        try {
+            networkServer.broadcast(message);
+        } catch (Exception e) {
+            log.error("Failed to send message: {0}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * This is a simple data class that contains the player data.
+     * It is used to send the player data over the network.
+     * You can add more fields to this class if you want to send more data.
+     *
+     * @param username The username of the player.
+     * @param position The position of the player.
+     */
+    record PlayerData(String username, Vector2 position) {
+
+    }
+
+    /**
+     * This is a very simple game message wrapper that can be sent over the network.
+     * It contains a type and a data map.
+     * This is for DEMO PURPOSES ONLY. Ideally you would use a more robust serialization mechanism.
+     *
+     * @param type
+     * @param data
+     */
+    record GameMessage(String type, DataMap data) {
+
+        static String TYPE_PLAYER_DATA = "player_data";
+        static String TYPE_PLAYER_MESSAGE = "player_message";
+
+        static GameMessage fromBytes(byte[] payload) {
+            String payloadString = new String(payload, StandardCharsets.UTF_8);
+            String[] parts = payloadString.split("\\|", 2);
+            if (parts.length != 2) {
+                throw new IllegalArgumentException("Invalid payload format");
+            }
+
+            String type = parts[0];
+            String dataString = parts[1];
+            DataMap data = new DataMap();
+            for (String entry : dataString.split(";")) {
+                String[] keyValue = entry.split("=");
+                if (keyValue.length != 2) {
+                    throw new IllegalArgumentException("Invalid data format");
+                }
+                String key = keyValue[0];
+                String value = keyValue[1];
+                data.put(key, value);
+            }
+
+            return new GameMessage(type, data);
+        }
+
+        byte[] toBytes() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(type).append("|");
+            for (String key : data.keySet()) {
+                sb.append(key).append("=").append(data.get(key)).append(";");
+            }
+            return sb.toString().getBytes(StandardCharsets.UTF_8);
+        }
+    }
+    
     public static void main(String[] args) {
         final WindowSettings settings = new WindowSettings(800, 600);
         settings.setBackgroundColor(Color.INDIGO);
@@ -237,9 +348,6 @@ public class SimpleNetworkDemo extends DemoGame
 
         var game = new SimpleNetworkDemo(settings);
         game.start();
-    }
-
-    record PlayerData(String username) {
     }
 
 }

@@ -32,13 +32,12 @@ public abstract class NetworkClient implements Initializable, Disposable {
     }
 
     /**
-     * Write message to the server
+     * Write a message to the server
      *
      * @param msg - The message to be sent
      * @return True if the message was queued for sending
-     * @throws IOException - If the message could not be sent
      */
-    public abstract boolean send(NetworkMessage msg) throws IOException;
+    public abstract boolean send(NetworkMessage msg);
 
     /**
      * Get the current network state

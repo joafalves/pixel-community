@@ -13,7 +13,10 @@ import io.netty.handler.timeout.IdleStateHandler;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.network.data.NetworkPlayer;
-import org.pixel.network.handler.netty.*;
+import org.pixel.network.handler.netty.ExceptionHandler;
+import org.pixel.network.handler.netty.NetworkLoggerHandler;
+import org.pixel.network.handler.netty.NetworkMessageDecoder;
+import org.pixel.network.handler.netty.NetworkMessageEncoder;
 import org.pixel.network.handler.netty.server.ConnectionHandler;
 import org.pixel.network.handler.netty.server.HandshakeRequestHandler;
 import org.pixel.network.handler.netty.server.InboundDataMessageServerHandler;
@@ -24,13 +27,15 @@ import org.pixel.network.io.netty.event.PlayerStateChangeEvent;
 import org.pixel.network.message.NetworkMessage;
 import org.pixel.network.security.AuthType;
 
-import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class NettyNetworkServer extends NetworkServer {
 
     private static final Logger log = LoggerFactory.getLogger(NettyNetworkServer.class);
 
+    private final ConcurrentHashMap<String, Channel> activeChannels = new ConcurrentHashMap<>();
     private final AtomicInteger connectionCount = new AtomicInteger(0);
 
     private Channel channel;
@@ -91,7 +96,6 @@ public class NettyNetworkServer extends NetworkServer {
                             p.addLast(new ExceptionHandler());
                             p.addLast(new IdleStateHandler(settings.getMaxIdleTimeSeconds(), 0, 0));
 
-                            // State handler:
                             p.addLast(new ChannelInboundHandlerAdapter() {
                                 @Override
                                 public void channelInactive(ChannelHandlerContext ctx) throws Exception {
@@ -101,6 +105,7 @@ public class NettyNetworkServer extends NetworkServer {
                                     } else {
                                         log.debug("Session inactive from {0}.", ctx.channel().remoteAddress());
                                     }
+                                    activeChannels.remove(ctx.channel().id().asLongText());
                                     // Called when the channel becomes inactive...
                                     ctx.channel().attr(NettyHelper.NETWORK_SESSION).set(null);
                                     super.channelInactive(ctx);
@@ -115,6 +120,7 @@ public class NettyNetworkServer extends NetworkServer {
                                 @Override
                                 public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
                                     connectionCount.decrementAndGet();
+
                                     super.channelUnregistered(ctx);
                                 }
 
@@ -157,8 +163,36 @@ public class NettyNetworkServer extends NetworkServer {
     }
 
     @Override
-    public boolean send(NetworkPlayer player, NetworkMessage message) throws IOException {
-        throw new UnsupportedOperationException("Not implemented yet.");
+    public List<NetworkPlayer> getPlayers() {
+        // TODO: optimize this
+        return activeChannels.values().stream()
+                .map(NettyHelper::getNetworkSession)
+                .filter(session -> session != null && session.getPlayer() != null)
+                .map(NettyNetworkSession::getPlayer)
+                .toList();
+    }
+
+    @Override
+    public void broadcast(NetworkMessage message) {
+        activeChannels.values().forEach(channel -> {
+            if (channel.isActive()) {
+                channel.writeAndFlush(message);
+            } else {
+                log.warn("Channel {0} is not active, skipping broadcast.", channel.id());
+            }
+        });
+    }
+
+    @Override
+    public boolean send(NetworkPlayer player, NetworkMessage message) {
+        var channel = activeChannels.get(player.getId());
+        if (channel != null && channel.isActive()) {
+            channel.writeAndFlush(message);
+            return true;
+        } else {
+            log.warn("Player {0} not connected.", player.getId());
+            return false;
+        }
     }
 
     @Override
@@ -191,6 +225,7 @@ public class NettyNetworkServer extends NetworkServer {
             switch (session.getState()) {
                 case ACTIVE -> {
                     log.info("Session {0} active.", session.getId());
+                    activeChannels.put(ctx.channel().id().asLongText(), ctx.channel());
                     if (settings.getServerListener() != null) {
                         settings.getServerListener().onPlayerActive(session.getPlayer());
                     }

@@ -8,6 +8,7 @@ import org.pixel.network.data.NetworkPlayer;
 import org.pixel.network.message.NetworkMessage;
 
 import java.io.IOException;
+import java.util.List;
 
 @Setter
 @Getter
@@ -41,14 +42,27 @@ public abstract class NetworkServer implements Initializable, Disposable {
     }
 
     /**
-     * Write message to the player
+     * Get all players connected to the server
+     *
+     * @return The list of players connected to the server
+     */
+    public abstract List<NetworkPlayer> getPlayers();
+
+    /**
+     * Write a message to all players
+     *
+     * @param message The message to be sent
+     */
+    public abstract void broadcast(NetworkMessage message);
+
+    /**
+     * Write a message to the player
      *
      * @param player  The player to send the message to
      * @param message The message to be sent
      * @return True if the message was queued for sending
-     * @throws IOException - If the message could not be sent
      */
-    public abstract boolean send(NetworkPlayer player, NetworkMessage message) throws IOException;
+    public abstract boolean send(NetworkPlayer player, NetworkMessage message);
 
     /**
      * Get the current network state
