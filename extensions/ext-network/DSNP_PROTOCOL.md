@@ -1,4 +1,4 @@
-#  DSNP
+# DSNP
 
 ### Version: 1.0.0
 
@@ -6,8 +6,8 @@
 
 ## 1. Overview
 
-**DSNP (0xDEAD Simple Network Protocol)** is a minimal, TCP‑only binary protocol designed for multiplayer game engines. It
-leverages TCP inherent reliability and ordered delivery while keeping the protocol framing and message set extremely
+**DSNP (0xDEAD Simple Network Protocol)** is a minimal, TCP‑only binary protocol designed for multiplayer game engines.
+It leverages TCP inherent reliability and ordered delivery while keeping the protocol framing and message set extremely
 simple. For secure communications, DSNP can be run over TLS. The protocol defines handshake, arbitrary in‑game data,
 heartbeat and disconnect messages.
 
@@ -16,8 +16,8 @@ might need to consider UDP or a more sophisticated protocol on top of UDP. Howev
 and much easier and safer to work with. Protocols like QUIC and SCTP are great in theory, but since they lack native
 support, over-the-top implementations can be complex and inefficient.
 
-Additionally, if needed, a UDP-based layer can work alongside DSNP. The DSNP handshake can be extended to exchange 
-additional security parameters, which would then be used to encode and decode data sent over a connectionless 
+Additionally, if needed, a UDP-based layer can work alongside DSNP. The DSNP handshake can be extended to exchange
+additional security parameters, which would then be used to encrypt and decrypt data sent over a connectionless
 transport like UDP.
 
 ---
@@ -88,7 +88,7 @@ method is `"digest"`, the server may challenge the client with a nonce, and the 
 **Payload Format (ASCII key=value pairs):**
 
 - **ver:** API version (e.g., `"1.0"`)
-- **scope:** A scope identifier (e.g., `"game"`, `"lobby"`)
+- **channel:** A channel identifier (e.g., `"game"`, `"chat"`, `"assets"`, etc...)
 - **auth:** Authentication line (e.g., `"basic <base64(username:password)>"`)
 
 > Not setting the `auth` field means that the client doesn't suggest any authentication method. The server may
@@ -103,13 +103,13 @@ method is `"digest"`, the server may challenge the client with a nonce, and the 
 DIGEST authentication may be started when the server doesn't support BASIC authentication or the client does not
 provide the `auth` field. The server will respond with a challenge, and the client must respond with a digest.
 
-- **auth:** `"digest username="<username>", realm="<realm>", nonce="<server-nonce>", uri="<scope>", 
-response="<MD5(username:realm:password:nonce:cnonce:nc)>", nc="<nonce-count>", cnonce="<client-nonce>"
+- **auth:** `"digest username="<username>", realm="<realm>", nonce="<server-nonce>", uri="<scope>",
+  response="<MD5(username:realm:password:nonce:cnonce:nc)>", nc="<nonce-count>", cnonce="<client-nonce>"
 
 **Example Payload String:**
 
 ```
-ver=1.0;scope=game;auth=basic dXNlcm5hbWU6cGFzc3dvcmQ=
+ver=1.0;channel=game;auth=basic dXNlcm5hbWU6cGFzc3dvcmQ=
 ```
 
 *On the wire, DSNP sends:*
@@ -118,6 +118,10 @@ ver=1.0;scope=game;auth=basic dXNlcm5hbWU6cGFzc3dvcmQ=
 - Message Type: `0x01`
 - Payload Length: (length of the above ASCII string in bytes)
 - Payload: `...`
+
+> Note that the best way to ensure safety when sending the user credentials is to use TLS. The DSNP protocol does not
+> impose any specific encryption or authentication method. It is up to the implementation to ensure that the
+> credentials are sent securely.
 
 ---
 
@@ -174,9 +178,9 @@ key=value format as above or more comprehensive formats like JSON.)
 
 ---
 
-### 4.4 Heartbeat (Type 0xF0)   
+### 4.4 Heartbeat (Type 0xF0)
 
-**Purpose:** 
+**Purpose:**
 Application layer keep-alive message to ensure the connection remains active.
 
 By default, has no payload (payload length is `0`).
@@ -187,7 +191,7 @@ Some implementations might include data, e.g., a timestamp or service status, wi
 ### 4.5 Disconnect (Type 0xFA)
 
 **Purpose:**  
-Gracefully close the connection. This does not necessarily end the session, as the session's lifecycle is managed by 
+Gracefully close the connection. This does not necessarily end the session, as the session's lifecycle is managed by
 the implementation.
 
 This message can be sent by any party, server or client.
@@ -221,7 +225,7 @@ reason=Maintenance;timeout=300
 4. **Connection Maintenance:**
    Both parties SHOULD have a configurable idle-timeout (time without data transfer), which, if reached, SHALL trigger
    a Hearbeat (Type `0xF0`) message to ensure the connection isn't closed prematurely. The idle-timeout SHOULD be
-   configured to no longer than 30 seconds, a value widely adopted in network protocols and load balancers to maintain 
+   configured to no longer than 30 seconds, a value widely adopted in network protocols and load balancers to maintain
    NAT bindings and keep-alive states across intermediate devices.
 
 5. **Disconnect:**  
@@ -229,24 +233,56 @@ reason=Maintenance;timeout=300
 
 ---
 
-## 6. Implementation Considerations
+## 6. Implementation Considerations & Opinions
 
-- **Message Parsing:**  
-  The receiver scans the TCP stream for DSNP messages by first detecting the 2‑byte magic header (`0xDEAD`). After that,
-  it reads the 1‑byte message type and the next 4 bytes to obtain the payload length. The receiver then reads exactly
-  that many bytes for the payload.
+### Message Parsing:
 
-- **TCP Settings (Java):**  
-  For lower latency, disable Nagle’s algorithm:
-  ```java
-  socket.setTcpNoDelay(true);
-  ```
-  You can also adjust the send/receive buffer sizes, example:
-  ```java
-  socket.setReceiveBufferSize(64 * 1024);
-  socket.setSendBufferSize(64 * 1024);
-  ```
+The receiver scans the TCP stream for DSNP messages by first detecting the 2‑byte magic header (`0xDEAD`). After that,
+it reads the 1‑byte message type and the next 4 bytes to obtain the payload length. The receiver then reads exactly
+that many bytes for the payload.
 
-- **Encryption:**  
-  DSNP does not incorporate its own encryption. To secure DSNP communications, run it over TLS which is widely supported
-  and battle-tested.
+### Network Channels
+
+You MAY provide multiple network channel configurations to differentiate between different types of data. For example,
+you may have a channel for game state updates, another for chat messages, and a third for assets. Each channel
+can have its own settings, such as buffer sizes, timeouts, and other TCP-level options. This allows you to optimize the
+network stack for the characteristics of each data type.
+
+This is especially useful to avoid overloading latency-sensitive data (e.g., game state updates) with less time-critical
+payloads such as chat messages, logs, or asset transfers. Channels provide an abstraction for clean separation and allow
+fine-tuning of performance per use case.
+
+Implementations may choose to bind each channel to a separate TCP connection. In this case, clients initiate a new DSNP
+connection for each desired channel, using the channel field in the handshake (e.g., channel=game, channel=asset, etc.).
+The server may independently accept or reject each channel request.
+
+You MAY use the same channel abstraction if later you decide to implement a UDP-based layer on top of DSNP.
+
+### Game Processing
+
+This protocol is designed to be simple and easy to implement. It is not intended to be a fully-opinionated game network
+stack. You are free to implement your game logic on top of DSNP as you see fit.
+
+For example, you may choose to implement a custom serialization format for your game state updates, or you may use a
+tick based approach to send updates at regular intervals. The protocol is flexible enough to accommodate a wide range of
+game architectures.
+
+### TCP Settings (Java):
+
+For lower latency, disable Nagle’s algorithm:
+
+```java
+socket.setTcpNoDelay(true);
+```
+
+You can also adjust the send/receive buffer sizes, example:
+
+```java
+socket.setReceiveBufferSize(64*1024);
+socket.setSendBufferSize(64*1024);
+```
+
+### Encryption:
+
+DSNP does not incorporate its own encryption. To secure DSNP communications, run it over TLS which is widely supported
+and battle-tested.

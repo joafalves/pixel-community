@@ -23,6 +23,10 @@ public class NetworkServerSettings {
     @Builder.Default
     private final int maxIdleTimeSeconds = 120;
 
+    // Channels
+    @Builder.Default
+    private final List<String> allowedChannels = List.of("game", "chat", "asset");
+
     // Listeners
     private final NetworkServerListener serverListener;
 
