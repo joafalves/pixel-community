@@ -2,6 +2,7 @@ package org.pixel.demo.learning.network;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
+import org.pixel.commons.Timer;
 import org.pixel.commons.data.DataMap;
 import org.pixel.commons.logger.ConsoleLogger;
 import org.pixel.commons.logger.LogLevel;
@@ -12,18 +13,14 @@ import org.pixel.content.Font;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.input.keyboard.Keyboard;
+import org.pixel.input.keyboard.KeyboardKey;
 import org.pixel.math.Vector2;
-import org.pixel.network.api.NetworkAuthenticator;
-import org.pixel.network.api.NetworkClientListener;
-import org.pixel.network.api.NetworkServerListener;
-import org.pixel.network.data.NetworkPlayer;
-import org.pixel.network.data.SocketAddress;
-import org.pixel.network.io.NetworkClient;
-import org.pixel.network.io.NetworkClientSettings;
-import org.pixel.network.io.NetworkServer;
-import org.pixel.network.io.NetworkServerSettings;
+import org.pixel.network.NetworkHelper;
+import org.pixel.network.NetworkTransport;
+import org.pixel.network.api.*;
+import org.pixel.network.io.*;
 import org.pixel.network.message.DataMessage;
-import org.pixel.network.message.HandshakeRequest;
 import org.pixel.network.message.NetworkMessage;
 import org.pixel.network.security.AuthType;
 import org.pixel.network.security.BasicAuth;
@@ -44,9 +41,12 @@ public class SimpleNetworkDemo extends DemoGame
 
     private static final String SERVER_HOST = "localhost";
     private static final int SERVER_PORT = 8888;
+    private static final String CHANNEL_GAME = NetworkHelper.normalizeChannelName("game");
+    private static final String CHANNEL_DUMMY = NetworkHelper.normalizeChannelName("dummy");
 
-    private final PlayerData player = new PlayerData(TextHelper.randomString(8), new Vector2());
+    private final PlayerData localPlayer = new PlayerData(TextHelper.randomString(8), new Vector2());
     private final ConcurrentHashMap<String, PlayerData> others = new ConcurrentHashMap<>();
+    private final Timer ticker = new Timer(1000 / 10); // 10 FPS for network updates
 
     private NetworkServer networkServer;
     private NetworkClient networkClient;
@@ -54,6 +54,7 @@ public class SimpleNetworkDemo extends DemoGame
     private ContentManager content;
     private SpriteBatch spriteBatch;
     private Font debugFont;
+    private boolean dirty = false; // Flag to indicate if we need to send a message
 
     /**
      * Constructor
@@ -90,10 +91,23 @@ public class SimpleNetworkDemo extends DemoGame
                 .build());
 
         // Create a new CLIENT instance:
+        var transport = NetworkTransport.TCP;
+        var channels = List.of(
+                NetworkChannelSettings.builder()
+                        .name(CHANNEL_GAME)
+                        .transport(transport)
+                        .serverAddress(new SocketAddress(SERVER_HOST, SERVER_PORT))
+                        .build(),
+                NetworkChannelSettings.builder()
+                        .name(CHANNEL_DUMMY)
+                        .transport(transport)
+                        .serverAddress(new SocketAddress(SERVER_HOST, SERVER_PORT))
+                        .build()
+        );
         networkClient = ServiceProvider.get(NetworkClient.class, NetworkClientSettings.builder()
-                .serverAddress(new SocketAddress(SERVER_HOST, SERVER_PORT))
-                .heartbeatIntervalSeconds(30)
+                .channels(channels)
                 .clientListener(this)
+                .auth(new BasicAuth(localPlayer.username(), "doesnotmatter"))
                 .build());
 
         // Initialize both SERVER and CLIENTS
@@ -104,11 +118,6 @@ public class SimpleNetworkDemo extends DemoGame
         if (!networkClient.init()) {
             throw new RuntimeException("Failed to initialize clients");
         }
-
-        // Authenticate player A:
-        var handshakeA = new HandshakeRequest();
-        handshakeA.add("auth", new BasicAuth(player.username(), "doesnotmatter").toString());
-        sendToServer(networkClient, handshakeA);
 
         // Complementary assets:
         content = ServiceProvider.get(ContentManager.class);
@@ -121,7 +130,28 @@ public class SimpleNetworkDemo extends DemoGame
 
     @Override
     public void update(DeltaTime delta) {
+        super.update(delta);
 
+        if (Keyboard.isKeyDown(KeyboardKey.RIGHT)) {
+            localPlayer.position.add(100 * delta.getElapsed(), 0);
+            dirty = true;
+        } else if (Keyboard.isKeyDown(KeyboardKey.LEFT)) {
+            localPlayer.position.add(-100 * delta.getElapsed(), 0);
+            dirty = true;
+        }
+
+        if (ticker.elapsed() && dirty && networkServer.isActive()) {
+            // send my position to other players:
+            var playerData = new DataMap();
+            playerData.put("username", localPlayer.username);
+            playerData.put("posX", localPlayer.position.getX());
+            playerData.put("posY", localPlayer.position.getY());
+
+            var playerMessage = new DataMessage(new DemoGameMessage(DemoGameMessage.TYPE_PLAYER_DATA, playerData).toBytes());
+            broadcast(playerMessage);
+
+            dirty = false; // Reset the dirty flag
+        }
     }
 
     @Override
@@ -130,11 +160,12 @@ public class SimpleNetworkDemo extends DemoGame
 
         // draw connection count in the top left corner:
         if (networkServer.isActive()) {
-            spriteBatch.drawText(debugFont, "Players: " + networkServer.getConnectionCount(), Vector2.ZERO, Color.WHITE);
+            spriteBatch.drawText(debugFont, "Players: " + networkServer.getPlayerCount(), Vector2.ZERO, Color.WHITE);
+            spriteBatch.drawText(debugFont, "Connections: " + networkServer.getConnectionCount(), new Vector2(0, 30), Color.WHITE);
         }
 
         // draw our player:
-        spriteBatch.drawText(debugFont, "Player: " + player.username, player.position, Color.WHITE);
+        spriteBatch.drawText(debugFont, "Player: " + localPlayer.username, localPlayer.position, Color.WHITE);
 
         // draw other players (if any):
         for (var other : others.values()) {
@@ -144,53 +175,69 @@ public class SimpleNetworkDemo extends DemoGame
         spriteBatch.end();
     }
 
-    //region server listener & authenticator
+    //region server listener and authenticator
 
     @Override
-    public DataMap authenticate(String username, String password, SocketAddress userAddress) {
-        // In a real application, you would check the username and password against a proper authentication system...
+    public NetworkAuthenticatorResponse authenticate(String username, String password, NetworkAuthenticatorContext ctx) {
+        // In a real application, you would check the username and password against a proper authentication system.
+        // For this demo, we will just check if the username is not empty...
+        if (username.isEmpty() || password.isEmpty()) {
+            return NetworkAuthenticatorResponse.builder()
+                    .success(false)
+                    .message("Invalid username or password")
+                    .build();
+        }
 
         // (Best Practice) Note that the DataMap is being created with a concurrent implementation since in this
-        // context, it can be accessed & modified by multiple threads:
-        var userData = DataMap.createConcurrent();
-        userData.put("username", username);
-        userData.put("email", username + "@example.com");
-        userData.put("money", 1000);
-        userData.put("host", userAddress.getHost());
-        userData.put("posX", ThreadLocalRandom.current().nextFloat(50, getVirtualWidth() - 50));
-        userData.put("posY", ThreadLocalRandom.current().nextFloat(50, getVirtualHeight() - 50));
-        // THE DATA DEFINED ABOVE IS ONLY AVAILABLE ON THE SERVER. YOU MUST HANDLE WHAT INFO YOU SHARE WITH YOUR
-        // PLAYERS MANUALLY (via DataMessage or other means).
+        // context, it can be accessed and modified by multiple threads:
+        // Note that this is just an example on how to attach data to the CONNECTION. You can also attach data to
+        // the PLAYER (see #onConnectionAccepted(..)):
+        var channelData = DataMap.concurrent();
+        channelData.put("scope", ctx.getChannelName());
+        channelData.put("host", ctx.getRemoteAddress().getHost());
 
         // You MUST return null if authentication fails (you can return an empty map if you want to allow the connection
         // but with no data for the user at this point):
-        return userData;
+        return NetworkAuthenticatorResponse.builder()
+                .success(true)
+                .data(channelData)
+                .build();
     }
 
     @Override
-    public void onPlayerActive(NetworkPlayer player) {
-        log.info("Player [{0}] connected.", player.getData().getString("username"));
+    public void onConnectionAccepted(NetworkPlayer player, NetworkConnection connection) {
+        log.info("Player [{0} : {1}] connection accepted!", player.getId(), connection.getChannelName());
 
-        for (var activePlayer : networkServer.getPlayers()) {
-            var simplifiedPlayerData = new DataMap();
-            simplifiedPlayerData.put("username", activePlayer.getData().get("username"));
-            simplifiedPlayerData.put("posX", activePlayer.getData().get("posX"));
-            simplifiedPlayerData.put("posY", activePlayer.getData().get("posY"));
+        if (connection.getChannelName().equalsIgnoreCase(CHANNEL_GAME)) {
+            // THE DATA DEFINED ABOVE IS ONLY AVAILABLE ON THE SERVER. YOU MUST HANDLE WHAT INFO YOU SHARE WITH YOUR
+            // PLAYERS MANUALLY (via DataMessage or other means).
+            var playerData = player.getData();
+            playerData.put("posX", ThreadLocalRandom.current().nextFloat(50, getVirtualWidth() - 50));
+            playerData.put("posY", ThreadLocalRandom.current().nextFloat(50, getVirtualHeight() - 50));
 
-            // Send the new player the data of all other players:
-            var playerInfoMsg = new GameMessage(GameMessage.TYPE_PLAYER_DATA, simplifiedPlayerData);
-            broadcast(new DataMessage(playerInfoMsg.toBytes()));
+            // Broadcast all-players info to all players (a bit redundant, but this is a demo):
+            for (var activePlayer : networkServer.getPlayers()) {
+                var filterData = new DataMap();
+                filterData.put("username", activePlayer.getId());
+                filterData.putAll(activePlayer.getData());
+
+                var playerInfoMsg = new DemoGameMessage(DemoGameMessage.TYPE_PLAYER_DATA, filterData);
+                var playerMessage = new DataMessage(playerInfoMsg.toBytes());
+
+                networkServer.broadcast(playerMessage);
+            }
         }
     }
 
     @Override
-    public void onPlayerInactive(NetworkPlayer player) {
-        log.info("Player [{0}] disconnected.", player.getData().getString("username"));
+    public void onConnectionRemoved(NetworkPlayer player, NetworkConnection connection) {
+        log.info("Player [{0} : {1}] connection removed.", player.getId(), connection.getChannelName());
+        // TODO: announce disconnection to other players:
     }
 
     @Override
-    public void onPlayerMessage(NetworkPlayer player, DataMessage message) {
-        log.info("Player [{0}] sent message: {1}", player.getData().getString("username"), message);
+    public void onConnectionMessage(NetworkPlayer player, NetworkConnection connection, NetworkMessage message) {
+        log.info("Player [{0} : {1}] sent message: {2}", player.getId(), connection.getChannelName(), message);
     }
 
     //endregion server listener
@@ -198,24 +245,24 @@ public class SimpleNetworkDemo extends DemoGame
     //region client listener
 
     @Override
-    public void onReady() {
-        log.info("I'm connected to the server!");
+    public void onChannelActive(NetworkChannel channel) {
+        log.info("Channel active: {0}", channel.getName());
     }
 
     @Override
-    public void onDisconnect() {
-        log.info("I'm disconnected from the server!");
+    public void onChannelInactive(NetworkChannel channel) {
+        log.info("Channel inactive: {0}", channel.getName());
     }
 
     @Override
-    public void onMessage(DataMessage message) {
-        var gameMessage = GameMessage.fromBytes(message.getPayload());
-        if (gameMessage.type().equals(GameMessage.TYPE_PLAYER_DATA)) {
+    public void onChannelMessage(NetworkChannel channel, DataMessage message) {
+        var gameMessage = DemoGameMessage.fromBytes(message.getPayload());
+        if (gameMessage.type().equals(DemoGameMessage.TYPE_PLAYER_DATA)) {
             // This is a player data message, we can use it to update the client state.
             log.info("Received player data: {0}", gameMessage.data());
             handlePlayerDataUpdate(gameMessage);
 
-        } else if (gameMessage.type().equals(GameMessage.TYPE_PLAYER_MESSAGE)) {
+        } else if (gameMessage.type().equals(DemoGameMessage.TYPE_PLAYER_MESSAGE)) {
             // This is a player message, we can use it to update the client state.
             log.info("Received player message: {0}", gameMessage.data());
         } else {
@@ -233,13 +280,13 @@ public class SimpleNetworkDemo extends DemoGame
         super.dispose();
     }
 
-    private void handlePlayerDataUpdate(GameMessage playerDataMsg) {
+    private void handlePlayerDataUpdate(DemoGameMessage playerDataMsg) {
         // check if the username is ours (our data) or not (other players):
         var username = playerDataMsg.data().getString("username");
 
-        if (username.equals(player.username)) {
+        if (username.equals(localPlayer.username)) {
             // This is our data, we can update our state.
-            player.position.set(
+            localPlayer.position.set(
                     Float.parseFloat(playerDataMsg.data().getString("posX")),
                     Float.parseFloat(playerDataMsg.data().getString("posY"))
             );
@@ -254,28 +301,9 @@ public class SimpleNetworkDemo extends DemoGame
         }
     }
 
-    private void sendToServer(NetworkClient client, NetworkMessage message) {
-        try {
-            if (client.isConnected() && client.send(message)) {
-                log.trace("Message queued for sending: {0}", message);
-            }
-        } catch (Exception e) {
-            log.error("Failed to send message: {0}", e.getMessage(), e);
-        }
-    }
-
-    private void sendToPlayer(NetworkPlayer player, NetworkMessage message) {
-        try {
-            if (networkServer.send(player, message)) {
-                log.trace("Message queued for sending: {0}", message);
-            }
-        } catch (Exception e) {
-            log.error("Failed to send message: {0}", e.getMessage(), e);
-        }
-    }
-
     private void broadcast(NetworkMessage message) {
         try {
+            // Note that you can also broadcast to a specific channel (see NetworkServer#broadcast(...) implementations)
             networkServer.broadcast(message);
         } catch (Exception e) {
             log.error("Failed to send message: {0}", e.getMessage(), e);
@@ -302,12 +330,12 @@ public class SimpleNetworkDemo extends DemoGame
      * @param type
      * @param data
      */
-    record GameMessage(String type, DataMap data) {
+    record DemoGameMessage(String type, DataMap data) {
 
         static String TYPE_PLAYER_DATA = "player_data";
         static String TYPE_PLAYER_MESSAGE = "player_message";
 
-        static GameMessage fromBytes(byte[] payload) {
+        static DemoGameMessage fromBytes(byte[] payload) {
             String payloadString = new String(payload, StandardCharsets.UTF_8);
             String[] parts = payloadString.split("\\|", 2);
             if (parts.length != 2) {
@@ -327,7 +355,7 @@ public class SimpleNetworkDemo extends DemoGame
                 data.put(key, value);
             }
 
-            return new GameMessage(type, data);
+            return new DemoGameMessage(type, data);
         }
 
         byte[] toBytes() {
@@ -339,7 +367,7 @@ public class SimpleNetworkDemo extends DemoGame
             return sb.toString().getBytes(StandardCharsets.UTF_8);
         }
     }
-    
+
     public static void main(String[] args) {
         final WindowSettings settings = new WindowSettings(800, 600);
         settings.setBackgroundColor(Color.INDIGO);

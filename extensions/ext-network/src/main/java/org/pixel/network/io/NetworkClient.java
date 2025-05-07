@@ -4,8 +4,6 @@ import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.commons.lifecycle.Initializable;
 import org.pixel.network.message.NetworkMessage;
 
-import java.io.IOException;
-
 public abstract class NetworkClient implements Initializable, Disposable {
 
     protected final NetworkClientSettings settings;
@@ -20,8 +18,8 @@ public abstract class NetworkClient implements Initializable, Disposable {
             throw new IllegalArgumentException("Settings cannot be null.");
         }
 
-        if (settings.getServerAddress() == null) {
-            throw new IllegalArgumentException("Server address cannot be null.");
+        if (settings.getChannels() == null || settings.getChannels().isEmpty()) {
+            throw new IllegalArgumentException("Channels cannot be null or empty.");
         }
 
         if (settings.getClientListener() == null) {
@@ -32,12 +30,22 @@ public abstract class NetworkClient implements Initializable, Disposable {
     }
 
     /**
-     * Write a message to the server
+     * Write a message to the channel
      *
-     * @param msg - The message to be sent
+     * @param channel - The channel to send the message to
+     * @param msg     - The message to be sent
      * @return True if the message was queued for sending
      */
-    public abstract boolean send(NetworkMessage msg);
+    public abstract boolean send(NetworkChannel channel, NetworkMessage msg);
+
+    /**
+     * Write a message to the channel
+     *
+     * @param channelName - The channel name to send the message to
+     * @param msg         - The message to be sent
+     * @return True if the message was queued for sending
+     */
+    public abstract boolean send(String channelName, NetworkMessage msg);
 
     /**
      * Get the current network state

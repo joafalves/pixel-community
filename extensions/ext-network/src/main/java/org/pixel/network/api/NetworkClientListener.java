@@ -1,22 +1,24 @@
 package org.pixel.network.api;
 
+import org.pixel.network.io.NetworkChannel;
 import org.pixel.network.message.DataMessage;
 
 public interface NetworkClientListener {
     /**
-     * Called when the client is ready to send and receive packets.
+     * Called when a client channel becomes active (e.g., connected to the server).
      */
-    void onReady();
+    void onChannelActive(NetworkChannel channel);
 
     /**
-     * Called when the client is disconnected from the server.
+     * Called when a client channel becomes inactive (e.g., disconnected from the server).
      */
-    void onDisconnect();
+    void onChannelInactive(NetworkChannel channel);
 
     /**
-     * Called when the client receives a message from the server.
+     * Called when the client receives a message from a network channel.
      *
+     * @param channel - The channel through which the message was received
      * @param message - The message received from the server
      */
-    void onMessage(DataMessage message);
+    void onChannelMessage(NetworkChannel channel, DataMessage message);
 }

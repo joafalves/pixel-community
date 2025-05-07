@@ -1,8 +1,5 @@
 package org.pixel.network.message;
 
-import lombok.Builder;
-
-@Builder
 public class HandshakeResponse extends KeyValueMessage {
 
     private static final String KEY_STATUS = "status";

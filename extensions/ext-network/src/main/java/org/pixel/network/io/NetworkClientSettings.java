@@ -3,25 +3,21 @@ package org.pixel.network.io;
 import lombok.Builder;
 import lombok.Getter;
 import org.pixel.network.api.NetworkClientListener;
-import org.pixel.network.data.SocketAddress;
+import org.pixel.network.security.Auth;
 
 import java.io.File;
+import java.util.List;
 
 @Builder
 @Getter
 public class NetworkClientSettings {
-    // Network settings
-    private final SocketAddress serverAddress;
-    @Builder.Default
-    private final int heartbeatIntervalSeconds = 30;
-    @Builder.Default
-    private final boolean autoReconnect = true;
+    // General
+    private final List<NetworkChannelSettings> channels;
+    private final Auth auth;
 
     // Listeners
     private final NetworkClientListener clientListener;
 
     // Security
-    @Builder.Default
-    private final boolean isSecure = false;
     private final File trustCertChainFile = null;   // nullable, PEM for CA chain
 }

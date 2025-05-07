@@ -15,6 +15,11 @@ public class BasicAuth implements Auth {
     private final String password;
 
     @Override
+    public String getPlayerId() {
+        return username;
+    }
+
+    @Override
     public String toString() {
         String credentials = username + ":" + password;
         String encoded = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));

@@ -12,31 +12,30 @@ import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.network.data.NetworkPlayer;
+import org.pixel.network.NetworkTransport;
 import org.pixel.network.handler.netty.ExceptionHandler;
 import org.pixel.network.handler.netty.NetworkLoggerHandler;
 import org.pixel.network.handler.netty.NetworkMessageDecoder;
 import org.pixel.network.handler.netty.NetworkMessageEncoder;
-import org.pixel.network.handler.netty.server.ConnectionHandler;
-import org.pixel.network.handler.netty.server.HandshakeRequestHandler;
-import org.pixel.network.handler.netty.server.InboundDataMessageServerHandler;
-import org.pixel.network.handler.netty.server.InboundSecurityHandler;
+import org.pixel.network.handler.netty.server.ServerConnectionHandler;
+import org.pixel.network.handler.netty.server.ServerHandshakeHandler;
+import org.pixel.network.handler.netty.server.ServerInboundDataMessageServerHandler;
+import org.pixel.network.handler.netty.server.ServerInboundSecurityHandler;
+import org.pixel.network.io.NetworkPlayer;
 import org.pixel.network.io.NetworkServer;
 import org.pixel.network.io.NetworkServerSettings;
-import org.pixel.network.io.netty.event.PlayerStateChangeEvent;
+import org.pixel.network.io.NetworkSessionManager;
+import org.pixel.network.io.netty.event.HandshakeSuccessEvent;
 import org.pixel.network.message.NetworkMessage;
 import org.pixel.network.security.AuthType;
 
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Collection;
 
 public class NettyNetworkServer extends NetworkServer {
 
     private static final Logger log = LoggerFactory.getLogger(NettyNetworkServer.class);
 
-    private final ConcurrentHashMap<String, Channel> activeChannels = new ConcurrentHashMap<>();
-    private final AtomicInteger connectionCount = new AtomicInteger(0);
+    private static final NetworkSessionManager sessionManager = new NetworkSessionManager();
 
     private Channel channel;
     private EventLoopGroup bossGroup;
@@ -58,6 +57,10 @@ public class NettyNetworkServer extends NetworkServer {
             return false;
         }
 
+        if (settings.getTransport() == NetworkTransport.UDP) {
+            throw new UnsupportedOperationException("UDP transport is not yet supported.");
+        }
+
         if (settings.getAuthenticator() == null && !settings.getAllowedAuthTypes().contains(AuthType.NONE)) {
             log.warn("Authenticator is not set!");
             return false;
@@ -65,10 +68,8 @@ public class NettyNetworkServer extends NetworkServer {
 
         bossGroup = new MultiThreadIoEventLoopGroup(settings.getNumThreads(), NioIoHandler.newFactory());
         workerGroup = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());
-        connectionCount.set(0);
 
         try {
-            // TODO: support SSL
             var bootstrap = new ServerBootstrap()
                     .group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
@@ -77,21 +78,20 @@ public class NettyNetworkServer extends NetworkServer {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             var p = socketChannel.pipeline();
-
-                            if (settings.isSecure()) {
+                            if (settings.getTransport() == NetworkTransport.TLS) {
                                 var sslContext = createSslContext();
                                 p.addLast(sslContext.newHandler(socketChannel.alloc()));
                             }
 
-                            p.addLast(new ConnectionHandler(settings.getMaxConnections()));
+                            p.addLast(new ServerConnectionHandler(settings.getMaxConnections()));
                             p.addLast(new NetworkMessageDecoder());
                             p.addLast(new NetworkMessageEncoder());
                             p.addLast(new NetworkLoggerHandler());
 
                             // Handshake is *special* and HAS TO be added before the security handler:
-                            p.addLast(new HandshakeRequestHandler(settings));
-                            p.addLast(new InboundSecurityHandler());
-                            p.addLast(new InboundDataMessageServerHandler(settings));
+                            p.addLast(new ServerHandshakeHandler(settings));
+                            p.addLast(new ServerInboundSecurityHandler(sessionManager));
+                            p.addLast(new ServerInboundDataMessageServerHandler(settings, sessionManager));
 
                             p.addLast(new ExceptionHandler());
                             p.addLast(new IdleStateHandler(settings.getMaxIdleTimeSeconds(), 0, 0));
@@ -99,29 +99,24 @@ public class NettyNetworkServer extends NetworkServer {
                             p.addLast(new ChannelInboundHandlerAdapter() {
                                 @Override
                                 public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-                                    NettyNetworkSession session = NettyHelper.getNetworkSession(ctx.channel());
-                                    if (session != null) {
-                                        log.debug("Session {0} inactive.", session.getId());
+                                    final var connectionId = NettyHelper.getConnectionId(ctx.channel());
+                                    final var connection = sessionManager.getConnection(connectionId);
+                                    final NetworkPlayer player;
+                                    if (connection != null) {
+                                        player = sessionManager.getPlayer(connection.getPlayerId());
+                                        log.debug("Player {0} disconnected.", connection.getPlayerId());
                                     } else {
-                                        log.debug("Session inactive from {0}.", ctx.channel().remoteAddress());
+                                        player = null;
+                                        log.debug("Player disconnected from {0}.", ctx.channel().remoteAddress());
                                     }
-                                    activeChannels.remove(ctx.channel().id().asLongText());
-                                    // Called when the channel becomes inactive...
-                                    ctx.channel().attr(NettyHelper.NETWORK_SESSION).set(null);
+
+                                    sessionManager.removeConnection(connectionId);
+
+                                    if (settings.getServerListener() != null && player != null) {
+                                        settings.getServerListener().onConnectionRemoved(player, connection);
+                                    }
+
                                     super.channelInactive(ctx);
-                                }
-
-                                @Override
-                                public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-                                    connectionCount.incrementAndGet();
-                                    super.channelRegistered(ctx);
-                                }
-
-                                @Override
-                                public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-                                    connectionCount.decrementAndGet();
-
-                                    super.channelUnregistered(ctx);
                                 }
 
                                 @Override
@@ -163,35 +158,28 @@ public class NettyNetworkServer extends NetworkServer {
     }
 
     @Override
-    public List<NetworkPlayer> getPlayers() {
-        // TODO: optimize this
-        return activeChannels.values().stream()
-                .map(NettyHelper::getNetworkSession)
-                .filter(session -> session != null && session.getPlayer() != null)
-                .map(NettyNetworkSession::getPlayer)
+    public Collection<NetworkPlayer> getPlayers() {
+        return sessionManager.getPlayers();
+    }
+
+    @Override
+    public Collection<NetworkPlayer> getPlayers(String channelName) {
+        return sessionManager.getPlayers().stream()
+                .filter(player -> player.getConnections().containsKey(channelName))
                 .toList();
     }
 
     @Override
     public void broadcast(NetworkMessage message) {
-        activeChannels.values().forEach(channel -> {
-            if (channel.isActive()) {
-                channel.writeAndFlush(message);
-            } else {
-                log.warn("Channel {0} is not active, skipping broadcast.", channel.id());
-            }
-        });
+        for (NetworkPlayer player : sessionManager.getPlayers()) {
+            player.send(message);
+        }
     }
 
     @Override
-    public boolean send(NetworkPlayer player, NetworkMessage message) {
-        var channel = activeChannels.get(player.getId());
-        if (channel != null && channel.isActive()) {
-            channel.writeAndFlush(message);
-            return true;
-        } else {
-            log.warn("Player {0} not connected.", player.getId());
-            return false;
+    public void broadcast(String channelName, NetworkMessage message) {
+        for (NetworkPlayer player : sessionManager.getPlayers()) {
+            player.send(channelName, message);
         }
     }
 
@@ -206,36 +194,43 @@ public class NettyNetworkServer extends NetworkServer {
             return 0;
         }
 
-        return connectionCount.get();
+        return sessionManager.getConnectionCount();
+    }
+
+    @Override
+    public int getPlayerCount() {
+        if (!isActive()) {
+            return 0;
+        }
+
+        return sessionManager.getPlayerCount();
     }
 
     private boolean handlePipelineEvent(ChannelHandlerContext ctx, Object event) {
         if (event instanceof IdleStateEvent e) {
             if (e.state() == IdleState.READER_IDLE) {
-                var session = NettyHelper.getNetworkSession(ctx.channel());
-                if (session != null) {
-                    log.info("Closing idle session {0}", session.getId());
+                final var connectionId = NettyHelper.getConnectionId(ctx.channel());
+                final var connection = sessionManager.getConnection(connectionId);
+
+                if (connection != null) {
+                    log.info("Closing idle connection {0} for player {1}.", connectionId, connection.getPlayerId());
+                } else {
+                    log.info("Closing idle connection {0}.", connectionId);
                 }
+
                 ctx.close(); // or custom session purge logic
             }
             return true;
 
-        } else if (event instanceof PlayerStateChangeEvent e) {
-            var session = e.getSession();
-            switch (session.getState()) {
-                case ACTIVE -> {
-                    log.info("Session {0} active.", session.getId());
-                    activeChannels.put(ctx.channel().id().asLongText(), ctx.channel());
-                    if (settings.getServerListener() != null) {
-                        settings.getServerListener().onPlayerActive(session.getPlayer());
-                    }
-                }
-                case INACTIVE -> {
-                    log.info("Session {0} inactive.", session.getId());
-                    if (settings.getServerListener() != null) {
-                        settings.getServerListener().onPlayerInactive(session.getPlayer());
-                    }
-                }
+        } else if (event instanceof HandshakeSuccessEvent e) {
+            final var connection = e.getConnection();
+            final var player = sessionManager.addConnection(connection);
+
+            log.info("Handshake successful for player {0} (channel: {1}).",
+                    player.getId(), connection.getChannelName());
+
+            if (settings.getServerListener() != null) {
+                settings.getServerListener().onConnectionAccepted(player, connection);
             }
         }
 

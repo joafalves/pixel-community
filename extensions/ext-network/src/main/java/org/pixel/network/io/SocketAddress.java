@@ -1,4 +1,4 @@
-package org.pixel.network.data;
+package org.pixel.network.io;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

@@ -5,7 +5,7 @@ import org.pixel.commons.lifecycle.Initializable;
 import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.network.data.SocketAddress;
+import org.pixel.network.io.SocketAddress;
 import org.pixel.network.io.NetworkServer;
 import org.pixel.network.io.NetworkServerSettings;
 import org.pixel.network.io.netty.NettyNetworkServer;

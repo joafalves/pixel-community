@@ -7,14 +7,14 @@ import org.pixel.commons.logger.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ConnectionHandler extends ChannelInboundHandlerAdapter {
+public class ServerConnectionHandler extends ChannelInboundHandlerAdapter {
 
-    private static final Logger log = LoggerFactory.getLogger(ConnectionHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(ServerConnectionHandler.class);
 
     private final AtomicInteger connectionCount = new AtomicInteger(0);
     private final int maxConnections;
 
-    public ConnectionHandler(int maxConnections) {
+    public ServerConnectionHandler(int maxConnections) {
         this.maxConnections = maxConnections;
     }
 

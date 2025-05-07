@@ -2,9 +2,9 @@ package org.pixel.network.io;
 
 import lombok.Builder;
 import lombok.Getter;
+import org.pixel.network.NetworkTransport;
 import org.pixel.network.api.NetworkAuthenticator;
 import org.pixel.network.api.NetworkServerListener;
-import org.pixel.network.data.SocketAddress;
 import org.pixel.network.security.AuthType;
 
 import java.io.File;
@@ -22,6 +22,8 @@ public class NetworkServerSettings {
     private final int numThreads = 10;
     @Builder.Default
     private final int maxIdleTimeSeconds = 120;
+    @Builder.Default
+    private final NetworkTransport transport = NetworkTransport.TCP;
 
     // Channels
     @Builder.Default
@@ -31,8 +33,6 @@ public class NetworkServerSettings {
     private final NetworkServerListener serverListener;
 
     // SSL/TLS
-    @Builder.Default
-    private final boolean isSecure = false;
     private final File certChainFile;      // Nullable
     private final File privateKeyFile;     // Nullable
     private final String privateKeyPassword; // Nullable

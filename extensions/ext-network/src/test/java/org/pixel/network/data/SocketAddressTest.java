@@ -2,6 +2,7 @@ package org.pixel.network.data;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.pixel.network.io.SocketAddress;
 
 public class SocketAddressTest {
 

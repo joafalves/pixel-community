@@ -3,7 +3,7 @@ package org.pixel.network.message;
 public class HandshakeRequest extends KeyValueMessage {
 
     private static final String KEY_VER = "ver";
-    private static final String KEY_SCOPE = "scope";
+    private static final String KEY_CHANNEL = "channel";
     private static final String KEY_AUTH = "auth";
 
     public HandshakeRequest() {
@@ -18,12 +18,12 @@ public class HandshakeRequest extends KeyValueMessage {
         add(KEY_VER, version);
     }
 
-    public String getScope() {
-        return get(KEY_SCOPE);
+    public String getChannel() {
+        return get(KEY_CHANNEL);
     }
 
-    public void setScope(String scope) {
-        add(KEY_SCOPE, scope);
+    public void setChannel(String scope) {
+        add(KEY_CHANNEL, scope);
     }
 
     public String getAuth() {

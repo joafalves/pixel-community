@@ -17,7 +17,7 @@ public class DataMap implements Map<String, Object> {
      *
      * @return A new DataMap instance.
      */
-    public static DataMap createConcurrent() {
+    public static DataMap concurrent() {
         return new DataMap(new ConcurrentHashMap<>());
     }
 
