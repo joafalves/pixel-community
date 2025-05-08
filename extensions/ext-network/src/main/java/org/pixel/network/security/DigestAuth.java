@@ -43,11 +43,6 @@ public class DigestAuth implements Auth {
     }
 
     @Override
-    public String getPlayerId() {
-        return username;
-    }
-
-    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("digest");
         appendParam(sb, "username", username);

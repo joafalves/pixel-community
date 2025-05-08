@@ -196,10 +196,11 @@ public class SimpleNetworkDemo extends DemoGame
         channelData.put("scope", ctx.getChannelName());
         channelData.put("host", ctx.getRemoteAddress().getHost());
 
-        // You MUST return null if authentication fails (you can return an empty map if you want to allow the connection
-        // but with no data for the user at this point):
+        // Note that the player ID we define here is what will be used to globally identify the player in the server
+        // across all channels:
         return NetworkAuthenticatorResponse.builder()
                 .success(true)
+                .playerId(username)
                 .data(channelData)
                 .build();
     }

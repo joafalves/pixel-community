@@ -145,7 +145,7 @@ public class ServerHandshakeHandler extends SimpleChannelInboundHandler<Handshak
         }
 
         // Handle successful authentication:
-        triggerHandshakeSuccessEvent(ctx, request, auth.getPlayerId(), authResponse.getData());
+        triggerHandshakeSuccessEvent(ctx, request, authResponse.getPlayerId(), authResponse.getData());
 
         // send OK response
         var response = new HandshakeResponse();
