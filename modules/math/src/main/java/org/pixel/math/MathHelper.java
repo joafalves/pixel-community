@@ -555,7 +555,7 @@ public class MathHelper {
      * @return The intersection point if any.
      */
     public static Vector2 intersect(float p1x1, float p1y1, float p1x2, float p1y2,
-            float p2x1, float p2y1, float p2x2, float p2y2) {
+                                    float p2x1, float p2y1, float p2x2, float p2y2) {
         float d = (p1x1 - p1x2) * (p2y1 - p2y2) - (p1y1 - p1y2) * (p2x1 - p2x2);
         if (d == 0) {
             return null;

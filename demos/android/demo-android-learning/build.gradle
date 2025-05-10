@@ -9,23 +9,22 @@ buildscript {
     dependencies {
         // Add the classpath for the Android Gradle Plugin here
         // Make sure to use a version compatible with your Gradle version
-        classpath 'com.android.tools.build:gradle:8.2.0'
+        classpath 'com.android.tools.build:gradle:8.2.2'
     }
 }
 
 android {
     namespace "org.pixel.android"
 
+    compileSdk 36
+
     defaultConfig {
-        compileSdk 34
-        minSdkVersion 34
-        buildToolsVersion = "34.0.0"
+        minSdkVersion 30
 
         versionCode 1
         versionName rootProject.version
 
         consumerProguardFiles 'consumer-rules.pro'
-
     }
 
     buildTypes {
@@ -34,8 +33,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
 }
 
@@ -43,6 +48,6 @@ dependencies {
     implementation project(":${rootProject.name}-android")
     implementation project(":${rootProject.name}-ext-tween")
 
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.core:core-ktx:1.16.0'
 }

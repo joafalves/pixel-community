@@ -12,6 +12,7 @@ import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.importer.settings.ContentImporterSettings;
 import org.pixel.pipeline.DataPipeline;
 
+import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
@@ -288,7 +289,13 @@ public class ContentManager implements Disposable {
             return null;
         }
 
-        byte[] resourceData = this.resourceLoader.load(filepath);
+        byte[] resourceData;
+        try {
+            resourceData = this.resourceLoader.load(filepath);
+        } catch (IOException e) {
+            log.warn("Unable to load asset {0}; exception found!", filepath, e);
+            return null;
+        }
         if (resourceData == null) {
             log.warn("Unable to load asset {0}; target could not be found.", filepath);
             return null;

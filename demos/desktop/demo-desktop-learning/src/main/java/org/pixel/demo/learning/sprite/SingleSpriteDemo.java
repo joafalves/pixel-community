@@ -7,7 +7,7 @@ package org.pixel.demo.learning.sprite;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.ServiceProvider;
+import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.demo.learning.common.DemoGame;
@@ -32,8 +32,8 @@ public class SingleSpriteDemo extends DemoGame {
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
-        spriteBatch = ServiceProvider.create(SpriteBatch.class);
-        content = ServiceProvider.create(ContentManager.class);
+        spriteBatch = ServiceProvider.get(SpriteBatch.class);
+        content = ServiceProvider.get(ContentManager.class);
 
         // load texture into memory
         spriteTex = content.load("images/screenshot-600x320.png", Texture.class);

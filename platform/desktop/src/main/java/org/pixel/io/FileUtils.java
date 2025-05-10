@@ -9,6 +9,7 @@ import org.lwjgl.system.MemoryStack;
 import org.pixel.commons.data.ImageData;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.commons.util.FileHelper;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -35,7 +36,13 @@ public class FileUtils {
      * @return The image data.
      */
     public static ImageData loadImage(String filepath) {
-        byte[] data = loadFile(filepath);
+        byte[] data;
+        try {
+            data = loadFile(filepath);
+        } catch (IOException e) {
+           log.error("Exception caught while reading file {0}: {1}", filepath, e.getMessage(), e);
+           return null;
+        }
         if (data == null) {
             log.warn("Unable to load image due to IO failure (cannot read file from {0}).", filepath);
             return null;
@@ -55,11 +62,7 @@ public class FileUtils {
                 throw new RuntimeException("Failed to process texture file: " + stbi_failure_reason());
             }
 
-            return ImageData.builder()
-                    .data(imageData)
-                    .width(w.get(0))
-                    .height(h.get(0))
-                    .build();
+            return new ImageData(imageData, w.get(), h.get());
         }
     }
 
@@ -69,20 +72,17 @@ public class FileUtils {
      * @param filepath The file path (relative paths allowed).
      * @return The byte buffer.
      */
-    public static byte[] loadFile(String filepath) {
+    public static byte[] loadFile(String filepath) throws IOException {
         Path path = Paths.get(filepath);
 
         // Handle relative paths
         if (!path.isAbsolute()) {
-            try (InputStream in = org.pixel.commons.util.FileUtils.class.getClassLoader().getResourceAsStream(filepath)) {
+            try (InputStream in = FileHelper.class.getClassLoader().getResourceAsStream(filepath)) {
                 if (in == null) {
                     log.warn("Unable to load local resource file {0}.", filepath);
                     return null;
                 }
                 return in.readAllBytes();
-            } catch (IOException e) {
-                log.error("Exception caught while loading relative path resource!", e);
-                return null;
             }
         }
 

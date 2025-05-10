@@ -5,6 +5,7 @@ import org.pixel.commons.logger.LoggerFactory;
 
 import java.io.*;
 
+@Deprecated
 public class DataSerializer {
 
     private static final Logger log = LoggerFactory.getLogger(DataSerializer.class);

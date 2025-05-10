@@ -198,6 +198,11 @@ public class NvgRenderEngine extends RenderEngine2D {
     }
 
     @Override
+    public void strokeText(String text, float x, float y, float maxRowWidth) {
+        // not yet implemented!
+    }
+
+    @Override
     public Size measureText(String text, Vector2 position, float maxRowWidth) {
         // compute
         nvgTextBoxBounds(ctx, position.getX(), position.getY(), maxRowWidth, text, buffer4);

@@ -1,6 +1,7 @@
 package org.pixel.core;
 
-import org.pixel.commons.GameContext;
+import android.content.Context;
+
 import org.pixel.commons.ServiceProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
@@ -58,8 +59,8 @@ public abstract class Game
 
         switch (this.settings.getGraphicsBackend()) {
             case OpenGL:
-                ServiceProvider.register(SpriteBatch.class, new GLES30SpriteBatchServiceFactory());
-                ServiceProvider.register(ContentManager.class, new GLES30ContentManagerFactory());
+                ServiceProvider.set(SpriteBatch.class, new GLES30SpriteBatchServiceFactory());
+                ServiceProvider.set(ContentManager.class, new GLES30ContentManagerFactory());
                 break;
             case Vulkan:
                 throw new UnsupportedOperationException("Vulkan is not supported yet.");
@@ -68,8 +69,8 @@ public abstract class Game
                         "Unsupported graphics backend: " + this.settings.getGraphicsBackend());
         }
 
-        // Register game context data:
-        GameContext.getData().put(MobileTags.ACTIVE_CONTEXT, this.androidContext);
+        // Register the android context:
+        ServiceProvider.set(Context.class, () -> androidContext);
 
         return true;
     }

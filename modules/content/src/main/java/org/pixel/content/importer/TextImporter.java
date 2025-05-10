@@ -5,7 +5,6 @@
 
 package org.pixel.content.importer;
 
-import org.pixel.commons.util.TextUtils;
 import org.pixel.content.ContentImporter;
 import org.pixel.content.ContentImporterInfo;
 import org.pixel.content.ImportContext;

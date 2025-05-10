@@ -15,7 +15,6 @@ public abstract class Font implements Disposable {
     //region Fields & Properties
 
     protected static final int GLYPH_TEXTURE_PADDING = 1;
-    protected static final int GLYPH_TEXTURE_PADDING_COMPENSATION = 4;
 
     protected final FontData fontData;
     protected int textureId;

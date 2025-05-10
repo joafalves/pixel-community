@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 import org.lwjgl.BufferUtils;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.ServiceProvider;
+import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.Texture;
@@ -73,7 +73,7 @@ public class TerragenTextureGame extends Game {
 
     @Override
     public void load() {
-        spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        spriteBatch = ServiceProvider.get(SpriteBatch.class);
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
         fpsCounter = new FpsCounter(this, "Press R to reset seed");

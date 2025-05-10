@@ -4,7 +4,9 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.ext.ecs.GameComponent;
 import org.pixel.ext.ecs.GameObject;
 import org.pixel.ext.ecs.Sprite;
+import org.pixel.ext.ecs.annotation.ParentType;
 
+@ParentType(Sprite.class)
 public class SpriteAnimationComponent extends GameComponent {
 
     private float delay;
@@ -38,14 +40,6 @@ public class SpriteAnimationComponent extends GameComponent {
     }
 
     @Override
-    public void attached(GameObject parent, GameObject previousParent) {
-        super.attached(parent, previousParent);
-        if (!(parent instanceof Sprite)) {
-            throw new RuntimeException("SpriteAnimationComponent can only be attached to a Sprite");
-        }
-    }
-
-    @Override
     public void update(DeltaTime delta) {
         super.update(delta);
         if (isPlaying) {
@@ -75,7 +69,7 @@ public class SpriteAnimationComponent extends GameComponent {
         var width = sprite.getTexture().getWidth() / columns;
         var height = sprite.getTexture().getHeight() / rows;
         int x = (int) (frame % columns * width);
-        int y = (int) (frame / columns * height);
+        int y = (int) ((float) frame / columns * height);
 
         sprite.getTextureSource().set(x, y, width, height);
     }

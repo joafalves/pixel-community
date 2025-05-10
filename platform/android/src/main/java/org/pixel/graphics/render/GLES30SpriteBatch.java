@@ -38,7 +38,7 @@ public class GLES30SpriteBatch extends SpriteBatch {
     private final Vector2 topLeft = new Vector2();
     private final Vector2 topRight = new Vector2();
 
-    private State state = State.CREATED;
+    private State state = State.NEW;
     private GLES30VertexBufferObject vbo;
     private GLES30VertexArrayObject vao;
     private GLES30Shader shader;

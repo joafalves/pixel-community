@@ -17,7 +17,7 @@ public class ConsoleLogger extends Logger {
     private static volatile List<FormatSegment> formatSegments = parseTemplate(DEFAULT_FORMAT);
     //endregion
 
-    //region Infrastructure
+    //region Fields & Properties
     private static final ThreadLocal<StringBuilder> CACHED_BUILDER =
             ThreadLocal.withInitial(() -> new StringBuilder(256));
 
@@ -34,7 +34,6 @@ public class ConsoleLogger extends Logger {
         List<FormatSegment> segments = new ArrayList<>();
         int length = template.length();
         int lastPos = 0;
-        boolean hasTimestamp = false;
 
         for (int i = 0; i < length; i++) {
             if (template.charAt(i) == '$' && i + 1 < length && template.charAt(i + 1) == '{') {

@@ -1,0 +1,16 @@
+/*
+ * This software is available under Apache License
+ * Copyright (c) 2020
+ */
+apply plugin: 'java'
+apply plugin: 'java-library'
+
+project.ext.mavenPublish = true
+
+dependencies {
+    api project(":${rootProject.name}-commons")
+    api project(":${rootProject.name}-pipeline")
+
+    implementation "io.netty:netty-all:4.2.0.Final"
+}
+

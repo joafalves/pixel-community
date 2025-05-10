@@ -6,8 +6,30 @@
 // main project settings:
 rootProject.name = "pixel"
 
-// include settings:
-var includeAndroid = false
+// functions:
+def getAndroidSdkPath() {
+    if (System.getenv("ANDROID_HOME") != null) {
+        return System.getenv("ANDROID_HOME");
+    }
+
+    def localProperties = new File(rootDir, "local.properties")
+    if (localProperties.exists()) {
+        def properties = new Properties()
+        localProperties.withInputStream { stream ->
+            properties.load(stream)
+        }
+
+        if (properties.getProperty("sdk.dir")) {
+            return properties.getProperty("sdk.dir");
+        }
+    }
+
+    return null;
+}
+
+// vars:
+var androidSdk = getAndroidSdkPath()
+print("Android SDK: " + androidSdk)
 
 // modules:
 include "modules/commons",
@@ -20,7 +42,7 @@ include "modules/commons",
 
 // platform modules:
 include "platform/desktop"
-if (includeAndroid && System.getenv("ANDROID_HOME") != null) {
+if (androidSdk != null) {
     include "platform/android"
 }
 
@@ -28,7 +50,11 @@ if (includeAndroid && System.getenv("ANDROID_HOME") != null) {
 include "extensions/ext-log4j2",
         "extensions/ext-ecs",
         "extensions/ext-ecs-extra",
-        "extensions/ext-tween"
+        "extensions/ext-tween",
+        "extensions/ext-network"
+
+// tools:
+include "tools/arkade"
 
 // demos:
 if (System.properties["PIXEL_RELEASE"] == null) {
@@ -38,14 +64,14 @@ if (System.properties["PIXEL_RELEASE"] == null) {
             "demos/desktop/demo-desktop-imgui"
 
     // android:
-    if (includeAndroid && System.getenv("ANDROID_HOME") != null) {
+    if (androidSdk != null) {
         include "demos/android/demo-android-learning"
     }
 }
 
 // bootstrap module names:
-rootProject.children.each {
+rootProject.children.each(({
     def parts = it.name.split("/")
     def prefix = rootProject.name + "-"
     it.name = prefix + parts.last()
-}
+} as Closure))

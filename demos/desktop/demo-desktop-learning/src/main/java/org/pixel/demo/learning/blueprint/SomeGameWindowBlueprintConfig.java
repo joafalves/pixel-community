@@ -3,7 +3,7 @@ package org.pixel.demo.learning.blueprint;
 import org.pixel.blueprint.annotation.Auto;
 import org.pixel.blueprint.annotation.Blueprint;
 import org.pixel.blueprint.annotation.Component;
-import org.pixel.commons.ServiceProvider;
+import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 
@@ -12,7 +12,7 @@ public class SomeGameWindowBlueprintConfig {
     @Component(value = "someGameWindowContentManager")
     public ContentManager contentManager() {
         // Tip: You could have a different blueprint for each game window in your game...
-        return ServiceProvider.create(ContentManager.class);
+        return ServiceProvider.get(ContentManager.class);
     }
 
     @Component

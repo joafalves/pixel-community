@@ -22,7 +22,7 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
     public GLES30GraphicsDevice(Game game, Context context) {
         super(context);
         this.game = game;
-        this.state = State.CREATED;
+        this.state = State.NEW;
     }
 
     @Override

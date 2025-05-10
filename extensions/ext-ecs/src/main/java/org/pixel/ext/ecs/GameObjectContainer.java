@@ -1,6 +1,6 @@
 package org.pixel.ext.ecs;
 
-import org.pixel.commons.DataHashMap;
+import org.pixel.commons.data.DataMap;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.ext.ecs.lifecycle.Attachable;
 
@@ -10,11 +10,13 @@ import java.util.List;
 
 public abstract class GameObjectContainer implements Attachable<GameObjectContainer>, Disposable, Serializable {
 
-    private transient DataHashMap dataHashMap = new DataHashMap();
+    private transient GameObjectContainer parent;
+    private transient DataMap dataMap = new DataMap();
 
     private final List<GameObject> children;
-    private transient GameObjectContainer parent;
     private String name;
+    private String tag;
+    private String group;
     private boolean disposed;
 
     /**
@@ -71,8 +73,8 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
             var in = new ObjectInputStream(bis);
 
             var copy = (GameObjectContainer) in.readObject();
-            copy.dataHashMap = new DataHashMap();
-            copy.dataHashMap.putAll(this.dataHashMap);
+            copy.dataMap = new DataMap();
+            copy.dataMap.putAll(this.dataMap);
 
             return copy;
 
@@ -156,7 +158,7 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
         List<T> result = new ArrayList<>();
         for (var child : children) {
             if (type.isAssignableFrom(child.getClass())) {
-                result.add((T) child);
+                result.add(type.cast(child));
             }
 
             var childResult = child.getAllChildren(type);
@@ -178,7 +180,7 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
     public <T> T getChild(Class<T> type) {
         for (var child : children) {
             if (type.isAssignableFrom(child.getClass())) {
-                return (T) child;
+                return type.cast(child);
             }
         }
 
@@ -196,7 +198,7 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
         List<T> result = new ArrayList<>();
         for (var child : children) {
             if (type.isAssignableFrom(child.getClass())) {
-                result.add((T) child);
+                result.add(type.cast(child));
             }
         }
 
@@ -303,12 +305,48 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
     }
 
     /**
+     * Get the tag of this game object.
+     *
+     * @return The tag of this game object.
+     */
+    public String getTag() {
+        return tag;
+    }
+
+    /**
+     * Set the tag of this game object.
+     *
+     * @param tag The tag of this game object.
+     */
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    /**
+     * Get the group of this game object.
+     *
+     * @return The group of this game object.
+     */
+    public String getGroup() {
+        return group;
+    }
+
+    /**
+     * Set the group of this game object.
+     *
+     * @param group The group of this game object.
+     */
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    /**
      * Get the attribute map of this game object.
      *
      * @return The attribute map of this game object.
      */
-    public DataHashMap getData() {
-        return dataHashMap;
+    public DataMap getData() {
+        return dataMap;
     }
 
     /**

@@ -7,6 +7,14 @@ package org.pixel.commons.data;
 
 import java.nio.charset.Charset;
 
+/**
+ * This class is used to encapsulate byte buffer data and provide read/write operations.
+ * It is used to read/write data from/to a byte buffer.
+ * <p>
+ * Note: This class is deprecated and will be removed in future versions.
+ * Use ByteArray instead.
+ */
+@Deprecated(since = "1.0", forRemoval = true)
 public class DataArray {
 
     private byte[] source;

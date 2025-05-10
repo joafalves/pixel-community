@@ -1,7 +1,9 @@
 package org.pixel.demo.learning.ecs;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.ServiceProvider;
+import org.pixel.commons.service.ServiceProvider;
+import org.pixel.commons.logger.Logger;
+import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ContentManager;
 import org.pixel.ext.ecs.GameComponent;
 import org.pixel.ext.ecs.GameScene;
@@ -11,11 +13,14 @@ import org.pixel.core.WindowSettings;
 import org.pixel.core.Game;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.MathHelper;
+import org.pixel.math.Vector2;
 
 /**
  * Entity Component System demo.
  */
 public class EcsDemo extends Game {
+
+    private static final Logger log = LoggerFactory.getLogger(EcsDemo.class);
 
     private ContentManager contentManager;
     private GameScene gameScene;
@@ -26,15 +31,23 @@ public class EcsDemo extends Game {
 
     @Override
     public void load() {
-        var spriteBatch = ServiceProvider.create(SpriteBatch.class);
-        contentManager = ServiceProvider.create(ContentManager.class);
+        var spriteBatch = ServiceProvider.get(SpriteBatch.class);
+        contentManager = ServiceProvider.get(ContentManager.class);
 
         Sprite sprite = new Sprite("earth", contentManager.loadTexture("images/earth-48x48.png"));
+        sprite.setPivot(Vector2.half());
         sprite.getTransform().setScale(3f);
+        sprite.setGroup("someGroup");
         sprite.addComponent(new MovementComponent());
 
-        gameScene = new GameScene("SampleScene", new Camera2D(this), spriteBatch);
+        gameScene = new GameScene("SampleScene", new Camera2D(this, Vector2.half()), spriteBatch);
         gameScene.addChild(sprite);
+
+        // Example on how to use java streams to filter by group:
+        var groupFilter = gameScene.getChildren().stream()
+                .filter(c -> c.getGroup().equals("someGroup"))
+                .toArray();
+        log.debug("This scene has {0} children with group 'someGroup'.", groupFilter.length);
     }
 
     @Override

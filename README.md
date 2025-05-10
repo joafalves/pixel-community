@@ -1,6 +1,6 @@
 ![Pixel - Java Game Framework](./.github/IMAGES/banner.png)
 
-![](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20MacOS-lightgrey) ![](https://img.shields.io/badge/java-%3E%3D%2011-green)
+![](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20MacOS-lightgrey)
 
 ## Pixel Framework ##
 
@@ -26,7 +26,7 @@ Check the :file_folder: [demos folder](https://github.com/joafalves/pixel-commun
 ##### Basic example (Drawing a Sprite) #####
 
 ```java
-public class SingleSpriteDemo extends GameWindow {
+public class SingleSpriteDemo extends Game {
 
     private Camera2D gameCamera;
     private ContentManager content;
@@ -90,8 +90,10 @@ The framework functionality is divided into multiple modules which can be import
         ├── ext-ecs                 # Entity component system extension
         ├── ext-ecs-extra           # ECS utility components
         ├── ext-log4j2              # Log4j2 extension
+        ├── ext-network             # Network extension
         └── ext-tween               # Tween extension
     .modules/                       # The principal modules of the framework
+        ├── blueprint               # Blueprint configuration classes
         ├── commons                 # Common utility classes
         ├── content                 # Common Content classes (Texture, Font, Audio, ...)
         ├── core                    # Core module (GameContainer, GameSettings, Camera2D, ...)
@@ -120,7 +122,7 @@ The framework functionality is divided into multiple modules which can be import
 
 ### Runtime requirements ###
 
-- Java/JDK 17.x+
+- Java/JDK 21.x+
 
 ### Development requirements ###
 

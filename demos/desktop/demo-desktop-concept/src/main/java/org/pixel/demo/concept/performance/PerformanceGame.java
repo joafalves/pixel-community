@@ -7,7 +7,7 @@ package org.pixel.demo.concept.performance;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.ServiceProvider;
+import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.Timer;
 import org.pixel.commons.logger.ConsoleLogger;
 import org.pixel.commons.logger.LogLevel;
@@ -49,8 +49,8 @@ public class PerformanceGame extends Game {
 
     @Override
     public void load() {
-        spriteBatch = ServiceProvider.create(SpriteBatch.class);
-        contentManager = ServiceProvider.create(ContentManager.class);
+        spriteBatch = ServiceProvider.get(SpriteBatch.class);
+        contentManager = ServiceProvider.get(ContentManager.class);
         gameScene = new GameScene("GameScene01", new Camera2D(this, Vector2.zero()), spriteBatch);
 
         var screenBoundary = new Boundary(0, 0, getVirtualWidth(), getVirtualHeight());
@@ -84,7 +84,7 @@ public class PerformanceGame extends Game {
     public void update(DeltaTime delta) {
         gameScene.update(delta);
 
-        if (debugTimer.check(delta)) {
+        if (debugTimer.elapsed()) {
             log.info("FPS: {0} - Smoothed FPS: {1}.", getFps(), getSmoothedFps());
         }
 

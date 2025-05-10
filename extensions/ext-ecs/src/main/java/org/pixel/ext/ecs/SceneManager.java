@@ -63,7 +63,7 @@ public class SceneManager implements Updatable, Drawable, Disposable {
      *
      * @return The detached game scene.
      */
-    public BaseGameScene dettachGameScene() {
+    public BaseGameScene detachGameScene() {
         BaseGameScene scene = activeScene;
         activeScene = null;
         return scene;

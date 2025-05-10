@@ -44,7 +44,7 @@ public class GLFWWindowManager extends DesktopWindowManager {
     public GLFWWindowManager(WindowGameContainer<?, ?, ?> game) {
         this.game = game;
         this.windowSettings = (WindowSettings) game.getSettings();
-        this.state = State.CREATED;
+        this.state = State.NEW;
     }
 
     @Override

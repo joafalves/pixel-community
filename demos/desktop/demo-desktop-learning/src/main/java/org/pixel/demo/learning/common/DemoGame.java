@@ -33,7 +33,7 @@ public abstract class DemoGame extends Game {
 
     @Override
     public void update(DeltaTime delta) {
-        if (settings.isDevMode() && debugTimer.check(delta)) {
+        if (settings.isDevMode() && debugTimer.elapsed()) {
             log.debug("Instant FPS: {0} - Smoothed FPS: {1}", getFps(), getSmoothedFps());
         }
 

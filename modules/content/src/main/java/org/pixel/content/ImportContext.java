@@ -7,8 +7,6 @@ package org.pixel.content;
 
 import org.pixel.content.importer.settings.ContentImporterSettings;
 
-import java.nio.ByteBuffer;
-
 public class ImportContext {
 
     private final ContentManager contentManager;

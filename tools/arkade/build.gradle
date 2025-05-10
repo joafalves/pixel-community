@@ -1,0 +1,16 @@
+/*
+ * This software is available under Apache License
+ * Copyright (c) 2020
+ */
+apply plugin: 'java'
+apply plugin: 'java-library'
+
+project.ext.mavenPublish = false
+
+dependencies {
+    implementation project(":${rootProject.name}-commons")
+    implementation project(":${rootProject.name}-pipeline")
+    implementation project(":${rootProject.name}-ext-network")
+    implementation project(":${rootProject.name}-ext-log4j2")
+}
+

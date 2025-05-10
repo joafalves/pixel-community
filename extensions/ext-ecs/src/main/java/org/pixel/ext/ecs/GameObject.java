@@ -2,6 +2,7 @@ package org.pixel.ext.ecs;
 
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.Updatable;
+import org.pixel.ext.ecs.annotation.ParentType;
 import org.pixel.graphics.SpriteDrawable;
 import org.pixel.graphics.render.SpriteBatch;
 
@@ -36,6 +37,7 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
 
     /**
      * Determines whether the update function shall be executed this frame.
+     *
      * @param delta The time since the last update.
      * @return True if it can and False if it cannot.
      */
@@ -50,7 +52,7 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
         }
 
         if (components != null && !components.isEmpty()) {
-            for (Iterator<GameComponent> iterator = components.iterator(); iterator.hasNext();) {
+            for (Iterator<GameComponent> iterator = components.iterator(); iterator.hasNext(); ) {
                 var component = iterator.next();
                 if (component.isEnabled()) {
                     component.update(delta);
@@ -69,7 +71,7 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
 
         var children = getChildren();
         if (children != null && !children.isEmpty()) {
-            for (Iterator<GameObject> iterator = children.iterator(); iterator.hasNext();) {
+            for (Iterator<GameObject> iterator = children.iterator(); iterator.hasNext(); ) {
                 var child = iterator.next();
                 if (child.isEnabled()) {
                     child.update(delta);
@@ -84,6 +86,7 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
 
     /**
      * Determines whether the draw function shall be executed this frame.
+     *
      * @param delta The time since the last update.
      * @return True if it can and False if it cannot.
      */
@@ -120,7 +123,15 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
      *
      * @param component The component to add.
      */
-    public void addComponent(GameComponent component) {
+    public void addComponent(GameComponent component) throws RuntimeException {
+        var parentType = component.getClass().getAnnotation(ParentType.class);
+        if (parentType != null) {
+            var parentClass = parentType.value();
+            if (parentClass != null && !parentClass.isAssignableFrom(getClass())) {
+                throw new RuntimeException("Component cannot be added to this game object. Expected parent type mismatch: " + parentClass.getSimpleName());
+            }
+        }
+
         if (components == null) {
             components = new ArrayList<>();
         }
@@ -207,7 +218,7 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
         if (components != null) {
             for (GameComponent component : components) {
                 if (type.isAssignableFrom(component.getClass())) {
-                    return (T) component;
+                    return type.cast(component);
                 }
             }
         }
@@ -227,7 +238,7 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
         if (components != null) {
             for (GameComponent component : components) {
                 if (type.isAssignableFrom(component.getClass())) {
-                    result.add((T) component);
+                    result.add(type.cast(component));
                 }
             }
         }

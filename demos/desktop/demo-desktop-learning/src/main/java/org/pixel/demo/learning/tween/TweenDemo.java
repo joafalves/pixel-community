@@ -2,7 +2,7 @@ package org.pixel.demo.learning.tween;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.ServiceProvider;
+import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ContentManager;
@@ -39,8 +39,8 @@ public class TweenDemo extends DemoGame {
 
     @Override
     public void load() {
-        spriteBatch = ServiceProvider.create(SpriteBatch.class);
-        contentManager = ServiceProvider.create(ContentManager.class);
+        spriteBatch = ServiceProvider.get(SpriteBatch.class);
+        contentManager = ServiceProvider.get(ContentManager.class);
 
         spriteTexture = contentManager.loadTexture("images/earth-48x48.png");
 

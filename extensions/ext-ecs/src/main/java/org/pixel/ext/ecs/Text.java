@@ -3,6 +3,7 @@ package org.pixel.ext.ecs;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 
 import org.pixel.commons.Color;

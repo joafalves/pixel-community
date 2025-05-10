@@ -66,7 +66,7 @@ public class GLSpriteBatch extends SpriteBatch {
     private final GLVertexBufferObject vbo;
     private final GLVertexArrayObject vao;
     private final FloatBuffer matrixBuffer;
-    private State state = State.CREATED;
+    private State state = State.NEW;
 
     private final int shaderTextureCount;
 

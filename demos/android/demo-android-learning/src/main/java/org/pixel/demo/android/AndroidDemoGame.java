@@ -48,9 +48,10 @@ public class AndroidDemoGame extends Game {
 
     @Override
     public void load() {
-        spriteBatch = ServiceProvider.create(SpriteBatch.class);
-        contentManager = ServiceProvider.create(ContentManager.class);
+        spriteBatch = ServiceProvider.get(SpriteBatch.class);
+        contentManager = ServiceProvider.get(ContentManager.class);
         camera = new Camera2D(this);
+        camera.setOrigin(0.5f);
 
         spriteTexture = contentManager.loadTexture("images/earth-48x48.png");
 

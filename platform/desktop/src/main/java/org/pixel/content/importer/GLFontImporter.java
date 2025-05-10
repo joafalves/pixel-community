@@ -20,8 +20,7 @@ public class GLFontImporter implements ContentImporter<Font> {
         rawBuffer.put(ctx.getData()).flip(); // reset position to 0
         var fontData = new FontData(rawBuffer);
 
-        if (ctx.getSettings() instanceof FontImporterSettings) {
-            var settings = (FontImporterSettings) ctx.getSettings();
+        if (ctx.getSettings() instanceof FontImporterSettings settings) {
             return new GLFont(fontData, settings.getFontSize(), settings.getHorizontalSpacing(),
                     settings.getVerticalSpacing(), settings.getOversampling());
         }

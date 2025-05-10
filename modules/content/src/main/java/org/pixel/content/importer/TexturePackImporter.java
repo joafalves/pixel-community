@@ -8,11 +8,10 @@ package org.pixel.content.importer;
 import java.util.HashMap;
 
 import org.json.JSONObject;
-import org.pixel.commons.DataHashMap;
+import org.pixel.commons.data.DataMap;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.commons.util.FileUtils;
-import org.pixel.commons.util.TextUtils;
+import org.pixel.commons.util.FileHelper;
 import org.pixel.content.ContentImporter;
 import org.pixel.content.ContentImporterInfo;
 import org.pixel.content.ImportContext;
@@ -42,9 +41,10 @@ public class TexturePackImporter implements ContentImporter<TexturePack> {
         if (json.has("meta")) {
             JSONObject meta = json.getJSONObject("meta");
             if (meta.has("image")) {
-                texture = ctx.getContentManager().load(FileUtils.getParentDirectory(ctx.getFilepath()) +
-                        FileUtils.FILE_SEPARATOR + meta.getString("image"), Texture.class);
-                
+                texture = ctx.getContentManager().load(
+                        FileHelper.getParentDirectory(ctx.getFilepath())
+                                + FileHelper.FILE_SEPARATOR + meta.getString("image"), Texture.class);
+
                 if (texture == null) {
                     log.warn("Unable to load texture pack due to missing texture file.");
                     return null;
@@ -72,7 +72,7 @@ public class TexturePackImporter implements ContentImporter<TexturePack> {
 
             TextureFrame textureFrame = new TextureFrame(frameTexture, source, pivot);
             if (frameInfo.has("attributes")) { // does it have attributes?
-                var attributeMap = new DataHashMap();
+                var attributeMap = new DataMap();
                 var attributes = frameInfo.getJSONObject("attributes");
                 attributes.keys().forEachRemaining(attrKey -> attributeMap.put(attrKey, attributes.get(attrKey)));
                 if (!attributeMap.isEmpty()) {
@@ -83,6 +83,6 @@ public class TexturePackImporter implements ContentImporter<TexturePack> {
             frameMap.put(key, textureFrame);
         });
 
-        return frameMap.size() > 0 ? new TexturePack(texture, frameMap) : null;
+        return !frameMap.isEmpty() ? new TexturePack(texture, frameMap) : null;
     }
 }
