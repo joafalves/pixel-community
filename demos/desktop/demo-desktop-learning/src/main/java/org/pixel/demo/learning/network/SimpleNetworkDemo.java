@@ -12,6 +12,8 @@ import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
+import org.pixel.ext.tween.Tween;
+import org.pixel.ext.tween.TweenEasingMode;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
@@ -44,7 +46,7 @@ public class SimpleNetworkDemo extends DemoGame
     private static final String CHANNEL_GAME = NetworkHelper.normalizeChannelName("game");
     private static final String CHANNEL_DUMMY = NetworkHelper.normalizeChannelName("dummy");
 
-    private final PlayerData localPlayer = new PlayerData(TextHelper.randomString(8), new Vector2());
+    private final PlayerData localPlayer = new PlayerData(TextHelper.randomString(8), new Vector2(), null);
     private final ConcurrentHashMap<String, PlayerData> others = new ConcurrentHashMap<>();
     private final Timer ticker = new Timer(1000 / 10); // 10 FPS for network updates
 
@@ -138,6 +140,10 @@ public class SimpleNetworkDemo extends DemoGame
         } else if (Keyboard.isKeyDown(KeyboardKey.LEFT)) {
             localPlayer.position.add(-100 * delta.getElapsed(), 0);
             dirty = true;
+        }
+
+        for (var other : others.values()) {
+            other.tween.update(delta);
         }
 
         if (ticker.elapsed() && dirty && networkServer.isActive()) {
@@ -293,12 +299,24 @@ public class SimpleNetworkDemo extends DemoGame
             );
         } else {
             // This is another player's data, we can update the other players list.
-            var otherPlayer = new PlayerData(username,
-                    new Vector2(
-                            Float.parseFloat(playerDataMsg.data().getString("posX")),
-                            Float.parseFloat(playerDataMsg.data().getString("posY"))
-                    ));
-            others.put(username, otherPlayer);
+            var newPos = new Vector2(
+                    Float.parseFloat(playerDataMsg.data().getString("posX")),
+                    Float.parseFloat(playerDataMsg.data().getString("posY"))
+            );
+
+            PlayerData player = others.get(username);
+            if (player == null) {
+                player = new PlayerData(username, newPos, new Tween());
+                others.put(username, player);
+            }
+            // Basic simulation of smooth movement:
+            player.tween
+                    .easing(TweenEasingMode.LINEAR)
+                    .duration(0.25f)
+                    .from(player.position)
+                    .to(newPos)
+                    .target(player.position)
+                    .restart();
         }
     }
 
@@ -319,7 +337,7 @@ public class SimpleNetworkDemo extends DemoGame
      * @param username The username of the player.
      * @param position The position of the player.
      */
-    record PlayerData(String username, Vector2 position) {
+    record PlayerData(String username, Vector2 position, Tween tween) {
 
     }
 
@@ -374,6 +392,7 @@ public class SimpleNetworkDemo extends DemoGame
         settings.setBackgroundColor(Color.INDIGO);
         settings.setTitle("Network setup Demo");
         settings.setTargetFps(60);
+        settings.setIdleThrottle(false);
 
         var game = new SimpleNetworkDemo(settings);
         game.start();
