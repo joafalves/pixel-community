@@ -26,7 +26,7 @@ Check the :file_folder: [demos folder](https://github.com/joafalves/pixel-commun
 ##### Basic example (Drawing a Sprite) #####
 
 ```java
-public class SingleSpriteDemo extends GameWindow {
+public class SingleSpriteDemo extends Game {
 
     private Camera2D gameCamera;
     private ContentManager content;
