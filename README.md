@@ -41,8 +41,8 @@ public class SingleSpriteDemo extends Game {
     @Override
     public void load() {
         // load up of resources and game utilities:
-        content = ServiceProvider.create(ContentManager.class);
-        spriteBatch = ServiceProvider.create(SpriteBatch.class);
+        content = ServiceProvider.get(ContentManager.class);
+        spriteBatch = ServiceProvider.get(SpriteBatch.class);
         gameCamera = new Camera2D(this);
 
         // example of loading a texture into memory:
@@ -122,7 +122,7 @@ The framework functionality is divided into multiple modules which can be import
 
 ### Runtime requirements ###
 
-- Java/JDK 21.x+
+- Java 17.x+
 
 ### Development requirements ###
 
