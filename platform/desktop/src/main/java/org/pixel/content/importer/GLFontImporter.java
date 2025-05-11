@@ -41,7 +41,13 @@ public class GLFontImporter implements ContentImporter<Font> {
         STBTTPackedchar.Buffer charBuffer = null;
         STBTTPackContext ctxBuffer = null;
         try {
-            charBuffer = STBTTPackedchar.malloc(6 * 128);
+            final int firstChar = 0;
+            final int lastChar  = 127;
+
+            charBuffer = STBTTPackedchar.malloc(lastChar);
+            charBuffer.limit(lastChar); // text ascii range (32-127) - standard ascii
+            charBuffer.position(firstChar); // first printable char
+
             ctxBuffer = STBTTPackContext.malloc();
 
             final var textureSize = calculateTextureSize(settings);
@@ -50,11 +56,8 @@ public class GLFontImporter implements ContentImporter<Font> {
             final var alphaBitmap = createByteBuffer(textureSize * textureSize);
 
             stbtt_PackBegin(ctxBuffer, alphaBitmap, textureSize, textureSize, 0, GLYPH_TEXTURE_PADDING, NULL);
-
-            charBuffer.limit(127); // text ascii range (32-127) - standard ascii
-            charBuffer.position(32); // first printable char
             stbtt_PackSetOversampling(ctxBuffer, oversampling, oversampling);
-            stbtt_PackFontRange(ctxBuffer, fontData.getSource(), 0, fontSize, 32, charBuffer);
+            stbtt_PackFontRange(ctxBuffer, fontData.getSource(), 0, fontSize, firstChar, charBuffer);
             stbtt_PackEnd(ctxBuffer);
 
             // Create an RGBA bitmap based on the alpha font bitmap:
@@ -68,6 +71,7 @@ public class GLFontImporter implements ContentImporter<Font> {
             bitmap.clear(); // reset position to 0 ("clear" is a weird name for this)
 
             // bind char data to our final texture:
+            int prevTex = glGetInteger(GL_TEXTURE_BINDING_2D);
             glBindTexture(GL_TEXTURE_2D, glTextureId);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, textureSize, textureSize, 0, GL_RGBA,
                     GL_UNSIGNED_BYTE, bitmap);
@@ -76,11 +80,11 @@ public class GLFontImporter implements ContentImporter<Font> {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             // unbind the texture
-            glBindTexture(GL_TEXTURE_2D, 0);
+            glBindTexture(GL_TEXTURE_2D, prevTex);
 
             // Build the glyph map:
             final var glyphMap = new HashMap<Character, FontGlyph>();
-            for (int i = 0; i < 127; i++) { // printable ASCII chars
+            for (int i = firstChar; i < lastChar; i++) { // printable ASCII chars
                 final var packedChar = charBuffer.get((char) i);
                 glyphMap.put((char) i, FontGlyph.builder()
                         .x(packedChar.x0())
@@ -94,6 +98,14 @@ public class GLFontImporter implements ContentImporter<Font> {
             }
 
             return new GLFont(glTextureId, textureSize, fontSize, glyphMap);
+
+        } catch (Exception e) {
+            // Clear the texture if an error occurs:
+            if (glTextureId > 0) {
+                glDeleteTextures(glTextureId);
+            }
+
+            throw new RuntimeException("Failed to process font file: " + e.getMessage(), e);
 
         } finally {
             // Free the allocated memory if an exception occurs
