@@ -5,96 +5,27 @@
 
 package org.pixel.content;
 
-import java.nio.ByteBuffer;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 
+import lombok.RequiredArgsConstructor;
 import org.pixel.commons.lifecycle.Disposable;
 
+@RequiredArgsConstructor
 public abstract class Font implements Disposable {
 
     //region Fields & Properties
 
-    protected static final int GLYPH_TEXTURE_PADDING = 1;
+    protected final int textureId;
+    protected final int textureSize;
+    protected final int fontSize;
+    protected final Map<Character, FontGlyph> glyphs;
 
-    protected final FontData fontData;
-    protected int textureId;
-    protected int textureWidth;
-    protected int textureHeight;
-    protected int fontSize;
-    protected int horizontalSpacing;
-    protected int verticalSpacing;
-    protected int oversampling;
-    protected ByteBuffer bitmap;
-    protected ConcurrentHashMap<Character, FontGlyph> glyphCache;
-
-    //endregion
-
-    //region Constructors
-
-    /**
-     * Constructor.
-     *
-     * @param fontData The font data.
-     */
-    public Font(FontData fontData) {
-        this.fontData = fontData;
-        this.fontSize = 24;
-        this.horizontalSpacing = 0;
-        this.verticalSpacing = 0;
-        this.oversampling = 1;
-        this.init();
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param fontData          The font data.
-     * @param fontSize          The initial font size.
-     * @param horizontalSpacing The horizontal spacing.
-     * @param verticalSpacing   The vertical spacing.
-     * @param oversampling      The oversampling.
-     */
-    public Font(FontData fontData, int fontSize, int horizontalSpacing, int verticalSpacing, int oversampling) {
-        this.fontData = fontData;
-        this.fontSize = fontSize;
-        this.horizontalSpacing = horizontalSpacing;
-        this.verticalSpacing = verticalSpacing;
-        this.oversampling = oversampling;
-        this.init();
-    }
-
-    //endregion
-
-    //region Private Functions
-
-    protected void init() {
-        this.textureId = -1;
-        this.glyphCache = new ConcurrentHashMap<>();
-        this.computeFontData();
-    }
-
-    /**
-     * Generate and compute font data based on the current properties
-     */
-    protected abstract void computeFontData();
+    private int horizontalSpacing = 0;
+    private int verticalSpacing = 0;
 
     //endregion
 
     //region Public Functions
-
-    /**
-     * Save font texture as PNG to a given path.
-     *
-     * @param filepath The path to save the PNG to.
-     */
-    public abstract void saveAsPng(String filepath); 
-
-    /**
-     * Save font texture as BMP to a given path.
-     *
-     * @param filepath The path to save the BMP to.
-     */
-    public abstract void saveAsBmp(String filepath); 
 
     /**
      * Get font size.
@@ -103,27 +34,6 @@ public abstract class Font implements Disposable {
      */
     public int getFontSize() {
         return fontSize;
-    }
-
-    /**
-     * Get the computed font texture width (font size * oversampling).
-     *
-     * @return The font size.
-     */
-    public int getComputedFontSize() {
-        return fontSize * oversampling;
-    }
-
-    /**
-     * Set font size. This call triggers a font data recompute to adjust the source texture.
-     *
-     * @param fontSize The font size.
-     */
-    public void setFontSize(int fontSize) {
-        if (fontSize != this.fontSize) {
-            this.fontSize = fontSize;
-            this.computeFontData();
-        }
     }
 
     /**
@@ -172,17 +82,8 @@ public abstract class Font implements Disposable {
      *
      * @return The texture width.
      */
-    public int getTextureWidth() {
-        return this.textureWidth;
-    }
-
-    /**
-     * Get the font texture height.
-     *
-     * @return The texture height.
-     */
-    public int getTextureHeight() {
-        return this.textureHeight;
+    public int getTextureSize() {
+        return this.textureSize;
     }
 
     /**
@@ -191,7 +92,9 @@ public abstract class Font implements Disposable {
      * @param ch The character to get glyph data for.
      * @return The glyph data for the given character.
      */
-    public abstract FontGlyph getGlyph(char ch);
+    public FontGlyph getGlyph(char ch) {
+        return this.glyphs.get(ch);
+    }
     
     /**
      * Get the horizontal spacing between characters.
@@ -227,36 +130,6 @@ public abstract class Font implements Disposable {
      */
     public void setVerticalSpacing(int verticalSpacing) {
         this.verticalSpacing = verticalSpacing;
-    }
-
-    /**
-     * Get the font oversampling.
-     *
-     * @return The font oversampling.
-     */
-    public int getOversampling() {
-        return oversampling;
-    }
-
-    /**
-     * Set the font oversampling.
-     *
-     * @param oversampling The font oversampling.
-     */
-    public void setOversampling(int oversampling) {
-        if (oversampling != this.oversampling) {
-            this.oversampling = oversampling;
-            this.computeFontData();
-        }
-    }
-
-    /**
-     * Get the font data.
-     *
-     * @return The font data.
-     */
-    public FontData getFontData() {
-        return fontData;
     }
 
     //endregion

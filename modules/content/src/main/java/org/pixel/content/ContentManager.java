@@ -119,6 +119,19 @@ public class ContentManager implements Disposable {
      * @param filepath The filepath of the resource - supports both relative and
      *                 absolute paths.
      * @param settings The settings to use for the importer.
+     * @return The loaded resource or null if the resource could not be loaded.
+     */
+    public Texture loadTexture(String filepath, @Nullable ContentImporterSettings settings) {
+        return load(filepath, Texture.class, settings, true);
+    }
+
+    /**
+     * Load an image resource file with a custom importer settings - supports both
+     * absolute and relative paths (based on the project resource folder).
+     *
+     * @param filepath The filepath of the resource - supports both relative and
+     *                 absolute paths.
+     * @param settings The settings to use for the importer.
      * @param useCache Whether to use the cache or not.
      * @return The loaded resource or null if the resource could not be loaded.
      */
@@ -136,6 +149,19 @@ public class ContentManager implements Disposable {
      */
     public TexturePack loadTexturePack(String filepath) {
         return load(filepath, TexturePack.class);
+    }
+
+    /**
+     * Load a texture pack resource file with a custom importer settings - supports
+     * both absolute and relative paths (based on the project resource folder).
+     *
+     * @param filepath The filepath of the resource - supports both relative and
+     *                 absolute paths.
+     * @param settings The settings to use for the importer.
+     * @return The loaded resource or null if the resource could not be loaded.
+     */
+    public TexturePack loadTexturePack(String filepath, @Nullable ContentImporterSettings settings) {
+        return load(filepath, TexturePack.class, settings, true);
     }
 
     /**
@@ -171,6 +197,19 @@ public class ContentManager implements Disposable {
      * @param filepath The filepath of the resource - supports both relative and
      *                 absolute paths.
      * @param settings The settings to use for the importer.
+     * @return The loaded resource or null if the resource could not be loaded.
+     */
+    public Sound loadSound(String filepath, @Nullable ContentImporterSettings settings) {
+        return load(filepath, Sound.class, settings, true);
+    }
+
+    /**
+     * Load a sound resource file with a custom importer settings - supports both
+     * absolute and relative paths (based on the project resource folder).
+     *
+     * @param filepath The filepath of the resource - supports both relative and
+     *                 absolute paths.
+     * @param settings The settings to use for the importer.
      * @param useCache Whether to use the cache or not.
      * @return The loaded resource or null if the resource could not be loaded.
      */
@@ -197,6 +236,19 @@ public class ContentManager implements Disposable {
      * @param filepath The filepath of the resource - supports both relative and
      *                 absolute paths.
      * @param settings The settings to use for the importer.
+     * @return The loaded resource or null if the resource could not be loaded.
+     */
+    public Font loadFont(String filepath, @Nullable ContentImporterSettings settings) {
+        return load(filepath, Font.class, settings, true);
+    }
+
+    /**
+     * Load a font resource file with a custom importer settings - supports both
+     * absolute and relative paths (based on the project resource folder).
+     *
+     * @param filepath The filepath of the resource - supports both relative and
+     *                 absolute paths.
+     * @param settings The settings to use for the importer.
      * @param useCache Whether to use the cache or not.
      * @return The loaded resource or null if the resource could not be loaded.
      */
@@ -214,6 +266,19 @@ public class ContentManager implements Disposable {
      */
     public String loadText(String filepath) {
         return load(filepath, String.class);
+    }
+
+    /**
+     * Load a text resource file with a custom importer settings - supports both
+     * absolute and relative paths (based on the project resource folder).
+     *
+     * @param filepath The filepath of the resource - supports both relative and
+     *                 absolute paths.
+     * @param settings The settings to use for the importer.
+     * @return The loaded resource or null if the resource could not be loaded.
+     */
+    public String loadText(String filepath, @Nullable ContentImporterSettings settings) {
+        return load(filepath, String.class, settings, true);
     }
 
     /**

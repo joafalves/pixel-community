@@ -13,9 +13,5 @@ public class FontImporterSettings implements ContentImporterSettings {
     @Builder.Default
     private int fontSize = 24;
     @Builder.Default
-    private int horizontalSpacing = 0;
-    @Builder.Default
-    private int verticalSpacing = 0;
-    @Builder.Default
     private int oversampling = 1;
 }

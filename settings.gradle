@@ -28,6 +28,7 @@ def getAndroidSdkPath() {
 }
 
 // vars:
+var enableAndroidBuild = false;
 var androidSdk = getAndroidSdkPath()
 print("Android SDK: " + androidSdk)
 
@@ -42,7 +43,7 @@ include "modules/commons",
 
 // platform modules:
 include "platform/desktop"
-if (androidSdk != null) {
+if (enableAndroidBuild && androidSdk != null) {
     include "platform/android"
 }
 
@@ -64,7 +65,7 @@ if (System.properties["PIXEL_RELEASE"] == null) {
             "demos/desktop/demo-desktop-imgui"
 
     // android:
-    if (androidSdk != null) {
+    if (enableAndroidBuild && androidSdk != null) {
         include "demos/android/demo-android-learning"
     }
 }

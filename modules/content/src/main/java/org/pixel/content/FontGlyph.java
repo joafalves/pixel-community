@@ -5,6 +5,11 @@
 
 package org.pixel.content;
 
+import lombok.Builder;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+@Builder
 public class FontGlyph {
     //region Fields & Properties
 
@@ -12,34 +17,9 @@ public class FontGlyph {
     private final float y;
     private final float width;
     private final float height;
-    private final float xadvance;
-    private final float xoff;
-    private final float yoff;
-
-    //endregion
-
-    //region Constructors
-
-    /**
-     * Constructor.
-     *
-     * @param x        X position.
-     * @param y        Y position.
-     * @param width    Width.
-     * @param height   Height.
-     * @param xadvance Advance in X axis.
-     * @param xoff     Offset in X axis.
-     * @param yoff     Offset in Y axis.
-     */
-    public FontGlyph(float x, float y, float width, float height, float xadvance, float xoff, float yoff) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.xadvance = xadvance;
-        this.xoff = xoff;
-        this.yoff = yoff;
-    }
+    private final float xAdvance;
+    private final float xOffset;
+    private final float yOffset;
 
     //endregion
 
@@ -87,7 +67,7 @@ public class FontGlyph {
      * @return Advance in X axis.
      */
     public float getXAdvance() {
-        return xadvance;
+        return xAdvance;
     }
 
     /**
@@ -96,7 +76,7 @@ public class FontGlyph {
      * @return Offset in X axis.
      */
     public float getXOffset() {
-        return xoff;
+        return xOffset;
     }
 
     /**
@@ -105,7 +85,7 @@ public class FontGlyph {
      * @return Offset in Y axis.
      */
     public float getYOffset() {
-        return yoff;
+        return yOffset;
     }
 
     //endregion

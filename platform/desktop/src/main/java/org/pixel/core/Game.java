@@ -92,7 +92,7 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
     protected boolean initServices() {
         log.debug("Initializing services.");
 
-       switch (this.settings.getGraphicsBackend()) {
+        switch (this.settings.getGraphicsBackend()) {
             case OpenGL:
                 ServiceProvider.register(SpriteBatch.class, new GLSpriteBatchServiceFactory());
                 ServiceProvider.register(ContentManager.class, new GLContentManagerFactory());

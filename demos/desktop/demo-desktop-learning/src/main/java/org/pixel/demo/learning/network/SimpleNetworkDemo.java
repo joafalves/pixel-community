@@ -10,6 +10,7 @@ import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.util.TextHelper;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
+import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.ext.tween.Tween;
@@ -126,8 +127,9 @@ public class SimpleNetworkDemo extends DemoGame
         spriteBatch = ServiceProvider.get(SpriteBatch.class);
         gameCamera.setOrigin(Vector2.ZERO);
 
-        debugFont = content.load("fonts/gidole-regular.ttf", Font.class);
-        debugFont.setFontSize(28); // the base font-size (as it will be applied on the generated texture)
+        debugFont = content.load("fonts/gidole-regular.ttf", Font.class, FontImporterSettings.builder()
+                .fontSize(28)
+                .build());
     }
 
     @Override

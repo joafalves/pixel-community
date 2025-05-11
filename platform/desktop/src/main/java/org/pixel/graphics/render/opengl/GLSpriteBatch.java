@@ -246,7 +246,7 @@ public class GLSpriteBatch extends SpriteBatch {
     @Override
     public void drawText(Font font, String text, Vector2 position, Color color, int fontSize) {
         // we are going to create a sprite data for each text character:
-        float computedScale = fontSize / (float) font.getComputedFontSize();
+        float computedScale = fontSize / (float) font.getFontSize();
         float scale = fontSize / (float) font.getFontSize();
         int x = (int) position.getX(); // initial x position
         int y = (int) (position.getY() + font.getFontSize() * scale + font.getVerticalSpacing());
@@ -265,8 +265,8 @@ public class GLSpriteBatch extends SpriteBatch {
             var spriteData = getNextSpriteDataObject();
             spriteData.active = true;
             spriteData.textureId = font.getTextureId();
-            spriteData.textureWidth = font.getTextureWidth();
-            spriteData.textureHeight = font.getTextureHeight();
+            spriteData.textureWidth = font.getTextureSize();
+            spriteData.textureHeight = font.getTextureSize();
             spriteData.x = x + glyph.getXOffset() * scale;
             spriteData.y = y + glyph.getYOffset() * scale;
             spriteData.width = glyph.getWidth() * computedScale;

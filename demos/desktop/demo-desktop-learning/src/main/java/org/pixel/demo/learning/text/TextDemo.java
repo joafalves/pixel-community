@@ -10,6 +10,7 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
+import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.core.WindowSettings;
 import org.pixel.graphics.render.BlendMode;
@@ -44,7 +45,7 @@ public class TextDemo extends DemoGame {
 
         // load font into memory
         font = content.load("fonts/gidole-regular.ttf", Font.class);
-        font.setFontSize(32); // the base font-size (as it will be applied on the generated texture)
+        font = content.loadFont("fonts/gidole-regular.ttf", FontImporterSettings.builder().fontSize(32).build());
 
         textPosition = new Vector2(10, 10);
 
