@@ -33,6 +33,8 @@ import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.Font;
 import org.pixel.content.FontGlyph;
 import org.pixel.content.Texture;
+import org.pixel.content.opengl.GLFont;
+import org.pixel.content.opengl.GLTexture;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.graphics.shader.Shader;
@@ -196,7 +198,7 @@ public class GLSpriteBatch extends SpriteBatch {
 
         SpriteData spriteData = getNextSpriteDataObject();
         spriteData.active = true;
-        spriteData.textureId = texture.getId();
+        spriteData.textureId = ((GLTexture) texture).getId();
         spriteData.textureWidth = texture.getWidth();
         spriteData.textureHeight = texture.getHeight();
         spriteData.x = position.getX();
@@ -225,7 +227,7 @@ public class GLSpriteBatch extends SpriteBatch {
 
         SpriteData spriteData = getNextSpriteDataObject();
         spriteData.active = true;
-        spriteData.textureId = texture.getId();
+        spriteData.textureId = ((GLTexture) texture).getId();
         spriteData.textureWidth = texture.getWidth();
         spriteData.textureHeight = texture.getHeight();
         spriteData.x = displayArea.getX();
@@ -245,7 +247,7 @@ public class GLSpriteBatch extends SpriteBatch {
 
     @Override
     public void drawText(Font font, String text, Vector2 position, Color color, int fontSize) {
-        // we are going to create a sprite data for each text character:
+        // we are going to create sprite data for each text character:
         float computedScale = fontSize / (float) font.getFontSize();
         float scale = fontSize / (float) font.getFontSize();
         int x = (int) position.getX(); // initial x position
@@ -264,9 +266,9 @@ public class GLSpriteBatch extends SpriteBatch {
 
             var spriteData = getNextSpriteDataObject();
             spriteData.active = true;
-            spriteData.textureId = font.getTextureId();
-            spriteData.textureWidth = font.getTextureSize();
-            spriteData.textureHeight = font.getTextureSize();
+            spriteData.textureId = ((GLFont) font).getTextureId();
+            spriteData.textureWidth = ((GLFont) font).getTextureSize();
+            spriteData.textureHeight = ((GLFont) font).getTextureSize();
             spriteData.x = x + glyph.getXOffset() * scale;
             spriteData.y = y + glyph.getYOffset() * scale;
             spriteData.width = glyph.getWidth() * computedScale;
@@ -534,8 +536,8 @@ public class GLSpriteBatch extends SpriteBatch {
         boolean active;
         int textureId;
         int depth;
-        float textureWidth;
-        float textureHeight;
+        int textureWidth;
+        int textureHeight;
         float rotation;
         float x;
         float y;

@@ -26,11 +26,11 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.content.Texture;
 import org.pixel.content.opengl.GLTexture;
 import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
 import org.pixel.core.Game;
+import org.pixel.graphics.GraphicsBackend;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
@@ -49,8 +49,8 @@ public class TerragenAdvancedGame extends Game {
     private final ByteBuffer colorData = BufferUtils.createByteBuffer(COLUMNS * ROWS * 4);
     private final ByteBuffer heightMapData = BufferUtils.createByteBuffer(COLUMNS * ROWS * 4);
 
-    private Texture colorTexture;
-    private Texture heightMapTexture;
+    private GLTexture colorTexture;
+    private GLTexture heightMapTexture;
     private SpriteBatch spriteBatch;
     private Camera2D gameCamera;
     private long seed;
@@ -193,7 +193,7 @@ public class TerragenAdvancedGame extends Game {
         buffer.put((byte) (a * 255));
     }
 
-    private void assignBufferToTexture(ByteBuffer buffer, Texture texture) {
+    private void assignBufferToTexture(ByteBuffer buffer, GLTexture texture) {
         glBindTexture(GL_TEXTURE_2D, texture.getId());
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -295,6 +295,7 @@ public class TerragenAdvancedGame extends Game {
         settings.setWindowWidth(SCREEN_WIDTH);
         settings.setWindowHeight(SCREEN_HEIGHT);
         settings.setIdleThrottle(false);
+        settings.setGraphicsBackend(GraphicsBackend.OpenGL);
 
         var window = new TerragenAdvancedGame(settings);
         window.start();

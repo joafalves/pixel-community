@@ -14,7 +14,7 @@ import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.demo.concept.commons.component.PlayerBoundaryComponent;
 import org.pixel.demo.concept.spaceshooter.component.CollisionHandlingComponent;
 import org.pixel.demo.concept.spaceshooter.component.PlayerInputComponent;
-import org.pixel.demo.concept.spaceshooter.content.BackgroundTexture;
+import org.pixel.demo.concept.spaceshooter.content.GLBackgroundTexture;
 import org.pixel.demo.concept.spaceshooter.entity.BackgroundSprite;
 import org.pixel.demo.concept.spaceshooter.entity.EnemyContainer;
 import org.pixel.demo.concept.spaceshooter.entity.PlayerSprite;
@@ -41,7 +41,7 @@ public class SpaceShooterGame extends Game {
 
     private GameScene gameScene;
     private Texture explosionTexture;
-    private BackgroundTexture backgroundTexture;
+    private GLBackgroundTexture backgroundTexture;
 
     @Auto
     private EventManager eventManager;
@@ -70,7 +70,7 @@ public class SpaceShooterGame extends Game {
         gameScene.getData().put(eventManager);
 
         // instances
-        backgroundTexture = new BackgroundTexture();
+        backgroundTexture = new GLBackgroundTexture();
         backgroundTexture.setData(texturePack.getTexture(), texturePack.getFrames("bg-01", "bg-02", "bg-03", "bg-04"),
                 20, 15);
         var backgroundSprite = new BackgroundSprite("backgroundTexture", backgroundTexture,

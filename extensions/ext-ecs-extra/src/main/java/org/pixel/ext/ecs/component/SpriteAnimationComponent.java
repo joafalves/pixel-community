@@ -2,7 +2,6 @@ package org.pixel.ext.ecs.component;
 
 import org.pixel.commons.DeltaTime;
 import org.pixel.ext.ecs.GameComponent;
-import org.pixel.ext.ecs.GameObject;
 import org.pixel.ext.ecs.Sprite;
 import org.pixel.ext.ecs.annotation.ParentType;
 

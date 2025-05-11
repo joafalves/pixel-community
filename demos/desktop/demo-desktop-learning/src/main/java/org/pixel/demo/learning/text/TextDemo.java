@@ -36,7 +36,7 @@ public class TextDemo extends DemoGame {
 
     @Override
     public void load() {
-        // game related changes & definitions
+        // game related changes and definitions
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
@@ -44,7 +44,6 @@ public class TextDemo extends DemoGame {
         content = ServiceProvider.get(ContentManager.class);
 
         // load font into memory
-        font = content.load("fonts/gidole-regular.ttf", Font.class);
         font = content.loadFont("fonts/gidole-regular.ttf", FontImporterSettings.builder().fontSize(32).build());
 
         textPosition = new Vector2(10, 10);

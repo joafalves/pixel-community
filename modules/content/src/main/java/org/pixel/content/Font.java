@@ -7,16 +7,12 @@ package org.pixel.content;
 
 import java.util.Map;
 
-import lombok.RequiredArgsConstructor;
 import org.pixel.commons.lifecycle.Disposable;
 
-@RequiredArgsConstructor
 public abstract class Font implements Disposable {
 
     //region Fields & Properties
 
-    protected final int textureId;
-    protected final int textureSize;
     protected final int fontSize;
     protected final Map<Character, FontGlyph> glyphs;
 
@@ -26,6 +22,11 @@ public abstract class Font implements Disposable {
     //endregion
 
     //region Public Functions
+
+    public Font(int fontSize, Map<Character, FontGlyph> glyphs) {
+        this.fontSize = fontSize;
+        this.glyphs = glyphs;
+    }
 
     /**
      * Get font size.
@@ -69,24 +70,6 @@ public abstract class Font implements Disposable {
     }
 
     /**
-     * Get font native texture id.
-     *
-     * @return The font native texture id.
-     */
-    public int getTextureId() {
-        return textureId;
-    }
-
-    /**
-     * Get the font texture width.
-     *
-     * @return The texture width.
-     */
-    public int getTextureSize() {
-        return this.textureSize;
-    }
-
-    /**
      * Get glyph data for a given character.
      *
      * @param ch The character to get glyph data for.
@@ -95,7 +78,7 @@ public abstract class Font implements Disposable {
     public FontGlyph getGlyph(char ch) {
         return this.glyphs.get(ch);
     }
-    
+
     /**
      * Get the horizontal spacing between characters.
      *

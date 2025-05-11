@@ -20,37 +20,41 @@ import java.nio.ByteBuffer;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11C;
 import org.pixel.content.Texture;
 import org.pixel.content.TextureFrame;
 import org.pixel.content.opengl.GLTexture;
 
-public class BackgroundTexture extends GLTexture {
+public class GLBackgroundTexture extends GLTexture {
 
     private ByteBuffer imageData;
     private ByteBuffer imageSourceData;
 
-    public BackgroundTexture() {
-        super(glGenTextures());
+    public GLBackgroundTexture() {
+        super(glGenTextures(), 0, 0);
     }
 
     public void setData(Texture baseTexture, List<TextureFrame> frames, int blocksX, int blocksY) {
+        if (!(baseTexture instanceof GLTexture baseGLTexture)) {
+            throw new IllegalArgumentException("Base texture must be a GLTexture");
+        }
+
         // assumes that all frames have the same size...
         final float fw = frames.get(0).getSource().getWidth();
         final float fh = frames.get(0).getSource().getHeight();
-        final float tw = fw * blocksX;
-        final float th = fh * blocksY;
+        final int tw = (int) (fw * blocksX);
+        final int th = (int) (fh * blocksY);
 
         if (imageData != null) {
             free(imageData);
             free(imageSourceData);
         }
-        imageSourceData = BufferUtils.createByteBuffer(
-                (int) (baseTexture.getWidth() * baseTexture.getHeight() * 4));
-        imageData = BufferUtils.createByteBuffer((int) (tw * th * 4));
+        imageSourceData = BufferUtils.createByteBuffer(baseTexture.getWidth() * baseTexture.getHeight() * 4);
+        imageData = BufferUtils.createByteBuffer(tw * th * 4);
 
-        glBindTexture(GL_TEXTURE_2D, baseTexture.getId());
+        glBindTexture(GL_TEXTURE_2D, baseGLTexture.getId());
         glGetTexImage(GL11C.GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageSourceData);
         glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -60,9 +64,9 @@ public class BackgroundTexture extends GLTexture {
             TextureFrame frame = pickTextureFrame(frames);
             int ex = (int) (baseTexture.getWidth() * 4.0);
             for (int x = (int) frame.getSource().getX(); x < frame.getSource().getX() + frame.getSource().getWidth();
-                    x++) {
+                 x++) {
                 for (int y = (int) frame.getSource().getY();
-                        y < frame.getSource().getY() + frame.getSource().getHeight(); y++) {
+                     y < frame.getSource().getY() + frame.getSource().getHeight(); y++) {
                     int oxy = y * ex + x * 4;
                     imageData.put(imageSourceData.get(oxy));
                     imageData.put(imageSourceData.get(oxy + 1));
@@ -80,8 +84,8 @@ public class BackgroundTexture extends GLTexture {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (int) tw, (int) th, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData.flip());
         glBindTexture(GL_TEXTURE_2D, 0);
 
-        width = tw;
-        height = th;
+        setWidth(tw);
+        setHeight(th);
     }
 
     @Override

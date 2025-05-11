@@ -46,8 +46,7 @@ public class GLTextureImporter implements ContentImporter<Texture> {
             int minFilter = GL_NEAREST;
             int magFilter = GL_NEAREST;
 
-            if (ctx.getSettings() instanceof TextureImporterSettings) {
-                var settings = (TextureImporterSettings) ctx.getSettings();
+            if (ctx.getSettings() instanceof TextureImporterSettings settings) {
                 wrapS = settings.getWrapSMode();
                 wrapT = settings.getWrapTMode();
                 minFilter = settings.getMinFilterMode();

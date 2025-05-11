@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * A type-safe data container that uses a delegate Map<String, Object> internally.
+ * A type-safe data container that uses a delegate Map internally.
  * This refactoring allows for backend flexibility and thread-safe variants.
  */
 public class DataMap implements Map<String, Object> {

@@ -57,7 +57,7 @@ public class GLFontImporter implements ContentImporter<Font> {
             stbtt_PackFontRange(ctxBuffer, fontData.getSource(), 0, fontSize, 32, charBuffer);
             stbtt_PackEnd(ctxBuffer);
 
-            // Create an alpha bitmap for the font based on the packed data (glyphs):
+            // Create an RGBA bitmap based on the alpha font bitmap:
             final var bitmap = createByteBuffer(alphaBitmap.limit() * 4);
             for (int i = 0; i < alphaBitmap.limit(); ++i) {
                 bitmap.put((byte) 255);
