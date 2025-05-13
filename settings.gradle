@@ -28,7 +28,7 @@ def getAndroidSdkPath() {
 }
 
 // vars:
-var enableAndroidBuild = false;
+var enableAndroidBuild = false
 var androidSdk = getAndroidSdkPath()
 print("Android SDK: " + androidSdk)
 

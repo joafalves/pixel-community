@@ -1,6 +1,6 @@
 package org.pixel.content;
 
-import org.pixel.commons.ServiceFactory;
+import org.pixel.commons.service.ServiceFactory;
 import org.pixel.content.importer.GLES30TextureImporter;
 import org.pixel.content.importer.TextImporter;
 import org.pixel.content.importer.TexturePackImporter;

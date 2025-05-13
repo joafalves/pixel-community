@@ -2,9 +2,9 @@ package org.pixel.io;
 
 import android.content.Context;
 
-import org.pixel.commons.ServiceProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.commons.service.ServiceProvider;
 
 import java.io.BufferedReader;
 import java.io.IOException;

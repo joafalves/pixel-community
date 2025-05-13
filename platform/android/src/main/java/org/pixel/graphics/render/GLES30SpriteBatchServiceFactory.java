@@ -1,6 +1,6 @@
 package org.pixel.graphics.render;
 
-import org.pixel.commons.ServiceFactory;
+import org.pixel.commons.service.ServiceFactory;
 
 public class GLES30SpriteBatchServiceFactory implements ServiceFactory<SpriteBatch> {
 

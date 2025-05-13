@@ -42,7 +42,7 @@ public class GLFontImporter implements ContentImporter<Font> {
         STBTTPackContext ctxBuffer = null;
         try {
             final int firstChar = 0;
-            final int lastChar  = 127;
+            final int lastChar = 127;
 
             charBuffer = STBTTPackedchar.malloc(lastChar);
             charBuffer.limit(lastChar); // text ascii range (32-127) - standard ascii

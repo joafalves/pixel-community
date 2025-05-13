@@ -44,7 +44,7 @@ public class TextDemo extends DemoGame {
         content = ServiceProvider.get(ContentManager.class);
 
         // load font into memory
-        font = content.loadFont("fonts/gidole-regular.ttf", FontImporterSettings.builder().fontSize(32).build());
+        font = content.loadFont("fonts/gidole-regular.ttf", new FontImporterSettings(32, 1));
 
         textPosition = new Vector2(10, 10);
 

@@ -1,12 +1,14 @@
 package org.pixel.graphics.render;
 
 import android.opengl.GLES30;
+
 import org.pixel.commons.Color;
 import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.Font;
 import org.pixel.content.Texture;
+import org.pixel.content.opengl.GLES30Texture;
 import org.pixel.graphics.shader.Shader;
 import org.pixel.graphics.shader.opengl.GLES30Shader;
 import org.pixel.graphics.shader.opengl.GLES30TextureShader;
@@ -16,7 +18,6 @@ import org.pixel.math.Matrix4;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
 
@@ -96,7 +97,7 @@ public class GLES30SpriteBatch extends SpriteBatch {
 
         SpriteData spriteData = getNextSpriteDataObject();
         spriteData.active = true;
-        spriteData.textureId = texture.getId();
+        spriteData.textureId = ((GLES30Texture) texture).getId();
         spriteData.textureWidth = texture.getWidth();
         spriteData.textureHeight = texture.getHeight();
         spriteData.x = position.getX();
@@ -124,7 +125,7 @@ public class GLES30SpriteBatch extends SpriteBatch {
 
         SpriteData spriteData = getNextSpriteDataObject();
         spriteData.active = true;
-        spriteData.textureId = texture.getId();
+        spriteData.textureId = ((GLES30Texture) texture).getId();
         spriteData.textureWidth = texture.getWidth();
         spriteData.textureHeight = texture.getHeight();
         spriteData.x = displayArea.getX();
@@ -275,7 +276,7 @@ public class GLES30SpriteBatch extends SpriteBatch {
         dataBuffer.clear();
         int error = GLES30.glGetError();
         if (error != GLES30.GL_NO_ERROR) {
-           log.error("Error while drawing sprites: " + error);
+            log.error("Error while drawing sprites: " + error);
         }
     }
 
