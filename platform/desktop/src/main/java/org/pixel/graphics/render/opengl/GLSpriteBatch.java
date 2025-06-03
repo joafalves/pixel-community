@@ -144,7 +144,7 @@ public class GLSpriteBatch extends SpriteBatch {
         state = State.INITIALIZING;
 
         shader = new GLMultiTextureShader(shaderTextureCount);
-        shader.use();
+        shader.bind();
 
         // since the base texture is always TEXTURE0, this can be done only once (for
         // the 'shaderTextureCount' amount)
@@ -312,7 +312,7 @@ public class GLSpriteBatch extends SpriteBatch {
         }
 
         // use shader
-        shader.use();
+        shader.bind();
 
         // bind buffers
         vao.bind();

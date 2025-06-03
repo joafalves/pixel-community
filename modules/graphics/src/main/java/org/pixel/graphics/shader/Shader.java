@@ -13,6 +13,10 @@ public interface Shader extends Initializable, Disposable {
     /**
      * Set this shader instance as the active shader.
      */
-    void use();
+    void bind();
 
+    /**
+     * Unbind the shader.
+     */
+    void unbind();
 }

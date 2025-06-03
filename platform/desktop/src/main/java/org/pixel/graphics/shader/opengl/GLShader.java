@@ -53,7 +53,7 @@ public abstract class GLShader implements Shader {
         vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
         fragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
 
-        // attach shader source
+        // attach a shader source
         initShader(vertexShaderId, vertexShaderSource);
         initShader(fragmentShaderId, fragmentShaderSource);
 
@@ -80,8 +80,13 @@ public abstract class GLShader implements Shader {
     }
 
     @Override
-    public void use() {
+    public void bind() {
         glUseProgram(programId);
+    }
+
+    @Override
+    public void unbind() {
+        glUseProgram(0);
     }
 
     @Override
@@ -94,6 +99,22 @@ public abstract class GLShader implements Shader {
         glDeleteShader(vertexShaderId);
         glDeleteShader(fragmentShaderId);
         glDeleteProgram(programId);
+    }
+
+    public void setUniform(String name, int value) {
+        glUniform1i(getUniformLocation(name), value);
+    }
+
+    public void setUniform(String name, float value) {
+        glUniform1f(getUniformLocation(name), value);
+    }
+
+    public void setUniform(String name, float x, float y) {
+        glUniform2f(getUniformLocation(name), x, y);
+    }
+
+    public void setUniform(String name, float x, float y, float z) {
+        glUniform3f(getUniformLocation(name), x, y, z);
     }
 
     /**
@@ -126,10 +147,9 @@ public abstract class GLShader implements Shader {
     }
 
     private void initShader(int shaderId, CharSequence shaderSrc) {
-        // attach source & compile shader:
+        // attach source and compile shader:
         glShaderSource(shaderId, shaderSrc);
         glCompileShader(shaderId);
-
         if (glGetShaderi(shaderId, GL_COMPILE_STATUS) != GL_TRUE) {
             throw new RuntimeException(glGetShaderInfoLog(shaderId));
         }
@@ -146,7 +166,7 @@ public abstract class GLShader implements Shader {
     // region static
 
     /**
-     * Load shader source from file.
+     * Load a shader source from a file.
      *
      * @param fileName The file name.
      * @return The shader source.

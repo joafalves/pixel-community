@@ -38,7 +38,7 @@ public class FileUtils {
     public static ImageData loadImage(String filepath) {
         byte[] data;
         try {
-            data = loadFile(filepath);
+            data = loadResource(filepath);
         } catch (IOException e) {
            log.error("Exception caught while reading file {0}: {1}", filepath, e.getMessage(), e);
            return null;
@@ -72,7 +72,7 @@ public class FileUtils {
      * @param filepath The file path (relative paths allowed).
      * @return The byte buffer.
      */
-    public static byte[] loadFile(String filepath) throws IOException {
+    public static byte[] loadResource(String filepath) throws IOException {
         Path path = Paths.get(filepath);
 
         // Handle relative paths
@@ -93,7 +93,7 @@ public class FileUtils {
 
                 ByteBuffer buffer = ByteBuffer.allocate(8192); // 8KB buffer
                 while (channel.read(buffer) > 0) {
-                    buffer.flip(); // Switch buffer from write to read mode
+                    buffer.flip(); // Switch buffer from "write" to "read" mode
                     outputStream.write(buffer.array(), 0, buffer.remaining());
                     buffer.clear(); // Clear buffer for the next read
                 }
@@ -116,7 +116,7 @@ public class FileUtils {
      * @param filepath The file path.
      * @return The file content.
      */
-    public static String loadFileString(String filepath) {
+    public static String loadTextResource(String filepath) {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try (InputStream resourceStream = loader.getResourceAsStream(filepath)) {
             return new BufferedReader(new InputStreamReader(Objects.requireNonNull(resourceStream)))
