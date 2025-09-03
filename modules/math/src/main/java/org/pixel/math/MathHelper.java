@@ -47,6 +47,16 @@ public class MathHelper {
     }
 
     /**
+     * Returns the correctly rounded positive square root of a double value.
+     *
+     * @param value The value.
+     * @return The square root of the value.
+     */
+    public static double sqrt(double value) {
+        return StrictMath.sqrt(value);
+    }
+
+    /**
      * Returns the largest (closest to positive infinity) float value that is less than or equal to the argument and is
      * equal to a mathematical integer. Special cases:
      *
@@ -121,6 +131,16 @@ public class MathHelper {
     }
 
     /**
+     * Tangent function.
+     *
+     * @param value The value to calculate the tangent of (in radians).
+     * @return The tangent of the value.
+     */
+    public static double tan(double value) {
+        return StrictMath.tan(value);
+    }
+
+    /**
      * Sinus function.
      *
      * @param value The value to calculate the sinus of (in radians).
@@ -128,6 +148,16 @@ public class MathHelper {
      */
     public static float sin(float value) {
         return (float) StrictMath.sin(value);
+    }
+
+    /**
+     * Sinus function.
+     *
+     * @param value The value to calculate the sinus of (in radians).
+     * @return The sinus of the value.
+     */
+    public static double sin(double value) {
+        return StrictMath.sin(value);
     }
 
     /**
@@ -141,6 +171,16 @@ public class MathHelper {
     }
 
     /**
+     * Sinus function.
+     *
+     * @param value The value to calculate the sinus of (in radians).
+     * @return The sinus of the value.
+     */
+    public static double cos(double value) {
+        return StrictMath.cos(value);
+    }
+
+    /**
      * Arc cosine function.
      *
      * @param value The value to calculate the arc cosine of (in radians).
@@ -148,6 +188,16 @@ public class MathHelper {
      */
     public static float acos(float value) {
         return (float) StrictMath.acos(value);
+    }
+
+    /**
+     * Arc cosine function.
+     *
+     * @param value The value to calculate the arc cosine of (in radians).
+     * @return The arc cosine of the value.
+     */
+    public static double acos(double value) {
+        return StrictMath.acos(value);
     }
 
     /**
@@ -159,6 +209,17 @@ public class MathHelper {
      */
     public static float atan2(float y, float x) {
         return (float) StrictMath.atan2(y, x);
+    }
+
+    /**
+     * Arc Tangent function (inverted).
+     *
+     * @param y The y value (in radians).
+     * @param x The x value (in radians).
+     * @return The arc tangent of the x and y value.
+     */
+    public static double atan2(double y, double x) {
+        return StrictMath.atan2(y, x);
     }
 
     /**
@@ -178,10 +239,23 @@ public class MathHelper {
      * @param x1 The X coordinate of point 1.
      * @param y1 The Y coordinate of point 1.
      * @param x2 The X coordinate of point 2.
-     * @param y2 The Y coordinate of point 2.
+     * @param y2 The Y Coordinate of point 2.
      * @return The distance between the two given points.
      */
     public static float distance(float x1, float y1, float x2, float y2) {
+        return MathHelper.sqrt(squaredDistance(x1, y1, x2, y2));
+    }
+
+    /**
+     * Calculates the distance between two points.
+     *
+     * @param x1 The X coordinate of point 1.
+     * @param y1 The Y coordinate of point 1.
+     * @param x2 The X coordinate of point 2.
+     * @param y2 The Y Coordinate of point 2.
+     * @return The distance between the two given points.
+     */
+    public static double distance(double x1, double y1, double x2, double y2) {
         return MathHelper.sqrt(squaredDistance(x1, y1, x2, y2));
     }
 
@@ -191,12 +265,27 @@ public class MathHelper {
      * @param x1 The X coordinate of point 1.
      * @param y1 The Y coordinate of point 1.
      * @param x2 The X coordinate of point 2.
-     * @param y2 The Y coordinate of point 2.
+     * @param y2 The Y Coordinate of point 2.
      * @return The squared distance between the two given points.
      */
     public static float squaredDistance(float x1, float y1, float x2, float y2) {
         float vx = x1 - x2;
         float vy = y1 - y2;
+        return vx * vx + vy * vy;
+    }
+
+    /**
+     * Calculates the squared distance between two points (double version).
+     *
+     * @param x1 The X coordinate of point 1.
+     * @param y1 The Y coordinate of point 1.
+     * @param x2 The X coordinate of point 2.
+     * @param y2 The Y Coordinate of point 2.
+     * @return The squared distance between the two given points.
+     */
+    public static double squaredDistance(double x1, double y1, double x2, double y2) {
+        double vx = x1 - x2;
+        double vy = y1 - y2;
         return vx * vx + vy * vy;
     }
 
