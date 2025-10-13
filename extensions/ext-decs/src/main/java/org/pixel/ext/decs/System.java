@@ -11,7 +11,9 @@ import org.pixel.commons.lifecycle.Updatable;
  * A base class for systems, which contain the logic of the ECS.
  */
 public abstract class System implements Initializable, Loadable, Updatable, Drawable, Disposable {
-    protected World world;
+
+    protected final World world;
+
     private boolean enabled = true;
 
     /**

@@ -1,4 +1,4 @@
-package org.pixel.demo.learning.decs.components;
+package org.pixel.demo.learning.decs.component;
 
 import lombok.Getter;
 import org.pixel.content.Texture;

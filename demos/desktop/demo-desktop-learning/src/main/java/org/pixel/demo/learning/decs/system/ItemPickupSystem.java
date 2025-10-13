@@ -1,12 +1,12 @@
-package org.pixel.demo.learning.decs.systems;
+package org.pixel.demo.learning.decs.system;
 
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.event.EventManager;
-import org.pixel.demo.learning.decs.components.CollisionComponent;
-import org.pixel.demo.learning.decs.components.InventoryComponent;
-import org.pixel.demo.learning.decs.components.ItemComponent;
-import org.pixel.demo.learning.decs.components.PlayerComponent;
-import org.pixel.demo.learning.decs.events.ItemPickedUpEvent;
+import org.pixel.demo.learning.decs.component.CollisionComponent;
+import org.pixel.demo.learning.decs.component.InventoryComponent;
+import org.pixel.demo.learning.decs.component.ItemComponent;
+import org.pixel.demo.learning.decs.component.PlayerComponent;
+import org.pixel.demo.learning.decs.event.ItemPickedUpEvent;
 import org.pixel.ext.decs.Entity;
 import org.pixel.ext.decs.Group;
 import org.pixel.ext.decs.System;

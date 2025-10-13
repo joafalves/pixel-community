@@ -1,4 +1,4 @@
-package org.pixel.demo.learning.decs.systems;
+package org.pixel.demo.learning.decs.system;
 
 import org.pixel.commons.DeltaTime;
 import org.pixel.ext.decs.System;

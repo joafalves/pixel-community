@@ -1,4 +1,4 @@
-package org.pixel.demo.learning.decs.systems;
+package org.pixel.demo.learning.decs.system;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
@@ -7,7 +7,7 @@ import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
 import org.pixel.core.Camera2D;
-import org.pixel.demo.learning.decs.events.ItemPickedUpEvent;
+import org.pixel.demo.learning.decs.event.ItemPickedUpEvent;
 import org.pixel.ext.decs.System;
 import org.pixel.ext.decs.World;
 import org.pixel.graphics.render.SpriteBatch;

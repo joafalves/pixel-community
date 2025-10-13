@@ -2,20 +2,16 @@ package org.pixel.demo.learning.decs;
 
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.service.ServiceProvider;
-import org.pixel.commons.service.ServiceRegistrar;
-import org.pixel.commons.service.ServiceRegistry;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.core.Camera2D;
 import org.pixel.core.Game;
 import org.pixel.core.WindowSettings;
-import org.pixel.demo.learning.decs.components.*;
-import org.pixel.demo.learning.decs.systems.*;
+import org.pixel.demo.learning.decs.component.*;
+import org.pixel.demo.learning.decs.system.*;
 import org.pixel.ext.decs.Entity;
 import org.pixel.ext.decs.World;
 import org.pixel.graphics.render.SpriteBatch;
-
-import java.util.List;
 
 public class DecsDemo extends Game {
 
@@ -32,6 +28,7 @@ public class DecsDemo extends Game {
         content = ServiceProvider.get(ContentManager.class);
 
         world = new World();
+        world.getProperties().put(this);
         world.getProperties().put(ServiceProvider.get(SpriteBatch.class));
         world.getProperties().put(new Camera2D(this)); // Put camera in the world's properties
 
@@ -42,6 +39,7 @@ public class DecsDemo extends Game {
         world.addSystem(new SpriteRenderSystem(world)); // Gets camera from world properties
         world.addSystem(new ItemPickupSystem(world));
         world.addSystem(new HudRenderSystem(world)); // Handles UI notifications
+        world.addSystem(new GeneralActionsSystem(world)); // Handles UI notifications
 
         // Create player
         Entity player = world.createEntity();

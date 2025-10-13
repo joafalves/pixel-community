@@ -1,11 +1,9 @@
-package org.pixel.demo.learning.decs.systems;
+package org.pixel.demo.learning.decs.system;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
-import org.pixel.core.Camera;
 import org.pixel.core.Camera2D;
-import org.pixel.demo.learning.decs.components.PositionComponent;
-import org.pixel.demo.learning.decs.components.SpriteComponent;
+import org.pixel.demo.learning.decs.component.PositionComponent;
+import org.pixel.demo.learning.decs.component.SpriteComponent;
 import org.pixel.ext.decs.Group;
 import org.pixel.ext.decs.System;
 import org.pixel.ext.decs.World;
