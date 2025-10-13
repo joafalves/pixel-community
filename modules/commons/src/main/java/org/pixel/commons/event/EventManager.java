@@ -60,6 +60,15 @@ public class EventManager {
     }
 
     /**
+     * Unsubscribes all event listeners with the given event name key
+     *
+     * @param eventName The event name.
+     */
+    public void unsubscribe(String eventName) {
+        listenerMap.remove(eventName);
+    }
+
+    /**
      * Unsubscribes an event listener.
      *
      * @param eventName The event name.

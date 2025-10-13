@@ -1,5 +1,7 @@
 package org.pixel.graphics.opengl;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
@@ -8,7 +10,8 @@ import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.stb.STBImageWrite.stbi_flip_vertically_on_write;
 import static org.lwjgl.stb.STBImageWrite.stbi_write_png;
 
-public class GLTextureExporter {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class GLTextureExporter {
 
     /**
      * Exports a texture to a PNG file.
