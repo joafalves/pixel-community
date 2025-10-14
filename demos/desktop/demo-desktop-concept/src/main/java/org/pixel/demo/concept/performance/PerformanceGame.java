@@ -33,7 +33,7 @@ public class PerformanceGame extends Game {
 
     private static final Logger log = LoggerFactory.getLogger(PerformanceGame.class);
 
-    private static final int SPRITE_COUNT = 5000;
+    private static final int SPRITE_COUNT = 1024;
     private static final float SPRITE_MOVEMENT_SPEED = 100f;
     private static final boolean MULTI_TEXTURE = true;
 
@@ -110,6 +110,7 @@ public class PerformanceGame extends Game {
         var settings = new WindowSettings("Performance", 1280, 720);
         settings.setVsync(false);
         settings.setIdleThrottle(false);
+        settings.setMultisampling(4);
         settings.setWindowResizable(true);
 
         ConsoleLogger.setLogLevel(LogLevel.TRACE);

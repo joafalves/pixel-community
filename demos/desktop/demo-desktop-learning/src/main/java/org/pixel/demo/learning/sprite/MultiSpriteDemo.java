@@ -48,8 +48,8 @@ public class MultiSpriteDemo extends DemoGame {
 
         // related org.pixel.learning.sprite properties
         spriteAnchor = Vector2.half();
-        spritePosA = new Vector2(getVirtualWidth() / 3f, getVirtualHeight() / 2f);
-        spritePosB = new Vector2(getVirtualWidth() / 3f * 2f, getVirtualHeight() / 2f);
+        spritePosA = new Vector2(10, 10);
+        spritePosB = new Vector2(10 + spriteTexA.getWidth() + 10, 10);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class MultiSpriteDemo extends DemoGame {
         spriteBatch.begin(gameCamera.getViewMatrix(), BlendMode.NORMAL_BLEND);
 
         // org.pixel.learning.sprite definition for this drawing phase:
-        spriteBatch.draw(spriteTexA, spritePosA, Color.WHITE, spriteAnchor, 2f);
+        spriteBatch.draw(spriteTexA, spritePosA, Color.WHITE, spriteAnchor, 1f);
         spriteBatch.draw(spriteTexB, spritePosB, Color.WHITE, spriteAnchor, 1f);
 
         // end and draw all sprites stored:

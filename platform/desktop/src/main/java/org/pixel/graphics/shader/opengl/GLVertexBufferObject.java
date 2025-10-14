@@ -87,6 +87,17 @@ public class GLVertexBufferObject implements Disposable {
         glBufferData(target, data, usage);
     }
 
+    /**
+     * Upload data to the VBO.
+     *
+     * @param target The target.
+     * @param size   The size in bytes.
+     * @param usage  The usage.
+     */
+    public void uploadData(int target, long size, int usage) {
+        glBufferData(target, size, usage);
+    }
+
     @Override
     public void dispose() {
         glDeleteBuffers(id);

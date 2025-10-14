@@ -5,14 +5,16 @@ import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;
 import org.pixel.audio.ALAudioPlayerFactory;
 import org.pixel.audio.AudioPlayer;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.GLContentManagerFactory;
 import org.pixel.graphics.glfw.GLFWWindowManager;
 import org.pixel.graphics.opengl.GLGraphicsDevice;
+import org.pixel.graphics.render.DirectRenderer;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.graphics.render.opengl.GLDirectRendererServiceFactory;
 import org.pixel.graphics.render.opengl.GLSpriteBatchServiceFactory;
 
 import java.nio.ByteBuffer;
@@ -95,6 +97,7 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
         switch (this.settings.getGraphicsBackend()) {
             case OpenGL:
                 ServiceProvider.register(SpriteBatch.class, new GLSpriteBatchServiceFactory());
+                ServiceProvider.register(DirectRenderer.class, new GLDirectRendererServiceFactory());
                 ServiceProvider.register(ContentManager.class, new GLContentManagerFactory());
                 ServiceProvider.register(AudioPlayer.class, new ALAudioPlayerFactory());
                 break;

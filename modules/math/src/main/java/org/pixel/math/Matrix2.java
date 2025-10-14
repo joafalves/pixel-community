@@ -73,11 +73,13 @@ public class Matrix2 implements Serializable {
     /**
      * Sets the values to an identity matrix.
      */
-    public void setIdentity() {
+    public Matrix2 setIdentity() {
         m[0][0] = 1.0f;
         m[1][1] = 1.0f;
         m[0][1] = 0.0f;
         m[1][0] = 0.0f;
+
+        return this;
     }
 
     /**
@@ -85,12 +87,14 @@ public class Matrix2 implements Serializable {
      *
      * @param matrix The matrix to add.
      */
-    public void add(Matrix2 matrix) {
+    public Matrix2 add(Matrix2 matrix) {
         for (int i = 0; i < m.length; ++i) {
             for (int j = 0; j < m[0].length; j++) {
                 m[i][j] += matrix.m[i][j];
             }
         }
+
+        return this;
     }
 
     /**
@@ -98,12 +102,14 @@ public class Matrix2 implements Serializable {
      *
      * @param matrix The matrix to subtract.
      */
-    public void subtract(Matrix2 matrix) {
+    public Matrix2 subtract(Matrix2 matrix) {
         for (int i = 0; i < m.length; ++i) {
             for (int j = 0; j < m[0].length; j++) {
                 m[i][j] -= matrix.m[i][j];
             }
         }
+
+        return this;
     }
 
     /**
@@ -111,7 +117,7 @@ public class Matrix2 implements Serializable {
      *
      * @param matrix The matrix to multiply by.
      */
-    public void multiply(Matrix2 matrix) {
+    public Matrix2 multiply(Matrix2 matrix) {
         tmp[0][0] = m[0][0] * matrix.m[0][0] + m[0][1] * matrix.m[1][0];
         tmp[1][0] = m[1][0] * matrix.m[0][0] + m[1][1] * matrix.m[1][0];
 
@@ -119,6 +125,8 @@ public class Matrix2 implements Serializable {
         tmp[1][1] = m[1][0] * matrix.m[0][1] + m[1][1] * matrix.m[1][1];
 
         assignFromTmp();
+
+        return this;
     }
 
     /**
@@ -126,28 +134,33 @@ public class Matrix2 implements Serializable {
      *
      * @param scalar The scalar to multiply by.
      */
-    public void multiply(float scalar) {
+    public Matrix2 multiply(float scalar) {
         for (int i = 0; i < m.length; ++i) {
             for (int j = 0; j < m[0].length; ++j) {
                 m[i][j] *= scalar;
             }
         }
+
+        return this;
     }
 
     /**
      * Multiples each value on the matrix by -1.
      */
-    public void negate() {
+    public Matrix2 negate() {
         multiply(-1.0f);
+        return this;
     }
 
     /**
      * Transposes the matrix.
      */
-    public void transpose() {
+    public Matrix2 transpose() {
         float o10 = m[1][0];
         m[1][0] = m[0][1];
         m[0][1] = o10;
+
+        return this;
     }
 
     /**
