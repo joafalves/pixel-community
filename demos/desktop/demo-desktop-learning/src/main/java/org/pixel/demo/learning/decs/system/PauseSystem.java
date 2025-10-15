@@ -6,6 +6,8 @@ import org.pixel.ext.decs.World;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 
+import java.awt.*;
+
 /**
  * A system that can pause and un-pause other systems in the world.
  */
@@ -24,7 +26,10 @@ public class PauseSystem extends System {
 
             for (System system : world.getSystems()) {
                 // Don't disable this system or rendering systems
-                if (system == this || system instanceof SpriteRenderSystem || system instanceof HudRenderSystem) {
+                if (system == this
+                        || system instanceof SpriteRenderSystem
+                        || system instanceof CanvasRenderSystem
+                        || system instanceof HudRenderSystem) {
                     continue;
                 }
 

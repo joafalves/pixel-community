@@ -13,7 +13,11 @@ import org.pixel.content.GLContentManagerFactory;
 import org.pixel.graphics.glfw.GLFWWindowManager;
 import org.pixel.graphics.opengl.GLGraphicsDevice;
 import org.pixel.graphics.render.DirectRenderer;
+import org.pixel.graphics.render.SdfTextRenderer;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.graphics.render.canvas.CanvasRenderer;
+import org.pixel.graphics.render.canvas.GlCanvasRendererServiceFactory;
+import org.pixel.graphics.render.canvas.text.GlSdfTextRendererServiceFactory;
 import org.pixel.graphics.render.opengl.GLDirectRendererServiceFactory;
 import org.pixel.graphics.render.opengl.GLSpriteBatchServiceFactory;
 
@@ -98,6 +102,8 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
             case OpenGL:
                 ServiceProvider.register(SpriteBatch.class, new GLSpriteBatchServiceFactory());
                 ServiceProvider.register(DirectRenderer.class, new GLDirectRendererServiceFactory());
+                ServiceProvider.register(SdfTextRenderer.class, new GlSdfTextRendererServiceFactory());
+                ServiceProvider.register(CanvasRenderer.class, new GlCanvasRendererServiceFactory());
                 ServiceProvider.register(ContentManager.class, new GLContentManagerFactory());
                 ServiceProvider.register(AudioPlayer.class, new ALAudioPlayerFactory());
                 break;

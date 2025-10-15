@@ -10,7 +10,26 @@ import org.pixel.content.Font;
 import org.pixel.content.Texture;
 import org.pixel.graphics.shader.Shader;
 
-public abstract class SpriteBatch implements Initializable, Disposable {
+public abstract class SpriteBatch implements BatchRenderer, Initializable, Disposable {
+    
+    /**
+     * Draws a sprite with a custom shader.
+     *
+     * @param texture  The texture to use.
+     * @param position The position of the sprite.
+     * @param source   The source rectangle of the sprite.
+     * @param color    The color overlay of the sprite.
+     * @param anchor   The anchor point of the sprite.
+     * @param scaleX   The scale of the sprite on the x-axis.
+     * @param scaleY   The scale of the sprite on the y-axis.
+     * @param rotation The rotation of the sprite.
+     * @param depth    The drawing depth of the sprite.
+     * @param shader   Custom shader to use (null for default shader).
+     * @param uniforms Custom shader uniforms (map of uniform name to value).
+     */
+    public abstract void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, 
+                             float scaleX, float scaleY, float rotation, int depth, Shader shader, 
+                             org.pixel.commons.data.DataMap uniforms);
 
     /**
      * Draws a sprite.
@@ -130,7 +149,9 @@ public abstract class SpriteBatch implements Initializable, Disposable {
      * @param depth    The drawing depth of the sprite (lower numbers are drawn
      *                 first).
      */
-    public abstract void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scaleX, float scaleY, float rotation, int depth);
+    public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scaleX, float scaleY, float rotation, int depth) {
+        draw(texture, position, source, color, anchor, scaleX, scaleY, rotation, depth, null, null);
+    }
 
     /**
      * Draws a sprite.

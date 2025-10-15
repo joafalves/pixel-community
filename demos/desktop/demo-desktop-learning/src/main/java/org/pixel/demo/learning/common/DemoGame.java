@@ -26,6 +26,7 @@ public abstract class DemoGame extends Game {
 
     public DemoGame(WindowSettings settings) {
         super(settings);
+        this.settings.setDevMode(true);
 
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(Vector2.half());

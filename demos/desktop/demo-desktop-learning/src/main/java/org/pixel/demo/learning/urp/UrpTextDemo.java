@@ -12,11 +12,14 @@ import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.graphics.render.RenderPipeline;
 import org.pixel.graphics.render.SpriteRenderable;
+import org.pixel.graphics.render.SdfTextRenderable;
 import org.pixel.graphics.render.TextRenderable;
+import org.pixel.graphics.render.canvas.TextStyle;
+import org.pixel.graphics.render.canvas.text.SdfFont;
 import org.pixel.math.Vector2;
 
 /**
- * Demo showing mixed sprite and text rendering in the unified render pipeline.
+ * Demo comparing legacy Font vs SDF Font rendering in the unified render pipeline.
  */
 public class UrpTextDemo extends DemoGame {
 
@@ -25,9 +28,16 @@ public class UrpTextDemo extends DemoGame {
     private Camera2D camera;
 
     private SpriteRenderable backgroundSprite;
-    private TextRenderable titleText;
-    private TextRenderable fpsText;
-    private TextRenderable instructionsText;
+    private SdfTextRenderable titleText;
+    
+    // Comparison texts - Legacy vs SDF
+    private TextRenderable legacyLabel;
+    private TextRenderable legacyText;
+    private SdfTextRenderable sdfLabel;
+    private SdfTextRenderable sdfText;
+    
+    private SdfTextRenderable fpsText;
+    private SdfTextRenderable instructionsText;
 
     public UrpTextDemo(WindowSettings settings) {
         super(settings);
@@ -45,7 +55,13 @@ public class UrpTextDemo extends DemoGame {
 
         // Load content
         Texture earthTexture = content.loadTexture("images/earth-48x48.png");
-        Font defaultFont = content.loadFont("fonts/gidole-regular.ttf", new FontImporterSettings(16, 1));
+        
+        // Load both legacy and SDF fonts at same size for comparison
+        Font legacyFont = content.loadFont("fonts/roboto-regular.ttf", new FontImporterSettings(24, 1));
+        SdfFont sdfFont = content.load("fonts/roboto-regular.ttf", SdfFont.class, 
+            new FontImporterSettings(22, 1));
+        SdfFont smallSdfFont = content.load("fonts/roboto-regular.ttf", SdfFont.class, 
+            new FontImporterSettings(14, 1));
 
         // Create a background sprite
         backgroundSprite = new SpriteRenderable()
@@ -55,37 +71,79 @@ public class UrpTextDemo extends DemoGame {
                 .setScale(3)
                 .setDepth(10); // Behind text
 
-        // Create title text
-        titleText = new TextRenderable()
-                .setFont(defaultFont)
-                .setFontSize(defaultFont.getFontSize())
-                .setText("Unified Render Pipeline - Text Demo")
+        // Create title
+        titleText = new SdfTextRenderable()
+                .setFont(sdfFont)
+                .setText("Font Comparison: Legacy vs SDF")
                 .setPosition(20, 30)
-                .setColor(Color.WHITE)
-                .setDepth(0); // In front
+                .setStyle(new TextStyle(Color.WHITE))
+                .setTransform(camera.getViewMatrix())
+                .setDepth(0);
 
-        // Create FPS counter text
-        fpsText = new TextRenderable()
-                .setFont(defaultFont)
-                .setFontSize(defaultFont.getFontSize())
+        // LEGACY FONT DEMO
+        float comparisonY = 120;
+        legacyLabel = new TextRenderable()
+                .setFont(legacyFont)
+                .setFontSize(legacyFont.getFontSize())
+                .setText("LEGACY FONT (Bitmap):")
+                .setPosition(20, comparisonY)
+                .setColor(new Color(1f, 0.8f, 0.2f)) // Orange
+                .setDepth(0);
+
+        legacyText = new TextRenderable()
+                .setFont(legacyFont)
+                .setFontSize(legacyFont.getFontSize())
+                .setText("The quick brown fox jumps over the lazy dog 0123456789")
+                .setPosition(20, comparisonY + 35)
+                .setColor(Color.WHITE)
+                .setDepth(0);
+
+        // SDF FONT DEMO
+        float sdfY = comparisonY + 100;
+        sdfLabel = new SdfTextRenderable()
+                .setFont(sdfFont)
+                .setText("SDF FONT (Scalable):")
+                .setPosition(20, sdfY)
+                .setStyle(new TextStyle(new Color(0.2f, 1f, 0.8f))) // Cyan-green
+                .setTransform(camera.getViewMatrix())
+                .setDepth(0);
+
+        sdfText = new SdfTextRenderable()
+                .setFont(sdfFont)
+                .setText("The quick brown fox jumps over the lazy dog 0123456789")
+                .setPosition(20, sdfY + 35)
+                .setStyle(new TextStyle(Color.WHITE))
+                .setTransform(camera.getViewMatrix())
+                .setDepth(0);
+
+        // FPS counter
+        fpsText = new SdfTextRenderable()
+                .setFont(smallSdfFont)
                 .setText("FPS: 0")
                 .setPosition(20, 70)
-                .setColor(Color.LIME)
-                .setFontSize(18)
+                .setStyle(new TextStyle(Color.LIME))
+                .setTransform(camera.getViewMatrix())
                 .setDepth(0);
 
-        // Create instructions
-        instructionsText = new TextRenderable()
-                .setFont(defaultFont)
-                .setFontSize(defaultFont.getFontSize())
-                .setText("Sprites and Text rendered together!\nDepth sorting works for both types.")
-                .setPosition(20, getVirtualHeight() - 60)
-                .setColor(new Color(0, 1f, 1f, 1f)) // Cyan
+        // Instructions
+        instructionsText = new SdfTextRenderable()
+                .setFont(smallSdfFont)
+                .setText("Compare the text quality above!\n" +
+                        "Legacy fonts are bitmap-based (fixed size)\n" +
+                        "SDF fonts are distance field-based (scale perfectly)\n" +
+                        "Both render together in the Unified Render Pipeline!")
+                .setPosition(20, getVirtualHeight() - 110)
+                .setStyle(new TextStyle(new Color(0.9f, 0.9f, 0.9f))) // Gray
+                .setTransform(camera.getViewMatrix())
                 .setDepth(0);
 
-        // Submit all renderables once
+        // Submit all renderables
         renderPipeline.submit(backgroundSprite);
         renderPipeline.submit(titleText);
+        renderPipeline.submit(legacyLabel);
+        renderPipeline.submit(legacyText);
+        renderPipeline.submit(sdfLabel);
+        renderPipeline.submit(sdfText);
         renderPipeline.submit(fpsText);
         renderPipeline.submit(instructionsText);
     }
@@ -118,7 +176,7 @@ public class UrpTextDemo extends DemoGame {
         var settings = new WindowSettings(1280, 720);
         settings.setMultisampling(4);
         settings.setVsync(false);
-        settings.setTitle("Unified Render Pipeline - Text Demo");
+        settings.setTitle("URP Text Demo - Legacy vs SDF Font Comparison");
 
         var game = new UrpTextDemo(settings);
         game.start();

@@ -36,10 +36,10 @@ public class DecsDemo extends Game {
         world.addSystem(new PlayerInputSystem(world));
         world.addSystem(new MovementSystem(world));
         world.addSystem(new CollisionSystem(world)); // Update collision boxes
-        world.addSystem(new SpriteRenderSystem(world)); // Gets camera from world properties
+        world.addSystem(new CanvasRenderSystem(world)); // Fancy canvas-based rendering
         world.addSystem(new ItemPickupSystem(world));
         world.addSystem(new HudRenderSystem(world)); // Handles UI notifications
-        world.addSystem(new GeneralActionsSystem(world)); // Handles UI notifications
+        world.addSystem(new GeneralActionsSystem(world)); // Handles general actions
 
         // Create player
         Entity player = world.createEntity();
@@ -82,7 +82,7 @@ public class DecsDemo extends Game {
 
     public static void main(String[] args) {
         var settings = new WindowSettings(800, 600);
-        settings.setTitle("DECS Demo");
+        settings.setTitle("DECS Demo - Fancy Canvas Rendering - Press [P] to pause!");
         settings.setVsync(true);
 
         var game = new DecsDemo(settings);

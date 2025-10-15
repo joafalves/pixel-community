@@ -10,53 +10,56 @@ import org.pixel.math.Vector2;
 /**
  * Abstract base class for all renderable objects in the RenderPipeline.
  * Subclasses define specific rendering behavior (sprites, text, custom shapes, etc.).
+ * 
+ * <p>Uses generics to specify which renderer type this renderable requires:
+ * <ul>
+ *   <li>{@code Renderable<SpriteBatch>} - Uses batched sprite rendering</li>
+ *   <li>{@code Renderable<SdfShapeRenderer>} - Uses SDF shape rendering</li>
+ *   <li>{@code Renderable<SdfTextRenderer>} - Uses SDF text rendering</li>
+ * </ul>
+ * 
+ * <p>The RenderPipeline automatically provides the correct renderer instance based on the generic type.
  * This design allows developers to extend the rendering system without modifying the framework.
+ *
+ * @param <R> The type of renderer this renderable uses
  */
-public abstract class Renderable implements Cullable {
+public abstract class Renderable<R extends Renderer> implements Cullable {
     protected Vector2 position;
     protected Color color;
     protected int depth;
     protected Shader shader; // Optional custom shader
     protected DataMap shaderData; // Optional custom uniforms
+    protected final Class<R> rendererType;
 
     /**
      * Protected constructor for subclasses.
+     *
+     * @param rendererType The class of the renderer this renderable uses
      */
-    protected Renderable() {
+    protected Renderable(Class<R> rendererType) {
         this.position = new Vector2(0, 0);
         this.color = Color.WHITE;
         this.depth = 0;
         this.shaderData = new DataMap();
+        this.rendererType = rendererType;
     }
 
     /**
-     * Render this object using the SpriteBatch (for batched rendering).
-     * Default implementation does nothing - override if your renderable supports batching.
+     * Render this object using its specific renderer type.
+     * Subclasses must implement this to define their rendering behavior.
      *
-     * @param spriteBatch The sprite batch to use.
+     * @param renderer   The renderer instance (guaranteed to be of type R)
+     * @param viewMatrix The camera's view-projection matrix
      */
-    public void renderBatched(SpriteBatch spriteBatch) {
-        // Default: do nothing. Subclasses override if they support batching.
-    }
+    public abstract void render(R renderer, Matrix4 viewMatrix);
 
     /**
-     * Render this object using the DirectRenderer (for custom shader rendering).
-     * Default implementation does nothing - override if your renderable supports direct rendering.
+     * Gets the renderer type this renderable requires.
      *
-     * @param directRenderer The direct renderer to use.
-     * @param viewMatrix     The camera's view-projection matrix.
+     * @return The class of the renderer type
      */
-    public void renderDirect(DirectRenderer directRenderer, Matrix4 viewMatrix) {
-        // Default: do nothing. Subclasses override if they support direct rendering.
-    }
-
-    /**
-     * Determines if this renderable can be batched (no custom shader).
-     *
-     * @return True if this renderable can be batched, false otherwise.
-     */
-    public boolean canBatch() {
-        return shader == null;
+    public Class<R> getRendererType() {
+        return rendererType;
     }
 
     /**
@@ -73,21 +76,21 @@ public abstract class Renderable implements Cullable {
 
     //<editor-fold desc="Common Getters and Setters">
     public Vector2 getPosition() { return position; }
-    public Renderable setPosition(Vector2 position) { this.position = position; return this; }
-    public Renderable setPosition(float x, float y) { this.position.set(x, y); return this; }
-    public Renderable setPosition(float xy) { this.position.set(xy, xy); return this; }
+    public Renderable<R> setPosition(Vector2 position) { this.position = position; return this; }
+    public Renderable<R> setPosition(float x, float y) { this.position.set(x, y); return this; }
+    public Renderable<R> setPosition(float xy) { this.position.set(xy, xy); return this; }
 
     public Color getColor() { return color; }
-    public Renderable setColor(Color color) { this.color = color; return this; }
+    public Renderable<R> setColor(Color color) { this.color = color; return this; }
 
     public int getDepth() { return depth; }
-    public Renderable setDepth(int depth) { this.depth = depth; return this; }
+    public Renderable<R> setDepth(int depth) { this.depth = depth; return this; }
 
     public Shader getShader() { return shader; }
-    public Renderable setShader(Shader shader) { this.shader = shader; return this; }
+    public Renderable<R> setShader(Shader shader) { this.shader = shader; return this; }
 
     public DataMap getShaderData() { return shaderData; }
-    public Renderable setShaderData(DataMap shaderData) { this.shaderData = shaderData; return this; }
+    public Renderable<R> setShaderData(DataMap shaderData) { this.shaderData = shaderData; return this; }
     //</editor-fold>
 
     //<editor-fold desc="Fluent Uniform Setters for Custom Shaders">
@@ -99,7 +102,7 @@ public abstract class Renderable implements Cullable {
      * @param value The value.
      * @return This renderable for chaining.
      */
-    public Renderable setUniform(String name, float value) {
+    public Renderable<R> setUniform(String name, float value) {
         this.shaderData.put(name, value);
         return this;
     }
@@ -111,7 +114,7 @@ public abstract class Renderable implements Cullable {
      * @param value The value.
      * @return This renderable for chaining.
      */
-    public Renderable setUniform(String name, int value) {
+    public Renderable<R> setUniform(String name, int value) {
         this.shaderData.put(name, value);
         return this;
     }
@@ -123,7 +126,7 @@ public abstract class Renderable implements Cullable {
      * @param value The value.
      * @return This renderable for chaining.
      */
-    public Renderable setUniform(String name, Vector2 value) {
+    public Renderable<R> setUniform(String name, Vector2 value) {
         this.shaderData.put(name, value);
         return this;
     }

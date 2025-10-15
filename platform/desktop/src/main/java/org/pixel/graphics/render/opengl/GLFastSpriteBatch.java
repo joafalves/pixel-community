@@ -48,7 +48,9 @@ public class GLFastSpriteBatch extends SpriteBatch {
     private final int shaderTextureCount;
 
     private State state = State.NEW;
-    private GLShader shader;
+    private GLShader defaultShader;      // The default instanced multi-texture shader
+    private GLShader currentShader;      // The currently active shader (default or custom)
+    private Matrix4 currentViewMatrix;   // Cached view matrix for shader switching
     private int bufferMaxSize;
     private int bufferWriteIndex;
     private FloatBuffer instanceDataBuffer;
@@ -98,12 +100,13 @@ public class GLFastSpriteBatch extends SpriteBatch {
         if (state.hasInitialized()) return false;
         state = State.INITIALIZING;
 
-        shader = new GLInstancedMultiTextureShader(shaderTextureCount);
-        shader.bind();
+        defaultShader = new GLInstancedMultiTextureShader(shaderTextureCount);
+        currentShader = defaultShader;
+        defaultShader.bind();
 
         int[] textureRefArray = new int[shaderTextureCount];
         for (int i = 0; i < shaderTextureCount; i++) textureRefArray[i] = i;
-        glUniform1iv(shader.getUniformLocation("uTextureImage"), textureRefArray);
+        glUniform1iv(defaultShader.getUniformLocation("uTextureImage"), textureRefArray);
 
         vao.bind();
 
@@ -173,7 +176,7 @@ public class GLFastSpriteBatch extends SpriteBatch {
 
     @Override
     public void dispose() {
-        shader.dispose();
+        defaultShader.dispose();
         quadVbo.dispose();
         instanceVbo.dispose();
         vao.dispose();
@@ -185,6 +188,32 @@ public class GLFastSpriteBatch extends SpriteBatch {
     @Override
     public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scaleX,
                      float scaleY, float rotation, int depth) {
+        draw(texture, position, source, color, anchor, scaleX, scaleY, rotation, depth, null, null);
+    }
+    
+    @Override
+    public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scaleX,
+                     float scaleY, float rotation, int depth, Shader customShader, org.pixel.commons.data.DataMap uniforms) {
+        // Check if we need to switch shaders
+        GLShader targetShader = (customShader != null) ? (GLShader) customShader : defaultShader;
+        
+        if (targetShader != currentShader) {
+            // Switching to a different shader - flush and switch
+            switchShader(targetShader);
+        }
+        
+        // When using a custom shader, we need to flush immediately before AND after each sprite
+        // because custom shaders with different uniform values cannot be batched together
+        if (customShader != null) {
+            // Flush any pending sprites first
+            if (bufferWriteIndex > 0) flush();
+            
+            // Apply uniforms for this sprite
+            if (uniforms != null && !uniforms.isEmpty()) {
+                applyUniforms(uniforms);
+            }
+        }
+        
         if (bufferWriteIndex >= bufferMaxSize) flush();
 
         this.positionX[bufferWriteIndex] = position.getX();
@@ -216,6 +245,12 @@ public class GLFastSpriteBatch extends SpriteBatch {
         }
 
         bufferWriteIndex++;
+        
+        // For custom shaders, flush immediately after adding this sprite
+        // This ensures uniforms are applied to exactly this sprite
+        if (customShader != null) {
+            flush();
+        }
     }
 
     @Override
@@ -297,7 +332,65 @@ public class GLFastSpriteBatch extends SpriteBatch {
 
     @Override
     public Shader getShader() {
-        return shader;
+        return currentShader;
+    }
+    
+    /**
+     * Switch to a different shader, flushing the current batch.
+     */
+    private void switchShader(GLShader newShader) {
+        if (newShader == currentShader) return;
+        
+        // Flush current batch before switching
+        flush();
+        
+        // Switch shader
+        currentShader = newShader;
+        currentShader.bind();
+        
+        // Re-apply view matrix to new shader
+        if (currentViewMatrix != null) {
+            matrixBuffer.clear();
+            currentViewMatrix.writeBuffer(matrixBuffer);
+            glUniformMatrix4fv(currentShader.getUniformLocation("uMatrix"), false, matrixBuffer);
+        }
+        
+        // Set up texture uniforms based on shader type
+        if (currentShader == defaultShader) {
+            // Default instanced shader: multi-texture array
+            int[] textureRefArray = new int[shaderTextureCount];
+            for (int i = 0; i < shaderTextureCount; i++) textureRefArray[i] = i;
+            glUniform1iv(defaultShader.getUniformLocation("uTextureImage"), textureRefArray);
+        } else {
+            // Custom shader: single texture on unit 0
+            currentShader.setUniform("uTextureImage", 0);
+        }
+    }
+    
+    /**
+     * Apply custom shader uniforms.
+     */
+    private void applyUniforms(org.pixel.commons.data.DataMap uniforms) {
+        if (uniforms == null || uniforms.isEmpty()) return;
+        
+        for (String key : uniforms.keySet()) {
+            Object value = uniforms.get(key);
+            if (value instanceof Float) {
+                currentShader.setUniform(key, (Float) value);
+            } else if (value instanceof Integer) {
+                currentShader.setUniform(key, (Integer) value);
+            } else if (value instanceof org.pixel.math.Vector2) {
+                org.pixel.math.Vector2 v = (org.pixel.math.Vector2) value;
+                currentShader.setUniform(key, v.getX(), v.getY());
+            } else if (value instanceof org.pixel.math.Vector3) {
+                org.pixel.math.Vector3 v = (org.pixel.math.Vector3) value;
+                currentShader.setUniform(key, v.getX(), v.getY(), v.getZ());
+            } else if (value instanceof Color) {
+                Color c = (Color) value;
+                currentShader.setUniform(key, c.getRed(), c.getGreen(), c.getBlue());
+            }
+            // Note: Matrix4 would need glUniformMatrix4fv - add if needed
+        }
     }
 
     @Override
@@ -308,17 +401,22 @@ public class GLFastSpriteBatch extends SpriteBatch {
     @Override
     public void begin(Matrix4 viewMatrix, BlendMode blendMode) {
         bufferWriteIndex = 0;
+        currentViewMatrix = viewMatrix;
+        currentShader = defaultShader; // Always start with default shader
 
+        // Ensure blending is enabled for sprite rendering
+        glEnable(GL_BLEND);
+        
         if (blendMode == BlendMode.ADDITIVE) glBlendFunc(GL_ONE, GL_ONE);
         else if (blendMode == BlendMode.MULTIPLY) glBlendFunc(GL_DST_COLOR, GL_ZERO);
         else glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        shader.bind();
+        currentShader.bind();
         vao.bind();
 
         matrixBuffer.clear();
         viewMatrix.writeBuffer(matrixBuffer);
-        glUniformMatrix4fv(shader.getUniformLocation("uMatrix"), false, matrixBuffer);
+        glUniformMatrix4fv(currentShader.getUniformLocation("uMatrix"), false, matrixBuffer);
     }
 
     @Override

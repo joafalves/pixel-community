@@ -68,7 +68,7 @@ public class SingleSpriteDemo extends DemoGame {
     public static void main(String[] args) {
         var settings = new WindowSettings(600, 320);
         settings.setWindowResizable(false);
-        settings.setMultisampling(2);
+        settings.setMultisampling(8);
         settings.setVsync(true);
         settings.setDevMode(true);
 

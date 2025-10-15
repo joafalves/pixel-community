@@ -7,6 +7,7 @@ import org.pixel.core.WindowSettings;
 import org.pixel.graphics.render.RenderEngine2D;
 import org.pixel.graphics.render.nanovg.NvgRenderEngine;
 
+@Deprecated
 public class PrimitivesRenderDemo extends DemoGame {
 
     private RenderEngine2D re;

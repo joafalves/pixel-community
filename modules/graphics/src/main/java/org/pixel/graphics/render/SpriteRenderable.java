@@ -7,8 +7,9 @@ import org.pixel.math.Vector2;
 
 /**
  * A renderable for drawing sprites (textured quads).
+ * Automatically uses SpriteBatch for normal sprites or DirectRenderer for custom shaders.
  */
-public class SpriteRenderable extends Renderable {
+public class SpriteRenderable extends Renderable<Renderer> {
     private Texture texture;
     private Rectangle source;
     private Vector2 anchor;
@@ -20,21 +21,33 @@ public class SpriteRenderable extends Renderable {
      * Public constructor.
      */
     public SpriteRenderable() {
-        super();
+        super(Renderer.class);
         this.scale = new Vector2(1, 1);
         this.anchor = Vector2.ZERO;
         this.rotation = 0f;
         this.cachedBounds = null;
     }
-
+    
     @Override
-    public void renderBatched(SpriteBatch spriteBatch) {
-        spriteBatch.draw(texture, position, source, color, anchor, scale.getX(), scale.getY(), rotation, depth);
+    public Class<Renderer> getRendererType() {
+        // Use DirectRenderer for custom shaders (they need per-vertex rendering)
+        // Use SpriteBatch for normal sprites (they can be batched)
+        // Note: We return the base Renderer type since RenderPipeline needs to handle both
+        if (shader != null) {
+            return (Class<Renderer>)(Class<?>)DirectRenderer.class;
+        }
+        return (Class<Renderer>)(Class<?>)SpriteBatch.class;
     }
 
     @Override
-    public void renderDirect(DirectRenderer directRenderer, Matrix4 viewMatrix) {
-        directRenderer.draw(this, viewMatrix);
+    public void render(Renderer renderer, Matrix4 viewMatrix) {
+        if (renderer instanceof SpriteBatch batch) {
+            // Normal batched rendering
+            batch.draw(texture, position, source, color, anchor, scale.getX(), scale.getY(), rotation, depth, null, null);
+        } else if (renderer instanceof DirectRenderer direct) {
+            // Direct rendering for custom shaders
+            direct.draw(this, viewMatrix);
+        }
     }
 
     @Override

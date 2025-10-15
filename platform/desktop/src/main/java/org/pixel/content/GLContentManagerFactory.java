@@ -11,6 +11,7 @@ public class GLContentManagerFactory implements ServiceFactory<ContentManager> {
                 // DESKTOP SPECIFIC IMPORTERS
                 new GLTextureImporter(),
                 new GLFontImporter(),
+                new GLSdfFontImporter(),
                 new ALVorbisAudioImporter(),
 
                 // COMMON IMPORTERS

@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CanvasTextDemo",
+            "request": "launch",
+            "mainClass": "org.pixel.demo.learning.canvas.CanvasTextDemo",
+            "projectName": "demo-desktop-learning"
+        },
+        {
+            "type": "java",
             "name": "SkyShardGame",
             "request": "launch",
             "mainClass": "org.pixel.demo.concept.shard.SkyShardGame",
@@ -233,6 +240,6 @@
             "request": "launch",
             "mainClass": "org.pixel.demo.tiled.TiledDemo",
             "projectName": "demo-tiled"
-        },
+        }
     ]
 }

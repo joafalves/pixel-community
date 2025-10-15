@@ -1,0 +1,471 @@
+/*
+ * This software is available under Apache License
+ * Copyright (c) 2020
+ */
+
+package org.pixel.graphics.render.canvas;
+
+import org.pixel.commons.Color;
+import org.pixel.graphics.render.canvas.text.SdfFont;
+import org.pixel.math.MathHelper;
+import org.pixel.math.Matrix4;
+import org.pixel.math.Rectangle;
+import org.pixel.math.Size;
+import org.pixel.math.Vector2;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
+
+import static org.lwjgl.opengl.GL11.*;
+
+/**
+ * OpenGL implementation of CanvasRenderer using unified SDF batch rendering.
+ * ALL drawing operations go through a single GlSdfBatchRenderer for perfect draw order.
+ * 
+ * <p>Key features:
+ * <ul>
+ *   <li>Unified SDF-based rendering - all primitives use the same shader</li>
+ *   <li>Perfect draw order - everything batched in submission order</li>
+ *   <li>High performance - minimal draw calls through batching</li>
+ *   <li>Transform stack (translate, rotate, scale)</li>
+ *   <li>Clipping with scissor test</li>
+ * </ul>
+ */
+public class GlCanvasRenderer extends CanvasRenderer {
+
+    private Matrix4 activeViewMatrix; // View matrix for current frame
+    private final Matrix4 defaultViewMatrix; // Default screen-space projection
+    private final Stack<TransformState> transformStack;
+    private final GlSdfBatchRenderer batchRenderer; // UNIFIED renderer for everything!
+    private TransformState currentTransform;
+    private boolean begun = false;
+    
+    // Path API state
+    private final List<Vector2> pathPoints = new ArrayList<>();
+    private boolean pathStarted = false;
+    private boolean pathClosed = false;
+
+    /**
+     * Transform state for save/restore operations.
+     */
+    private static class TransformState {
+        Matrix4 transform;
+        Rectangle clipRect;
+
+        TransformState() {
+            this.transform = new Matrix4();
+            this.clipRect = null;
+        }
+
+        TransformState(TransformState copy) {
+            this.transform = new Matrix4(copy.transform);
+            this.clipRect = copy.clipRect != null ? new Rectangle(copy.clipRect) : null;
+        }
+    }
+
+    /**
+     * Constructor with default viewport dimensions for screen-space rendering.
+     *
+     * @param viewportWidth  Viewport width
+     * @param viewportHeight Viewport height
+     */
+    public GlCanvasRenderer(float viewportWidth, float viewportHeight) {
+        this.defaultViewMatrix = Matrix4.orthographic(0, viewportWidth, viewportHeight, 0, -1, 1);
+        this.activeViewMatrix = this.defaultViewMatrix;
+        this.transformStack = new Stack<>();
+        this.batchRenderer = new GlSdfBatchRenderer(); // ONE renderer for everything!
+        this.currentTransform = new TransformState();
+    }
+
+    @Override
+    public void begin() {
+        begin(defaultViewMatrix);
+    }
+
+    @Override
+    public void begin(Matrix4 viewMatrix) {
+        if (begun) {
+            throw new IllegalStateException("CanvasRenderer.begin() called twice without end()");
+        }
+        this.activeViewMatrix = viewMatrix;
+        begun = true;
+        
+        // Reset transform stack and current transform at the start of each frame
+        transformStack.clear();
+        currentTransform.transform.setIdentity();
+        currentTransform.clipRect = null;
+        
+        // Disable scissor test at the start
+        glDisable(GL_SCISSOR_TEST);
+        
+        // Start batch renderer with view matrix only
+        // Local transforms will be applied on CPU before batching
+        batchRenderer.begin(activeViewMatrix, currentTransform.transform);
+    }
+
+    @Override
+    public void end() {
+        if (!begun) {
+            throw new IllegalStateException("CanvasRenderer.end() called without begin()");
+        }
+        
+        // Flush all batched rendering
+        batchRenderer.end();
+        begun = false;
+    }
+
+    @Override
+    public void save() {
+        // Push a copy of the current transform state onto the stack
+        transformStack.push(new TransformState(currentTransform));
+    }
+
+    @Override
+    public void restore() {
+        if (transformStack.isEmpty()) {
+            throw new IllegalStateException("Cannot restore() without matching save()");
+        }
+        
+        // Pop the previous state from the stack
+        TransformState previousState = transformStack.pop();
+        
+        // Check if clipping state changed
+        boolean clipChanged = (currentTransform.clipRect == null) != (previousState.clipRect == null) ||
+                             (currentTransform.clipRect != null && !currentTransform.clipRect.equals(previousState.clipRect));
+        
+        // Update current transform
+        currentTransform = previousState;
+        
+        // Only flush if clipping changed
+        if (clipChanged) {
+            batchRenderer.end();
+            applyClipping();
+            batchRenderer.begin(activeViewMatrix, currentTransform.transform);
+        } else {
+            // Just update the transform reference - no flush needed!
+            batchRenderer.setLocalTransform(currentTransform.transform);
+        }
+    }
+
+    @Override
+    public void translate(float x, float y) {
+        // Apply translation to local transform
+        currentTransform.transform.translate(x, y, 0);
+        
+        // Update batch renderer's transform reference - no flush needed!
+        batchRenderer.setLocalTransform(currentTransform.transform);
+    }
+
+    @Override
+    public void rotate(float angle) {
+        // Apply rotation to local transform
+        currentTransform.transform.rotate(angle, 0, 0, 1);
+        
+        // Update batch renderer's transform reference - no flush needed!
+        batchRenderer.setLocalTransform(currentTransform.transform);
+    }
+
+    @Override
+    public void scale(float x, float y) {
+        // Apply scale to local transform
+        currentTransform.transform.scale(x, y, 1);
+        
+        // Update batch renderer's transform reference - no flush needed!
+        batchRenderer.setLocalTransform(currentTransform.transform);
+    }
+
+    @Override
+    public void fillRect(float x, float y, float width, float height, Color color) {
+        // Batched rendering - everything goes through unified renderer!
+        batchRenderer.fillRoundedRect(x, y, width, height, 0, color);
+    }
+
+    @Override
+    public void fillRoundedRect(float x, float y, float width, float height, float radius, Color color) {
+        // Batched rendering
+        batchRenderer.fillRoundedRect(x, y, width, height, radius, color);
+    }
+
+    @Override
+    public void fillCircle(float x, float y, float radius, Color color) {
+        // Batched rendering
+        batchRenderer.fillCircle(x, y, radius, color);
+    }
+
+    @Override
+    public void strokeRect(float x, float y, float width, float height, float lineWidth, Color color) {
+        // Batched rendering
+        batchRenderer.strokeRoundedRect(x, y, width, height, 0, lineWidth, color);
+    }
+
+    @Override
+    public void strokeRoundedRect(float x, float y, float width, float height, float radius, float lineWidth, Color color) {
+        // Batched rendering
+        batchRenderer.strokeRoundedRect(x, y, width, height, radius, lineWidth, color);
+    }
+
+    @Override
+    public void strokeCircle(float x, float y, float radius, float lineWidth, Color color) {
+        // Batched rendering
+        batchRenderer.strokeCircle(x, y, radius, lineWidth, color);
+    }
+
+    @Override
+    public void strokeLine(float x1, float y1, float x2, float y2, float lineWidth, Color color) {
+        // Batched rendering - goes through uber shader!
+        batchRenderer.strokeLine(x1, y1, x2, y2, lineWidth, color);
+    }
+
+    @Override
+    public void fillPoint(float x, float y, float size, Color color) {
+        // Batched rendering
+        batchRenderer.fillPoint(x, y, size, color);
+    }
+
+    @Override
+    public void drawText(String text, SdfFont font, float x, float y, Color color) {
+        drawText(text, font, x, y, new TextStyle(color));
+    }
+
+    @Override
+    public void drawText(String text, SdfFont font, float x, float y, TextStyle style) {
+        if (text == null || text.isEmpty() || font == null) {
+            return;
+        }
+
+        // Render drop shadow first (if enabled)
+        if (style.isDropShadow()) {
+            Vector2 shadowOffset = style.getShadowOffset();
+            Color shadowColor = style.getShadowColor();
+            
+            // Shadow has no stroke, same letter spacing
+            batchRenderer.drawText(text, font, 
+                x + shadowOffset.getX(), 
+                y + shadowOffset.getY(), 
+                shadowColor, Color.BLACK, 0.0f, style.getLetterSpacing());
+        }
+
+        // Render main text
+        Color fillColor = style.getFillColor() != null ? style.getFillColor() : Color.WHITE;
+        Color strokeColor = style.hasStroke() ? style.getStrokeColor() : Color.BLACK;
+        float strokeWidth = style.hasStroke() ? style.getStrokeWidth() : 0.0f;
+        float letterSpacing = style.getLetterSpacing();
+        
+        batchRenderer.drawText(text, font, x, y, fillColor, strokeColor, strokeWidth, letterSpacing);
+    }
+
+    @Override
+    public Size measureText(String text, SdfFont font) {
+        if (text == null || text.isEmpty() || font == null) {
+            return new Size(0, 0);
+        }
+
+        float width = 0;
+        for (int i = 0; i < text.length(); i++) {
+            char ch = text.charAt(i);
+            
+            // Handle spaces (matching the rendering logic)
+            if (ch == ' ') {
+                float spaceWidth = font.getFontSize() * 0.25f;
+                width += spaceWidth + 1.0f; // spaceWidth + default letterSpacing
+                continue;
+            }
+            
+            var glyph = font.getGlyph(ch);
+            if (glyph != null) {
+                width += glyph.getAdvance() + 1.0f; // advance + default letterSpacing
+            }
+        }
+
+        // Apply current transform scale to the measured size
+        // Extract scale from the current transform matrix
+        float[][] mat = currentTransform.transform.toUnsafeArray();
+        float scaleX = (float) Math.sqrt(mat[0][0] * mat[0][0] + mat[0][1] * mat[0][1]);
+        float scaleY = (float) Math.sqrt(mat[1][0] * mat[1][0] + mat[1][1] * mat[1][1]);
+
+        return new Size(width * scaleX, font.getLineHeight() * scaleY);
+    }
+
+    @Override
+    public void clipRect(float x, float y, float width, float height) {
+        // End batch before changing clipping state
+        batchRenderer.end();
+        
+        currentTransform.clipRect = new Rectangle(x, y, width, height);
+        applyClipping();
+        
+        // Restart batch with new clipping state
+        batchRenderer.begin(activeViewMatrix, currentTransform.transform);
+    }
+
+    @Override
+    public void resetClip() {
+        // End batch before changing clipping state
+        batchRenderer.end();
+        
+        currentTransform.clipRect = null;
+        glDisable(GL_SCISSOR_TEST);
+        
+        // Restart batch with no clipping
+        batchRenderer.begin(activeViewMatrix, currentTransform.transform);
+    }
+
+    /**
+     * Apply the current clipping rectangle using OpenGL scissor test.
+     * Note: Scissor test uses window coordinates (origin at bottom-left),
+     * while our canvas uses top-left origin.
+     */
+    private void applyClipping() {
+        if (currentTransform.clipRect == null) {
+            glDisable(GL_SCISSOR_TEST);
+            return;
+        }
+
+        Rectangle clip = currentTransform.clipRect;
+        
+        // Query actual viewport dimensions from OpenGL
+        int[] viewport = new int[4];
+        glGetIntegerv(GL_VIEWPORT, viewport);
+        int actualViewportHeight = viewport[3];
+        
+        // Enable scissor test
+        glEnable(GL_SCISSOR_TEST);
+        
+        // Convert from top-left origin to bottom-left origin (OpenGL convention)
+        // Canvas Y=0 is top, OpenGL Y=0 is bottom
+        int scissorX = (int) clip.getX();
+        int scissorY = actualViewportHeight - (int) (clip.getY() + clip.getHeight());
+        int scissorWidth = (int) clip.getWidth();
+        int scissorHeight = (int) clip.getHeight();
+        
+        glScissor(scissorX, scissorY, scissorWidth, scissorHeight);
+    }
+
+    // ============================================================================
+    // Path API Implementation
+    // ============================================================================
+
+    @Override
+    public void beginPath() {
+        pathPoints.clear();
+        pathStarted = false;
+        pathClosed = false;
+    }
+
+    @Override
+    public void moveTo(float x, float y) {
+        // Start a new sub-path at this point
+        pathPoints.add(new Vector2(x, y));
+        pathStarted = true;
+        pathClosed = false; // Opening a new path segment
+    }
+
+    @Override
+    public void lineTo(float x, float y) {
+        if (!pathStarted) {
+            // If no current point, treat as moveTo
+            moveTo(x, y);
+            return;
+        }
+        pathPoints.add(new Vector2(x, y));
+    }
+
+    @Override
+    public void closePath() {
+        if (!pathStarted || pathPoints.size() < 2 || pathClosed) {
+            return; // Nothing to close
+        }
+        
+        // Explicitly close the path by connecting last point to first point
+        // This ensures the closing segment is part of the path geometry
+        Vector2 first = pathPoints.get(0);
+        Vector2 last = pathPoints.get(pathPoints.size() - 1);
+        
+        // Only add closing point if it's not already at the start position
+        float dx = last.getX() - first.getX();
+        float dy = last.getY() - first.getY();
+        float distSq = dx * dx + dy * dy;
+        
+        if (distSq > 0.0001f) { // Tolerance for floating point comparison
+            // Add the first point again to explicitly close the path
+            pathPoints.add(new Vector2(first));
+        }
+        
+        pathClosed = true;
+    }
+
+    @Override
+    public void fill(Color color) {
+        if (pathPoints.size() < 3) {
+            return; // Need at least 3 points for a polygon
+        }
+
+        // For fill, we need to work with unique vertices only
+        // If closePath() was called, it added a duplicate of the first vertex at the end
+        // We need to remove it for triangulation (fill implicitly closes the polygon)
+        List<Vector2> fillPoints = pathPoints;
+        if (pathClosed && pathPoints.size() > 3) {
+            // Check if last point is duplicate of first (added by closePath)
+            Vector2 first = pathPoints.get(0);
+            Vector2 last = pathPoints.get(pathPoints.size() - 1);
+            float dx = last.getX() - first.getX();
+            float dy = last.getY() - first.getY();
+            if (dx * dx + dy * dy < 0.0001f) {
+                // Last point is a duplicate, use all but last for triangulation
+                fillPoints = pathPoints.subList(0, pathPoints.size() - 1);
+            }
+        }
+
+        // Fast path for triangles - no triangulation needed
+        if (fillPoints.size() == 3) {
+            drawTriangle(fillPoints.get(0).getX(), fillPoints.get(0).getY(),
+                        fillPoints.get(1).getX(), fillPoints.get(1).getY(),
+                        fillPoints.get(2).getX(), fillPoints.get(2).getY(), color);
+            return;
+        }
+
+        // Use ear clipping triangulation (works for any simple polygon - convex or concave)
+        // This properly handles stars, irregular shapes, etc.
+        List<Integer> triangleIndices = MathHelper.triangulate(fillPoints);
+        
+        // Draw each triangle
+        for (int i = 0; i < triangleIndices.size(); i += 3) {
+            Vector2 v0 = fillPoints.get(triangleIndices.get(i));
+            Vector2 v1 = fillPoints.get(triangleIndices.get(i + 1));
+            Vector2 v2 = fillPoints.get(triangleIndices.get(i + 2));
+            
+            drawTriangle(v0.getX(), v0.getY(), 
+                        v1.getX(), v1.getY(),
+                        v2.getX(), v2.getY(), color);
+        }
+    }
+
+    @Override
+    public void stroke(Color color, float lineWidth) {
+        if (pathPoints.size() < 2) {
+            return; // Need at least 2 points for a stroke
+        }
+
+        // Draw lines connecting all points
+        // If path was closed via closePath(), the closing segment is already in pathPoints
+        for (int i = 0; i < pathPoints.size() - 1; i++) {
+            Vector2 p1 = pathPoints.get(i);
+            Vector2 p2 = pathPoints.get(i + 1);
+            strokeLine(p1.getX(), p1.getY(), p2.getX(), p2.getY(), lineWidth, color);
+        }
+    }
+
+    /**
+     * Helper method to draw a filled triangle.
+     * Uses the batch renderer's native triangle support.
+     */
+    private void drawTriangle(float x1, float y1, float x2, float y2, float x3, float y3, Color color) {
+        batchRenderer.fillTriangle(x1, y1, x2, y2, x3, y3, color);
+    }
+
+    @Override
+    public void dispose() {
+        batchRenderer.dispose();
+    }
+}

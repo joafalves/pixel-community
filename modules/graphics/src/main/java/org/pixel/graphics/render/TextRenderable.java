@@ -7,8 +7,9 @@ import org.pixel.math.Vector2;
 
 /**
  * A renderable for drawing text.
+ * Uses SpriteBatch for efficient text rendering.
  */
-public class TextRenderable extends Renderable {
+public class TextRenderable extends Renderable<SpriteBatch> {
     private Font font;
     private String text;
     private int fontSize;
@@ -18,28 +19,16 @@ public class TextRenderable extends Renderable {
      * Public constructor.
      */
     public TextRenderable() {
-        super();
+        super(SpriteBatch.class);
         this.text = "";
         this.fontSize = 12;
     }
 
     @Override
-    public void renderBatched(SpriteBatch spriteBatch) {
+    public void render(SpriteBatch spriteBatch, Matrix4 viewMatrix) {
         if (font != null && text != null) {
             spriteBatch.drawText(font, text, position, color, fontSize);
         }
-    }
-
-    @Override
-    public void renderDirect(DirectRenderer directRenderer, Matrix4 viewMatrix) {
-        // Text doesn't currently support custom shaders via DirectRenderer
-        // Could be extended in the future if needed
-    }
-
-    @Override
-    public boolean canBatch() {
-        // Text is always batched, even with custom shader (shader not currently supported for text)
-        return true;
     }
 
     @Override

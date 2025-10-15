@@ -73,11 +73,15 @@ public class ContentManager implements Disposable {
     /**
      * Get a reference to the asset cache.
      *
-     * @param filename The filename of the asset.
-     * @param type     The type of the asset.
+     * @param filename  The filename of the asset.
+     * @param type      The type of the asset.
+     * @param settings  The importer settings.
      * @return A reference to the asset cache.
      */
-    private String getCacheReference(String filename, Class<?> type) {
+    private String getCacheReference(String filename, Class<?> type, ContentImporterSettings settings) {
+        if (settings != null) {
+            return  type.getCanonicalName() + ":" + filename + ":" + settings.hashCode();
+        }
         return type.getCanonicalName() + ":" + filename;
     }
 
@@ -340,7 +344,7 @@ public class ContentManager implements Disposable {
      */
     @SuppressWarnings("unchecked")
     public <T> T load(String filepath, Class<T> type, @Nullable ContentImporterSettings settings, boolean useCache) {
-        String assetRef = getCacheReference(filepath, type);
+        String assetRef = getCacheReference(filepath, type, settings);
         if (useCache && assetCache.containsKey(assetRef)) {
             Object o = assetCache.get(assetRef);
             if (type.isInstance(o)) {

@@ -74,7 +74,7 @@ public class UrpPostProcessingDemo extends DemoGame {
                 .setTexture(sceneTarget.getTexture())
                 .setPosition(new Vector2(-getVirtualWidth() / 2f, -getVirtualHeight() / 2f))
                 .setAnchor(Vector2.ZERO)
-                .setScale(getVirtualWidth(), getVirtualHeight())
+                .setScale(1, 1)
                 .setShader(grayscaleShader);
     }
 

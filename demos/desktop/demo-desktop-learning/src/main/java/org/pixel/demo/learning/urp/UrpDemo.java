@@ -10,7 +10,6 @@ import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.demo.learning.urp.shader.GrayscaleShader;
-import org.pixel.graphics.render.Renderable;
 import org.pixel.graphics.render.SpriteRenderable;
 import org.pixel.graphics.render.RenderPipeline;
 import org.pixel.graphics.shader.Shader;
@@ -86,9 +85,8 @@ public class UrpDemo extends DemoGame {
         specialSprite.setRotation(delta.getTotalElapsed());
         specialSprite.setUniform("u_intensity", intensity);
 
-        for (Renderable renderable : renderPipeline.getQueue()) {
-            if (renderable.canBatch() & renderable instanceof SpriteRenderable) { // let's modify batch items only:
-                var sprite = (SpriteRenderable) renderable;
+        for (var renderable : renderPipeline.getQueue()) {
+            if (renderable instanceof SpriteRenderable sprite) { // let's modify batch items only:
                 sprite.setRotation(specialSprite.getRotation() + 10 * delta.getTotalElapsed());
             }
         }

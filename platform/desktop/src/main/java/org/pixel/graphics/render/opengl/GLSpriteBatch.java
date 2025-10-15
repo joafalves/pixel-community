@@ -189,6 +189,15 @@ public class GLSpriteBatch extends SpriteBatch {
     @Override
     public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scaleX,
                      float scaleY, float rotation, int depth) {
+        // Delegate to new method with no custom shader
+        draw(texture, position, source, color, anchor, scaleX, scaleY, rotation, depth, null, null);
+    }
+    
+    @Override
+    public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scaleX,
+                     float scaleY, float rotation, int depth, Shader customShader, org.pixel.commons.data.DataMap uniforms) {
+        // TODO: GLSpriteBatch doesn't support custom shaders yet - ignored
+        // Use GLFastSpriteBatch for custom shader support
         if (bufferWriteIndex >= bufferMaxSize) {
             flush();
         }

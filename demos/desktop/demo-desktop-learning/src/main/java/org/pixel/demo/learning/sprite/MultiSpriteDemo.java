@@ -36,7 +36,7 @@ public class MultiSpriteDemo extends DemoGame {
     @Override
     public void load() {
         // game related changes & definitions
-        gameCamera.setOrigin(Vector2.zero());
+        gameCamera.setOrigin(Vector2.half());
 
         // general game instances
         spriteBatch = ServiceProvider.get(SpriteBatch.class);
