@@ -130,6 +130,95 @@ public abstract class CanvasRenderer implements Disposable {
         fillCircle(center.getX(), center.getY(), radius, color);
     }
 
+    // === Gradients (GPU-Accelerated) ===
+
+    /**
+     * Fill a rectangle with a 4-corner gradient.
+     * Each corner can have a different color, and the GPU automatically interpolates between them.
+     * This is much more efficient than drawing multiple strips.
+     * 
+     * @param x            Rectangle X position
+     * @param y            Rectangle Y position
+     * @param width        Rectangle width
+     * @param height       Rectangle height
+     * @param topLeft      Color at top-left corner
+     * @param topRight     Color at top-right corner
+     * @param bottomRight  Color at bottom-right corner
+     * @param bottomLeft   Color at bottom-left corner
+     */
+    public abstract void fillRectGradient(float x, float y, float width, float height,
+                                          Color topLeft, Color topRight,
+                                          Color bottomRight, Color bottomLeft);
+
+    /**
+     * Fill a rectangle with a linear gradient at the specified angle.
+     * This is a convenience method that calculates the corner colors based on the angle.
+     * 
+     * @param x          Rectangle X position
+     * @param y          Rectangle Y position
+     * @param width      Rectangle width
+     * @param height     Rectangle height
+     * @param angle      Gradient angle in radians (0 = horizontal left-to-right, PI/2 = vertical top-to-bottom)
+     * @param startColor Color at the gradient start
+     * @param endColor   Color at the gradient end
+     */
+    public void fillRectLinearGradient(float x, float y, float width, float height,
+                                       float angle, Color startColor, Color endColor) {
+        // Calculate corner colors based on angle
+        // Project each corner onto the gradient direction to get its interpolation value
+        float cos = (float) Math.cos(angle);
+        float sin = (float) Math.sin(angle);
+        
+        // Normalized corner positions relative to center (-1 to 1)
+        float[][] corners = {
+            {-1, -1}, // top-left
+            {1, -1},  // top-right
+            {1, 1},   // bottom-right
+            {-1, 1}   // bottom-left
+        };
+        
+        Color[] colors = new Color[4];
+        for (int i = 0; i < 4; i++) {
+            // Project corner onto gradient direction
+            float projection = corners[i][0] * cos + corners[i][1] * sin;
+            // Map from [-sqrt(2), sqrt(2)] to [0, 1]
+            float t = (projection / (float) Math.sqrt(2)) * 0.5f + 0.5f;
+            colors[i] = lerpColor(startColor, endColor, t);
+        }
+        
+        fillRectGradient(x, y, width, height, colors[0], colors[1], colors[2], colors[3]);
+    }
+
+    /**
+     * Fill a circle with a radial gradient from center to edge.
+     * This approximates a radial gradient using a triangle fan with per-vertex colors.
+     * 
+     * @param centerX     Circle center X
+     * @param centerY     Circle center Y
+     * @param radius      Circle radius
+     * @param centerColor Color at the center
+     * @param edgeColor   Color at the edge
+     */
+    public abstract void fillCircleRadialGradient(float centerX, float centerY, float radius,
+                                                  Color centerColor, Color edgeColor);
+
+    /**
+     * Helper method to linearly interpolate between two colors.
+     * 
+     * @param a Start color
+     * @param b End color
+     * @param t Interpolation factor (0 = a, 1 = b)
+     * @return Interpolated color
+     */
+    protected Color lerpColor(Color a, Color b, float t) {
+        return new Color(
+            a.getRed() + t * (b.getRed() - a.getRed()),
+            a.getGreen() + t * (b.getGreen() - a.getGreen()),
+            a.getBlue() + t * (b.getBlue() - a.getBlue()),
+            a.getAlpha() + t * (b.getAlpha() - a.getAlpha())
+        );
+    }
+
     // === Shapes (Stroked) ===
 
     /**
@@ -211,11 +300,23 @@ public abstract class CanvasRenderer implements Disposable {
     public abstract void drawText(String text, SdfFont font, float x, float y, TextStyle style);
 
     /**
-     * Measure text bounds.
+     * Measure text bounds with default spacing.
      * 
+     * @param text The text to measure
+     * @param font The font to use
      * @return The size of the text when rendered
      */
     public abstract Size measureText(String text, SdfFont font);
+
+    /**
+     * Measure text bounds with custom text style (including letter and line spacing).
+     * 
+     * @param text  The text to measure
+     * @param font  The font to use
+     * @param style The text style (letter/line spacing will be applied)
+     * @return The size of the text when rendered
+     */
+    public abstract Size measureText(String text, SdfFont font, TextStyle style);
 
     // === Text Helper Methods ===
 

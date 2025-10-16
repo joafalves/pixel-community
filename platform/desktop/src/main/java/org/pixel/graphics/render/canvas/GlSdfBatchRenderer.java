@@ -53,6 +53,10 @@ public class GlSdfBatchRenderer {
     private Matrix4 currentViewMatrix;
     private Matrix4 currentLocalTransform; // Local transform applied on CPU
     private SdfFont currentFont; // Track current font for texture binding
+    
+    // Culling support
+    private float cullingMinX, cullingMinY, cullingMaxX, cullingMaxY;
+    private boolean cullingEnabled = true;
 
     /**
      * Constructor.
@@ -130,6 +134,9 @@ public class GlSdfBatchRenderer {
         this.currentFont = null;
         begun = true;
         
+        // Extract viewport bounds from orthographic projection matrix for culling
+        extractViewportBounds(viewMatrix);
+        
         shader.bind();
         vao.bind();
 
@@ -140,6 +147,9 @@ public class GlSdfBatchRenderer {
 
         // Set global smoothness for anti-aliasing
         glUniform1f(shader.getUniformLocation("uSmoothness"), 1.0f);
+        
+        // Set text edge threshold for SDF text rendering
+        glUniform1f(shader.getUniformLocation("uTextEdge"), GlSdfConstants.SDF_TEXT_EDGE_THRESHOLD);
 
         // Enable blending
         glEnable(GL_BLEND);
@@ -199,20 +209,6 @@ public class GlSdfBatchRenderer {
         }
     }
 
-    /**
-     * Add a vertex to the batch.
-     * 
-     * @param x          X position
-     * @param y          Y position
-     * @param u          Texture U coordinate
-     * @param v          Texture V coordinate
-     * @param color      Vertex color
-     * @param shapeData  Shape-specific data (vec4)
-     * @param quadWidth  Width of the rendered quad
-     * @param quadHeight Height of the rendered quad
-     * @param shapeType  Shape type constant
-     * @param textureId  Texture atlas ID (-1 for non-text)
-     */
     private void addVertex(float x, float y, float u, float v, Color color, 
                           float sd1, float sd2, float sd3, float sd4,
                           float quadWidth, float quadHeight,
@@ -283,6 +279,9 @@ public class GlSdfBatchRenderer {
      * Draw a filled rounded rectangle.
      */
     public void fillRoundedRect(float x, float y, float width, float height, float radius, Color color) {
+        if (cullingEnabled && shouldCull(x, y, width, height)) {
+            return;
+        }
         checkFlush(6);
         
         // For SDF shapes, we need padding for anti-aliasing
@@ -301,6 +300,9 @@ public class GlSdfBatchRenderer {
      * Draw a stroked rounded rectangle.
      */
     public void strokeRoundedRect(float x, float y, float width, float height, float radius, float strokeWidth, Color color) {
+        if (cullingEnabled && shouldCull(x, y, width, height)) {
+            return;
+        }
         checkFlush(6);
         
         // Expand quad for stroke
@@ -319,6 +321,9 @@ public class GlSdfBatchRenderer {
      * Draw a filled circle.
      */
     public void fillCircle(float centerX, float centerY, float radius, Color color) {
+        if (cullingEnabled && shouldCull(centerX - radius, centerY - radius, radius * 2, radius * 2)) {
+            return;
+        }
         checkFlush(6);
         
         // Expand quad for anti-aliasing
@@ -336,6 +341,9 @@ public class GlSdfBatchRenderer {
      * Draw a stroked circle.
      */
     public void strokeCircle(float centerX, float centerY, float radius, float strokeWidth, Color color) {
+        if (cullingEnabled && shouldCull(centerX - radius, centerY - radius, radius * 2, radius * 2)) {
+            return;
+        }
         checkFlush(6);
         
         float padding = strokeWidth / 2 + 2;
@@ -353,6 +361,16 @@ public class GlSdfBatchRenderer {
      * Creates an oriented rectangle along the line direction.
      */
     public void strokeLine(float x1, float y1, float x2, float y2, float lineWidth, Color color) {
+        // Calculate bounding box for culling
+        if (cullingEnabled) {
+            float minX = Math.min(x1, x2) - lineWidth / 2;
+            float minY = Math.min(y1, y2) - lineWidth / 2;
+            float maxX = Math.max(x1, x2) + lineWidth / 2;
+            float maxY = Math.max(y1, y2) + lineWidth / 2;
+            if (shouldCull(minX, minY, maxX - minX, maxY - minY)) {
+                return;
+            }
+        }
         checkFlush(6);
         
         // Calculate line vector and length
@@ -408,6 +426,9 @@ public class GlSdfBatchRenderer {
      * Draw a point (small filled circle).
      */
     public void fillPoint(float x, float y, float size, Color color) {
+        if (cullingEnabled && shouldCull(x - size / 2, y - size / 2, size, size)) {
+            return;
+        }
         checkFlush(6);
         
         float padding = 2.0f;
@@ -425,6 +446,16 @@ public class GlSdfBatchRenderer {
      * This is used by the path API for polygon filling.
      */
     public void fillTriangle(float x1, float y1, float x2, float y2, float x3, float y3, Color color) {
+        // Calculate bounding box for culling
+        if (cullingEnabled) {
+            float minX = Math.min(x1, Math.min(x2, x3));
+            float minY = Math.min(y1, Math.min(y2, y3));
+            float maxX = Math.max(x1, Math.max(x2, x3));
+            float maxY = Math.max(y1, Math.max(y2, y3));
+            if (shouldCull(minX, minY, maxX - minX, maxY - minY)) {
+                return;
+            }
+        }
         checkFlush(3); // Need 3 vertices for a triangle
         
         // Add three vertices forming a triangle
@@ -439,7 +470,7 @@ public class GlSdfBatchRenderer {
      * Draw text using SDF font.
      */
     public void drawText(String text, SdfFont font, float x, float y, Color color) {
-        drawText(text, font, x, y, color, Color.BLACK, 0.0f, 0.0f);
+        drawText(text, font, x, y, color, Color.BLACK, 0.0f, 0.0f, 0.0f);
     }
     
     /**
@@ -453,9 +484,10 @@ public class GlSdfBatchRenderer {
      * @param strokeColor Text stroke/outline color
      * @param strokeWidth Stroke width (0 = no stroke)
      * @param letterSpacing Additional spacing between letters
+     * @param lineSpacing Additional vertical spacing between lines
      */
     public void drawText(String text, SdfFont font, float x, float y, Color fillColor, 
-                        Color strokeColor, float strokeWidth, float letterSpacing) {
+                        Color strokeColor, float strokeWidth, float letterSpacing, float lineSpacing) {
         if (text == null || text.isEmpty() || font == null) {
             return;
         }
@@ -474,6 +506,7 @@ public class GlSdfBatchRenderer {
         }
         
         // Render glyphs
+        final float sdfPadding = 4.0f;
         float cursorX = x;
         float cursorY = y;
         
@@ -483,13 +516,13 @@ public class GlSdfBatchRenderer {
             // Handle newlines
             if (ch == '\n') {
                 cursorX = x;
-                cursorY += font.getLineHeight();
+                cursorY += font.getLineHeight() + lineSpacing;
                 continue;
             }
             
             // Handle spaces
             if (ch == ' ') {
-                float spaceWidth = font.getFontSize() * 0.25f;
+                float spaceWidth = font.getFontSize() * GlSdfConstants.SPACE_WIDTH_RATIO;
                 cursorX += spaceWidth + letterSpacing;
                 continue;
             }
@@ -499,14 +532,21 @@ public class GlSdfBatchRenderer {
                 continue; // Skip unknown characters
             }
             
-            // Check if we need to flush before adding glyph quad
-            checkFlush(6);
-            
             // Calculate glyph quad position
             float glyphX = cursorX + glyph.getOffsetX();
-            float glyphY = cursorY + font.getAscent() + glyph.getOffsetY();
+            float glyphY = cursorY + font.getAscent() + glyph.getOffsetY() - (sdfPadding / 2f); // - padding
             float glyphW = glyph.getWidth();
             float glyphH = glyph.getHeight();
+            
+            // Cull individual glyphs that are off-screen
+            if (cullingEnabled && shouldCull(glyphX, glyphY, glyphW, glyphH)) {
+                // Still advance cursor for spacing consistency
+                cursorX += glyph.getAdvance() + letterSpacing;
+                continue;
+            }
+            
+            // Check if we need to flush before adding glyph quad
+            checkFlush(6);
             
             // Calculate texture coordinates (normalized)
             float atlasW = font.getAtlasWidth();
@@ -518,7 +558,6 @@ public class GlSdfBatchRenderer {
             
             // ShapeData: (strokeWidth, strokeR, strokeG, strokeB)
             // Normalize stroke width to SDF space
-            float sdfPadding = 4.0f;
             float normalizedStrokeWidth = strokeWidth / (sdfPadding * 4.0f);
             
             // Pack stroke color into shapeData
@@ -547,6 +586,259 @@ public class GlSdfBatchRenderer {
             // Advance cursor
             cursorX += glyph.getAdvance() + letterSpacing;
         }
+    }
+
+    // ============================================================================
+    // Gradient Support (Per-Vertex Colors)
+    // ============================================================================
+
+    /**
+     * Draw a gradient-filled quad with per-vertex colors.
+     * The GPU automatically interpolates colors between vertices.
+     * Uses SHAPE_TRIANGLE type for raw triangle rendering without SDF.
+     * 
+     * @param x      X position
+     * @param y      Y position
+     * @param width  Width
+     * @param height Height
+     * @param c1     Top-left color
+     * @param c2     Top-right color
+     * @param c3     Bottom-right color
+     * @param c4     Bottom-left color
+     */
+    public void fillRectGradient(float x, float y, float width, float height,
+                                 Color c1, Color c2, Color c3, Color c4) {
+        if (cullingEnabled && shouldCull(x, y, width, height)) {
+            return;
+        }
+        checkFlush(6);
+        
+        // Use SHAPE_TRIANGLE type - no SDF, just raw triangles with interpolated colors
+        // ShapeData is unused for triangles (all zeros)
+        float[][] mat = currentLocalTransform.toUnsafeArray();
+        
+        // Transform vertices on CPU
+        float x1 = mat[0][0] * x + mat[1][0] * y + mat[3][0];
+        float y1 = mat[0][1] * x + mat[1][1] * y + mat[3][1];
+        
+        float x2 = mat[0][0] * (x + width) + mat[1][0] * y + mat[3][0];
+        float y2 = mat[0][1] * (x + width) + mat[1][1] * y + mat[3][1];
+        
+        float x3 = mat[0][0] * (x + width) + mat[1][0] * (y + height) + mat[3][0];
+        float y3 = mat[0][1] * (x + width) + mat[1][1] * (y + height) + mat[3][1];
+        
+        float x4 = mat[0][0] * x + mat[1][0] * (y + height) + mat[3][0];
+        float y4 = mat[0][1] * x + mat[1][1] * (y + height) + mat[3][1];
+        
+        // Triangle 1: TL, TR, BR
+        addVertexRaw(x1, y1, 0, 0, c1);
+        addVertexRaw(x2, y2, 1, 0, c2);
+        addVertexRaw(x3, y3, 1, 1, c3);
+        
+        // Triangle 2: TL, BR, BL
+        addVertexRaw(x1, y1, 0, 0, c1);
+        addVertexRaw(x3, y3, 1, 1, c3);
+        addVertexRaw(x4, y4, 0, 1, c4);
+    }
+
+    /**
+     * Draw a circle with radial gradient using a triangle fan.
+     * Approximates radial gradient from center to edge.
+     * 
+     * @param centerX     Center X
+     * @param centerY     Center Y
+     * @param radius      Radius
+     * @param centerColor Color at center
+     * @param edgeColor   Color at edge
+     */
+    public void fillCircleRadialGradient(float centerX, float centerY, float radius,
+                                         Color centerColor, Color edgeColor) {
+        int segments = 32; // Number of edge segments for smoothness
+        int verticesNeeded = segments * 3; // Each triangle uses 3 vertices
+        
+        if (cullingEnabled && shouldCull(centerX - radius, centerY - radius, radius * 2, radius * 2)) {
+            return;
+        }
+        checkFlush(verticesNeeded);
+        
+        // Transform center point
+        float[][] mat = currentLocalTransform.toUnsafeArray();
+        float cx = mat[0][0] * centerX + mat[1][0] * centerY + mat[3][0];
+        float cy = mat[0][1] * centerX + mat[1][1] * centerY + mat[3][1];
+        
+        // Extract scale for radius transformation
+        float scaleX = (float) Math.sqrt(mat[0][0] * mat[0][0] + mat[0][1] * mat[0][1]);
+        float scaleY = (float) Math.sqrt(mat[1][0] * mat[1][0] + mat[1][1] * mat[1][1]);
+        float avgScale = (scaleX + scaleY) / 2.0f;
+        float transformedRadius = radius * avgScale;
+        
+        // Draw triangle fan: center vertex to edge vertices
+        for (int i = 0; i < segments; i++) {
+            float angle1 = (float) (2 * Math.PI * i / segments);
+            float angle2 = (float) (2 * Math.PI * (i + 1) / segments);
+            
+            float x1 = cx + transformedRadius * (float) Math.cos(angle1);
+            float y1 = cy + transformedRadius * (float) Math.sin(angle1);
+            
+            float x2 = cx + transformedRadius * (float) Math.cos(angle2);
+            float y2 = cy + transformedRadius * (float) Math.sin(angle2);
+            
+            // Triangle: center, edge1, edge2
+            addVertexRaw(cx, cy, 0.5f, 0.5f, centerColor);
+            addVertexRaw(x1, y1, 0, 0, edgeColor);
+            addVertexRaw(x2, y2, 1, 1, edgeColor);
+        }
+    }
+
+    /**
+     * Add a raw vertex for gradient rendering (already transformed).
+     * Used for SHAPE_TRIANGLE type which doesn't use SDF.
+     */
+    private void addVertexRaw(float x, float y, float u, float v, Color color) {
+        // Position (already transformed)
+        vertexBuffer.put(x);
+        vertexBuffer.put(y);
+        
+        // Texture coords (unused for triangles but required)
+        vertexBuffer.put(u);
+        vertexBuffer.put(v);
+        
+        // Color (per-vertex!)
+        vertexBuffer.put(color.getRed());
+        vertexBuffer.put(color.getGreen());
+        vertexBuffer.put(color.getBlue());
+        vertexBuffer.put(color.getAlpha());
+        
+        // ShapeData (unused for raw triangles)
+        vertexBuffer.put(0);
+        vertexBuffer.put(0);
+        vertexBuffer.put(0);
+        vertexBuffer.put(0);
+        
+        // QuadSize (unused)
+        vertexBuffer.put(0);
+        vertexBuffer.put(0);
+        
+        // ShapeType (SHAPE_TRIANGLE)
+        vertexBuffer.put((float) SHAPE_TRIANGLE);
+        
+        // TextureId (no texture)
+        vertexBuffer.put(-1);
+        
+        vertexCount++;
+    }
+
+    // ============================================================================
+    // Culling Support
+    // ============================================================================
+
+    /**
+     * Enable or disable automatic viewport culling.
+     * When enabled, primitives completely outside the viewport are automatically skipped.
+     * 
+     * @param enabled true to enable culling, false to disable
+     */
+    public void setCullingEnabled(boolean enabled) {
+        this.cullingEnabled = enabled;
+    }
+
+    /**
+     * Set custom culling bounds (overrides automatic viewport extraction).
+     * 
+     * @param minX Minimum X coordinate
+     * @param minY Minimum Y coordinate
+     * @param maxX Maximum X coordinate
+     * @param maxY Maximum Y coordinate
+     */
+    public void setCullingBounds(float minX, float minY, float maxX, float maxY) {
+        this.cullingMinX = minX;
+        this.cullingMinY = minY;
+        this.cullingMaxX = maxX;
+        this.cullingMaxY = maxY;
+    }
+
+    /**
+     * Extract viewport bounds from an orthographic projection matrix.
+     * Assumes matrix is: ortho(left, right, bottom, top, near, far)
+     */
+    private void extractViewportBounds(Matrix4 viewMatrix) {
+        float[][] m = viewMatrix.toUnsafeArray();
+        
+        // For orthographic projection: ortho(left, right, bottom, top, near, far)
+        // Matrix form:
+        //   [2/(r-l),    0,         0,        -(r+l)/(r-l)]
+        //   [0,          2/(t-b),   0,        -(t+b)/(t-b)]
+        //   [0,          0,         -2/(f-n), -(f+n)/(f-n)]
+        //   [0,          0,         0,        1           ]
+        
+        // Extract left, right, bottom, top from matrix elements
+        // left   = -(m[3][0] + 1) / m[0][0]
+        // right  = -(m[3][0] - 1) / m[0][0]
+        // bottom = -(m[3][1] + 1) / m[1][1]
+        // top    = -(m[3][1] - 1) / m[1][1]
+        
+        if (m[0][0] != 0 && m[1][1] != 0) {
+            float left   = -(m[3][0] + 1) / m[0][0];
+            float right  = -(m[3][0] - 1) / m[0][0];
+            float bottom = -(m[3][1] + 1) / m[1][1];
+            float top    = -(m[3][1] - 1) / m[1][1];
+            
+            this.cullingMinX = left;
+            this.cullingMinY = top;    // Note: Y is typically inverted in screen space
+            this.cullingMaxX = right;
+            this.cullingMaxY = bottom;
+        } else {
+            // Fallback: no culling
+            this.cullingMinX = Float.NEGATIVE_INFINITY;
+            this.cullingMinY = Float.NEGATIVE_INFINITY;
+            this.cullingMaxX = Float.POSITIVE_INFINITY;
+            this.cullingMaxY = Float.POSITIVE_INFINITY;
+        }
+    }
+
+    /**
+     * Check if a bounding box (in local space, before transform) should be culled.
+     * Applies the current local transform to get world-space bounds, then tests against culling bounds.
+     * 
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @param width Width
+     * @param height Height
+     * @return true if the primitive should be culled (completely outside viewport)
+     */
+    private boolean shouldCull(float x, float y, float width, float height) {
+        if (!cullingEnabled) {
+            return false;
+        }
+        
+        // Transform the 4 corners of the bounding box by the current local transform
+        float[][] m = currentLocalTransform.toUnsafeArray();
+        
+        // Corner 1: (x, y)
+        float x1 = m[0][0] * x + m[1][0] * y + m[3][0];
+        float y1 = m[0][1] * x + m[1][1] * y + m[3][1];
+        
+        // Corner 2: (x + width, y)
+        float x2 = m[0][0] * (x + width) + m[1][0] * y + m[3][0];
+        float y2 = m[0][1] * (x + width) + m[1][1] * y + m[3][1];
+        
+        // Corner 3: (x, y + height)
+        float x3 = m[0][0] * x + m[1][0] * (y + height) + m[3][0];
+        float y3 = m[0][1] * x + m[1][1] * (y + height) + m[3][1];
+        
+        // Corner 4: (x + width, y + height)
+        float x4 = m[0][0] * (x + width) + m[1][0] * (y + height) + m[3][0];
+        float y4 = m[0][1] * (x + width) + m[1][1] * (y + height) + m[3][1];
+        
+        // Get AABB of transformed corners
+        float minX = Math.min(Math.min(x1, x2), Math.min(x3, x4));
+        float minY = Math.min(Math.min(y1, y2), Math.min(y3, y4));
+        float maxX = Math.max(Math.max(x1, x2), Math.max(x3, x4));
+        float maxY = Math.max(Math.max(y1, y2), Math.max(y3, y4));
+        
+        // Test against culling bounds (AABB intersection test)
+        return maxX < cullingMinX || minX > cullingMaxX ||
+               maxY < cullingMinY || minY > cullingMaxY;
     }
 
     /**

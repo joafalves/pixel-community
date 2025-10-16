@@ -33,7 +33,8 @@ public class GLSdfBatchShader extends GLShader {
     private static final List<String> uniforms = Arrays.asList(
         "uViewMatrix",    // mat4: view-projection matrix
         "uTextAtlas",     // sampler2D: font texture atlas
-        "uSmoothness"     // float: anti-aliasing smoothness
+        "uSmoothness",    // float: anti-aliasing smoothness
+        "uTextEdge"       // float: SDF edge threshold for text rendering
     );
 
     private static final String vertSrc;

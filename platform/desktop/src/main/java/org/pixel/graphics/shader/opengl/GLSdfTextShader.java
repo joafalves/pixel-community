@@ -15,7 +15,7 @@ public class GLSdfTextShader extends GLShader {
 
     private static final List<String> attributes = Arrays.asList("aPosition", "aTexCoord");
     private static final List<String> uniforms = Arrays.asList(
-        "uViewMatrix", "uAtlas", "uFillColor", "uStrokeColor", "uStrokeWidth", "uSmoothness"
+        "uViewMatrix", "uAtlas", "uFillColor", "uStrokeColor", "uStrokeWidth", "uSmoothness", "uTextEdge"
     );
 
     private static final String vertSrc = loadShader("engine/shader/opengl/sdf_text.vert.glsl");

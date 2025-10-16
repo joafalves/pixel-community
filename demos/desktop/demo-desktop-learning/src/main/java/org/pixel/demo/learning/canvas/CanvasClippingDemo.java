@@ -102,7 +102,7 @@ public class CanvasClippingDemo extends DemoGame {
         canvas.resetClip();
         
         // Label
-        canvas.drawText("Only content inside yellow box is visible", font, 200, 120,
+        canvas.drawText("Only content inside\nyellow box is visible", font, 200, 120,
             new Color(0.7f, 0.7f, 0.7f, 1.0f));
     }
 
@@ -144,7 +144,7 @@ public class CanvasClippingDemo extends DemoGame {
         canvas.restore(); // No clipping
         
         // Label
-        canvas.drawText("Red = outer, Green = inner\nClips intersect!", font, 210, 280,
+        canvas.drawText("Red = outer\nGreen = inner\nClips intersect!", font, 210, 280,
             new Color(0.7f, 0.7f, 0.7f, 1.0f));
     }
 
@@ -196,7 +196,7 @@ public class CanvasClippingDemo extends DemoGame {
         canvas.restore();
         canvas.resetClip();
         
-        canvas.drawText("← Content scrolls, clipped by cyan box →", font, 450, 225,
+        canvas.drawText("<- Content scrolls, clipped by cyan box ->", font, 440, 220,
             new Color(0.7f, 0.7f, 0.7f, 1.0f));
     }
 
@@ -239,7 +239,7 @@ public class CanvasClippingDemo extends DemoGame {
         
         canvas.resetClip();
         
-        canvas.drawText("Clip region expands/contracts", font, 640, 320,
+        canvas.drawText("Clip region\nexpands/contracts", font, 640, 320,
             new Color(0.7f, 0.7f, 0.7f, 1.0f));
     }
 

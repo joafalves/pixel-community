@@ -9,13 +9,14 @@ uniform vec4 uFillColor;         // Text fill color
 uniform vec4 uStrokeColor;       // Stroke/outline color (alpha = 0 means no stroke)
 uniform float uStrokeWidth;      // Stroke width (0.0 - 0.5)
 uniform float uSmoothness;       // Edge smoothness (lower = sharper)
+uniform float uTextEdge;         // SDF edge threshold for text rendering
 
 // Output
 out vec4 fragColor;
 
 void main() {
     float dist = texture(uAtlas, vTexCoord).a;
-    float onedge = 0.5;
+    float onedge = uTextEdge; // Use configurable edge threshold from uniform
 
     float fillAlpha = smoothstep(onedge - uSmoothness, onedge + uSmoothness, dist);
     float combinedAlpha = fillAlpha;

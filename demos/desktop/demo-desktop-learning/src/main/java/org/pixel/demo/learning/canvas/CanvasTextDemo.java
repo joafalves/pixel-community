@@ -18,7 +18,7 @@ import org.pixel.graphics.render.canvas.text.SdfFont;
 
 /**
  * Canvas Renderer Text Demo.
- * Demonstrates SDF text rendering with various styles.
+ * Demonstrates SDF text rendering with various styles, spacing, and effects.
  */
 public class CanvasTextDemo extends DemoGame {
 
@@ -26,6 +26,7 @@ public class CanvasTextDemo extends DemoGame {
     private Camera2D camera;
     private GlCanvasRenderer canvas;
     private SdfFont font;
+    private SdfFont smallFont;
     private SdfFont titleFont;
 
     /**
@@ -51,11 +52,12 @@ public class CanvasTextDemo extends DemoGame {
         content = ServiceProvider.get(ContentManager.class);
 
         // Load fonts using the content pipeline!
-        // Oversampling generates the font at higher resolution for better SDF quality
+        smallFont = content.load("fonts/roboto-regular.ttf", SdfFont.class,
+            new FontImporterSettings(16, 2));  // 16pt font
         font = content.load("fonts/gidole-regular.ttf", SdfFont.class,
-            new FontImporterSettings(24, 2));  // 24pt font with 2x oversampling (48pt atlas)
+            new FontImporterSettings(24, 3));  // 24pt font
         titleFont = content.load("fonts/roboto-medium.ttf", SdfFont.class,
-            new FontImporterSettings(64, 2));  // 64pt font with 2x oversampling (128pt atlas)
+            new FontImporterSettings(36, 3));  // 36pt font
         
         if (font != null) {
             System.out.println("Fonts loaded successfully!");
@@ -76,58 +78,145 @@ public class CanvasTextDemo extends DemoGame {
         // Begin with camera's view matrix
         canvas.begin(camera.getViewMatrix());
 
-        // Test fillRect - background rectangles for text sections
-        canvas.fillRect(40, 40, 900, 70, new Color(0.2f, 0.2f, 0.3f, 0.8f));
-        canvas.fillRect(40, 152, 400, 40, new Color(0.3f, 0.2f, 0.1f, 0.5f));
+        // Draw background for better visibility
+        canvas.fillRect(0, 0, getVirtualWidth(), getVirtualHeight(), new Color(0.1f, 0.1f, 0.15f, 1.0f));
 
-        // Title with stroke
+        float x = 30;
+        float y = 20;
+        
+        // === TITLE ===
         TextStyle titleStyle = new TextStyle(Color.WHITE)
-            .withStroke(Color.BLACK, 6.0f);
-        canvas.drawText("Canvas SDF Text Renderer", titleFont, 50, 50, titleStyle);
+            .withStroke(new Color(0.2f, 0.4f, 0.8f, 1.0f), 3.0f);
+        canvas.drawText("Canvas Text Renderer - Comprehensive Demo", titleFont, x, y, titleStyle);
+        y += 50;
 
-        // Basic white text
-        canvas.drawText("This is a simple text with white color.", font, 50, 120, Color.WHITE);
-
-        // Colored text with predefined colors
-        canvas.drawText("Colored text", font, 50, 160, new Color(0, 1, 1, 1)); // Cyan
-
-        // Text with stroke/outline
-        TextStyle outlineStyle = new TextStyle(new Color(1, 1, 0, 1)) // Yellow
-            .withStroke(Color.RED, 2f);
-        canvas.drawText("Text with outline", font, 50, 200, outlineStyle);
-
-        // Text with drop shadow
+        // === SECTION 1: BASIC STYLES ===
+        drawSection("1. Basic Text Styles", x, y);
+        y += 35;
+        
+        canvas.drawText("Default white text", font, x + 20, y, Color.WHITE);
+        y += 30;
+        
+        canvas.drawText("Colored text (cyan)", font, x + 20, y, new Color(0, 1, 1, 1));
+        y += 30;
+        
+        TextStyle outlineStyle = new TextStyle(new Color(1, 1, 0, 1))
+            .withStroke(Color.RED, 2.5f);
+        canvas.drawText("Text with outline", font, x + 20, y, outlineStyle);
+        y += 30;
+        
         TextStyle shadowStyle = new TextStyle(Color.WHITE)
-            .withShadow(2, 2, Color.BLACK);
-        canvas.drawText("Text with shadow", font, 50, 240, shadowStyle);
+            .withShadow(3, 3, new Color(0, 0, 0, 0.8f));
+        canvas.drawText("Text with drop shadow", font, x + 20, y, shadowStyle);
+        y += 40;
 
-        // Text with letter spacing
-        TextStyle spacedStyle = new TextStyle(Color.GREEN)
-            .withLetterSpacing(12);
-        canvas.drawText("Letter Spacing", font, 50, 280, spacedStyle);
+        // === SECTION 2: LETTER SPACING ===
+        drawSection("2. Letter Spacing Examples", x, y);
+        y += 35;
+        
+        canvas.drawText("Normal spacing", font, x + 20, y, Color.WHITE);
+        y += 30;
+        
+        TextStyle spacing1 = new TextStyle(new Color(0.5f, 1, 0.5f, 1))
+            .withLetterSpacing(3);
+        canvas.drawText("Letter Spacing: 3px", font, x + 20, y, spacing1);
+        y += 30;
+        
+        TextStyle spacing2 = new TextStyle(new Color(1, 0.8f, 0.3f, 1))
+            .withLetterSpacing(8);
+        canvas.drawText("Letter Spacing: 8px", font, x + 20, y, spacing2);
+        y += 30;
+        
+        TextStyle spacing3 = new TextStyle(new Color(1, 0.5f, 0.8f, 1))
+            .withLetterSpacing(15);
+        canvas.drawText("W I D E   S P A C I N G", font, x + 20, y, spacing3);
+        y += 40;
 
-        // Combined effects
-        TextStyle fancyStyle = new TextStyle(new Color(1, 0.5f, 0, 1)) // Orange
-            .withStroke(new Color(0.3f, 0.3f, 0.3f, 1), 2.0f)
-            .withShadow(2, 2, new Color(0, 0, 0, 0.5f))
+        // === SECTION 3: LINE SPACING (MULTI-LINE) ===
+        drawSection("3. Line Spacing (Multi-line Text)", x, y);
+        y += 35;
+        
+        String multiLineText = "First line\nSecond line\nThird line";
+        TextStyle normalLineSpacing = new TextStyle(Color.WHITE);
+        canvas.drawText(multiLineText, smallFont, x + 20, y, normalLineSpacing);
+        y += 80;
+        
+        TextStyle tightLineSpacing = new TextStyle(new Color(1, 0.8f, 0.5f, 1))
+            .withLineSpacing(-4);
+        canvas.drawText("Tight spacing (lineSpacing: -4)\nLines closer together\nCompact text", 
+            smallFont, x + 20, y, tightLineSpacing);
+        y += 60;
+        
+        TextStyle wideLineSpacing = new TextStyle(new Color(0.5f, 0.8f, 1, 1))
+            .withLineSpacing(10);
+        canvas.drawText("Wide spacing (lineSpacing: 10)\nLines farther apart\nMore breathing room", 
+            smallFont, x + 20, y, wideLineSpacing);
+        y += 90;
+
+        // === SECTION 4: COMBINED EFFECTS ===
+        drawSection("4. Combined Effects", x, y);
+        y += 35;
+        
+        TextStyle fancy1 = new TextStyle(new Color(1, 0.3f, 0.3f, 1))
+            .withStroke(new Color(0.5f, 0, 0, 1), 2.0f)
+            .withShadow(2, 2, new Color(0, 0, 0, 0.6f))
+            .withLetterSpacing(4);
+        canvas.drawText("Outline + Shadow + Spacing", font, x + 20, y, fancy1);
+        y += 35;
+        
+        TextStyle fancy2 = new TextStyle(new Color(0.3f, 1, 0.3f, 1))
+            .withStroke(Color.BLACK, 3.0f)
             .withLetterSpacing(2);
-        canvas.drawText("Fancy Combined Style\nmulti-line!", font, 50, 320, fancyStyle);
+        canvas.drawText("Multi-line with effects\nSecond line here", smallFont, x + 20, y, fancy2);
+        y += 60;
 
-        // Transform demo - rotated text
+        // === SECTION 5: TRANSFORMATIONS ===
+        drawSection("5. Transformations", x, y);
+        y += 35;
+        
+        // Rotated text
         canvas.save();
-        canvas.translate(400, 400);
-        canvas.rotate((float) Math.toRadians(45));
-        canvas.drawText("Rotated!", font, 0, 0, new TextStyle(new Color(1, 0, 1, 1))); // Magenta
+        canvas.translate(x + 150, y + 10);
+        canvas.rotate((float) Math.toRadians(15));
+        TextStyle rotatedStyle = new TextStyle(new Color(1, 0, 1, 1))
+            .withStroke(Color.BLACK, 1.5f);
+        canvas.drawText("Rotated 15°", font, 0, 0, rotatedStyle);
         canvas.restore();
+        
+        // Scaled text
+        canvas.save();
+        canvas.translate(x + 350, y + 20);
+        canvas.scale(1.5f);
+        TextStyle scaledStyle = new TextStyle(new Color(0, 1, 1, 1));
+        canvas.drawText("Scaled 1.5x", font, 0, 0, scaledStyle);
+        canvas.restore();
+        
+        y += 80;
 
-        // Large text demo - use titleFont instead of scaling
-        canvas.save();
-        canvas.translate(50, 400);
-        TextStyle largeStyle = new TextStyle(new Color(0.5f, 1, 0, 1));
-        canvas.drawText("Large Text", titleFont, 0, 0, largeStyle);
-        canvas.restore();
+        // === SECTION 6: DIFFERENT SIZES ===
+        drawSection("6. Font Size Comparison", x, y);
+        y += 35;
+        
+        canvas.drawText("Small font (16pt)", smallFont, x + 20, y, Color.WHITE);
+        y += 25;
+        canvas.drawText("Medium font (24pt)", font, x + 20, y, new Color(0.8f, 0.8f, 1, 1));
+        y += 35;
+        canvas.drawText("Large font (36pt)", titleFont, x + 20, y, new Color(1, 0.8f, 0.5f, 1));
 
         canvas.end();
+    }
+    
+    /**
+     * Helper method to draw section headers
+     */
+    private void drawSection(String title, float x, float y) {
+        // Background bar
+        canvas.fillRoundedRect(x, y, 940, 28, 4, new Color(0.2f, 0.3f, 0.5f, 0.6f));
+        
+        // Section title
+        TextStyle sectionStyle = new TextStyle(new Color(1, 1, 0.7f, 1))
+            .withStroke(new Color(0.3f, 0.3f, 0.3f, 1), 1.5f);
+        canvas.drawText(title, font, x + 10, y + 2, sectionStyle);
     }
 
     @Override
@@ -139,10 +228,11 @@ public class CanvasTextDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        var settings = new WindowSettings(1024, 800);
-        settings.setTitle("Canvas Text Demo");
+        var settings = new WindowSettings(1000, 900);
+        settings.setTitle("Canvas Text Demo - Comprehensive Examples");
         settings.setWindowResizable(false);
         settings.setMultisampling(4);
+        settings.setBackgroundColor(new Color(0.05f, 0.05f, 0.1f, 1.0f));
         CanvasTextDemo game = new CanvasTextDemo(settings);
         game.start();
     }

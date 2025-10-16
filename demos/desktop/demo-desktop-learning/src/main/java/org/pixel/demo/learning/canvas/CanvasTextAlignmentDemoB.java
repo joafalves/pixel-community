@@ -27,14 +27,14 @@ import org.pixel.graphics.render.canvas.text.SdfFont;
  * - Baseline is at Y + font.getAscent()
  * - Capital letters extend from baseline upward (negative offsetY in glyph data)
  */
-public class TextAlignmentDemo extends DemoGame {
+public class CanvasTextAlignmentDemoB extends DemoGame {
 
     private Camera2D camera;
     private GlCanvasRenderer canvas;
     private ContentManager content;
     private SdfFont font;
 
-    public TextAlignmentDemo(WindowSettings settings) {
+    public CanvasTextAlignmentDemoB(WindowSettings settings) {
         super(settings);
     }
 
@@ -44,7 +44,7 @@ public class TextAlignmentDemo extends DemoGame {
         camera = new Camera2D(this);
         canvas = new GlCanvasRenderer(getVirtualWidth(), getVirtualHeight());
         content = ServiceProvider.get(ContentManager.class);
-        font = content.load("fonts/roboto-medium.ttf", SdfFont.class,
+        font = content.load("fonts/roboto-regular.ttf", SdfFont.class,
             new FontImporterSettings(24, 3));
 
         if (font != null) {
@@ -66,7 +66,7 @@ public class TextAlignmentDemo extends DemoGame {
         // Title
         canvas.drawText("Text Alignment Reference Guide", font, 20, 20, Color.WHITE);
         canvas.drawText("Font size: 24px, Ascent: " + font.getAscent() + "px", font, 20, 50,
-            new Color(0.7f, 0.7f, 0.7f, 1.0f));
+            new Color(0.8f, 0.8f, 0.8f, 1.0f));
 
         // Test 1: Y coordinate should be TOP of text
         drawTest1_YIsTop();
@@ -194,17 +194,17 @@ public class TextAlignmentDemo extends DemoGame {
             canvas.drawText(texts[i], font, 420, y, Color.WHITE);
             
             // Y coordinate label
-            canvas.drawText("Y=" + y, font, 760, y, new Color(0, 1, 1, 0.8f));
+            canvas.drawText("Y=" + y, font, 700, y, new Color(0, 1, 1, 0.8f));
         }
         
         // Legend
-        int legendY = 395;
-        canvas.fillRect(410, legendY, 30, 2, new Color(0, 1, 1, 1));
+        int legendY = 375;
+        canvas.fillRect(410, legendY + 8, 30, 2, new Color(0, 1, 1, 1));
         canvas.drawText("= Text Y (top)", font, 445, legendY - 4,
             new Color(0.7f, 0.7f, 0.7f, 1.0f));
         
-        canvas.fillRect(410, legendY + 15, 30, 2, new Color(1, 0, 0, 1));
-        canvas.drawText("= Baseline", font, 445, legendY + 11,
+        canvas.fillRect(410, legendY + 28, 30, 2, new Color(1, 0, 0, 1));
+        canvas.drawText("= Baseline", font, 445, legendY + 16,
             new Color(0.7f, 0.7f, 0.7f, 1.0f));
     }
 
@@ -219,8 +219,9 @@ public class TextAlignmentDemo extends DemoGame {
         var settings = new WindowSettings(800, 450);
         settings.setTitle("Text Alignment Demo - API Contract Verification");
         settings.setWindowResizable(false);
+        settings.setBackgroundColor(new Color(0.05f, 0.05f, 0.1f, 1.0f));
         
-        TextAlignmentDemo demo = new TextAlignmentDemo(settings);
+        CanvasTextAlignmentDemoB demo = new CanvasTextAlignmentDemoB(settings);
         demo.start();
     }
 }

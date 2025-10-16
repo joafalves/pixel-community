@@ -194,6 +194,21 @@ public class GlCanvasRenderer extends CanvasRenderer {
     }
 
     @Override
+    public void fillRectGradient(float x, float y, float width, float height,
+                                 Color topLeft, Color topRight,
+                                 Color bottomRight, Color bottomLeft) {
+        // Batched gradient rendering with per-vertex colors
+        batchRenderer.fillRectGradient(x, y, width, height, topLeft, topRight, bottomRight, bottomLeft);
+    }
+
+    @Override
+    public void fillCircleRadialGradient(float centerX, float centerY, float radius,
+                                         Color centerColor, Color edgeColor) {
+        // Batched radial gradient rendering
+        batchRenderer.fillCircleRadialGradient(centerX, centerY, radius, centerColor, edgeColor);
+    }
+
+    @Override
     public void strokeRect(float x, float y, float width, float height, float lineWidth, Color color) {
         // Batched rendering
         batchRenderer.strokeRoundedRect(x, y, width, height, 0, lineWidth, color);
@@ -234,16 +249,69 @@ public class GlCanvasRenderer extends CanvasRenderer {
             return;
         }
 
+        // Calculate alignment offsets
+        float offsetX = 0;
+        float offsetY = 0;
+        
+        TextAlign align = style.getAlign();
+        if (align != null) {
+            Size textSize = measureText(text, font, style);
+            
+            // Horizontal alignment
+            switch (align.getHorizontal()) {
+                case CENTER:
+                    offsetX = -textSize.getWidth() / 2;
+                    break;
+                case RIGHT:
+                    offsetX = -textSize.getWidth();
+                    break;
+                case LEFT:
+                default:
+                    offsetX = 0;    
+                    break;
+            }
+            
+            // Vertical alignment
+            // Note: We subtract SDF_PADDING when rendering glyphs, so we need to compensate
+            // for that in alignment calculations
+            final float SDF_PADDING = GlSdfConstants.SDF_PADDING_PX / 2.0f;
+            
+            switch (align.getVertical()) {
+                case MIDDLE:
+                    offsetY = -textSize.getHeight() / 2 + SDF_PADDING;
+                    break;
+                case BASELINE:
+                    // Y is already at top, move down by ascent to get to baseline
+                    // Add SDF_PADDING since we subtract it during rendering
+                    offsetY = font.getAscent() + SDF_PADDING;
+                    break;
+                case BOTTOM:
+                    // For BOTTOM, we need additional offset to account for descenders
+                    // The measured height is lineHeight, but visual bottom includes SDF padding
+                    offsetY = -textSize.getHeight() + SDF_PADDING * 2;
+                    break;
+                case TOP:
+                default:
+                    // For TOP alignment, we need to add SDF_PADDING to compensate for the
+                    // subtraction during rendering
+                    offsetY = SDF_PADDING;
+                    break;
+            }
+        }
+        
+        float adjustedX = x + offsetX;
+        float adjustedY = y + offsetY;
+
         // Render drop shadow first (if enabled)
         if (style.isDropShadow()) {
             Vector2 shadowOffset = style.getShadowOffset();
             Color shadowColor = style.getShadowColor();
             
-            // Shadow has no stroke, same letter spacing
+            // Shadow has no stroke, same letter/line spacing
             batchRenderer.drawText(text, font, 
-                x + shadowOffset.getX(), 
-                y + shadowOffset.getY(), 
-                shadowColor, Color.BLACK, 0.0f, style.getLetterSpacing());
+                adjustedX + shadowOffset.getX(), 
+                adjustedY + shadowOffset.getY(), 
+                shadowColor, Color.BLACK, 0.0f, style.getLetterSpacing(), style.getLineSpacing());
         }
 
         // Render main text
@@ -251,40 +319,71 @@ public class GlCanvasRenderer extends CanvasRenderer {
         Color strokeColor = style.hasStroke() ? style.getStrokeColor() : Color.BLACK;
         float strokeWidth = style.hasStroke() ? style.getStrokeWidth() : 0.0f;
         float letterSpacing = style.getLetterSpacing();
+        float lineSpacing = style.getLineSpacing();
         
-        batchRenderer.drawText(text, font, x, y, fillColor, strokeColor, strokeWidth, letterSpacing);
+        batchRenderer.drawText(text, font, adjustedX, adjustedY, fillColor, strokeColor, strokeWidth, letterSpacing, lineSpacing);
+    }
+
+    @Override
+    public Size measureText(String text, SdfFont font, TextStyle style) {
+        if (style == null) {
+            return measureText(text, font);
+        }
+        return measureTextInternal(text, font, style.getLetterSpacing(), style.getLineSpacing());
     }
 
     @Override
     public Size measureText(String text, SdfFont font) {
+        // Delegate to the TextStyle version with default values
+        return measureText(text, font, new TextStyle());
+    }
+
+    /**
+     * Internal method to measure text size with custom letter and line spacing.
+     */
+    private Size measureTextInternal(String text, SdfFont font, float letterSpacing, float lineSpacing) {
         if (text == null || text.isEmpty() || font == null) {
             return new Size(0, 0);
         }
 
-        float width = 0;
-        for (int i = 0; i < text.length(); i++) {
-            char ch = text.charAt(i);
+        String[] lines = text.split("\n", -1);
+        float maxWidth = 0;
+        float totalHeight = 0;
+
+        for (int lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+            String line = lines[lineIdx];
+            float lineWidth = 0;
             
-            // Handle spaces (matching the rendering logic)
-            if (ch == ' ') {
-                float spaceWidth = font.getFontSize() * 0.25f;
-                width += spaceWidth + 1.0f; // spaceWidth + default letterSpacing
-                continue;
+            for (int i = 0; i < line.length(); i++) {
+                char ch = line.charAt(i);
+                
+                // Handle spaces (matching the rendering logic)
+                if (ch == ' ') {
+                    float spaceWidth = font.getFontSize() * GlSdfConstants.SPACE_WIDTH_RATIO;
+                    lineWidth += spaceWidth + letterSpacing;
+                    continue;
+                }
+                
+                var glyph = font.getGlyph(ch);
+                if (glyph != null) {
+                    lineWidth += glyph.getAdvance() + letterSpacing;
+                }
             }
             
-            var glyph = font.getGlyph(ch);
-            if (glyph != null) {
-                width += glyph.getAdvance() + 1.0f; // advance + default letterSpacing
+            maxWidth = Math.max(maxWidth, lineWidth);
+            totalHeight += font.getLineHeight();
+            
+            if (lineIdx < lines.length - 1) {
+                totalHeight += lineSpacing;
             }
         }
 
         // Apply current transform scale to the measured size
-        // Extract scale from the current transform matrix
         float[][] mat = currentTransform.transform.toUnsafeArray();
         float scaleX = (float) Math.sqrt(mat[0][0] * mat[0][0] + mat[0][1] * mat[0][1]);
         float scaleY = (float) Math.sqrt(mat[1][0] * mat[1][0] + mat[1][1] * mat[1][1]);
 
-        return new Size(width * scaleX, font.getLineHeight() * scaleY);
+        return new Size(maxWidth * scaleX, totalHeight * scaleY);
     }
 
     @Override
@@ -462,6 +561,43 @@ public class GlCanvasRenderer extends CanvasRenderer {
      */
     private void drawTriangle(float x1, float y1, float x2, float y2, float x3, float y3, Color color) {
         batchRenderer.fillTriangle(x1, y1, x2, y2, x3, y3, color);
+    }
+
+    // ==================== Culling API ====================
+    
+    /**
+     * Enable or disable viewport culling optimization.
+     * When enabled, primitives outside the viewport are automatically skipped.
+     * Default: enabled.
+     * 
+     * @param enabled Whether to enable culling
+     */
+    public void setCullingEnabled(boolean enabled) {
+        batchRenderer.setCullingEnabled(enabled);
+    }
+    
+    /**
+     * Manually set custom culling bounds.
+     * Useful for scrolling canvases or custom viewport management.
+     * 
+     * @param minX Minimum X coordinate (left edge)
+     * @param minY Minimum Y coordinate (top edge)
+     * @param maxX Maximum X coordinate (right edge)
+     * @param maxY Maximum Y coordinate (bottom edge)
+     */
+    public void setCullingBounds(float minX, float minY, float maxX, float maxY) {
+        batchRenderer.setCullingBounds(minX, minY, maxX, maxY);
+    }
+    
+    /**
+     * Set culling bounds using a rectangle.
+     * 
+     * @param bounds The culling rectangle
+     */
+    public void setCullingBounds(Rectangle bounds) {
+        batchRenderer.setCullingBounds(bounds.getX(), bounds.getY(), 
+                                      bounds.getX() + bounds.getWidth(), 
+                                      bounds.getY() + bounds.getHeight());
     }
 
     @Override

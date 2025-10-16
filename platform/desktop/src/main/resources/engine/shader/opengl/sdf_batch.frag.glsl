@@ -10,7 +10,8 @@ flat in int vTextureId;
 
 // Uniforms
 uniform sampler2D uTextAtlas;    // Font texture atlas
-uniform float uSmoothness;        // Global smoothness for anti-aliasing
+uniform float uSmoothness;       // Global smoothness for anti-aliasing
+uniform float uTextEdge;         // SDF edge threshold for text rendering
 
 // Output
 out vec4 fragColor;
@@ -138,7 +139,7 @@ void main() {
         vec3 strokeColor = vShapeData.yzw;
         
         float sdfValue = texture(uTextAtlas, vTexCoord).a;
-        float onedge = 0.5;
+        float onedge = uTextEdge; // Use configurable edge threshold from uniform
         
         // Use a much smaller smoothness value for crisp text (matching old renderer)
         float textSmoothness = 0.075;

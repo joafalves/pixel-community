@@ -150,6 +150,10 @@ public class GlSdfTextRenderer implements SdfTextRenderer {
         // Smoothness for anti-aliasing with SDF
         // This value controls the edge softness
         glUniform1f(shader.getUniformLocation("uSmoothness"), 0.075f);
+        
+        // Set text edge threshold for controlling text weight/boldness
+        glUniform1f(shader.getUniformLocation("uTextEdge"), 
+            org.pixel.graphics.render.canvas.GlSdfConstants.SDF_TEXT_EDGE_THRESHOLD);
 
         // Set up blending for text rendering
         glEnable(GL_BLEND);
@@ -175,7 +179,7 @@ public class GlSdfTextRenderer implements SdfTextRenderer {
             // Handle spaces - advance cursor even though there's no glyph to render
             if (ch == ' ') {
                 // Use a standard space width (typically fontSize / 4, but we'll use a reasonable default)
-                float spaceWidth = font.getFontSize() * 0.25f;
+                float spaceWidth = font.getFontSize() * org.pixel.graphics.render.canvas.GlSdfConstants.SPACE_WIDTH_RATIO;
                 // Note: strokeWidth affects visual appearance but NOT glyph spacing
                 cursorX += spaceWidth + style.getLetterSpacing();
                 continue;

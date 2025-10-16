@@ -15,7 +15,7 @@ dependencies {
 }
 
 application {
-    mainClass.set('org.pixel.demo.learning.sprite.SingleSpriteDemo')
+    mainClass.set('org.pixel.demo.learning.canvas.CanvasGradientDemo')
     if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
         applicationDefaultJvmArgs = ["-XstartOnFirstThread"]
     }

@@ -10,7 +10,7 @@ import org.pixel.math.Vector2;
 
 /**
  * Text rendering style configuration.
- * Supports fill color, stroke (outline), drop shadow, and spacing.
+ * Supports fill color, stroke (outline), drop shadow, spacing, and alignment.
  */
 public class TextStyle {
     
@@ -21,9 +21,11 @@ public class TextStyle {
     private Vector2 shadowOffset;
     private Color shadowColor;
     private float letterSpacing;
+    private float lineSpacing;  // Additional vertical spacing between lines
+    private TextAlign textAlign;  // Text alignment
 
     /**
-     * Create default text style (white fill, no stroke/shadow).
+     * Create default text style (white fill, no stroke/shadow, top-left alignment).
      */
     public TextStyle() {
         this.fillColor = Color.WHITE;
@@ -33,6 +35,8 @@ public class TextStyle {
         this.shadowOffset = new Vector2(2, 2);
         this.shadowColor = new Color(0, 0, 0, 0.5f);
         this.letterSpacing = 1f;
+        this.lineSpacing = 0f;  // No extra spacing by default
+        this.textAlign = TextAlign.topLeft();  // Default to top-left
     }
 
     /**
@@ -98,6 +102,40 @@ public class TextStyle {
         return this;
     }
 
+    public TextStyle setLineSpacing(float spacing) {
+        this.lineSpacing = spacing;
+        return this;
+    }
+
+    /**
+     * Fluent alias for setLineSpacing.
+     */
+    public TextStyle withLineSpacing(float spacing) {
+        this.lineSpacing = spacing;
+        return this;
+    }
+
+    public TextStyle setAlign(TextAlign align) {
+        this.textAlign = align;
+        return this;
+    }
+
+    /**
+     * Fluent alias for setAlign.
+     */
+    public TextStyle withAlign(TextAlign align) {
+        this.textAlign = align;
+        return this;
+    }
+
+    /**
+     * Set horizontal and vertical alignment separately.
+     */
+    public TextStyle withAlign(TextAlign.Horizontal horizontal, TextAlign.Vertical vertical) {
+        this.textAlign = new TextAlign(horizontal, vertical);
+        return this;
+    }
+
     // === Getters ===
 
     public Color getFillColor() {
@@ -130,6 +168,14 @@ public class TextStyle {
 
     public float getLetterSpacing() {
         return letterSpacing;
+    }
+
+    public float getLineSpacing() {
+        return lineSpacing;
+    }
+
+    public TextAlign getAlign() {
+        return textAlign;
     }
 
     // === Common Presets ===

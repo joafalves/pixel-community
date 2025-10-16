@@ -22,7 +22,7 @@ import org.pixel.math.Vector2;
  * Demo showcasing text measurement and alignment helpers.
  * Shows how to properly center and position text using measureText() and helper methods.
  */
-public class TextMeasurementDemo extends DemoGame {
+public class CanvasTextMeasurementDemo extends DemoGame {
 
     private Camera2D camera;
     private GlCanvasRenderer canvas;
@@ -30,7 +30,7 @@ public class TextMeasurementDemo extends DemoGame {
     private SdfFont font;
     private SdfFont smallFont;
 
-    public TextMeasurementDemo(WindowSettings settings) {
+    public CanvasTextMeasurementDemo(WindowSettings settings) {
         super(settings);
     }
 
@@ -242,7 +242,7 @@ public class TextMeasurementDemo extends DemoGame {
         settings.setTitle("Text Measurement Demo");
         settings.setWindowResizable(false);
 
-        TextMeasurementDemo demo = new TextMeasurementDemo(settings);
+        CanvasTextMeasurementDemo demo = new CanvasTextMeasurementDemo(settings);
         demo.start();
     }
 }
