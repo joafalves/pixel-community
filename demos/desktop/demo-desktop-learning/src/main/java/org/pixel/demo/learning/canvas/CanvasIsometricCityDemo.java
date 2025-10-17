@@ -10,7 +10,7 @@ import org.pixel.core.WindowCursorType;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.commons.Color;
-import org.pixel.graphics.render.canvas.GlCanvasRenderer;
+import org.pixel.graphics.render.canvas.GLCanvasRenderer;
 import org.pixel.graphics.render.canvas.text.SdfFont;
 import org.pixel.input.mouse.Mouse;
 import org.pixel.input.mouse.MouseButton;
@@ -30,7 +30,7 @@ public class CanvasIsometricCityDemo extends DemoGame {
     private static final int TILE_WIDTH = 64;
     private static final int TILE_HEIGHT = TILE_WIDTH / 2;
 
-    private GlCanvasRenderer canvas;
+    private GLCanvasRenderer canvas;
     private ContentManager content;
     private SdfFont font;
     private Vector2 gridOffset;
@@ -69,7 +69,7 @@ public class CanvasIsometricCityDemo extends DemoGame {
 
         int windowWidth = getWindowManager().getWindowWidth();
         int windowHeight = getWindowManager().getWindowHeight();
-        canvas = new GlCanvasRenderer(windowWidth, windowHeight);
+        canvas = new GLCanvasRenderer(windowWidth, windowHeight);
 
         content = ServiceProvider.get(ContentManager.class);
 

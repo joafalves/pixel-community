@@ -9,9 +9,10 @@ flat in int vShapeType;
 flat in int vTextureId;
 
 // Uniforms
-uniform sampler2D uTextAtlas;    // Font texture atlas
-uniform float uSmoothness;       // Global smoothness for anti-aliasing
-uniform float uTextEdge;         // SDF edge threshold for text rendering
+uniform sampler2D uTextAtlas;              // Font texture atlas
+uniform sampler2D uTextures[/*$numTextures*/];  // Texture array for image rendering
+uniform float uSmoothness;                 // Global smoothness for anti-aliasing
+uniform float uTextEdge;                   // SDF edge threshold for text rendering
 
 // Output
 out vec4 fragColor;
@@ -23,6 +24,7 @@ const int SHAPE_LINE = 2;
 const int SHAPE_POINT = 3;
 const int SHAPE_TEXT_GLYPH = 4;
 const int SHAPE_TRIANGLE = 5;
+const int SHAPE_TEXTURED_QUAD = 6;
 
 // ============================================================================
 // SDF Functions
@@ -166,6 +168,20 @@ void main() {
         // Raw triangle - no SDF, just flat color
         // Used for path API filled polygons
         alpha = 1.0;
+    } else if (vShapeType == SHAPE_TEXTURED_QUAD) {
+        // Textured quad - sample from texture array
+        // vTextureId contains the texture slot index
+        // vTexCoord contains the UV coordinates
+        
+        // Sample the appropriate texture using switch for GPU compatibility
+        vec4 texColor;
+        switch (vTextureId) {
+/*$textureSwitchCase*/
+        }
+        
+        // Apply tint color (vColor acts as a tint multiplier for both color and alpha)
+        outputColor = texColor * vColor;
+        alpha = outputColor.a;
     }
     
     fragColor = vec4(outputColor.rgb, outputColor.a * alpha);

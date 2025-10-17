@@ -13,7 +13,8 @@ import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.render.canvas.GlCanvasRenderer;
+import org.pixel.graphics.render.canvas.Canvas;
+import org.pixel.graphics.render.canvas.GLCanvas;
 import org.pixel.graphics.render.canvas.text.SdfFont;
 
 /**
@@ -23,7 +24,7 @@ import org.pixel.graphics.render.canvas.text.SdfFont;
 public class CanvasTransformDemo extends DemoGame {
 
     private Camera2D camera;
-    private GlCanvasRenderer canvas;
+    private Canvas canvas;
     private ContentManager content;
     private SdfFont font;
     private float time = 0;
@@ -45,7 +46,7 @@ public class CanvasTransformDemo extends DemoGame {
         camera = new Camera2D(this);
 
         // Create canvas renderer with viewport dimensions
-        canvas = new GlCanvasRenderer(getVirtualWidth(), getVirtualHeight());
+        canvas = new GLCanvas(getVirtualWidth(), getVirtualHeight());
 
         // Initialize content manager
         content = ServiceProvider.get(ContentManager.class);
@@ -100,9 +101,16 @@ public class CanvasTransformDemo extends DemoGame {
      */
     private void drawDemo1_SimpleTranslation() {
         // Header with rounded corners
-        canvas.fillRoundedRect(20, 20, 230, 160, 10, new Color(0.15f, 0.15f, 0.2f, 0.9f));
-        canvas.drawText("Translation", font, 30, 30, new Color(0.8f, 0.8f, 1.0f, 1.0f));
-        canvas.drawText("Cumulative translate()", font, 30, 50, new Color(0.6f, 0.6f, 0.7f, 1.0f));
+        canvas.rect(20, 20, 230, 160)
+            .withRoundedCorners(10)
+            .withFill(new Color(0.15f, 0.15f, 0.2f, 0.9f))
+            .apply();
+        canvas.text("Translation", font, 30, 30)
+            .withFill(new Color(0.8f, 0.8f, 1.0f, 1.0f))
+            .apply();
+        canvas.text("Cumulative translate()", font, 30, 50)
+            .withFill(new Color(0.6f, 0.6f, 0.7f, 1.0f))
+            .apply();
 
         canvas.save();
         canvas.translate(40, 80);
@@ -110,7 +118,10 @@ public class CanvasTransformDemo extends DemoGame {
         // Draw 3 rounded squares with cumulative translation
         for (int i = 0; i < 3; i++) {
             Color color = new Color(1.0f - i * 0.25f, 0.3f, 0.3f + i * 0.3f, 1.0f);
-            canvas.fillRoundedRect(0, 0, 35, 35, 8, color);
+            canvas.rect(0, 0, 35, 35)
+                .withRoundedCorners(8)
+                .withFill(color)
+                .apply();
             canvas.translate(50, 0); // Move right for next square
         }
 
@@ -122,21 +133,37 @@ public class CanvasTransformDemo extends DemoGame {
      */
     private void drawDemo2_NestedSaveRestore() {
         // Header with rounded corners
-        canvas.fillRoundedRect(270, 20, 250, 160, 10, new Color(0.15f, 0.15f, 0.2f, 0.9f));
-        canvas.drawText("Save/Restore Stack", font, 280, 30, new Color(0.8f, 0.8f, 1.0f, 1.0f));
-        canvas.drawText("Nested transforms", font, 280, 50, new Color(0.6f, 0.6f, 0.7f, 1.0f));
+        canvas.rect(270, 20, 250, 160)
+            .withRoundedCorners(10)
+            .withFill(new Color(0.15f, 0.15f, 0.2f, 0.9f))
+            .apply();
+        canvas.text("Save/Restore Stack", font, 280, 30)
+            .withFill(new Color(0.8f, 0.8f, 1.0f, 1.0f))
+            .apply();
+        canvas.text("Nested transforms", font, 280, 50)
+            .withFill(new Color(0.6f, 0.6f, 0.7f, 1.0f))
+            .apply();
 
         canvas.save(); // Level 1
         canvas.translate(305, 80);
-        canvas.fillRoundedRect(0, 0, 70, 70, 12, new Color(0.2f, 0.4f, 0.8f, 1.0f));
+        canvas.rect(0, 0, 70, 70)
+            .withRoundedCorners(12)
+            .withFill(new Color(0.2f, 0.4f, 0.8f, 1.0f))
+            .apply();
 
         canvas.save(); // Level 2
         canvas.translate(15, 15);
-        canvas.fillRoundedRect(0, 0, 40, 40, 8, new Color(0.4f, 0.8f, 0.4f, 1.0f));
+        canvas.rect(0, 0, 40, 40)
+            .withRoundedCorners(8)
+            .withFill(new Color(0.4f, 0.8f, 0.4f, 1.0f))
+            .apply();
 
         canvas.save(); // Level 3
         canvas.translate(10, 10);
-        canvas.fillRoundedRect(0, 0, 20, 20, 5, new Color(0.8f, 0.8f, 0.2f, 1.0f));
+        canvas.rect(0, 0, 20, 20)
+            .withRoundedCorners(5)
+            .withFill(new Color(0.8f, 0.8f, 0.2f, 1.0f))
+            .apply();
 
         canvas.restore(); // Back to Level 2
         canvas.restore(); // Back to Level 1
@@ -148,9 +175,16 @@ public class CanvasTransformDemo extends DemoGame {
      */
     private void drawDemo3_Rotation() {
         // Header
-        canvas.fillRoundedRect(540, 20, 240, 160, 10, new Color(0.15f, 0.15f, 0.2f, 0.9f));
-        canvas.drawText("Rotation", font, 550, 30, new Color(0.8f, 0.8f, 1.0f, 1.0f));
-        canvas.drawText("Animated rotate()", font, 550, 50, new Color(0.6f, 0.6f, 0.7f, 1.0f));
+        canvas.rect(540, 20, 240, 160)
+            .withRoundedCorners(10)
+            .withFill(new Color(0.15f, 0.15f, 0.2f, 0.9f))
+            .apply();
+        canvas.text("Rotation", font, 550, 30)
+            .withFill(new Color(0.8f, 0.8f, 1.0f, 1.0f))
+            .apply();
+        canvas.text("Animated rotate()", font, 550, 50)
+            .withFill(new Color(0.6f, 0.6f, 0.7f, 1.0f))
+            .apply();
 
         canvas.save();
         canvas.translate(660, 110); // Move to center of rotation
@@ -159,7 +193,9 @@ public class CanvasTransformDemo extends DemoGame {
         canvas.rotate(time * 2); // Rotate based on time
 
         // Draw rectangle centered at origin
-        canvas.fillRect(-25, -25, 50, 50, new Color(0.8f, 0.3f, 0.8f, 1.0f));
+        canvas.rect(-25, -25, 50, 50)
+            .withFill(new Color(0.8f, 0.3f, 0.8f, 1.0f))
+            .apply();
 
         canvas.restore();
     }
@@ -169,9 +205,16 @@ public class CanvasTransformDemo extends DemoGame {
      */
     private void drawDemo4_Scaling() {
         // Header
-        canvas.fillRoundedRect(20, 200, 230, 160, 10, new Color(0.15f, 0.15f, 0.2f, 0.9f));
-        canvas.drawText("Scaling", font, 30, 210, new Color(0.8f, 0.8f, 1.0f, 1.0f));
-        canvas.drawText("Animated scale()", font, 30, 230, new Color(0.6f, 0.6f, 0.7f, 1.0f));
+        canvas.rect(20, 200, 230, 160)
+            .withRoundedCorners(10)
+            .withFill(new Color(0.15f, 0.15f, 0.2f, 0.9f))
+            .apply();
+        canvas.text("Scaling", font, 30, 210)
+            .withFill(new Color(0.8f, 0.8f, 1.0f, 1.0f))
+            .apply();
+        canvas.text("Animated scale()", font, 30, 230)
+            .withFill(new Color(0.6f, 0.6f, 0.7f, 1.0f))
+            .apply();
 
         canvas.save();
         canvas.translate(135, 290);
@@ -180,7 +223,9 @@ public class CanvasTransformDemo extends DemoGame {
         float scale = 1.0f + 0.5f * (float) Math.sin(time * 3);
         canvas.scale(scale, scale);
 
-        canvas.fillRect(-30, -30, 60, 60, new Color(0.3f, 0.8f, 0.8f, 1.0f));
+        canvas.rect(-30, -30, 60, 60)
+            .withFill(new Color(0.3f, 0.8f, 0.8f, 1.0f))
+            .apply();
 
         canvas.restore();
     }
@@ -190,9 +235,16 @@ public class CanvasTransformDemo extends DemoGame {
      */
     private void drawDemo5_CombinedTransforms() {
         // Header
-        canvas.fillRoundedRect(270, 200, 510, 160, 10, new Color(0.15f, 0.15f, 0.2f, 0.9f));
-        canvas.drawText("Combined Transforms", font, 280, 210, new Color(0.8f, 0.8f, 1.0f, 1.0f));
-        canvas.drawText("translate + rotate + scale", font, 280, 230, new Color(0.6f, 0.6f, 0.7f, 1.0f));
+        canvas.rect(270, 200, 510, 160)
+            .withRoundedCorners(10)
+            .withFill(new Color(0.15f, 0.15f, 0.2f, 0.9f))
+            .apply();
+        canvas.text("Combined Transforms", font, 280, 210)
+            .withFill(new Color(0.8f, 0.8f, 1.0f, 1.0f))
+            .apply();
+        canvas.text("translate + rotate + scale", font, 280, 230)
+            .withFill(new Color(0.6f, 0.6f, 0.7f, 1.0f))
+            .apply();
 
         // Draw multiple boxes with combined transforms
         for (int i = 0; i < 5; i++) {
@@ -215,7 +267,9 @@ public class CanvasTransformDemo extends DemoGame {
                 0.8f - i * 0.1f,
                 1.0f
             );
-            canvas.fillRect(-20, -20, 40, 40, color);
+            canvas.rect(-20, -20, 40, 40)
+                .withFill(color)
+                .apply();
 
             canvas.restore();
         }
@@ -226,31 +280,50 @@ public class CanvasTransformDemo extends DemoGame {
      */
     private void drawDemo6_HierarchicalTransforms() {
         // Header
-        canvas.fillRoundedRect(20, 380, 760, 200, 10, new Color(0.15f, 0.15f, 0.2f, 0.9f));
-        canvas.drawText("Hierarchical Transforms (Solar System)", font, 30, 390, new Color(0.8f, 0.8f, 1.0f, 1.0f));
-        canvas.drawText("Nested save/restore creates parent-child relationships", font, 30, 410, new Color(0.6f, 0.6f, 0.7f, 1.0f));
+        canvas.rect(20, 380, 760, 200)
+            .withRoundedCorners(10)
+            .withFill(new Color(0.15f, 0.15f, 0.2f, 0.9f))
+            .apply();
+        canvas.text("Hierarchical Transforms (Solar System)", font, 30, 390)
+            .withFill(new Color(0.8f, 0.8f, 1.0f, 1.0f))
+            .apply();
+        canvas.text("Nested save/restore creates parent-child relationships", font, 30, 410)
+            .withFill(new Color(0.6f, 0.6f, 0.7f, 1.0f))
+            .apply();
 
         // System 1: Sun-Planet-Moon
         canvas.save();
         canvas.translate(140, 490);
         
         // Sun
-        canvas.fillCircle(0, -12, 20, Color.YELLOW);
-        canvas.drawText("Sun", font, -10, -20, new Color(1.0f, 0.9f, 0.5f, 1.0f));
+        canvas.circle(0, -12, 20)
+            .withFill(Color.YELLOW)
+            .apply();
+        canvas.text("Sun", font, -10, -20)
+            .withFill(new Color(1.0f, 0.9f, 0.5f, 1.0f))
+            .apply();
 
         // Planet orbiting sun
         canvas.save();
         canvas.rotate(time * 0.5f);
         canvas.translate(70, 0);
-        canvas.fillRect(-8, -8, 16, 16, new Color(0.3f, 0.5f, 0.9f, 1.0f));
-        canvas.drawText("Planet", font, -15, -15, new Color(0.7f, 0.8f, 1.0f, 1.0f));
+        canvas.rect(-8, -8, 16, 16)
+            .withFill(new Color(0.3f, 0.5f, 0.9f, 1.0f))
+            .apply();
+        canvas.text("Planet", font, -15, -15)
+            .withFill(new Color(0.7f, 0.8f, 1.0f, 1.0f))
+            .apply();
 
         // Moon orbiting planet
         canvas.save();
         canvas.rotate(time * 2);
         canvas.translate(25, 0);
-        canvas.fillRect(-4, -4, 8, 8, new Color(0.7f, 0.7f, 0.7f, 1.0f));
-        canvas.drawText("Moon", font, -12, -10, new Color(0.9f, 0.9f, 0.9f, 1.0f));
+        canvas.rect(-4, -4, 8, 8)
+            .withFill(new Color(0.7f, 0.7f, 0.7f, 1.0f))
+            .apply();
+        canvas.text("Moon", font, -12, -10)
+            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f))
+            .apply();
         canvas.restore(); // Moon
         canvas.restore(); // Planet
         canvas.restore(); // Sun
@@ -260,32 +333,42 @@ public class CanvasTransformDemo extends DemoGame {
         canvas.translate(400, 490);
         
         // Central star
-        canvas.fillRect(-15, -15, 30, 30, new Color(1.0f, 0.6f, 0.1f, 1.0f));
+        canvas.rect(-15, -15, 30, 30)
+            .withFill(new Color(1.0f, 0.6f, 0.1f, 1.0f))
+            .apply();
 
         // Inner planet
         canvas.save();
         canvas.rotate(-time * 0.8f);
         canvas.translate(60, 0);
-        canvas.fillRect(-6, -6, 12, 12, new Color(0.9f, 0.4f, 0.3f, 1.0f));
+        canvas.rect(-6, -6, 12, 12)
+            .withFill(new Color(0.9f, 0.4f, 0.3f, 1.0f))
+            .apply();
         canvas.restore();
 
         // Outer planet with rings
         canvas.save();
         canvas.rotate(time * 0.3f);
         canvas.translate(100, 0);
-        canvas.fillRect(-10, -10, 20, 20, new Color(0.8f, 0.7f, 0.4f, 1.0f));
+        canvas.rect(-10, -10, 20, 20)
+            .withFill(new Color(0.8f, 0.7f, 0.4f, 1.0f))
+            .apply();
         
         // Two moons
         canvas.save();
         canvas.rotate(time * 1.5f);
         canvas.translate(22, 0);
-        canvas.fillRect(-3, -3, 6, 6, new Color(0.6f, 0.6f, 0.7f, 1.0f));
+        canvas.rect(-3, -3, 6, 6)
+            .withFill(new Color(0.6f, 0.6f, 0.7f, 1.0f))
+            .apply();
         canvas.restore();
         
         canvas.save();
         canvas.rotate(-time * 2.5f);
         canvas.translate(30, 0);
-        canvas.fillRect(-3, -3, 6, 6, new Color(0.5f, 0.5f, 0.6f, 1.0f));
+        canvas.rect(-3, -3, 6, 6)
+            .withFill(new Color(0.5f, 0.5f, 0.6f, 1.0f))
+            .apply();
         canvas.restore();
         
         canvas.restore();

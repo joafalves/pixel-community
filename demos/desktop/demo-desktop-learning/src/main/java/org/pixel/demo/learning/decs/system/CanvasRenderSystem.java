@@ -12,6 +12,7 @@ import org.pixel.ext.decs.Group;
 import org.pixel.ext.decs.System;
 import org.pixel.ext.decs.World;
 import org.pixel.graphics.render.canvas.CanvasRenderer;
+import org.pixel.graphics.render.canvas.GLCanvasRenderer;
 import org.pixel.graphics.render.canvas.TextStyle;
 import org.pixel.graphics.render.canvas.text.SdfFont;
 
@@ -29,7 +30,7 @@ public class CanvasRenderSystem extends System {
 
     public CanvasRenderSystem(World world) {
         super(world);
-        this.canvas = ServiceProvider.get(CanvasRenderer.class);
+        this.canvas = world.getProperties().get(GLCanvasRenderer.class);
     }
 
     @Override

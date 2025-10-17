@@ -16,6 +16,7 @@ import org.pixel.math.Matrix4;
 import java.nio.FloatBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 
@@ -28,7 +29,7 @@ import static org.lwjgl.opengl.GL20.*;
  * Everything is batched together and rendered in submission order, ensuring perfect
  * draw order while maximizing performance with minimal draw calls.
  */
-public class GlSdfBatchRenderer {
+public class GLSdfBatchRenderer {
 
     // Shape type constants (must match shader)
     public static final int SHAPE_ROUNDED_RECT = 0;
@@ -37,6 +38,7 @@ public class GlSdfBatchRenderer {
     public static final int SHAPE_POINT = 3;
     public static final int SHAPE_TEXT_GLYPH = 4;
     public static final int SHAPE_TRIANGLE = 5; // Raw filled triangle (no SDF)
+    public static final int SHAPE_TEXTURED_QUAD = 6; // Textured image quad
 
     // Vertex layout: position(2) + texCoord(2) + color(4) + shapeData(4) + quadSize(2) + shapeType(1) + textureId(1) = 16 floats
     private static final int VERTEX_SIZE = 16;
@@ -54,6 +56,10 @@ public class GlSdfBatchRenderer {
     private Matrix4 currentLocalTransform; // Local transform applied on CPU
     private SdfFont currentFont; // Track current font for texture binding
     
+    // Multi-texture support - textures to bind during flush
+    private final int[] activeTextures = new int[8]; // Max 8 textures
+    private int activeTextureCount = 0;
+    
     // Culling support
     private float cullingMinX, cullingMinY, cullingMaxX, cullingMaxY;
     private boolean cullingEnabled = true;
@@ -61,7 +67,7 @@ public class GlSdfBatchRenderer {
     /**
      * Constructor.
      */
-    public GlSdfBatchRenderer() {
+    public GLSdfBatchRenderer() {
         this.shader = new GLSdfBatchShader();
         this.vao = new GLVertexArrayObject();
         this.vbo = new GLVertexBufferObject();
@@ -149,7 +155,14 @@ public class GlSdfBatchRenderer {
         glUniform1f(shader.getUniformLocation("uSmoothness"), 1.0f);
         
         // Set text edge threshold for SDF text rendering
-        glUniform1f(shader.getUniformLocation("uTextEdge"), GlSdfConstants.SDF_TEXT_EDGE_THRESHOLD);
+        glUniform1f(shader.getUniformLocation("uTextEdge"), GLSdfConstants.SDF_TEXT_EDGE_THRESHOLD);
+
+        // Set up texture unit indices for texture array (units 1-8)
+        int texturesLocation = shader.getUniformLocation("uTextures");
+        if (texturesLocation >= 0) {
+            int[] textureUnits = {1, 2, 3, 4, 5, 6, 7, 8}; // Texture units 1-8 (0 is for text atlas)
+            glUniform1iv(texturesLocation, textureUnits);
+        }
 
         // Enable blending
         glEnable(GL_BLEND);
@@ -167,6 +180,18 @@ public class GlSdfBatchRenderer {
      */
     public void setLocalTransform(Matrix4 localTransform) {
         this.currentLocalTransform = localTransform;
+    }
+
+    /**
+     * Set active textures for multi-texture batching.
+     * These textures will be bound to texture units 0-N during flush.
+     * 
+     * @param textureIds Array of OpenGL texture IDs to bind
+     * @param count Number of textures in the array
+     */
+    public void setActiveTextures(int[] textureIds, int count) {
+        this.activeTextureCount = Math.min(count, activeTextures.length);
+        System.arraycopy(textureIds, 0, activeTextures, 0, activeTextureCount);
     }
 
     /**
@@ -188,6 +213,12 @@ public class GlSdfBatchRenderer {
     public void flush() {
         if (vertexCount == 0) {
             return;
+        }
+
+        // Bind active textures to texture units 1-N (unit 0 is reserved for text atlas)
+        for (int i = 0; i < activeTextureCount; i++) {
+            glActiveTexture(GL_TEXTURE1 + i); // Start from unit 1 (unit 0 is for text atlas)
+            glBindTexture(GL_TEXTURE_2D, activeTextures[i]);
         }
 
         vertexBuffer.flip();
@@ -269,6 +300,30 @@ public class GlSdfBatchRenderer {
         addVertex(x, y + height, 0, 1, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
         addVertex(x + width, y, 1, 0, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
         addVertex(x + width, y + height, 1, 1, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
+    }
+
+    /**
+     * Add a quad with custom UV coordinates (for textured images).
+     */
+    private void addQuadWithUVs(float x, float y, float width, float height,
+                               Color color, float srcX, float srcY, float srcWidth, float srcHeight,
+                               float sd1, float sd2, float sd3, float sd4,
+                               int shapeType, int textureId) {
+        // Calculate UVs for the source rectangle
+        float u0 = srcX;
+        float v0 = srcY;
+        float u1 = srcX + srcWidth;
+        float v1 = srcY + srcHeight;
+        
+        // Triangle 1: TL, TR, BL
+        addVertex(x, y, u0, v0, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
+        addVertex(x + width, y, u1, v0, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
+        addVertex(x, y + height, u0, v1, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
+        
+        // Triangle 2: BL, TR, BR
+        addVertex(x, y + height, u0, v1, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
+        addVertex(x + width, y, u1, v0, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
+        addVertex(x + width, y + height, u1, v1, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
     }
 
     // ============================================================================
@@ -467,6 +522,35 @@ public class GlSdfBatchRenderer {
     }
 
     /**
+     * Draw a textured quad (image).
+     * 
+     * @param x              X position
+     * @param y              Y position
+     * @param width          Width
+     * @param height         Height
+     * @param tint           Tint color (Color.WHITE for no tint)
+     * @param srcX           Source texture X (normalized 0-1)
+     * @param srcY           Source texture Y (normalized 0-1)
+     * @param srcWidth       Source texture width (normalized 0-1)
+     * @param srcHeight      Source texture height (normalized 0-1)
+     * @param textureSlot    Texture slot index (0-7)
+     */
+    public void drawTexturedQuad(float x, float y, float width, float height, Color tint,
+                                float srcX, float srcY, float srcWidth, float srcHeight,
+                                int textureSlot) {
+        if (cullingEnabled && shouldCull(x, y, width, height)) {
+            return;
+        }
+        checkFlush(6);
+        
+        // No padding needed for textured quads - they're not SDF-based
+        // ShapeData is unused for textured quads, but we pass dummy values
+        addQuadWithUVs(x, y, width, height, tint,
+                      srcX, srcY, srcWidth, srcHeight,
+                      0, 0, 0, 0, SHAPE_TEXTURED_QUAD, textureSlot);
+    }
+
+    /**
      * Draw text using SDF font.
      */
     public void drawText(String text, SdfFont font, float x, float y, Color color) {
@@ -522,7 +606,7 @@ public class GlSdfBatchRenderer {
             
             // Handle spaces
             if (ch == ' ') {
-                float spaceWidth = font.getFontSize() * GlSdfConstants.SPACE_WIDTH_RATIO;
+                float spaceWidth = font.getFontSize() * GLSdfConstants.SPACE_WIDTH_RATIO;
                 cursorX += spaceWidth + letterSpacing;
                 continue;
             }

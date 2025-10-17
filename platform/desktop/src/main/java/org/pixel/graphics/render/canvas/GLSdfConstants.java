@@ -9,7 +9,7 @@ package org.pixel.graphics.render.canvas;
  * Constants used across the SDF (Signed Distance Field) rendering system.
  * These values must be kept in sync with font generation and shader parameters.
  */
-public final class GlSdfConstants {
+public final class GLSdfConstants {
 
     /**
      * The SDF padding used by the font generator (in pixels).
@@ -40,7 +40,7 @@ public final class GlSdfConstants {
     public static final float SDF_TEXT_EDGE_THRESHOLD = 0.54f;
 
     // Private constructor to prevent instantiation
-    private GlSdfConstants() {
+    private GLSdfConstants() {
         throw new AssertionError("GlSdfConstants is a utility class and should not be instantiated");
     }
 }

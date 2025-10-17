@@ -12,7 +12,8 @@ import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.render.canvas.GlCanvasRenderer;
+import org.pixel.graphics.render.canvas.Canvas;
+import org.pixel.graphics.render.canvas.GLCanvas;
 import org.pixel.graphics.render.canvas.TextAlign;
 import org.pixel.graphics.render.canvas.TextStyle;
 import org.pixel.graphics.render.canvas.text.SdfFont;
@@ -24,7 +25,7 @@ import org.pixel.graphics.render.canvas.text.SdfFont;
 public class CanvasTextAlignmentDemoA extends DemoGame {
 
     private Camera2D camera;
-    private GlCanvasRenderer canvas;
+    private Canvas canvas;
     private ContentManager content;
     private SdfFont font;
     private SdfFont titleFont;
@@ -37,7 +38,7 @@ public class CanvasTextAlignmentDemoA extends DemoGame {
     public void load() {
         super.load();
         camera = new Camera2D(this);
-        canvas = new GlCanvasRenderer(getVirtualWidth(), getVirtualHeight());
+        canvas = new GLCanvas(getVirtualWidth(), getVirtualHeight());
         content = ServiceProvider.get(ContentManager.class);
         
         font = content.load("fonts/roboto-regular.ttf", SdfFont.class,
@@ -54,14 +55,17 @@ public class CanvasTextAlignmentDemoA extends DemoGame {
         canvas.begin(camera.getViewMatrix());
 
         // Background
-        canvas.fillRect(0, 0, getVirtualWidth(), getVirtualHeight(), 
-            new Color(0.1f, 0.1f, 0.15f, 1.0f));
+        canvas.rect(0, 0, getVirtualWidth(), getVirtualHeight())
+            .withFill(new Color(0.1f, 0.1f, 0.15f, 1.0f))
+            .apply();
 
         // Title
         TextStyle titleStyle = new TextStyle(Color.WHITE)
             .withStroke(new Color(0.2f, 0.4f, 0.8f, 1.0f), 2.5f)
             .withAlign(TextAlign.topCenter());
-        canvas.drawText("Text Alignment Showcase", titleFont, getVirtualWidth() / 2f, 20, titleStyle);
+        canvas.text("Text Alignment Showcase", titleFont, getVirtualWidth() / 2f, 20)
+            .withStyle(titleStyle)
+            .apply();
 
         // === SECTION 1: Horizontal Alignment ===
         drawSection("Horizontal Alignment", 50, 80);
@@ -92,28 +96,42 @@ public class CanvasTextAlignmentDemoA extends DemoGame {
         float boxHeight = 120;
 
         // Reference line (vertical) to show alignment point
-        canvas.fillRect(refX - 1, boxY, 2, boxHeight, new Color(1, 0, 0, 0.5f));
+        canvas.rect(refX - 1, boxY, 2, boxHeight)
+            .withFill(new Color(1, 0, 0, 0.5f))
+            .apply();
 
         // LEFT alignment
-        canvas.fillRoundedRect(refX - boxWidth, boxY, boxWidth, 35, 4, 
-            new Color(0.2f, 0.25f, 0.3f, 0.8f));
+        canvas.rect(refX - boxWidth, boxY, boxWidth, 35)
+            .withRoundedCorners(4)
+            .withFill(new Color(0.2f, 0.25f, 0.3f, 0.8f))
+            .apply();
         TextStyle leftStyle = new TextStyle(new Color(0.5f, 1, 0.5f, 1))
             .withAlign(TextAlign.Horizontal.LEFT, TextAlign.Vertical.TOP);
-        canvas.drawText("LEFT", font, refX, boxY + 8, leftStyle);
+        canvas.text("LEFT", font, refX, boxY + 8)
+            .withStyle(leftStyle)
+            .apply();
         
         // CENTER alignment
-        canvas.fillRoundedRect(refX - boxWidth / 2, boxY + 42, boxWidth, 35, 4, 
-            new Color(0.2f, 0.25f, 0.3f, 0.8f));
+        canvas.rect(refX - boxWidth / 2, boxY + 42, boxWidth, 35)
+            .withRoundedCorners(4)
+            .withFill(new Color(0.2f, 0.25f, 0.3f, 0.8f))
+            .apply();
         TextStyle centerStyle = new TextStyle(new Color(1, 1, 0.5f, 1))
             .withAlign(TextAlign.Horizontal.CENTER, TextAlign.Vertical.TOP);
-        canvas.drawText("CENTER", font, refX, boxY + 50, centerStyle);
+        canvas.text("CENTER", font, refX, boxY + 50)
+            .withStyle(centerStyle)
+            .apply();
         
         // RIGHT alignment
-        canvas.fillRoundedRect(refX, boxY + 84, boxWidth, 35, 4, 
-            new Color(0.2f, 0.25f, 0.3f, 0.8f));
+        canvas.rect(refX, boxY + 84, boxWidth, 35)
+            .withRoundedCorners(4)
+            .withFill(new Color(0.2f, 0.25f, 0.3f, 0.8f))
+            .apply();
         TextStyle rightStyle = new TextStyle(new Color(0.5f, 0.8f, 1, 1))
             .withAlign(TextAlign.Horizontal.RIGHT, TextAlign.Vertical.TOP);
-        canvas.drawText("RIGHT", font, refX, boxY + 92, rightStyle);
+        canvas.text("RIGHT", font, refX, boxY + 92)
+            .withStyle(rightStyle)
+            .apply();
     }
 
     /**
@@ -130,11 +148,15 @@ public class CanvasTextAlignmentDemoA extends DemoGame {
             float refY = boxY + boxH / 2;
             
             // Background box
-            canvas.fillRoundedRect(boxX, boxY, boxW, boxH, 4, 
-                new Color(0.2f, 0.25f, 0.3f, 0.8f));
+            canvas.rect(boxX, boxY, boxW, boxH)
+                .withRoundedCorners(4)
+                .withFill(new Color(0.2f, 0.25f, 0.3f, 0.8f))
+                .apply();
             
             // Reference line (horizontal) to show alignment point
-            canvas.fillRect(boxX, refY - 1, boxW, 2, new Color(1, 0, 0, 0.5f));
+            canvas.rect(boxX, refY - 1, boxW, 2)
+                .withFill(new Color(1, 0, 0, 0.5f))
+                .apply();
             
             TextAlign.Vertical vAlign;
             String label;
@@ -145,7 +167,9 @@ public class CanvasTextAlignmentDemoA extends DemoGame {
                     vAlign = TextAlign.Vertical.TOP;
                     label = "TOP";
                     color = new Color(0.5f, 1, 0.5f, 1);
-                    canvas.fillRect(boxX, boxY - 1, boxW, 2, new Color(0, 1, 0, 0.8f));
+                    canvas.rect(boxX, boxY - 1, boxW, 2)
+                        .withFill(new Color(0, 1, 0, 0.8f))
+                        .apply();
                     break;
                 case 1:
                     vAlign = TextAlign.Vertical.MIDDLE;
@@ -162,14 +186,18 @@ public class CanvasTextAlignmentDemoA extends DemoGame {
                     vAlign = TextAlign.Vertical.BOTTOM;
                     label = "BOTTOM";
                     color = new Color(0.5f, 0.8f, 1, 1);
-                    canvas.fillRect(boxX, boxY + boxH - 1, boxW, 2, new Color(0, 0.5f, 1, 0.8f));
+                    canvas.rect(boxX, boxY + boxH - 1, boxW, 2)
+                        .withFill(new Color(0, 0.5f, 1, 0.8f))
+                        .apply();
                     break;
             }
             
             TextStyle style = new TextStyle(color)
                 .withAlign(TextAlign.Horizontal.CENTER, vAlign)
                 .withStroke(new Color(0.2f, 0.2f, 0.2f, 1), 1.5f);
-            canvas.drawText(label, font, boxX + boxW / 2, refY, style);
+            canvas.text(label, font, boxX + boxW / 2, refY)
+                .withStyle(style)
+                .apply();
         }
     }
 
@@ -183,12 +211,19 @@ public class CanvasTextAlignmentDemoA extends DemoGame {
         float cellH = gridH / 3;
         
         // Draw grid background
-        canvas.fillRoundedRect(x, y, gridW, gridH, 6, new Color(0.15f, 0.2f, 0.25f, 0.9f));
+        canvas.rect(x, y, gridW, gridH)
+            .withRoundedCorners(6)
+            .withFill(new Color(0.15f, 0.2f, 0.25f, 0.9f))
+            .apply();
         
         // Draw grid lines
         for (int i = 1; i <= 2; i++) {
-            canvas.fillRect(x + i * cellW, y, 1, gridH, new Color(0.3f, 0.3f, 0.4f, 0.5f));
-            canvas.fillRect(x, y + i * cellH, gridW, 1, new Color(0.3f, 0.3f, 0.4f, 0.5f));
+            canvas.rect(x + i * cellW, y, 1, gridH)
+                .withFill(new Color(0.3f, 0.3f, 0.4f, 0.5f))
+                .apply();
+            canvas.rect(x, y + i * cellH, gridW, 1)
+                .withFill(new Color(0.3f, 0.3f, 0.4f, 0.5f))
+                .apply();
         }
         
         // Draw crosshairs at each cell center
@@ -198,8 +233,12 @@ public class CanvasTextAlignmentDemoA extends DemoGame {
                 float centerY = y + row * cellH + cellH / 2;
                 
                 // Crosshair
-                canvas.fillRect(centerX - 10, centerY - 0.5f, 20, 1, new Color(1, 0, 0, 0.3f));
-                canvas.fillRect(centerX - 0.5f, centerY - 10, 1, 20, new Color(1, 0, 0, 0.3f));
+                canvas.rect(centerX - 10, centerY - 0.5f, 20, 1)
+                    .withFill(new Color(1, 0, 0, 0.3f))
+                    .apply();
+                canvas.rect(centerX - 0.5f, centerY - 10, 1, 20)
+                    .withFill(new Color(1, 0, 0, 0.3f))
+                    .apply();
             }
         }
         
@@ -231,7 +270,9 @@ public class CanvasTextAlignmentDemoA extends DemoGame {
                     .withAlign(hAligns[col], vAligns[row])
                     .withStroke(new Color(0.2f, 0.2f, 0.3f, 1), 1.2f);
                 
-                canvas.drawText(labels[row][col], font, centerX, centerY, style);
+                canvas.text(labels[row][col], font, centerX, centerY)
+                    .withStyle(style)
+                    .apply();
             }
         }
     }
@@ -247,40 +288,69 @@ public class CanvasTextAlignmentDemoA extends DemoGame {
         
         // LEFT aligned
         float x1 = x + 50;
-        canvas.fillRoundedRect(x1 - 10, y, boxW, boxH, 4, new Color(0.2f, 0.25f, 0.3f, 0.8f));
-        canvas.fillRect(x1 - 1, y, 2, boxH, new Color(1, 0, 0, 0.3f));
+        canvas.rect(x1 - 10, y, boxW, boxH)
+            .withRoundedCorners(4)
+            .withFill(new Color(0.2f, 0.25f, 0.3f, 0.8f))
+            .apply();
+        canvas.rect(x1 - 1, y, 2, boxH)
+            .withFill(new Color(1, 0, 0, 0.3f))
+            .apply();
         TextStyle leftMulti = new TextStyle(new Color(0.5f, 1, 0.5f, 1))
             .withAlign(TextAlign.Horizontal.LEFT, TextAlign.Vertical.TOP);
-        canvas.drawText(multiLine, font, x1, y + 10, leftMulti);
-        canvas.drawText("LEFT", font, x1, y + boxH + 5, new TextStyle(Color.GRAY));
+        canvas.text(multiLine, font, x1, y + 10)
+            .withStyle(leftMulti)
+            .apply();
+        canvas.text("LEFT", font, x1, y + boxH + 5)
+            .withStyle(new TextStyle(Color.GRAY))
+            .apply();
         
         // CENTER aligned
         float x2 = x + spacing + 50;
-        canvas.fillRoundedRect(x2 - boxW / 2, y, boxW, boxH, 4, new Color(0.2f, 0.25f, 0.3f, 0.8f));
-        canvas.fillRect(x2 - 1, y, 2, boxH, new Color(1, 0, 0, 0.3f));
+        canvas.rect(x2 - boxW / 2, y, boxW, boxH)
+            .withRoundedCorners(4)
+            .withFill(new Color(0.2f, 0.25f, 0.3f, 0.8f))
+            .apply();
+        canvas.rect(x2 - 1, y, 2, boxH)
+            .withFill(new Color(1, 0, 0, 0.3f))
+            .apply();
         TextStyle centerMulti = new TextStyle(new Color(1, 1, 0.5f, 1))
             .withAlign(TextAlign.Horizontal.CENTER, TextAlign.Vertical.TOP);
-        canvas.drawText(multiLine, font, x2, y + 10, centerMulti);
-        canvas.drawText("CENTER", font, x2, y + boxH + 5, 
-            new TextStyle(Color.GRAY).withAlign(TextAlign.topCenter()));
+        canvas.text(multiLine, font, x2, y + 10)
+            .withStyle(centerMulti)
+            .apply();
+        canvas.text("CENTER", font, x2, y + boxH + 5)
+            .withStyle(new TextStyle(Color.GRAY).withAlign(TextAlign.topCenter()))
+            .apply();
         
         // RIGHT aligned
         float x3 = x + spacing * 2 + 50;
-        canvas.fillRoundedRect(x3 - boxW + 10, y, boxW, boxH, 4, new Color(0.2f, 0.25f, 0.3f, 0.8f));
-        canvas.fillRect(x3 - 1, y, 2, boxH, new Color(1, 0, 0, 0.3f));
+        canvas.rect(x3 - boxW + 10, y, boxW, boxH)
+            .withRoundedCorners(4)
+            .withFill(new Color(0.2f, 0.25f, 0.3f, 0.8f))
+            .apply();
+        canvas.rect(x3 - 1, y, 2, boxH)
+            .withFill(new Color(1, 0, 0, 0.3f))
+            .apply();
         TextStyle rightMulti = new TextStyle(new Color(0.5f, 0.8f, 1, 1))
             .withAlign(TextAlign.Horizontal.RIGHT, TextAlign.Vertical.TOP);
-        canvas.drawText(multiLine, font, x3, y + 10, rightMulti);
-        canvas.drawText("RIGHT", font, x3, y + boxH + 5, 
-            new TextStyle(Color.GRAY).withAlign(TextAlign.topRight()));
+        canvas.text(multiLine, font, x3, y + 10)
+            .withStyle(rightMulti)
+            .apply();
+        canvas.text("RIGHT", font, x3, y + boxH + 5)
+            .withStyle(new TextStyle(Color.GRAY).withAlign(TextAlign.topRight()))
+            .apply();
     }
 
     private void drawSection(String title, float x, float y) {
-        canvas.fillRoundedRect(x, y, getVirtualWidth() - x * 2, 28, 4, 
-            new Color(0.2f, 0.3f, 0.5f, 0.7f));
+        canvas.rect(x, y, getVirtualWidth() - x * 2, 28)
+            .withRoundedCorners(4)
+            .withFill(new Color(0.2f, 0.3f, 0.5f, 0.7f))
+            .apply();
         TextStyle sectionStyle = new TextStyle(new Color(1, 1, 0.8f, 1))
             .withStroke(new Color(0.3f, 0.3f, 0.3f, 1), 1.5f);
-        canvas.drawText(title, font, x + 10, y + 4, sectionStyle);
+        canvas.text(title, font, x + 10, y + 4)
+            .withStyle(sectionStyle)
+            .apply();
     }
 
     @Override

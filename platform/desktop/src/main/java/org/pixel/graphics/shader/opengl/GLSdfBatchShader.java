@@ -33,6 +33,7 @@ public class GLSdfBatchShader extends GLShader {
     private static final List<String> uniforms = Arrays.asList(
         "uViewMatrix",    // mat4: view-projection matrix
         "uTextAtlas",     // sampler2D: font texture atlas
+        "uTextures",      // sampler2D[]: texture array for image rendering
         "uSmoothness",    // float: anti-aliasing smoothness
         "uTextEdge"       // float: SDF edge threshold for text rendering
     );
@@ -49,7 +50,39 @@ public class GLSdfBatchShader extends GLShader {
      * Constructor.
      */
     public GLSdfBatchShader() {
-        super(vertSrc, fragSrc, attributes, uniforms);
+        this(8); // Default to 8 textures
+    }
+
+    /**
+     * Constructor with custom texture count.
+     *
+     * @param textureCount The number of textures to support
+     */
+    public GLSdfBatchShader(int textureCount) {
+        super(vertSrc,
+                fragSrc
+                        .replace("/*$numTextures*/", String.valueOf(textureCount))
+                        .replace("/*$textureSwitchCase*/", createTextureSwitch(textureCount)),
+                attributes, uniforms);
         this.init();
+    }
+
+    /**
+     * Creates the GLSL switch statement for texture selection.
+     *
+     * @param textureCount The number of textures to support.
+     * @return The generated switch statement as a string.
+     */
+    private static String createTextureSwitch(int textureCount) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < textureCount; i++) {
+            sb.append("\t\tcase ").append(i).append(":\n");
+            sb.append("\t\t\ttexColor = texture(uTextures[").append(i).append("], vTexCoord);\n");
+            sb.append("\t\t\tbreak;\n");
+        }
+        sb.append("\t\tdefault:\n");
+        sb.append("\t\t\ttexColor = vec4(1.0, 0.0, 1.0, 1.0); // Error: magenta\n");
+
+        return sb.toString();
     }
 }

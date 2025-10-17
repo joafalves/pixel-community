@@ -13,7 +13,7 @@ import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.render.canvas.GlCanvasRenderer;
+import org.pixel.graphics.render.canvas.GLCanvasRenderer;
 import org.pixel.graphics.render.canvas.text.SdfFont;
 import org.pixel.math.Vector2;
 
@@ -24,7 +24,7 @@ import org.pixel.math.Vector2;
 public class CanvasLinesDemo extends DemoGame {
 
     private Camera2D camera;
-    private GlCanvasRenderer canvas;
+    private GLCanvasRenderer canvas;
     private ContentManager content;
     private SdfFont font;
     private float time = 0;
@@ -46,7 +46,7 @@ public class CanvasLinesDemo extends DemoGame {
         camera = new Camera2D(this);
 
         // Create canvas renderer with viewport dimensions
-        canvas = new GlCanvasRenderer(getVirtualWidth(), getVirtualHeight());
+        canvas = new GLCanvasRenderer(getVirtualWidth(), getVirtualHeight());
 
         // Initialize content manager
         content = ServiceProvider.get(ContentManager.class);

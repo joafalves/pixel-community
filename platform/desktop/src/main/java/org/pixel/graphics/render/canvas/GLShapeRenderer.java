@@ -22,7 +22,7 @@ import static org.lwjgl.opengl.GL20.*;
  * Renders simple 2D shapes (rectangles, circles, etc.) using OpenGL.
  * Used by GlCanvasRenderer for shape drawing operations.
  */
-public class GlShapeRenderer {
+public class GLShapeRenderer {
 
     private static final int VERTEX_SIZE = 6; // x, y, r, g, b, a
     private static final int MAX_VERTICES = 1000;
@@ -38,7 +38,7 @@ public class GlShapeRenderer {
     /**
      * Constructor.
      */
-    public GlShapeRenderer() {
+    public GLShapeRenderer() {
         this.shader = new GLPrimitiveShader();
         this.vao = new GLVertexArrayObject();
         this.vbo = new GLVertexBufferObject();

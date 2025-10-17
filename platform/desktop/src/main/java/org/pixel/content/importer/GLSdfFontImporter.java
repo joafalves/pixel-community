@@ -9,7 +9,7 @@ import org.pixel.content.ContentImporter;
 import org.pixel.content.ContentImporterInfo;
 import org.pixel.content.ImportContext;
 import org.pixel.content.importer.settings.FontImporterSettings;
-import org.pixel.graphics.render.canvas.text.GlSdfFontGenerator;
+import org.pixel.graphics.render.canvas.text.GLSdfFontGenerator;
 import org.pixel.graphics.render.canvas.text.SdfFont;
 
 import java.nio.ByteBuffer;
@@ -37,7 +37,7 @@ public class GLSdfFontImporter implements ContentImporter<SdfFont> {
         int fontSize = settings.getFontSize();
 
         // Generate the SDF font using the generator
-        GlSdfFontGenerator generator = new GlSdfFontGenerator();
+        GLSdfFontGenerator generator = new GLSdfFontGenerator();
         return generator.generate(ttfData, fontSize);
     }
 }

@@ -13,7 +13,8 @@ import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.render.canvas.GlCanvasRenderer;
+import org.pixel.graphics.render.canvas.Canvas;
+import org.pixel.graphics.render.canvas.GLCanvas;
 import org.pixel.graphics.render.canvas.text.SdfFont;
 import org.pixel.math.Size;
 import org.pixel.math.Vector2;
@@ -25,7 +26,7 @@ import org.pixel.math.Vector2;
 public class CanvasTextMeasurementDemo extends DemoGame {
 
     private Camera2D camera;
-    private GlCanvasRenderer canvas;
+    private Canvas canvas;
     private ContentManager content;
     private SdfFont font;
     private SdfFont smallFont;
@@ -39,7 +40,7 @@ public class CanvasTextMeasurementDemo extends DemoGame {
         super.load();
 
         camera = new Camera2D(this);
-        canvas = new GlCanvasRenderer(getVirtualWidth(), getVirtualHeight());
+        canvas = new GLCanvas(getVirtualWidth(), getVirtualHeight());
         content = ServiceProvider.get(ContentManager.class);
         font = content.load("fonts/roboto-medium.ttf", SdfFont.class,
             new FontImporterSettings(18, 3));
@@ -57,7 +58,9 @@ public class CanvasTextMeasurementDemo extends DemoGame {
         canvas.begin(camera.getViewMatrix());
 
         // Title
-        canvas.drawText("Text Measurement & Alignment Demo", font, 20, 20, Color.WHITE);
+        canvas.text("Text Measurement & Alignment Demo", font, 20, 20)
+            .withFill(Color.WHITE)
+            .apply();
 
         // Demo 1: Measuring text dimensions
         drawDemo1_MeasureText();
@@ -79,8 +82,13 @@ public class CanvasTextMeasurementDemo extends DemoGame {
      */
     private void drawDemo1_MeasureText() {
         // Background
-        canvas.fillRoundedRect(20, 60, 370, 150, 10, new Color(0.15f, 0.15f, 0.2f, 0.9f));
-        canvas.drawText("Demo 1: Text Measurement", font, 30, 70, Color.WHITE);
+        canvas.rect(20, 60, 370, 150)
+            .withRoundedCorners(10)
+            .withFill(new Color(0.15f, 0.15f, 0.2f, 0.9f))
+            .apply();
+        canvas.text("Demo 1: Text Measurement", font, 30, 70)
+            .withFill(Color.WHITE)
+            .apply();
 
         // Sample texts
         String[] texts = {"Short", "Medium text", "This is a longer text sample"};
@@ -88,25 +96,27 @@ public class CanvasTextMeasurementDemo extends DemoGame {
 
         for (String text : texts) {
             // Measure the text
-            Size textSize = canvas.measureText(text, font);
+            Size textSize = canvas.getRenderer().measureText(text, font);
 
             // Draw the text
             float x = 30;
-            canvas.drawText(text, font, x, y, new Color(0.9f, 0.9f, 1.0f, 1.0f));
+            canvas.text(text, font, x, y)
+                .withFill(new Color(0.9f, 0.9f, 1.0f, 1.0f))
+                .apply();
 
             // Draw a box around it showing the measured dimensions
-            canvas.strokeRect(x, y, textSize.getWidth(), textSize.getHeight(), 1,
-                new Color(1, 1, 0, 0.5f));
+            canvas.rect(x, y, textSize.getWidth(), textSize.getHeight())
+                .withStroke(1, new Color(1, 1, 0, 0.5f))
+                .apply();
 
             // Show dimensions
             String dims = String.format("%.0f × %.0f px", textSize.getWidth(), textSize.getHeight());
-            canvas.drawText(dims, smallFont, x + textSize.getWidth() + 10, y + 5,
-                new Color(0.7f, 0.7f, 0.7f, 1.0f));
+            canvas.text(dims, smallFont, x + textSize.getWidth() + 10, y + 5)
+                .withFill(new Color(0.7f, 0.7f, 0.7f, 1.0f))
+                .apply();
 
             y += 35;
         }
-
-        //canvas.fillRoundedRect(20, 60, 370, 150, 10, new Color(0.15f, 0.15f, 0.2f, 1.9f));
     }
 
     /**
@@ -114,8 +124,13 @@ public class CanvasTextMeasurementDemo extends DemoGame {
      */
     private void drawDemo2_HorizontalCentering() {
         // Background
-        canvas.fillRoundedRect(410, 60, 370, 150, 10, new Color(0.15f, 0.15f, 0.2f, 0.9f));
-        canvas.drawText("Demo 2: Horizontal Centering", font, 420, 70, Color.WHITE);
+        canvas.rect(410, 60, 370, 150)
+            .withRoundedCorners(10)
+            .withFill(new Color(0.15f, 0.15f, 0.2f, 0.9f))
+            .apply();
+        canvas.text("Demo 2: Horizontal Centering", font, 420, 70)
+            .withFill(Color.WHITE)
+            .apply();
 
         // Container boxes
         float[] boxWidths = {100, 200, 300};
@@ -125,17 +140,23 @@ public class CanvasTextMeasurementDemo extends DemoGame {
             float boxX = 420 + (350 - boxWidth) / 2; // Center the box itself
 
             // Draw container
-            canvas.strokeRect(boxX, y, boxWidth, 30, 2, new Color(0, 1, 1, 0.5f));
+            canvas.rect(boxX, y, boxWidth, 30)
+                .withStroke(2, new Color(0, 1, 1, 0.5f))
+                .apply();
 
             // Text to center
             String text = String.format("%.0f px wide", boxWidth);
 
             // Center text horizontally
-            float textX = canvas.centerTextHorizontally(boxX, boxWidth, text, font);
-            canvas.drawText(text, font, textX, y + 7, new Color(1, 1, 0.5f, 1.0f));
+            float textX = canvas.getRenderer().centerTextHorizontally(boxX, boxWidth, text, font);
+            canvas.text(text, font, textX, y + 7)
+                .withFill(new Color(1, 1, 0.5f, 1.0f))
+                .apply();
 
             // Show center line
-            canvas.fillRect(boxX + boxWidth / 2 - 0.5f, y, 1, 30, new Color(1, 0, 0, 0.3f));
+            canvas.rect(boxX + boxWidth / 2 - 0.5f, y, 1, 30)
+                .withFill(new Color(1, 0, 0, 0.3f))
+                .apply();
 
             y += 40;
         }
@@ -146,8 +167,13 @@ public class CanvasTextMeasurementDemo extends DemoGame {
      */
     private void drawDemo3_VerticalCentering() {
         // Background
-        canvas.fillRoundedRect(20, 230, 370, 150, 10, new Color(0.15f, 0.15f, 0.2f, 0.9f));
-        canvas.drawText("Demo 3: Vertical Centering", font, 30, 240, Color.WHITE);
+        canvas.rect(20, 230, 370, 150)
+            .withRoundedCorners(10)
+            .withFill(new Color(0.15f, 0.15f, 0.2f, 0.9f))
+            .apply();
+        canvas.text("Demo 3: Vertical Centering", font, 30, 240)
+            .withFill(Color.WHITE)
+            .apply();
 
         // Container boxes with different heights
         float[] boxHeights = {30, 50, 70};
@@ -157,21 +183,28 @@ public class CanvasTextMeasurementDemo extends DemoGame {
             float boxY = 270;
 
             // Draw container
-            canvas.strokeRect(x, boxY, 100, boxHeight, 2, new Color(0, 1, 0, 0.5f));
+            canvas.rect(x, boxY, 100, boxHeight)
+                .withStroke(2, new Color(0, 1, 0, 0.5f))
+                .apply();
 
             // Text to center
             String text = "Centered";
 
             // Center text vertically
-            float textY = canvas.centerTextVertically(boxY, boxHeight, font);
-            canvas.drawText(text, font, x + 10, textY, new Color(0.5f, 1, 1, 1.0f));
+            float textY = canvas.getRenderer().centerTextVertically(boxY, boxHeight, font);
+            canvas.text(text, font, x + 10, textY)
+                .withFill(new Color(0.5f, 1, 1, 1.0f))
+                .apply();
 
             // Show center line
-            canvas.fillRect(x, boxY + boxHeight / 2 - 0.5f, 100, 1, new Color(1, 0, 0, 0.3f));
+            canvas.rect(x, boxY + boxHeight / 2 - 0.5f, 100, 1)
+                .withFill(new Color(1, 0, 0, 0.3f))
+                .apply();
 
             // Label
-            canvas.drawText(String.format("%.0f px", boxHeight), smallFont, x + 30, boxY + boxHeight + 5,
-                new Color(0.7f, 0.7f, 0.7f, 1.0f));
+            canvas.text(String.format("%.0f px", boxHeight), smallFont, x + 30, boxY + boxHeight + 5)
+                .withFill(new Color(0.7f, 0.7f, 0.7f, 1.0f))
+                .apply();
 
             x += 120;
         }
@@ -182,8 +215,13 @@ public class CanvasTextMeasurementDemo extends DemoGame {
      */
     private void drawDemo4_FullCentering() {
         // Background
-        canvas.fillRoundedRect(410, 230, 370, 150, 10, new Color(0.15f, 0.15f, 0.2f, 0.9f));
-        canvas.drawText("Demo 4: Full Centering", font, 420, 240, Color.WHITE);
+        canvas.rect(410, 230, 370, 150)
+            .withRoundedCorners(10)
+            .withFill(new Color(0.15f, 0.15f, 0.2f, 0.9f))
+            .apply();
+        canvas.text("Demo 4: Full Centering", font, 420, 240)
+            .withFill(Color.WHITE)
+            .apply();
 
         // Different sized boxes
         float[][] boxes = {
@@ -200,34 +238,46 @@ public class CanvasTextMeasurementDemo extends DemoGame {
             float boxHeight = boxes[i][1];
             float boxX = startX + i * 120;
 
-            // Draw container with gradient
+            // Draw container with fill
             Color fillColor = new Color(
                 0.2f + i * 0.15f,
                 0.3f + i * 0.1f,
                 0.5f + i * 0.15f,
                 0.8f
             );
-            canvas.fillRoundedRect(boxX, y, boxWidth, boxHeight, 8, fillColor);
-            canvas.strokeRoundedRect(boxX, y, boxWidth, boxHeight, 8, 2,
-                new Color(1, 1, 1, 0.3f));
+            canvas.rect(boxX, y, boxWidth, boxHeight)
+                .withRoundedCorners(8)
+                .withFill(fillColor)
+                .apply();
+            canvas.rect(boxX, y, boxWidth, boxHeight)
+                .withRoundedCorners(8)
+                .withStroke(2, new Color(1, 1, 1, 0.3f))
+                .apply();
 
             // Text to center
             String text = String.format("%d", i + 1);
 
             // Center text both ways using the helper method
-            Vector2 textPos = canvas.centerText(boxX, y, boxWidth, boxHeight, text, font);
-            canvas.drawText(text, font, textPos.getX(), textPos.getY(), Color.WHITE);
+            Vector2 textPos = canvas.getRenderer().centerText(boxX, y, boxWidth, boxHeight, text, font);
+            canvas.text(text, font, textPos.getX(), textPos.getY())
+                .withFill(Color.WHITE)
+                .apply();
 
             // Show crosshair at center
             float centerX = boxX + boxWidth / 2;
             float centerY = y + boxHeight / 2;
-            canvas.fillRect(centerX - 5, centerY - 0.5f, 10, 1, new Color(1, 1, 0, 0.5f));
-            canvas.fillRect(centerX - 0.5f, centerY - 5, 1, 10, new Color(1, 1, 0, 0.5f));
+            canvas.rect(centerX - 5, centerY - 0.5f, 10, 1)
+                .withFill(new Color(1, 1, 0, 0.5f))
+                .apply();
+            canvas.rect(centerX - 0.5f, centerY - 5, 1, 10)
+                .withFill(new Color(1, 1, 0, 0.5f))
+                .apply();
         }
 
         // Info text
-        canvas.drawText("Using centerText() for perfect centering", smallFont, 430, y + 110,
-            new Color(0.7f, 0.7f, 0.7f, 1.0f));
+        canvas.text("Using centerText() for perfect centering", smallFont, 430, y + 110)
+            .withFill(new Color(0.7f, 0.7f, 0.7f, 1.0f))
+            .apply();
     }
 
     @Override

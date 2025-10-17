@@ -12,7 +12,8 @@ import org.pixel.content.ContentManager;
 import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.render.canvas.GlCanvasRenderer;
+import org.pixel.graphics.render.canvas.Canvas;
+import org.pixel.graphics.render.canvas.GLCanvas;
 import org.pixel.graphics.render.canvas.text.SdfFont;
 
 /**
@@ -21,7 +22,7 @@ import org.pixel.graphics.render.canvas.text.SdfFont;
  */
 public class CanvasColorDemo extends DemoGame {
 
-    private GlCanvasRenderer canvas;
+    private Canvas canvas;
     private ContentManager content;
     private SdfFont font;
     private SdfFont titleFont;
@@ -35,8 +36,8 @@ public class CanvasColorDemo extends DemoGame {
     public void load() {
         super.load();
 
-        // Create canvas renderer
-        canvas = new GlCanvasRenderer(getVirtualWidth(), getVirtualHeight());
+        // Create canvas
+        canvas = new GLCanvas(getVirtualWidth(), getVirtualHeight());
 
         // Load content
         content = ServiceProvider.get(ContentManager.class);
@@ -59,9 +60,13 @@ public class CanvasColorDemo extends DemoGame {
         canvas.begin();
 
         // Title
-        canvas.drawText("Canvas Color & Gradient Demo", titleFont, 20, 20, Color.WHITE);
-        canvas.drawText("Animated color transitions, gradients, and color theory", 
-                       font, 20, 50, new Color(0.7f, 0.7f, 0.7f, 1.0f));
+        canvas.text("Canvas Color & Gradient Demo", titleFont, 20, 20)
+            .withFill(Color.WHITE)
+            .apply();
+        canvas.text("Animated color transitions, gradients, and color theory", 
+                       font, 20, 50)
+            .withFill(new Color(0.7f, 0.7f, 0.7f, 1.0f))
+            .apply();
 
         // Demo 1: Rainbow Gradient Bar (Horizontal)
         drawDemo1_RainbowGradient();
@@ -93,7 +98,9 @@ public class CanvasColorDemo extends DemoGame {
         float width = 840;
         float height = 40;
 
-        canvas.drawText("Rainbow Gradient (GPU-Accelerated, Animated)", font, x, y - 20, Color.YELLOW);
+        canvas.text("Rainbow Gradient (GPU-Accelerated, Animated)", font, x, y - 20)
+            .withFill(Color.YELLOW)
+            .apply();
 
         // NEW: Draw gradient as multiple quad segments for multi-stop rainbow
         // Much more efficient than 100 strips - only 6 quads!
@@ -108,17 +115,16 @@ public class CanvasColorDemo extends DemoGame {
             float segmentX = x + (width * i / 6);
             float segmentWidth = width / 6;
             
-            // Use fillRectLinearGradient for smooth transitions
-            canvas.fillRectLinearGradient(
-                segmentX, y, segmentWidth, height,
-                0,  // horizontal gradient
-                colors[i],
-                colors[i + 1]
-            );
+            // Use linear gradient for smooth transitions
+            canvas.rect(segmentX, y, segmentWidth, height)
+                .withFillLinearGradient(0, colors[i], colors[i + 1])
+                .apply();
         }
 
         // Border
-        canvas.strokeRect(x, y, width, height, 2, Color.WHITE);
+        canvas.rect(x, y, width, height)
+            .withStroke(2, Color.WHITE)
+            .apply();
     }
 
     /**
@@ -126,7 +132,9 @@ public class CanvasColorDemo extends DemoGame {
      */
     private void drawDemo2_PulsingCircles() {
         float y = 160;
-        canvas.drawText("Pulsing Colors (Different Phases)", font, 30, y - 10, Color.SKY);
+        canvas.text("Pulsing Colors (Different Phases)", font, 30, y - 10)
+            .withFill(Color.SKY)
+            .apply();
 
         float[] phases = {0, 0.33f, 0.66f, 1.0f, 1.33f};
         
@@ -145,9 +153,13 @@ public class CanvasColorDemo extends DemoGame {
             
             // NEW: Use radial gradient from bright center to saturated edge
             Color centerColor = new Color(1.0f, 1.0f, 1.0f, 0.8f); // White center
-            canvas.fillCircleRadialGradient(centerX, centerY, radius, centerColor, edgeColor);
+            canvas.circle(centerX, centerY, radius)
+                .withFillRadialGradient(centerColor, edgeColor)
+                .apply();
             
-            canvas.strokeCircle(centerX, centerY, radius, 2, Color.WHITE);
+            canvas.circle(centerX, centerY, radius)
+                .withStroke(2, Color.WHITE)
+                .apply();
         }
     }
 
@@ -159,7 +171,9 @@ public class CanvasColorDemo extends DemoGame {
         float centerY = 350;
         float radius = 60;
 
-        canvas.drawText("Color Wheel (Rotating)", font, centerX - 68, centerY + 90, new Color(1, 0, 1, 1));
+        canvas.text("Color Wheel (Rotating)", font, centerX - 68, centerY + 90)
+            .withFill(new Color(1, 0, 1, 1))
+            .apply();
 
         canvas.save();
         canvas.translate(centerX, centerY);
@@ -176,18 +190,21 @@ public class CanvasColorDemo extends DemoGame {
             Color color = hsvToRgb(hue, 1.0f, 1.0f);
             
             // Draw triangle segment
-            canvas.beginPath();
-            canvas.moveTo(centerX, centerY);
-            canvas.lineTo(centerX + radius * (float) Math.cos(angle1),
-                         centerY + radius * (float) Math.sin(angle1));
-            canvas.lineTo(centerX + radius * (float) Math.cos(angle2),
-                         centerY + radius * (float) Math.sin(angle2));
-            canvas.closePath();
-            canvas.fill(color);
+            canvas.path()
+                .moveTo(centerX, centerY)
+                .lineTo(centerX + radius * (float) Math.cos(angle1),
+                         centerY + radius * (float) Math.sin(angle1))
+                .lineTo(centerX + radius * (float) Math.cos(angle2),
+                         centerY + radius * (float) Math.sin(angle2))
+                .closePath()
+                .withFill(color)
+                .apply();
         }
 
         // White center circle
-        canvas.fillCircle(centerX, centerY, 15, Color.WHITE);
+        canvas.circle(centerX, centerY, 15)
+            .withFill(Color.WHITE)
+            .apply();
 
         canvas.restore();
     }
@@ -201,7 +218,9 @@ public class CanvasColorDemo extends DemoGame {
         float width = 590;
         float height = 120;
 
-        canvas.drawText("Gradient Wave Animation (NEW: 4-Corner Gradients)", font, x, y - 20, Color.GREEN);
+        canvas.text("Gradient Wave Animation (NEW: 4-Corner Gradients)", font, x, y - 20)
+            .withFill(Color.GREEN)
+            .apply();
 
         // NEW: Draw vertical gradient strips with animated colors
         int strips = 10;
@@ -223,17 +242,15 @@ public class CanvasColorDemo extends DemoGame {
             Color bottomColor2 = hsvToRgb(0.8f + wave2 * 0.2f, 0.9f, 0.9f);
             
             // Draw 4-corner gradient quad
-            canvas.fillRectGradient(
-                stripX, y, stripWidth, height,
-                topColor1,      // top-left
-                topColor2,      // top-right
-                bottomColor2,   // bottom-right
-                bottomColor1    // bottom-left
-            );
+            canvas.rect(stripX, y, stripWidth, height)
+                .withFillGradient(topColor1, topColor2, bottomColor2, bottomColor1)
+                .apply();
         }
 
         // Border
-        canvas.strokeRect(x, y, width, height, 2, Color.WHITE);
+        canvas.rect(x, y, width, height)
+            .withStroke(2, Color.WHITE)
+            .apply();
     }
 
     /**
@@ -244,7 +261,9 @@ public class CanvasColorDemo extends DemoGame {
         float baseY = 430;
         float size = 60;
 
-        canvas.drawText("RGB Color Mixing (Animated)", font, baseX, baseY - 20, new Color(0, 1, 1, 1));
+        canvas.text("RGB Color Mixing (Animated)", font, baseX, baseY - 20)
+            .withFill(new Color(0, 1, 1, 1))
+            .apply();
 
         // Animated RGB values
         float r = (float) Math.sin(time * 1.2f) * 0.5f + 0.5f;
@@ -252,20 +271,45 @@ public class CanvasColorDemo extends DemoGame {
         float b = (float) Math.sin(time * 1.8f) * 0.5f + 0.5f;
 
         // Draw individual color components
-        canvas.fillRoundedRect(baseX, baseY, size, size, 10, new Color(r, 0, 0, 0.8f));
-        canvas.drawText("R", font, baseX + 25, baseY + 70, Color.RED);
+        canvas.rect(baseX, baseY, size, size)
+            .withRoundedCorners(10)
+            .withFill(new Color(r, 0, 0, 0.8f))
+            .apply();
+        canvas.text("R", font, baseX + 25, baseY + 70)
+            .withFill(Color.RED)
+            .apply();
 
-        canvas.fillRoundedRect(baseX + 80, baseY, size, size, 10, new Color(0, g, 0, 0.8f));
-        canvas.drawText("G", font, baseX + 105, baseY + 70, Color.GREEN);
+        canvas.rect(baseX + 80, baseY, size, size)
+            .withRoundedCorners(10)
+            .withFill(new Color(0, g, 0, 0.8f))
+            .apply();
+        canvas.text("G", font, baseX + 105, baseY + 70)
+            .withFill(Color.GREEN)
+            .apply();
 
-        canvas.fillRoundedRect(baseX + 160, baseY, size, size, 10, new Color(0, 0, b, 0.8f));
-        canvas.drawText("B", font, baseX + 185, baseY + 70, Color.BLUE);
+        canvas.rect(baseX + 160, baseY, size, size)
+            .withRoundedCorners(10)
+            .withFill(new Color(0, 0, b, 0.8f))
+            .apply();
+        canvas.text("B", font, baseX + 185, baseY + 70)
+            .withFill(Color.BLUE)
+            .apply();
 
         // Draw mixed result
-        canvas.drawText("+", font, baseX + 235, baseY + 25, Color.WHITE);
-        canvas.fillRoundedRect(baseX + 260, baseY, size, size, 10, new Color(r, g, b, 1.0f));
-        canvas.strokeRoundedRect(baseX + 260, baseY, size, size, 10, 2, Color.WHITE);
-        canvas.drawText("Mix", font, baseX + 275, baseY + 70, Color.WHITE);
+        canvas.text("+", font, baseX + 235, baseY + 25)
+            .withFill(Color.WHITE)
+            .apply();
+        canvas.rect(baseX + 260, baseY, size, size)
+            .withRoundedCorners(10)
+            .withFill(new Color(r, g, b, 1.0f))
+            .apply();
+        canvas.rect(baseX + 260, baseY, size, size)
+            .withRoundedCorners(10)
+            .withStroke(2, Color.WHITE)
+            .apply();
+        canvas.text("Mix", font, baseX + 275, baseY + 70)
+            .withFill(Color.WHITE)
+            .apply();
     }
 
     /**
@@ -277,7 +321,9 @@ public class CanvasColorDemo extends DemoGame {
         float size = 50;
         int count = 5;
 
-        canvas.drawText("Hue Rotation", font, startX, y - 20, new Color(1, 0.5f, 0, 1));
+        canvas.text("Hue Rotation", font, startX, y - 20)
+            .withFill(new Color(1, 0.5f, 0, 1))
+            .apply();
 
         for (int i = 0; i < count; i++) {
             float x = startX + i * 65;
@@ -291,13 +337,19 @@ public class CanvasColorDemo extends DemoGame {
             float scaledSize = size * scale;
             float offset = (size - scaledSize) / 2;
             
-            canvas.fillRoundedRect(x + offset, y + offset, scaledSize, scaledSize, 8, color);
-            canvas.strokeRoundedRect(x + offset, y + offset, scaledSize, scaledSize, 8, 2, Color.WHITE);
+            canvas.rect(x + offset, y + offset, scaledSize, scaledSize)
+                .withRoundedCorners(8)
+                .withFill(color)
+                .apply();
+            canvas.rect(x + offset, y + offset, scaledSize, scaledSize)
+                .withRoundedCorners(8)
+                .withStroke(2, Color.WHITE)
+                .apply();
         }
     }
 
     /**
-     * Convert HSV to RGB color.
+now      * Convert HSV to RGB color.
      * 
      * @param h Hue [0-1]
      * @param s Saturation [0-1]

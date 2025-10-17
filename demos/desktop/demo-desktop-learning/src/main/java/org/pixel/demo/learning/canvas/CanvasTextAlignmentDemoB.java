@@ -13,7 +13,7 @@ import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.render.canvas.GlCanvasRenderer;
+import org.pixel.graphics.render.canvas.GLCanvasRenderer;
 import org.pixel.graphics.render.canvas.text.SdfFont;
 
 /**
@@ -30,7 +30,7 @@ import org.pixel.graphics.render.canvas.text.SdfFont;
 public class CanvasTextAlignmentDemoB extends DemoGame {
 
     private Camera2D camera;
-    private GlCanvasRenderer canvas;
+    private GLCanvasRenderer canvas;
     private ContentManager content;
     private SdfFont font;
 
@@ -42,7 +42,7 @@ public class CanvasTextAlignmentDemoB extends DemoGame {
     public void load() {
         super.load();
         camera = new Camera2D(this);
-        canvas = new GlCanvasRenderer(getVirtualWidth(), getVirtualHeight());
+        canvas = new GLCanvasRenderer(getVirtualWidth(), getVirtualHeight());
         content = ServiceProvider.get(ContentManager.class);
         font = content.load("fonts/roboto-regular.ttf", SdfFont.class,
             new FontImporterSettings(24, 3));

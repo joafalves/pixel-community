@@ -6,6 +6,8 @@
 package org.pixel.graphics.render.canvas;
 
 import org.pixel.commons.Color;
+import org.pixel.content.Texture;
+import org.pixel.content.opengl.GLTexture;
 import org.pixel.graphics.render.canvas.text.SdfFont;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Matrix4;
@@ -14,10 +16,12 @@ import org.pixel.math.Size;
 import org.pixel.math.Vector2;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL20.*;
 
 /**
  * OpenGL implementation of CanvasRenderer using unified SDF batch rendering.
@@ -28,18 +32,24 @@ import static org.lwjgl.opengl.GL11.*;
  *   <li>Unified SDF-based rendering - all primitives use the same shader</li>
  *   <li>Perfect draw order - everything batched in submission order</li>
  *   <li>High performance - minimal draw calls through batching</li>
+ *   <li>Multi-texture support - batches up to GL_MAX_TEXTURE_IMAGE_UNITS textures</li>
  *   <li>Transform stack (translate, rotate, scale)</li>
  *   <li>Clipping with scissor test</li>
  * </ul>
  */
-public class GlCanvasRenderer extends CanvasRenderer {
+public class GLCanvasRenderer extends CanvasRenderer {
 
     private Matrix4 activeViewMatrix; // View matrix for current frame
     private final Matrix4 defaultViewMatrix; // Default screen-space projection
     private final Stack<TransformState> transformStack;
-    private final GlSdfBatchRenderer batchRenderer; // UNIFIED renderer for everything!
+    private final GLSdfBatchRenderer batchRenderer; // UNIFIED renderer for everything!
     private TransformState currentTransform;
     private boolean begun = false;
+    
+    // Multi-texture batching support
+    private final int shaderTextureCount; // Maximum simultaneous textures
+    private final HashMap<Integer, Integer> textureUnitMap = new HashMap<>();
+    private int textureUnitCounter = 0;
     
     // Path API state
     private final List<Vector2> pathPoints = new ArrayList<>();
@@ -70,12 +80,32 @@ public class GlCanvasRenderer extends CanvasRenderer {
      * @param viewportWidth  Viewport width
      * @param viewportHeight Viewport height
      */
-    public GlCanvasRenderer(float viewportWidth, float viewportHeight) {
+    public GLCanvasRenderer(float viewportWidth, float viewportHeight) {
+        this(viewportWidth, viewportHeight, 0); // Auto-detect texture count
+    }
+
+    /**
+     * Constructor with custom texture slot count.
+     *
+     * @param viewportWidth      Viewport width
+     * @param viewportHeight     Viewport height
+     * @param shaderTextureCount Maximum simultaneous textures (0 = auto-detect)
+     */
+    public GLCanvasRenderer(float viewportWidth, float viewportHeight, int shaderTextureCount) {
         this.defaultViewMatrix = Matrix4.orthographic(0, viewportWidth, viewportHeight, 0, -1, 1);
         this.activeViewMatrix = this.defaultViewMatrix;
         this.transformStack = new Stack<>();
-        this.batchRenderer = new GlSdfBatchRenderer(); // ONE renderer for everything!
+        this.batchRenderer = new GLSdfBatchRenderer(); // ONE renderer for everything!
         this.currentTransform = new TransformState();
+        
+        // Query hardware for max texture units if not specified
+        if (shaderTextureCount <= 0) {
+            int[] textureUnits = new int[1];
+            glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, textureUnits);
+            this.shaderTextureCount = Math.max(textureUnits[0], 1);
+        } else {
+            this.shaderTextureCount = shaderTextureCount;
+        }
     }
 
     @Override
@@ -95,6 +125,10 @@ public class GlCanvasRenderer extends CanvasRenderer {
         transformStack.clear();
         currentTransform.transform.setIdentity();
         currentTransform.clipRect = null;
+        
+        // Reset texture tracking
+        textureUnitMap.clear();
+        textureUnitCounter = 0;
         
         // Disable scissor test at the start
         glDisable(GL_SCISSOR_TEST);
@@ -274,7 +308,7 @@ public class GlCanvasRenderer extends CanvasRenderer {
             // Vertical alignment
             // Note: We subtract SDF_PADDING when rendering glyphs, so we need to compensate
             // for that in alignment calculations
-            final float SDF_PADDING = GlSdfConstants.SDF_PADDING_PX / 2.0f;
+            final float SDF_PADDING = GLSdfConstants.SDF_PADDING_PX / 2.0f;
             
             switch (align.getVertical()) {
                 case MIDDLE:
@@ -359,7 +393,7 @@ public class GlCanvasRenderer extends CanvasRenderer {
                 
                 // Handle spaces (matching the rendering logic)
                 if (ch == ' ') {
-                    float spaceWidth = font.getFontSize() * GlSdfConstants.SPACE_WIDTH_RATIO;
+                    float spaceWidth = font.getFontSize() * GLSdfConstants.SPACE_WIDTH_RATIO;
                     lineWidth += spaceWidth + letterSpacing;
                     continue;
                 }
@@ -439,6 +473,124 @@ public class GlCanvasRenderer extends CanvasRenderer {
         int scissorHeight = (int) clip.getHeight();
         
         glScissor(scissorX, scissorY, scissorWidth, scissorHeight);
+    }
+
+    // ============================================================================
+    // Image/Texture Rendering Implementation
+    // ============================================================================
+
+    @Override
+    public void drawImage(Texture texture, float x, float y) {
+        drawImage(texture, x, y, texture.getWidth(), texture.getHeight());
+    }
+
+    @Override
+    public void drawImage(Texture texture, float x, float y, float width, float height) {
+        drawImage(texture, x, y, width, height, Color.WHITE);
+    }
+
+    @Override
+    public void drawImage(Texture texture, Rectangle source, Rectangle destination) {
+        drawImage(texture, source, destination, 0, new Vector2(0, 0), Color.WHITE);
+    }
+
+    @Override
+    public void drawImage(Texture texture, float x, float y, float width, float height, Color tint) {
+        drawImage(texture, null, new Rectangle(x, y, width, height), 0, new Vector2(0, 0), tint);
+    }
+
+    @Override
+    public void drawImage(Texture texture, Rectangle source, Rectangle destination,
+                         float rotation, Vector2 anchor, Color tint) {
+        if (texture == null || destination == null) {
+            return;
+        }
+
+        int textureId = ((GLTexture) texture).getId();
+        
+        // Check if we need to flush early due to texture slots being full
+        if (!textureUnitMap.containsKey(textureId)) {
+            if (textureUnitCounter >= shaderTextureCount) {
+                // Flush the batch - texture slots are full!
+                updateBatchRendererTextures();
+                batchRenderer.end();
+                textureUnitMap.clear();
+                textureUnitCounter = 0;
+                batchRenderer.begin(activeViewMatrix, currentTransform.transform);
+            }
+            textureUnitMap.put(textureId, textureUnitCounter++);
+        }
+        
+        int textureSlot = textureUnitMap.get(textureId);
+        
+        // Calculate source UVs
+        float srcX, srcY, srcWidth, srcHeight;
+        if (source != null) {
+            srcX = source.getX() / texture.getWidth();
+            srcY = source.getY() / texture.getHeight();
+            srcWidth = source.getWidth() / texture.getWidth();
+            srcHeight = source.getHeight() / texture.getHeight();
+        } else {
+            srcX = 0;
+            srcY = 0;
+            srcWidth = 1;
+            srcHeight = 1;
+        }
+        
+        // Handle rotation and anchor using transform stack
+        boolean needsTransform = rotation != 0 || (anchor != null && (anchor.getX() != 0 || anchor.getY() != 0));
+        
+        if (needsTransform) {
+            // Save current transform
+            save();
+            
+            // Calculate anchor point in pixels
+            float anchorX = anchor != null ? anchor.getX() : 0;
+            float anchorY = anchor != null ? anchor.getY() : 0;
+            float anchorPixelX = destination.getX() + destination.getWidth() * anchorX;
+            float anchorPixelY = destination.getY() + destination.getHeight() * anchorY;
+            
+            // Apply transform: translate to anchor, rotate, translate back
+            translate(anchorPixelX, anchorPixelY);
+            if (rotation != 0) {
+                rotate(rotation);
+            }
+            translate(-anchorPixelX, -anchorPixelY);
+        }
+        
+        // Update active textures in batch renderer
+        updateBatchRendererTextures();
+        
+        // Draw the textured quad
+        batchRenderer.drawTexturedQuad(
+            destination.getX(), destination.getY(),
+            destination.getWidth(), destination.getHeight(),
+            tint,
+            srcX, srcY, srcWidth, srcHeight,
+            textureSlot
+        );
+        
+        if (needsTransform) {
+            // Restore transform
+            restore();
+        }
+    }
+
+    /**
+     * Update the batch renderer with the current active textures.
+     */
+    private void updateBatchRendererTextures() {
+        if (textureUnitMap.isEmpty()) {
+            return;
+        }
+        
+        // Convert HashMap to sorted array
+        int[] textureIds = new int[textureUnitCounter];
+        for (var entry : textureUnitMap.entrySet()) {
+            textureIds[entry.getValue()] = entry.getKey();
+        }
+        
+        batchRenderer.setActiveTextures(textureIds, textureUnitCounter);
     }
 
     // ============================================================================

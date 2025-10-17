@@ -24,7 +24,7 @@ import static org.lwjgl.opengl.GL20.*;
  * Renders shapes using signed distance fields in the fragment shader,
  * requiring only 2 triangles (1 quad) per shape regardless of complexity.
  */
-public class GlSdfShapeRenderer implements SdfShapeRenderer {
+public class GLSdfShapeRenderer implements SdfShapeRenderer {
 
     private static final int VERTEX_SIZE = 4; // x, y, u, v
     private static final int SHAPE_ROUNDED_RECT = 0;
@@ -39,7 +39,7 @@ public class GlSdfShapeRenderer implements SdfShapeRenderer {
     /**
      * Constructor.
      */
-    public GlSdfShapeRenderer() {
+    public GLSdfShapeRenderer() {
         this.shader = new GLSdfShapeShader();
         this.vao = new GLVertexArrayObject();
         this.vbo = new GLVertexBufferObject();

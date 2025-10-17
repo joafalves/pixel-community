@@ -12,7 +12,7 @@ import org.pixel.content.ContentManager;
 import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.render.canvas.GlCanvasRenderer;
+import org.pixel.graphics.render.canvas.GLCanvasRenderer;
 import org.pixel.graphics.render.canvas.text.SdfFont;
 
 /**
@@ -21,7 +21,7 @@ import org.pixel.graphics.render.canvas.text.SdfFont;
  */
 public class CanvasPathDemo extends DemoGame {
 
-    private GlCanvasRenderer canvas;
+    private GLCanvasRenderer canvas;
     private ContentManager content;
     private SdfFont font;
     private SdfFont titleFont;
@@ -36,7 +36,7 @@ public class CanvasPathDemo extends DemoGame {
         super.load();
 
         // Create canvas renderer
-        canvas = new GlCanvasRenderer(getVirtualWidth(), getVirtualHeight());
+        canvas = new GLCanvasRenderer(getVirtualWidth(), getVirtualHeight());
 
         // Load content
         content = ServiceProvider.get(ContentManager.class);

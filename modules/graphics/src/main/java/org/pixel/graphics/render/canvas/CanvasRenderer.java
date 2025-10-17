@@ -7,6 +7,7 @@ package org.pixel.graphics.render.canvas;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.lifecycle.Disposable;
+import org.pixel.content.Texture;
 import org.pixel.graphics.render.canvas.text.SdfFont;
 import org.pixel.math.Matrix4;
 import org.pixel.math.Rectangle;
@@ -24,6 +25,9 @@ import org.pixel.math.Vector2;
  *   <li>Batched rendering under the hood</li>
  *   <li>First-class text rendering with SDF</li>
  * </ul>
+ * 
+ * <p><b>Note:</b> For a modern fluent API, see {@link Canvas} which wraps this renderer.
+ * This class provides the low-level immediate-mode rendering operations.
  */
 public abstract class CanvasRenderer implements Disposable {
 
@@ -379,6 +383,103 @@ public abstract class CanvasRenderer implements Disposable {
         float x = centerTextHorizontally(areaX, areaWidth, text, font);
         float y = centerTextVertically(areaY, areaHeight, font);
         return new Vector2(x, y);
+    }
+
+    // === Image/Texture Rendering ===
+
+    /**
+     * Draw a texture at the specified position with its original size.
+     * 
+     * @param texture The texture to draw
+     * @param x       X position
+     * @param y       Y position
+     */
+    public abstract void drawImage(Texture texture, float x, float y);
+
+    /**
+     * Draw a texture at the specified position.
+     */
+    public void drawImage(Texture texture, Vector2 position) {
+        drawImage(texture, position.getX(), position.getY());
+    }
+
+    /**
+     * Draw a texture at the specified position and size.
+     * 
+     * @param texture The texture to draw
+     * @param x       X position
+     * @param y       Y position
+     * @param width   Width to draw the texture
+     * @param height  Height to draw the texture
+     */
+    public abstract void drawImage(Texture texture, float x, float y, float width, float height);
+
+    /**
+     * Draw a texture at the specified position and size.
+     */
+    public void drawImage(Texture texture, Rectangle destination) {
+        drawImage(texture, destination.getX(), destination.getY(), 
+                 destination.getWidth(), destination.getHeight());
+    }
+
+    /**
+     * Draw a portion of a texture (source rectangle) to a destination rectangle.
+     * Similar to HTML5 Canvas drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh).
+     * 
+     * @param texture     The texture to draw
+     * @param source      Source rectangle (portion of texture to draw)
+     * @param destination Destination rectangle (where to draw on screen)
+     */
+    public abstract void drawImage(Texture texture, Rectangle source, Rectangle destination);
+
+    /**
+     * Draw a texture with tint color.
+     * 
+     * @param texture The texture to draw
+     * @param x       X position
+     * @param y       Y position
+     * @param width   Width to draw the texture
+     * @param height  Height to draw the texture
+     * @param tint    Color to tint the texture (Color.WHITE for no tint)
+     */
+    public abstract void drawImage(Texture texture, float x, float y, float width, float height, Color tint);
+
+    /**
+     * Draw a texture with full control (source rect, destination rect, rotation, anchor, tint).
+     * 
+     * @param texture     The texture to draw
+     * @param source      Source rectangle (null for full texture)
+     * @param destination Destination rectangle
+     * @param rotation    Rotation in radians
+     * @param anchor      Anchor point for rotation (0-1 normalized, e.g., 0.5, 0.5 for center)
+     * @param tint        Tint color (Color.WHITE for no tint)
+     */
+    public abstract void drawImage(Texture texture, Rectangle source, Rectangle destination,
+                                   float rotation, Vector2 anchor, Color tint);
+
+    /**
+     * Draw a 9-patch image that scales intelligently while preserving corners and edges.
+     * The 9-patch will be rendered by making 9 drawImage calls that will be batched efficiently.
+     * 
+     * @param ninePatch The 9-patch to draw
+     * @param x         X position
+     * @param y         Y position
+     * @param width     Target width
+     * @param height    Target height
+     */
+    public void drawNinePatch(org.pixel.graphics.render.NinePatch ninePatch, float x, float y, float width, float height) {
+        ninePatch.render(this, x, y, width, height);
+    }
+
+    /**
+     * Draw a 9-patch image at the specified rectangle.
+     * 
+     * @param ninePatch   The 9-patch to draw
+     * @param destination Destination rectangle
+     */
+    public void drawNinePatch(org.pixel.graphics.render.NinePatch ninePatch, Rectangle destination) {
+        drawNinePatch(ninePatch, destination.getX(), destination.getY(), 
+                     destination.getWidth(), destination.getHeight());
     }
 
     // === Path API (HTML5 Canvas-like) ===

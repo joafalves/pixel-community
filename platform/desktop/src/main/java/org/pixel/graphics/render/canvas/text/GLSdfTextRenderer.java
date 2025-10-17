@@ -8,6 +8,7 @@ package org.pixel.graphics.render.canvas.text;
 import org.lwjgl.system.MemoryUtil;
 import org.pixel.commons.Color;
 import org.pixel.graphics.render.SdfTextRenderer;
+import org.pixel.graphics.render.canvas.GLSdfConstants;
 import org.pixel.graphics.render.canvas.TextStyle;
 import org.pixel.graphics.shader.opengl.GLSdfTextShader;
 import org.pixel.graphics.shader.opengl.GLVertexArrayObject;
@@ -26,7 +27,7 @@ import static org.lwjgl.opengl.GL20.*;
  * Renders SDF text using OpenGL.
  * Renders each glyph as a quad with SDF shader for crisp edges and stroke support.
  */
-public class GlSdfTextRenderer implements SdfTextRenderer {
+public class GLSdfTextRenderer implements SdfTextRenderer {
 
     private static final int VERTEX_SIZE = 4; // x, y, u, v
     private static final int VERTICES_PER_GLYPH = 6; // 2 triangles
@@ -41,7 +42,7 @@ public class GlSdfTextRenderer implements SdfTextRenderer {
     /**
      * Constructor.
      */
-    public GlSdfTextRenderer() {
+    public GLSdfTextRenderer() {
         this.shader = new GLSdfTextShader();
         this.vao = new GLVertexArrayObject();
         this.vbo = new GLVertexBufferObject();
@@ -153,7 +154,7 @@ public class GlSdfTextRenderer implements SdfTextRenderer {
         
         // Set text edge threshold for controlling text weight/boldness
         glUniform1f(shader.getUniformLocation("uTextEdge"), 
-            org.pixel.graphics.render.canvas.GlSdfConstants.SDF_TEXT_EDGE_THRESHOLD);
+            GLSdfConstants.SDF_TEXT_EDGE_THRESHOLD);
 
         // Set up blending for text rendering
         glEnable(GL_BLEND);
@@ -179,7 +180,7 @@ public class GlSdfTextRenderer implements SdfTextRenderer {
             // Handle spaces - advance cursor even though there's no glyph to render
             if (ch == ' ') {
                 // Use a standard space width (typically fontSize / 4, but we'll use a reasonable default)
-                float spaceWidth = font.getFontSize() * org.pixel.graphics.render.canvas.GlSdfConstants.SPACE_WIDTH_RATIO;
+                float spaceWidth = font.getFontSize() * GLSdfConstants.SPACE_WIDTH_RATIO;
                 // Note: strokeWidth affects visual appearance but NOT glyph spacing
                 cursorX += spaceWidth + style.getLetterSpacing();
                 continue;

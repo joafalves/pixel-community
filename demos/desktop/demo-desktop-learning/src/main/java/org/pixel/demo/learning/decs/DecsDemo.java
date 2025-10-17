@@ -12,6 +12,7 @@ import org.pixel.demo.learning.decs.system.*;
 import org.pixel.ext.decs.Entity;
 import org.pixel.ext.decs.World;
 import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.graphics.render.canvas.GLCanvasRenderer;
 
 public class DecsDemo extends Game {
 
@@ -29,6 +30,7 @@ public class DecsDemo extends Game {
 
         world = new World();
         world.getProperties().put(this);
+        world.getProperties().put(new GLCanvasRenderer(getVirtualWidth(), getVirtualHeight()));
         world.getProperties().put(ServiceProvider.get(SpriteBatch.class));
         world.getProperties().put(new Camera2D(this)); // Put camera in the world's properties
 

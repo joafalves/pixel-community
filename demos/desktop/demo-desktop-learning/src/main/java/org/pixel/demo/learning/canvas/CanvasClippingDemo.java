@@ -13,9 +13,9 @@ import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.graphics.render.canvas.GlCanvasRenderer;
+import org.pixel.graphics.render.canvas.Canvas;
+import org.pixel.graphics.render.canvas.GLCanvas;
 import org.pixel.graphics.render.canvas.text.SdfFont;
-import org.pixel.math.Vector2;
 
 /**
  * Demo showcasing Canvas clipping functionality.
@@ -24,7 +24,7 @@ import org.pixel.math.Vector2;
 public class CanvasClippingDemo extends DemoGame {
 
     private Camera2D camera;
-    private GlCanvasRenderer canvas;
+    private Canvas canvas;
     private ContentManager content;
     private SdfFont font;
     private float time = 0;
@@ -38,7 +38,7 @@ public class CanvasClippingDemo extends DemoGame {
         super.load();
 
         camera = new Camera2D(this);
-        canvas = new GlCanvasRenderer(getVirtualWidth(), getVirtualHeight());
+        canvas = new GLCanvas(getVirtualWidth(), getVirtualHeight());
         content = ServiceProvider.get(ContentManager.class);
         font = content.load("fonts/roboto-medium.ttf", SdfFont.class,
             new FontImporterSettings(18, 3));
@@ -56,7 +56,9 @@ public class CanvasClippingDemo extends DemoGame {
         canvas.begin(camera.getViewMatrix());
 
         // Title
-        canvas.drawText("Canvas Clipping Demo", font, 20, 20, Color.WHITE);
+        canvas.text("Canvas Clipping Demo", font, 20, 20)
+            .withFill(Color.WHITE)
+            .apply();
 
         // Demo 1: Basic clipping
         drawDemo1_BasicClipping();
@@ -78,8 +80,13 @@ public class CanvasClippingDemo extends DemoGame {
      */
     private void drawDemo1_BasicClipping() {
         // Background
-        canvas.fillRoundedRect(20, 60, 370, 120, 10, new Color(0.15f, 0.15f, 0.2f, 0.9f));
-        canvas.drawText("Demo 1: Basic Clipping", font, 30, 70, Color.WHITE);
+        canvas.rect(20, 60, 370, 120)
+            .withRoundedCorners(10)
+            .withFill(new Color(0.15f, 0.15f, 0.2f, 0.9f))
+            .apply();
+        canvas.text("Demo 1: Basic Clipping", font, 30, 70)
+            .withFill(Color.WHITE)
+            .apply();
         
         // Define clip region
         float clipX = 30;
@@ -88,22 +95,31 @@ public class CanvasClippingDemo extends DemoGame {
         float clipH = 70;
         
         // Show clip boundary
-        canvas.strokeRect(clipX, clipY, clipW, clipH, 2, new Color(1, 1, 0, 0.5f));
+        canvas.rect(clipX, clipY, clipW, clipH)
+            .withStroke(2, new Color(1, 1, 0, 0.5f))
+            .apply();
         
         // Apply clipping
         canvas.clipRect(clipX, clipY, clipW, clipH);
         
         // Draw shapes that extend beyond clip region
-        canvas.fillCircle(60, 130, 40, new Color(0.8f, 0.3f, 0.3f, 1.0f));
-        canvas.fillCircle(120, 130, 40, new Color(0.3f, 0.8f, 0.3f, 1.0f));
-        canvas.fillRect(80, 110, 80, 60, new Color(0.3f, 0.5f, 0.9f, 0.8f));
+        canvas.circle(60, 130, 40)
+            .withFill(new Color(0.8f, 0.3f, 0.3f, 1.0f))
+            .apply();
+        canvas.circle(120, 130, 40)
+            .withFill(new Color(0.3f, 0.8f, 0.3f, 1.0f))
+            .apply();
+        canvas.rect(80, 110, 80, 60)
+            .withFill(new Color(0.3f, 0.5f, 0.9f, 0.8f))
+            .apply();
         
         // Reset clipping
         canvas.resetClip();
         
         // Label
-        canvas.drawText("Only content inside\nyellow box is visible", font, 200, 120,
-            new Color(0.7f, 0.7f, 0.7f, 1.0f));
+        canvas.text("Only content inside\nyellow box is visible", font, 200, 120)
+            .withFill(new Color(0.7f, 0.7f, 0.7f, 1.0f))
+            .apply();
     }
 
     /**
@@ -111,41 +127,57 @@ public class CanvasClippingDemo extends DemoGame {
      */
     private void drawDemo2_NestedClipping() {
         // Background
-        canvas.fillRoundedRect(20, 200, 370, 180, 10, new Color(0.15f, 0.15f, 0.2f, 0.9f));
-        canvas.drawText("Demo 2: Nested Clipping", font, 30, 210, Color.WHITE);
+        canvas.rect(20, 200, 370, 180)
+            .withRoundedCorners(10)
+            .withFill(new Color(0.15f, 0.15f, 0.2f, 0.9f))
+            .apply();
+        canvas.text("Demo 2: Nested Clipping", font, 30, 210)
+            .withFill(Color.WHITE)
+            .apply();
         
         // Outer clip region
         float outer1X = 30;
         float outer1Y = 240;
-        canvas.strokeRect(outer1X, outer1Y, 160, 120, 2, new Color(1, 0, 0, 0.5f));
+        canvas.rect(outer1X, outer1Y, 160, 120)
+            .withStroke(2, new Color(1, 0, 0, 0.5f))
+            .apply();
         
         canvas.save();
         canvas.clipRect(outer1X, outer1Y, 160, 120);
         
         // Fill background in outer clip
-        canvas.fillRect(outer1X, outer1Y, 160, 120, new Color(0.3f, 0.2f, 0.2f, 0.5f));
+        canvas.rect(outer1X, outer1Y, 160, 120)
+            .withFill(new Color(0.3f, 0.2f, 0.2f, 0.5f))
+            .apply();
         
         // Inner clip region (intersection with outer)
         float inner1X = 60;
         float inner1Y = 270;
-        canvas.strokeRect(inner1X, inner1Y, 100, 60, 2, new Color(0, 1, 0, 0.5f));
+        canvas.rect(inner1X, inner1Y, 100, 60)
+            .withStroke(2, new Color(0, 1, 0, 0.5f))
+            .apply();
         
         canvas.save();
         canvas.clipRect(inner1X, inner1Y, 100, 60);
         
         // This circle is clipped by the INTERSECTION of both regions
-        canvas.fillCircle(110, 300, 50, new Color(0.8f, 0.6f, 0.2f, 1.0f));
+        canvas.circle(110, 300, 50)
+            .withFill(new Color(0.8f, 0.6f, 0.2f, 1.0f))
+            .apply();
         
         canvas.restore(); // Back to outer clip
         
         // This text is only clipped by outer (red) region
-        canvas.drawText("Outer clip only", font, 40, 340, Color.WHITE);
+        canvas.text("Outer clip only", font, 40, 340)
+            .withFill(Color.WHITE)
+            .apply();
         
         canvas.restore(); // No clipping
         
         // Label
-        canvas.drawText("Red = outer\nGreen = inner\nClips intersect!", font, 210, 280,
-            new Color(0.7f, 0.7f, 0.7f, 1.0f));
+        canvas.text("Red = outer\nGreen = inner\nClips intersect!", font, 210, 280)
+            .withFill(new Color(0.7f, 0.7f, 0.7f, 1.0f))
+            .apply();
     }
 
     /**
@@ -153,8 +185,13 @@ public class CanvasClippingDemo extends DemoGame {
      */
     private void drawDemo3_ScrollingContent() {
         // Background
-        canvas.fillRoundedRect(410, 60, 370, 180, 10, new Color(0.15f, 0.15f, 0.2f, 0.9f));
-        canvas.drawText("Demo 3: Scrolling Content", font, 420, 70, Color.WHITE);
+        canvas.rect(410, 60, 370, 180)
+            .withRoundedCorners(10)
+            .withFill(new Color(0.15f, 0.15f, 0.2f, 0.9f))
+            .apply();
+        canvas.text("Demo 3: Scrolling Content", font, 420, 70)
+            .withFill(Color.WHITE)
+            .apply();
         
         // Scrollable area boundary
         float scrollX = 420;
@@ -162,7 +199,9 @@ public class CanvasClippingDemo extends DemoGame {
         float scrollW = 350;
         float scrollH = 120;
         
-        canvas.strokeRect(scrollX, scrollY, scrollW, scrollH, 2, new Color(0, 1, 1, 0.5f));
+        canvas.rect(scrollX, scrollY, scrollW, scrollH)
+            .withStroke(2, new Color(0, 1, 1, 0.5f))
+            .apply();
         
         // Apply clipping to scrollable area
         canvas.clipRect(scrollX, scrollY, scrollW, scrollH);
@@ -185,19 +224,24 @@ public class CanvasClippingDemo extends DemoGame {
                 1.0f
             );
             
-            canvas.fillRoundedRect(x, y, 60, 60, 10, color);
+            canvas.rect(x, y, 60, 60)
+                .withRoundedCorners(10)
+                .withFill(color)
+                .apply();
             
             // Center the text in the box
             String num = "" + (i + 1);
-            Vector2 textPos = canvas.centerText(x, y, 60, 60, num, font);
-            canvas.drawText(num, font, textPos.getX(), textPos.getY(), Color.WHITE);
+            canvas.text(num, font, x + 30, y + 23)
+                .withFill(Color.WHITE)
+                .apply();
         }
         
         canvas.restore();
         canvas.resetClip();
         
-        canvas.drawText("<- Content scrolls, clipped by cyan box ->", font, 440, 220,
-            new Color(0.7f, 0.7f, 0.7f, 1.0f));
+        canvas.text("<- Content scrolls, clipped by cyan box ->", font, 440, 220)
+            .withFill(new Color(0.7f, 0.7f, 0.7f, 1.0f))
+            .apply();
     }
 
     /**
@@ -205,8 +249,13 @@ public class CanvasClippingDemo extends DemoGame {
      */
     private void drawDemo4_AnimatedClipping() {
         // Background
-        canvas.fillRoundedRect(410, 260, 370, 120, 10, new Color(0.15f, 0.15f, 0.2f, 0.9f));
-        canvas.drawText("Demo 4: Animated Clipping", font, 420, 270, Color.WHITE);
+        canvas.rect(410, 260, 370, 120)
+            .withRoundedCorners(10)
+            .withFill(new Color(0.15f, 0.15f, 0.2f, 0.9f))
+            .apply();
+        canvas.text("Demo 4: Animated Clipping", font, 420, 270)
+            .withFill(Color.WHITE)
+            .apply();
         
         // Animated clip size
         float clipSize = 50 + (float) Math.abs(Math.sin(time * 2)) * 100;
@@ -214,8 +263,10 @@ public class CanvasClippingDemo extends DemoGame {
         float clipY = 305;
         
         // Show animated clip boundary
-        canvas.strokeRoundedRect(clipX, clipY, clipSize, clipSize, 8, 3,
-            new Color(1, 0, 1, 0.8f));
+        canvas.rect(clipX, clipY, clipSize, clipSize)
+            .withRoundedCorners(8)
+            .withStroke(3, new Color(1, 0, 1, 0.8f))
+            .apply();
         
         // Apply animated clipping
         canvas.clipRect(clipX, clipY, clipSize, clipSize);
@@ -233,14 +284,17 @@ public class CanvasClippingDemo extends DemoGame {
                     1.0f
                 );
                 
-                canvas.fillCircle(px + 15, py + 15, 12, color);
+                canvas.circle(px + 15, py + 15, 12)
+                    .withFill(color)
+                    .apply();
             }
         }
         
         canvas.resetClip();
         
-        canvas.drawText("Clip region\nexpands/contracts", font, 640, 320,
-            new Color(0.7f, 0.7f, 0.7f, 1.0f));
+        canvas.text("Clip region\nexpands/contracts", font, 640, 320)
+            .withFill(new Color(0.7f, 0.7f, 0.7f, 1.0f))
+            .apply();
     }
 
     @Override

@@ -10,7 +10,7 @@ import org.pixel.core.WindowCursorType;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.commons.Color;
-import org.pixel.graphics.render.canvas.GlCanvasRenderer;
+import org.pixel.graphics.render.canvas.GLCanvasRenderer;
 import org.pixel.graphics.render.canvas.text.SdfFont;
 import org.pixel.input.mouse.Mouse;
 import org.pixel.input.mouse.MouseButton;
@@ -25,7 +25,7 @@ public class CanvasIsometricGridDemo extends DemoGame {
     private static final int TILE_WIDTH = 32;
     private static final int TILE_HEIGHT = TILE_WIDTH / 2;
 
-    private GlCanvasRenderer canvas;
+    private GLCanvasRenderer canvas;
     private ContentManager content;
     private SdfFont font;
     private Vector2 gridOffset; // To keep track of the grid offset due to dragging
@@ -44,7 +44,7 @@ public class CanvasIsometricGridDemo extends DemoGame {
         // Create canvas renderer with window dimensions for screen-space rendering
         int windowWidth = getWindowManager().getWindowWidth();
         int windowHeight = getWindowManager().getWindowHeight();
-        canvas = new GlCanvasRenderer(windowWidth, windowHeight);
+        canvas = new GLCanvasRenderer(windowWidth, windowHeight);
 
         // Initialize content manager
         content = ServiceProvider.get(ContentManager.class);
@@ -93,6 +93,8 @@ public class CanvasIsometricGridDemo extends DemoGame {
         float row = (localY / TILE_HEIGHT - localX / TILE_WIDTH) / 2;
 
         highlightedTile.set(Math.round(col), Math.round(row));
+
+        super.update(delta);
     }
 
     @Override
@@ -105,8 +107,6 @@ public class CanvasIsometricGridDemo extends DemoGame {
         // Apply grid offset using transform
         canvas.save();
         canvas.translate(gridOffset.getX(), gridOffset.getY());
-
-        int drawCount = 0;
 
         // Draw isometric grid tiles
         for (int row = -ROWS; row <= ROWS; row++) {
@@ -147,11 +147,8 @@ public class CanvasIsometricGridDemo extends DemoGame {
                     canvas.strokeLine(bottomX, bottomY, leftX, leftY, 1, Color.DARK_GRAY);
                     canvas.strokeLine(leftX, leftY, topX, topY, 1, Color.DARK_GRAY);
                 }
-                drawCount+=4;
             }
         }
-
-        System.out.println(drawCount);
 
         canvas.restore();
 
