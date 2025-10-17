@@ -36,7 +36,7 @@ public class TextStyle {
         this.shadowColor = new Color(0, 0, 0, 0.5f);
         this.letterSpacing = 1f;
         this.lineSpacing = 0f;  // No extra spacing by default
-        this.textAlign = TextAlign.topLeft();  // Default to top-left
+        this.textAlign = TextAlign.TOP_LEFT;  // Default to top-left
     }
 
     /**

@@ -49,6 +49,44 @@ public class TextAlign {
     private Horizontal horizontal;
     private Vertical vertical;
     
+    // === Common Preset Constants (Zero-GC) ===
+    
+    /** Top-left alignment (default) - X is left edge, Y is top of text */
+    public static final TextAlign TOP_LEFT = new TextAlign(Horizontal.LEFT, Vertical.TOP);
+    
+    /** Top-center alignment - X is horizontal center, Y is top of text */
+    public static final TextAlign TOP_CENTER = new TextAlign(Horizontal.CENTER, Vertical.TOP);
+    
+    /** Top-right alignment - X is right edge, Y is top of text */
+    public static final TextAlign TOP_RIGHT = new TextAlign(Horizontal.RIGHT, Vertical.TOP);
+    
+    /** Middle-left alignment - X is left edge, Y is vertical center */
+    public static final TextAlign MIDDLE_LEFT = new TextAlign(Horizontal.LEFT, Vertical.MIDDLE);
+    
+    /** Middle-center alignment - X is horizontal center, Y is vertical center */
+    public static final TextAlign MIDDLE_CENTER = new TextAlign(Horizontal.CENTER, Vertical.MIDDLE);
+    
+    /** Middle-right alignment - X is right edge, Y is vertical center */
+    public static final TextAlign MIDDLE_RIGHT = new TextAlign(Horizontal.RIGHT, Vertical.MIDDLE);
+    
+    /** Bottom-left alignment - X is left edge, Y is bottom of text */
+    public static final TextAlign BOTTOM_LEFT = new TextAlign(Horizontal.LEFT, Vertical.BOTTOM);
+    
+    /** Bottom-center alignment - X is horizontal center, Y is bottom of text */
+    public static final TextAlign BOTTOM_CENTER = new TextAlign(Horizontal.CENTER, Vertical.BOTTOM);
+    
+    /** Bottom-right alignment - X is right edge, Y is bottom of text */
+    public static final TextAlign BOTTOM_RIGHT = new TextAlign(Horizontal.RIGHT, Vertical.BOTTOM);
+    
+    /** Baseline-left alignment - X is left edge, Y is baseline */
+    public static final TextAlign BASELINE_LEFT = new TextAlign(Horizontal.LEFT, Vertical.BASELINE);
+    
+    /** Baseline-center alignment - X is horizontal center, Y is baseline */
+    public static final TextAlign BASELINE_CENTER = new TextAlign(Horizontal.CENTER, Vertical.BASELINE);
+    
+    /** Baseline-right alignment - X is right edge, Y is baseline */
+    public static final TextAlign BASELINE_RIGHT = new TextAlign(Horizontal.RIGHT, Vertical.BASELINE);
+    
     /**
      * Create default alignment (LEFT, TOP).
      */
@@ -65,53 +103,77 @@ public class TextAlign {
         this.vertical = vertical;
     }
 
-    // === Common Presets ===
+    // === Deprecated Factory Methods (Use constants instead) ===
     
+    /** @deprecated Use {@link #TOP_LEFT} constant instead */
+    @Deprecated
     public static TextAlign topLeft() {
-        return new TextAlign(Horizontal.LEFT, Vertical.TOP);
+        return TOP_LEFT;
     }
     
+    /** @deprecated Use {@link #TOP_CENTER} constant instead */
+    @Deprecated
     public static TextAlign topCenter() {
-        return new TextAlign(Horizontal.CENTER, Vertical.TOP);
+        return TOP_CENTER;
     }
     
+    /** @deprecated Use {@link #TOP_RIGHT} constant instead */
+    @Deprecated
     public static TextAlign topRight() {
-        return new TextAlign(Horizontal.RIGHT, Vertical.TOP);
+        return TOP_RIGHT;
     }
     
+    /** @deprecated Use {@link #MIDDLE_LEFT} constant instead */
+    @Deprecated
     public static TextAlign middleLeft() {
-        return new TextAlign(Horizontal.LEFT, Vertical.MIDDLE);
+        return MIDDLE_LEFT;
     }
     
+    /** @deprecated Use {@link #MIDDLE_CENTER} constant instead */
+    @Deprecated
     public static TextAlign middleCenter() {
-        return new TextAlign(Horizontal.CENTER, Vertical.MIDDLE);
+        return MIDDLE_CENTER;
     }
     
+    /** @deprecated Use {@link #MIDDLE_RIGHT} constant instead */
+    @Deprecated
     public static TextAlign middleRight() {
-        return new TextAlign(Horizontal.RIGHT, Vertical.MIDDLE);
+        return MIDDLE_RIGHT;
     }
     
+    /** @deprecated Use {@link #BOTTOM_LEFT} constant instead */
+    @Deprecated
     public static TextAlign bottomLeft() {
-        return new TextAlign(Horizontal.LEFT, Vertical.BOTTOM);
+        return BOTTOM_LEFT;
     }
     
+    /** @deprecated Use {@link #BOTTOM_CENTER} constant instead */
+    @Deprecated
     public static TextAlign bottomCenter() {
-        return new TextAlign(Horizontal.CENTER, Vertical.BOTTOM);
+        return BOTTOM_CENTER;
     }
     
+    /** @deprecated Use {@link #BOTTOM_RIGHT} constant instead */
+    @Deprecated
     public static TextAlign bottomRight() {
-        return new TextAlign(Horizontal.RIGHT, Vertical.BOTTOM);
+        return BOTTOM_RIGHT;
     }
     
+    /** @deprecated Use {@link #BASELINE_LEFT} constant instead */
+    @Deprecated
     public static TextAlign baselineLeft() {
-        return new TextAlign(Horizontal.LEFT, Vertical.BASELINE);
+        return BASELINE_LEFT;
     }
     
+    /** @deprecated Use {@link #BASELINE_CENTER} constant instead */
+    @Deprecated
     public static TextAlign baselineCenter() {
-        return new TextAlign(Horizontal.CENTER, Vertical.BASELINE);
+        return BASELINE_CENTER;
     }
     
+    /** @deprecated Use {@link #BASELINE_RIGHT} constant instead */
+    @Deprecated
     public static TextAlign baselineRight() {
-        return new TextAlign(Horizontal.RIGHT, Vertical.BASELINE);
+        return BASELINE_RIGHT;
     }
 }

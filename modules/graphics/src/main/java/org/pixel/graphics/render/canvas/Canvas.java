@@ -9,6 +9,7 @@ import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.content.Texture;
 import org.pixel.graphics.render.canvas.text.SdfFont;
 import org.pixel.math.Matrix4;
+import org.pixel.math.Size;
 
 /**
  * High-level fluent Canvas API for 2D drawing.
@@ -414,6 +415,61 @@ public abstract class Canvas implements Disposable {
      */
     public float centerTextVertically(float areaY, float areaHeight, SdfFont font) {
         return renderer.centerTextVertically(areaY, areaHeight, font);
+    }
+    
+    /**
+     * Measure text bounds with default spacing.
+     * 
+     * <p>This is a convenience method that delegates to the underlying renderer.
+     * Use this to calculate text dimensions before rendering, such as for:
+     * <ul>
+     *   <li>Drawing backgrounds/borders around text</li>
+     *   <li>Calculating layout positions</li>
+     *   <li>Implementing text wrapping</li>
+     *   <li>Centering text manually</li>
+     * </ul>
+     * 
+     * <p>Example:
+     * <pre>
+     * Size textSize = canvas.measureText("Hello World", font);
+     * float x = centerX - textSize.getWidth() / 2;
+     * float y = centerY - textSize.getHeight() / 2;
+     * canvas.text("Hello World", font, x, y).withFill(Color.WHITE);
+     * </pre>
+     * 
+     * @param text The text to measure
+     * @param font The font to use
+     * @return The size of the text when rendered
+     */
+    public Size measureText(String text, SdfFont font) {
+        return renderer.measureText(text, font);
+    }
+    
+    /**
+     * Measure text bounds with custom text style (including letter and line spacing).
+     * 
+     * <p>This is a convenience method that delegates to the underlying renderer.
+     * Use this when you need to measure text that will be rendered with custom
+     * letter spacing or line spacing.
+     * 
+     * <p>Example:
+     * <pre>
+     * TextStyle style = new TextStyle()
+     *     .setLetterSpacing(2.0f)
+     *     .setLineSpacing(1.5f);
+     * Size textSize = canvas.measureText("Multi\nLine", font, style);
+     * canvas.text("Multi\nLine", font, x, y)
+     *     .withStyle(style)
+     *     .withFill(Color.WHITE);
+     * </pre>
+     * 
+     * @param text  The text to measure
+     * @param font  The font to use
+     * @param style The text style (letter/line spacing will be applied)
+     * @return The size of the text when rendered
+     */
+    public Size measureText(String text, SdfFont font, TextStyle style) {
+        return renderer.measureText(text, font, style);
     }
     
     // === Advanced Access ===

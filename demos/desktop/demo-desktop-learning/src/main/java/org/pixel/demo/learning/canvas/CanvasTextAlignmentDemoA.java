@@ -62,7 +62,7 @@ public class CanvasTextAlignmentDemoA extends DemoGame {
         // Title
         TextStyle titleStyle = new TextStyle(Color.WHITE)
             .withStroke(new Color(0.2f, 0.4f, 0.8f, 1.0f), 2.5f)
-            .withAlign(TextAlign.topCenter());
+            .withAlign(TextAlign.TOP_CENTER);
         canvas.text("Text Alignment Showcase", titleFont, getVirtualWidth() / 2f, 20)
             .withStyle(titleStyle)
             .apply();
@@ -319,7 +319,7 @@ public class CanvasTextAlignmentDemoA extends DemoGame {
             .withStyle(centerMulti)
             .apply();
         canvas.text("CENTER", font, x2, y + boxH + 5)
-            .withStyle(new TextStyle(Color.GRAY).withAlign(TextAlign.topCenter()))
+            .withStyle(new TextStyle(Color.GRAY).withAlign(TextAlign.TOP_CENTER))
             .apply();
         
         // RIGHT aligned
@@ -337,7 +337,7 @@ public class CanvasTextAlignmentDemoA extends DemoGame {
             .withStyle(rightMulti)
             .apply();
         canvas.text("RIGHT", font, x3, y + boxH + 5)
-            .withStyle(new TextStyle(Color.GRAY).withAlign(TextAlign.topRight()))
+            .withStyle(new TextStyle(Color.GRAY).withAlign(TextAlign.TOP_RIGHT))
             .apply();
     }
 

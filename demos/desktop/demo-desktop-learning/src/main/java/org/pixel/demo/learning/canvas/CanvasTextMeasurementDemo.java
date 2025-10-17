@@ -95,8 +95,8 @@ public class CanvasTextMeasurementDemo extends DemoGame {
         float y = 100;
 
         for (String text : texts) {
-            // Measure the text
-            Size textSize = canvas.getRenderer().measureText(text, font);
+            // Measure the text (now directly on Canvas!)
+            Size textSize = canvas.measureText(text, font);
 
             // Draw the text
             float x = 30;
