@@ -1,6 +1,10 @@
-package org.pixel.graphics.render;
+package org.pixel.graphics.render.renderable;
 
 import org.pixel.content.Texture;
+import org.pixel.graphics.render.DirectRenderer;
+import org.pixel.graphics.render.Renderable;
+import org.pixel.graphics.render.Renderer;
+import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Matrix4;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
@@ -34,9 +38,9 @@ public class SpriteRenderable extends Renderable<Renderer> {
         // Use SpriteBatch for normal sprites (they can be batched)
         // Note: We return the base Renderer type since RenderPipeline needs to handle both
         if (shader != null) {
-            return (Class<Renderer>)(Class<?>)DirectRenderer.class;
+            return (Class<Renderer>)(Class<?>) DirectRenderer.class;
         }
-        return (Class<Renderer>)(Class<?>)SpriteBatch.class;
+        return (Class<Renderer>)(Class<?>) SpriteBatch.class;
     }
 
     @Override
@@ -122,7 +126,7 @@ public class SpriteRenderable extends Renderable<Renderer> {
     public SpriteRenderable setPosition(float xy) { super.setPosition(xy); return this; }
 
     @Override
-    public SpriteRenderable setColor(org.pixel.commons.Color color) { super.setColor(color); return this; }
+    public SpriteRenderable setTint(org.pixel.commons.Color color) { super.setTint(color); return this; }
 
     @Override
     public SpriteRenderable setDepth(int depth) { super.setDepth(depth); return this; }

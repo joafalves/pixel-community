@@ -178,7 +178,7 @@ public class RenderPipeline implements Disposable {
             // Check if we need to switch renderers
             if (currentRendererType == null || !currentRendererType.equals(rendererType)) {
                 // End previous renderer if it was batching
-                if (isBatching && currentRenderer instanceof BatchRenderer) {
+                if (isBatching) {
                     ((BatchRenderer) currentRenderer).end();
                     isBatching = false;
                 }
@@ -203,7 +203,7 @@ public class RenderPipeline implements Disposable {
         }
 
         // End final renderer if it was batching
-        if (isBatching && currentRenderer instanceof BatchRenderer) {
+        if (isBatching) {
             ((BatchRenderer) currentRenderer).end();
         }
 

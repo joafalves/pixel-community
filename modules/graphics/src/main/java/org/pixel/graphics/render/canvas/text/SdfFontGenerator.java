@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
  * Platform-agnostic interface for generating SDF fonts from TrueType data.
  * Platform-specific implementations (e.g., GlSdfFontGenerator) handle the actual generation.
  */
-public interface FontGenerator {
+public interface SdfFontGenerator {
 
     /**
      * Generate an SDF font from TrueType font data.

@@ -81,7 +81,7 @@ public abstract class Renderable<R extends Renderer> implements Cullable {
     public Renderable<R> setPosition(float xy) { this.position.set(xy, xy); return this; }
 
     public Color getColor() { return color; }
-    public Renderable<R> setColor(Color color) { this.color = color; return this; }
+    public Renderable<R> setTint(Color color) { this.color = color; return this; }
 
     public int getDepth() { return depth; }
     public Renderable<R> setDepth(int depth) { this.depth = depth; return this; }

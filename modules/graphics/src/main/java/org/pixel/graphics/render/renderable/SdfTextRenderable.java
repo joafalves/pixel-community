@@ -1,6 +1,8 @@
-package org.pixel.graphics.render;
+package org.pixel.graphics.render.renderable;
 
 import org.pixel.commons.Color;
+import org.pixel.graphics.render.Renderable;
+import org.pixel.graphics.render.SdfTextRenderer;
 import org.pixel.graphics.render.canvas.TextStyle;
 import org.pixel.graphics.render.canvas.text.SdfFont;
 import org.pixel.math.Matrix4;
@@ -75,7 +77,7 @@ public class SdfTextRenderable extends Renderable<SdfTextRenderer> {
     public SdfTextRenderable setPosition(float xy) { super.setPosition(xy); return this; }
 
     @Override
-    public SdfTextRenderable setColor(Color color) { super.setColor(color); return this; }
+    public SdfTextRenderable setTint(Color color) { super.setTint(color); return this; }
 
     @Override
     public SdfTextRenderable setDepth(int depth) { super.setDepth(depth); return this; }

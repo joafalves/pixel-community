@@ -1,6 +1,8 @@
-package org.pixel.graphics.render;
+package org.pixel.graphics.render.renderable;
 
 import org.pixel.content.Font;
+import org.pixel.graphics.render.Renderable;
+import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Matrix4;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
@@ -71,7 +73,7 @@ public class TextRenderable extends Renderable<SpriteBatch> {
     public TextRenderable setPosition(float xy) { super.setPosition(xy); return this; }
 
     @Override
-    public TextRenderable setColor(org.pixel.commons.Color color) { super.setColor(color); return this; }
+    public TextRenderable setTint(org.pixel.commons.Color color) { super.setTint(color); return this; }
 
     @Override
     public TextRenderable setDepth(int depth) { super.setDepth(depth); return this; }

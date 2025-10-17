@@ -96,6 +96,17 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
         // empty by design (not abstract to make this optional)
     }
 
+    @Override
+    public void draw(DeltaTime delta) {
+        // empty by design (not abstract to make this optional)
+    }
+
+    @Override
+    public void dispose() {
+        // dispose graphics device and window manager
+        graphicsDevice.dispose();
+    }
+
     public final void updateContainer(DeltaTime delta) {
         frameCount++;
 
@@ -107,17 +118,6 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
             elapsed = 0;
             frameCount = 0;
         }
-    }
-
-    @Override
-    public void draw(DeltaTime delta) {
-        // empty by design (not abstract to make this optional)
-    }
-
-    @Override
-    public void dispose() {
-        // dispose graphics device and window manager
-        graphicsDevice.dispose();
     }
 
     /**

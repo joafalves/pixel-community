@@ -6,7 +6,7 @@ import org.pixel.content.Texture;
 import org.pixel.content.opengl.GLTexture;
 import org.pixel.graphics.render.DirectRenderer;
 import org.pixel.graphics.render.Renderable;
-import org.pixel.graphics.render.SpriteRenderable;
+import org.pixel.graphics.render.renderable.SpriteRenderable;
 import org.pixel.graphics.shader.opengl.GLShader;
 import org.pixel.graphics.shader.opengl.GLVertexArrayObject;
 import org.pixel.graphics.shader.opengl.GLVertexBufferObject;

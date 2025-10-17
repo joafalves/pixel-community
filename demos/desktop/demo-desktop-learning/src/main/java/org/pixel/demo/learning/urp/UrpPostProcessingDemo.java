@@ -11,7 +11,7 @@ import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.demo.learning.urp.shader.GrayscaleShader;
 import org.pixel.graphics.render.RenderPipeline;
 import org.pixel.graphics.render.RenderTarget;
-import org.pixel.graphics.render.SpriteRenderable;
+import org.pixel.graphics.render.renderable.SpriteRenderable;
 import org.pixel.graphics.render.opengl.GLRenderTarget;
 import org.pixel.graphics.shader.Shader;
 import org.pixel.math.MathHelper;
@@ -62,7 +62,7 @@ public class UrpPostProcessingDemo extends DemoGame {
                     .setPosition(new Vector2(
                         MathHelper.random(-getViewportWidth() / 2f, getViewportWidth() / 2f),
                         MathHelper.random(-getViewportHeight() / 2f, getViewportHeight() / 2f)))
-                    .setColor(Color.random())
+                    .setTint(Color.random())
                     .setAnchor(Vector2.half())
                     .setScale(MathHelper.random(0.5f, 2.0f));
             sceneObjects.add(starCmd);

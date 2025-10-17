@@ -1,0 +1,33 @@
+{
+  "frames": {
+    "char-01": {
+      "frame": {
+        "x": 32,
+        "y": 0,
+        "w": 16,
+        "h": 16
+      },
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "attributes": {}
+    },
+    "char-02": {
+      "frame": {
+        "x": 48,
+        "y": 0,
+        "w": 16,
+        "h": 16
+      },
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "attributes": {}
+    }
+  },
+  "meta": {
+    "image": "chars-16x16.pack.png"
+  }
+}

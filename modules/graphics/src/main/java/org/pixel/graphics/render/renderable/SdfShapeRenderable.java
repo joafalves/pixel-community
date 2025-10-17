@@ -1,5 +1,7 @@
-package org.pixel.graphics.render;
+package org.pixel.graphics.render.renderable;
 
+import org.pixel.graphics.render.Renderable;
+import org.pixel.graphics.render.SdfShapeRenderer;
 import org.pixel.math.Matrix4;
 import org.pixel.math.Rectangle;
 
@@ -135,7 +137,7 @@ public class SdfShapeRenderable extends Renderable<SdfShapeRenderer> {
     public SdfShapeRenderable setPosition(float x, float y) { super.setPosition(x, y); return this; }
     
     @Override
-    public SdfShapeRenderable setColor(org.pixel.commons.Color color) { super.setColor(color); return this; }
+    public SdfShapeRenderable setTint(org.pixel.commons.Color color) { super.setTint(color); return this; }
     
     @Override
     public SdfShapeRenderable setDepth(int depth) { super.setDepth(depth); return this; }

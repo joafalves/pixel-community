@@ -11,9 +11,9 @@ import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.graphics.render.RenderPipeline;
-import org.pixel.graphics.render.SpriteRenderable;
-import org.pixel.graphics.render.SdfTextRenderable;
-import org.pixel.graphics.render.TextRenderable;
+import org.pixel.graphics.render.renderable.SpriteRenderable;
+import org.pixel.graphics.render.renderable.SdfTextRenderable;
+import org.pixel.graphics.render.renderable.TextRenderable;
 import org.pixel.graphics.render.canvas.TextStyle;
 import org.pixel.graphics.render.canvas.text.SdfFont;
 import org.pixel.math.Vector2;
@@ -87,7 +87,7 @@ public class UrpTextDemo extends DemoGame {
                 .setFontSize(legacyFont.getFontSize())
                 .setText("LEGACY FONT (Bitmap):")
                 .setPosition(20, comparisonY)
-                .setColor(new Color(1f, 0.8f, 0.2f)) // Orange
+                .setTint(new Color(1f, 0.8f, 0.2f)) // Orange
                 .setDepth(0);
 
         legacyText = new TextRenderable()
@@ -95,7 +95,7 @@ public class UrpTextDemo extends DemoGame {
                 .setFontSize(legacyFont.getFontSize())
                 .setText("The quick brown fox jumps over the lazy dog 0123456789")
                 .setPosition(20, comparisonY + 35)
-                .setColor(Color.WHITE)
+                .setTint(Color.WHITE)
                 .setDepth(0);
 
         // SDF FONT DEMO

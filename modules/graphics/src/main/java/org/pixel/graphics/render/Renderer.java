@@ -15,22 +15,3 @@ import org.pixel.math.Matrix4;
 public interface Renderer {
     // Base marker interface - direct renderers implement this directly
 }
-
-/**
- * Interface for renderers that support batching.
- * Batched renderers accumulate draw calls between begin() and end(),
- * then flush them all at once for optimal performance.
- */
-interface BatchRenderer extends Renderer {
-    /**
-     * Begin a batched rendering session.
-     * 
-     * @param viewMatrix The camera's view-projection matrix
-     */
-    void begin(Matrix4 viewMatrix);
-    
-    /**
-     * End the batched rendering session and flush all accumulated draw calls.
-     */
-    void end();
-}

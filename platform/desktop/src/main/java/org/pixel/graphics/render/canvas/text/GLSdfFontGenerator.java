@@ -30,7 +30,7 @@ import static org.lwjgl.opengl.GL30.*;
  *   <li>Implementing true SDF generation (distance field calculation)</li>
  * </ul>
  */
-public class GLSdfFontGenerator implements FontGenerator {
+public class GLSdfFontGenerator implements SdfFontGenerator {
 
     private static final Logger LOG = LoggerFactory.getLogger(GLSdfFontGenerator.class);
     private static final String ASCII_CHARSET = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";

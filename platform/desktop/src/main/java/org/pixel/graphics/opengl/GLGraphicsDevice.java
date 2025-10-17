@@ -82,7 +82,7 @@ public class GLGraphicsDevice implements GraphicsDevice {
 
         // Update viewport dimensions
         var windowDimensions = this.windowManager.getWindowDimensions();
-        glViewport(0, 0, windowDimensions.getViewportWidth(), windowDimensions.getViewportHeight());
+        glViewport(0, 0, windowDimensions.getWindowWidth(), windowDimensions.getWindowHeight());
 
         // Debug-specific initialization
         if (this.debugMode) {

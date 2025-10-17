@@ -143,6 +143,12 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
         return this.graphicsDevice.getViewportHeight();
     }
 
+    @Override
+    public void onWindowSizeChange(int width, int height) {
+        syncViewportSize(); // By default, sync viewport size with window size on size change
+        super.onWindowSizeChange(width, height);
+    }
+
     /**
      * Sync viewport size with the window size.
      */

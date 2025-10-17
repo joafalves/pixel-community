@@ -10,7 +10,7 @@ import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.demo.learning.urp.shader.GrayscaleShader;
-import org.pixel.graphics.render.SpriteRenderable;
+import org.pixel.graphics.render.renderable.SpriteRenderable;
 import org.pixel.graphics.render.RenderPipeline;
 import org.pixel.graphics.shader.Shader;
 import org.pixel.math.MathHelper;
@@ -48,7 +48,7 @@ public class UrpDemo extends DemoGame {
             var starRenderable = new SpriteRenderable()
                     .setTexture(starTexture)
                     .setPosition(new Vector2(MathHelper.random(0, getViewportWidth()), MathHelper.random(0, getViewportHeight())))
-                    .setColor(Color.random())
+                    .setTint(Color.random())
                     .setAnchor(0.5f, 0.5f)
                     .setScale(0.7f, 0.7f);
             renderPipeline.submit(starRenderable);
