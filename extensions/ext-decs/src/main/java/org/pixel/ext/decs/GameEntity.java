@@ -1,34 +1,25 @@
 package org.pixel.ext.decs;
 
-import lombok.Getter;
-
 /**
  * A simple entity, which is just a wrapper for an ID.
+ *
+ * @param id -- GETTER --
+ *           Gets the entity's ID.
  */
-@Getter
-public class Entity {
-    /**
-     * -- GETTER --
-     *  Gets the entity's ID.
-     *
-     * @return The entity's ID.
-     */
-    private final int id;
-
+public record GameEntity(int id) {
     /**
      * Constructor.
      *
      * @param id The entity's ID.
      */
-    public Entity(int id) {
-        this.id = id;
+    public GameEntity {
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Entity entity = (Entity) o;
+        GameEntity entity = (GameEntity) o;
         return id == entity.id;
     }
 

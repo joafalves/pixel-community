@@ -124,6 +124,37 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
     }
 
     /**
+     * Get the window virtual width.
+     *
+     * @return The window virtual width.
+     */
+    @Override
+    public int getViewportWidth() {
+        return this.graphicsDevice.getViewportWidth();
+    }
+
+    /**
+     * Get the window virtual height.
+     *
+     * @return The window virtual height.
+     */
+    @Override
+    public int getViewportHeight() {
+        return this.graphicsDevice.getViewportHeight();
+    }
+
+    /**
+     * Sync viewport size with the window size.
+     */
+    public void syncViewportSize() {
+        if (graphicsDevice != null) {
+            int width = this.windowManager.getWindowWidth();
+            int height = this.windowManager.getWindowHeight();
+            graphicsDevice.updateViewport(width, height);
+        }
+    }
+
+    /**
      * Toggle fullscreen mode.
      */
     public void toggleFullscreen() {

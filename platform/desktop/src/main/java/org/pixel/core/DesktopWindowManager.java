@@ -13,7 +13,7 @@ public abstract class DesktopWindowManager implements WindowManager {
      * @param width  The width of the window.
      * @param height The height of the window.
      */
-    public abstract void setWindowDimensions(int width, int height);
+    public abstract void setWindowSize(int width, int height);
 
     /**
      * Set the window cursor mode.

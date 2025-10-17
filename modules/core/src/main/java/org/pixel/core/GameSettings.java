@@ -24,7 +24,8 @@ public class GameSettings {
     private String title;
     private Properties clientProperties;
     private Color backgroundColor;
-    private int virtualWidth, virtualHeight;
+    private int viewportWidth;
+    private int viewportHeight;
     private int multisampling;
     private int targetFps;
     private boolean vsync;
@@ -40,25 +41,25 @@ public class GameSettings {
     /**
      * Constructor.
      *
-     * @param virtualWidth The virtual width of the game viewport.
-     * @param virtualHeight The virtual height of the game viewport.
+     * @param viewportWidth The game viewport width.
+     * @param viewportHeight The game viewport height.
      */
-    public GameSettings(int virtualWidth, int virtualHeight) {
-        this(DEFAULT_TITLE, virtualWidth, virtualHeight);
+    public GameSettings(int viewportWidth, int viewportHeight) {
+        this(DEFAULT_TITLE, viewportWidth, viewportHeight);
     }
 
     /**
      * Constructor.
      *
      * @param gameTitle The title of the game.
-     * @param virtualWidth The virtual width of the game viewport.
-     * @param virtualHeight The virtual height of the game viewport.
+     * @param viewportWidth The virtual width of the game viewport.
+     * @param viewportHeight The virtual height of the game viewport.
      */
-    public GameSettings(String gameTitle, int virtualWidth, int virtualHeight) {
+    public GameSettings(String gameTitle, int viewportWidth, int viewportHeight) {
         this.graphicsBackend = GraphicsBackend.OpenGL;
         this.title = gameTitle;
-        this.virtualWidth = virtualWidth;
-        this.virtualHeight = virtualHeight;
+        this.viewportWidth = viewportWidth;
+        this.viewportHeight = viewportHeight;
         this.idleThrottle = true;
         this.vsync = false;
         this.multisampling = 0;

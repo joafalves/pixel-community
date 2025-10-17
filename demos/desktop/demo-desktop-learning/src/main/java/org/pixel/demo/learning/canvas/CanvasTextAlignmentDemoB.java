@@ -42,7 +42,7 @@ public class CanvasTextAlignmentDemoB extends DemoGame {
     public void load() {
         super.load();
         camera = new Camera2D(this);
-        canvas = new GLCanvasRenderer(getVirtualWidth(), getVirtualHeight());
+        canvas = new GLCanvasRenderer(getViewportWidth(), getViewportHeight());
         content = ServiceProvider.get(ContentManager.class);
         font = content.load("fonts/roboto-regular.ttf", SdfFont.class,
             new FontImporterSettings(24, 3));

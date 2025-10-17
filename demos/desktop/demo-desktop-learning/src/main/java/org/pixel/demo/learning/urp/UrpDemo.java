@@ -47,7 +47,7 @@ public class UrpDemo extends DemoGame {
         for (int i = 0; i < SPRITE_COUNT; i++) {
             var starRenderable = new SpriteRenderable()
                     .setTexture(starTexture)
-                    .setPosition(new Vector2(MathHelper.random(0, getVirtualWidth()), MathHelper.random(0, getVirtualHeight())))
+                    .setPosition(new Vector2(MathHelper.random(0, getViewportWidth()), MathHelper.random(0, getViewportHeight())))
                     .setColor(Color.random())
                     .setAnchor(0.5f, 0.5f)
                     .setScale(0.7f, 0.7f);
@@ -57,7 +57,7 @@ public class UrpDemo extends DemoGame {
         shaderEffect = new GrayscaleShader();
         specialSprite = new SpriteRenderable()
                 .setTexture(earthTexture)
-                .setPosition(new Vector2(getVirtualWidth() / 2f, getVirtualHeight() / 2f))
+                .setPosition(new Vector2(getViewportWidth() / 2f, getViewportHeight() / 2f))
                 .setAnchor(Vector2.HALF)
                 .setScale(1, 1)
                 .setShader(shaderEffect);
@@ -68,9 +68,9 @@ public class UrpDemo extends DemoGame {
         
         // For demo purposes, set the view frustum to a portion of the screen:
         float margin = 0.2f;
-        float viewWidth = getVirtualWidth() * (1.0f - margin * 2);
-        float viewHeight = getVirtualHeight();
-        float viewX = getVirtualWidth() * margin;
+        float viewWidth = getViewportWidth() * (1.0f - margin * 2);
+        float viewHeight = getViewportHeight();
+        float viewX = getViewportWidth() * margin;
         float viewY = 0;
         
         renderPipeline.setFrustum(viewX, viewY, viewWidth, viewHeight);

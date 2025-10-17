@@ -23,7 +23,6 @@ import org.pixel.graphics.render.canvas.text.SdfFont;
  */
 public class CanvasTransformDemo extends DemoGame {
 
-    private Camera2D camera;
     private Canvas canvas;
     private ContentManager content;
     private SdfFont font;
@@ -42,11 +41,8 @@ public class CanvasTransformDemo extends DemoGame {
     public void load() {
         super.load();
 
-        // Initialize camera
-        camera = new Camera2D(this);
-
         // Create canvas renderer with viewport dimensions
-        canvas = new GLCanvas(getVirtualWidth(), getVirtualHeight());
+        canvas = new GLCanvas(getViewportWidth(), getViewportHeight());
 
         // Initialize content manager
         content = ServiceProvider.get(ContentManager.class);
@@ -73,7 +69,7 @@ public class CanvasTransformDemo extends DemoGame {
         time += delta.getElapsed();
 
         // Begin with camera's view matrix
-        canvas.begin(camera.getViewMatrix());
+        canvas.begin();
 
         // Demo 1: Simple translation
         drawDemo1_SimpleTranslation();

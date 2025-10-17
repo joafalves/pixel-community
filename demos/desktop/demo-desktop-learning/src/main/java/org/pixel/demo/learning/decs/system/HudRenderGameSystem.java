@@ -8,15 +8,16 @@ import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
 import org.pixel.core.Camera2D;
 import org.pixel.demo.learning.decs.event.ItemPickedUpEvent;
-import org.pixel.ext.decs.System;
-import org.pixel.ext.decs.World;
+import org.pixel.ext.decs.GameSystem;
+import org.pixel.ext.decs.GameWorld;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Vector2;
 
-public class HudRenderSystem extends System {
+public class HudRenderGameSystem extends GameSystem {
 
     private static final float NOTIFICATION_DURATION = 2.0f; // seconds
 
+    private final GameWorld world;
     private final Camera2D camera;
     private final SpriteBatch spriteBatch;
 
@@ -24,24 +25,20 @@ public class HudRenderSystem extends System {
     private String notificationMessage;
     private float notificationTimer;
 
-    public HudRenderSystem(World world) {
-        super(world);
-        this.spriteBatch = world.getProperties().get(SpriteBatch.class);
-        this.camera = world.getProperties().get(Camera2D.class);
-    }
-
-    @Override
-    public boolean init() {
-        EventManager.getDefault().subscribe(ItemPickupSystem.ITEM_PICKED_UP_EVENT, ItemPickedUpEvent.class, data -> {
-            // onItemPickup
-            notificationMessage = "Item Acquired!";
-            notificationTimer = NOTIFICATION_DURATION;
-        });
-        return super.init();
+    public HudRenderGameSystem(GameWorld world) {
+        this.world = world;
+        this.spriteBatch = world.getData().get(SpriteBatch.class);
+        this.camera = world.getData().get(Camera2D.class);
     }
 
     @Override
     public void load() {
+        EventManager.getDefault().subscribe(ItemPickupGameSystem.ITEM_PICKED_UP_EVENT, ItemPickedUpEvent.class, data -> {
+            // onItemPickup
+            notificationMessage = "Item Acquired!";
+            notificationTimer = NOTIFICATION_DURATION;
+        });
+
         this.font = ServiceProvider.get(ContentManager.class).load("fonts/gidole-regular.ttf", Font.class);
     }
 
@@ -63,7 +60,7 @@ public class HudRenderSystem extends System {
 
     @Override
     public void dispose() {
-        EventManager.getDefault().unsubscribe(ItemPickupSystem.ITEM_PICKED_UP_EVENT);
+        EventManager.getDefault().unsubscribe(ItemPickupGameSystem.ITEM_PICKED_UP_EVENT);
         super.dispose();
     }
 }

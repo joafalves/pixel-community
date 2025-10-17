@@ -24,7 +24,6 @@ import org.pixel.graphics.render.canvas.text.SdfFont;
  */
 public class CanvasShapesDemo extends DemoGame {
 
-    private Camera2D camera;
     private Canvas canvas;
     private ContentManager content;
     private SdfFont font;
@@ -43,11 +42,8 @@ public class CanvasShapesDemo extends DemoGame {
     public void load() {
         super.load();
 
-        // Initialize camera
-        camera = new Camera2D(this);
-
         // Create canvas with fluent API
-        canvas = new GLCanvas(getVirtualWidth(), getVirtualHeight());
+        canvas = new GLCanvas(getViewportWidth(), getViewportHeight());
 
         // Initialize content manager
         content = ServiceProvider.get(ContentManager.class);
@@ -74,7 +70,7 @@ public class CanvasShapesDemo extends DemoGame {
         time += delta.getElapsed();
 
         // Begin with camera's view matrix for world-space rendering
-        canvas.begin(camera.getViewMatrix());
+        canvas.begin();
 
         // Main title - using fluent API
         canvas.text("Canvas Shapes Showcase - Fluent API!", font, 20, 20)

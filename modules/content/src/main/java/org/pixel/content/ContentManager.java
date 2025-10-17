@@ -341,6 +341,10 @@ public class ContentManager implements Disposable {
      * @param useCache Determines whether to use the asset cache or not.
      * @param <T>      The type of the resource.
      * @return The loaded resource or null if the resource could not be loaded.
+     *
+     * @throws IllegalArgumentException If no importer is found for the given type.
+     * @throws RuntimeException         If the resource could not be loaded or if
+     *                                  there was an error during loading.
      */
     @SuppressWarnings("unchecked")
     public <T> T load(String filepath, Class<T> type, @Nullable ContentImporterSettings settings, boolean useCache) {
@@ -355,7 +359,8 @@ public class ContentManager implements Disposable {
         ContentImporter<T> fileImporter = (ContentImporter<T>) this.importers.get(type);
         if (fileImporter == null) {
             log.warn("Unable to load asset due to unavailable importer for {0}.", type.getCanonicalName());
-            return null;
+            throw new IllegalArgumentException(
+                    "No importer found for type " + type.getCanonicalName());
         }
 
         byte[] resourceData;
@@ -363,11 +368,11 @@ public class ContentManager implements Disposable {
             resourceData = this.resourceLoader.load(filepath);
         } catch (IOException e) {
             log.warn("Unable to load asset {0}; exception found!", filepath, e);
-            return null;
+            throw new RuntimeException("Unable to load asset " + filepath, e);
         }
         if (resourceData == null) {
             log.warn("Unable to load asset {0}; target could not be found.", filepath);
-            return null;
+            throw new RuntimeException("Unable to load asset " + filepath + "; target could not be found.");
         }
 
         if (dataPipeline != null) {
@@ -376,7 +381,7 @@ public class ContentManager implements Disposable {
 
             } catch (InterruptedException | ExecutionException e) {
                 log.error("Unable to execute data pipeline on asset {0}.", filepath, e);
-                return null;
+                throw new RuntimeException("Unable to execute data pipeline on asset " + filepath, e);
             }
         }
 

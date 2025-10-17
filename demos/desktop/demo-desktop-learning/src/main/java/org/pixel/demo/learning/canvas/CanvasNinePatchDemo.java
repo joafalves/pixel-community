@@ -85,7 +85,7 @@ public class CanvasNinePatchDemo extends DemoGame {
         thinBorderPatch = new NinePatch(texture, 2, 2, 2, 2);
 
         // Create canvas
-        canvas = new GLCanvas(getVirtualWidth(), getVirtualHeight());
+        canvas = new GLCanvas(getViewportWidth(), getViewportHeight());
 
         // Create camera
         camera = new Camera2D(this);

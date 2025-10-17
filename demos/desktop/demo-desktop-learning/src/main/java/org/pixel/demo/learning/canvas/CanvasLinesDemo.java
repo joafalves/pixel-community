@@ -46,7 +46,7 @@ public class CanvasLinesDemo extends DemoGame {
         camera = new Camera2D(this);
 
         // Create canvas renderer with viewport dimensions
-        canvas = new GLCanvasRenderer(getVirtualWidth(), getVirtualHeight());
+        canvas = new GLCanvasRenderer(getViewportWidth(), getViewportHeight());
 
         // Initialize content manager
         content = ServiceProvider.get(ContentManager.class);

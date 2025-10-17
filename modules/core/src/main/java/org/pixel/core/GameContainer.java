@@ -22,7 +22,7 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
     private static final Logger log = LoggerFactory.getLogger(GameContainer.class);
 
     protected S graphicsDevice;
-    protected Z settings;
+    protected Z settings; // TODO: Make settings immutable and create necessary field properties here
     protected State state;
 
     private float elapsed;
@@ -121,12 +121,12 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
     }
 
     /**
-     * Called when the viewport changes.
+     * Called when the window size changes.
      *
-     * @param width  The new viewport width.
-     * @param height The new viewport height.
+     * @param width  The new window size width.
+     * @param height The new window size height.
      */
-    public void onViewportChanged(int width, int height) {
+    public void onWindowSizeChange(int width, int height) {
         // empty by design (not abstract to make this optional)
     }
 
@@ -159,22 +159,16 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
     protected abstract boolean initServices();
 
     /**
-     * Get the window virtual width.
-     *
-     * @return The window virtual width.
+     * Get the window viewport width.
+     * @return The window viewport width.
      */
-    public int getVirtualWidth() {
-        return this.settings.getVirtualWidth();
-    }
+    public abstract int getViewportWidth();
 
     /**
-     * Get the window virtual height.
-     *
-     * @return The window virtual height.
+     * Get the window viewport height.
+     * @return The window viewport height.
      */
-    public int getVirtualHeight() {
-        return this.settings.getVirtualHeight();
-    }
+    public abstract int getViewportHeight();
 
     /**
      * Set the window background color.

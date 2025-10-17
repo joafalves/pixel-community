@@ -9,15 +9,15 @@ import org.pixel.core.Game;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.decs.component.*;
 import org.pixel.demo.learning.decs.system.*;
-import org.pixel.ext.decs.Entity;
-import org.pixel.ext.decs.World;
+import org.pixel.ext.decs.GameEntity;
+import org.pixel.ext.decs.GameWorld;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.graphics.render.canvas.GLCanvasRenderer;
 
 public class DecsDemo extends Game {
 
     private ContentManager content;
-    private World world;
+    private GameWorld world;
 
     public DecsDemo(WindowSettings settings) {
         super(settings);
@@ -28,38 +28,37 @@ public class DecsDemo extends Game {
         super.load();
         content = ServiceProvider.get(ContentManager.class);
 
-        world = new World();
-        world.getProperties().put(this);
-        world.getProperties().put(new GLCanvasRenderer(getVirtualWidth(), getVirtualHeight()));
-        world.getProperties().put(ServiceProvider.get(SpriteBatch.class));
-        world.getProperties().put(new Camera2D(this)); // Put camera in the world's properties
+        world = new GameWorld();
+        world.getData().put(this);
+        world.getData().put(new GLCanvasRenderer(getViewportWidth(), getViewportHeight()));
+        world.getData().put(ServiceProvider.get(SpriteBatch.class));
+        world.getData().put(new Camera2D(this)); // Put camera in the world's properties
 
-        world.addSystem(new PauseSystem(world)); // Pauses/resumes other systems
-        world.addSystem(new PlayerInputSystem(world));
-        world.addSystem(new MovementSystem(world));
-        world.addSystem(new CollisionSystem(world)); // Update collision boxes
-        world.addSystem(new CanvasRenderSystem(world)); // Fancy canvas-based rendering
-        world.addSystem(new ItemPickupSystem(world));
-        world.addSystem(new HudRenderSystem(world)); // Handles UI notifications
-        world.addSystem(new GeneralActionsSystem(world)); // Handles general actions
+        world.addSystem(new PauseGameSystem(world)); // Pauses/resumes other systems
+        world.addSystem(new PlayerInputGameSystem(world));
+        world.addSystem(new MovementGameSystem(world));
+        world.addSystem(new CollisionGameSystem(world)); // Update collision boxes
+        world.addSystem(new CanvasRenderGameSystem(world)); // Fancy canvas-based rendering
+        world.addSystem(new ItemPickupGameSystem(world));
+        world.addSystem(new HudRenderGameSystem(world)); // Handles UI notifications
+        world.addSystem(new GeneralActionsGameSystem(world)); // Handles general actions
 
         // Create player
-        Entity player = world.createEntity();
-        world.addComponent(player, new PlayerComponent());
-        world.addComponent(player, new PositionComponent(100, 100));
-        world.addComponent(player, new VelocityComponent());
-        world.addComponent(player, new SpriteComponent(content.load("images/red-32x32.png", Texture.class)));
-        world.addComponent(player, new CollisionComponent(100, 100, 32, 32));
-        world.addComponent(player, new InventoryComponent());
+        GameEntity player = world.createEntity();
+        world.addComponent(player, new PlayerGameComponent());
+        world.addComponent(player, new PositionGameComponent(100, 100));
+        world.addComponent(player, new VelocityGameComponent());
+        world.addComponent(player, new SpriteGameComponent(content.load("images/red-32x32.png", Texture.class)));
+        world.addComponent(player, new CollisionGameComponent(100, 100, 32, 32));
+        world.addComponent(player, new InventoryGameComponent());
 
         // Create item
-        Entity item = world.createEntity();
-        world.addComponent(item, new ItemComponent());
-        world.addComponent(item, new PositionComponent(200, 100));
-        world.addComponent(item, new SpriteComponent(content.load("images/green-32x32.png", Texture.class)));
-        world.addComponent(item, new CollisionComponent(200, 100, 32, 32));
+        GameEntity item = world.createEntity();
+        world.addComponent(item, new ItemGameComponent());
+        world.addComponent(item, new PositionGameComponent(200, 100));
+        world.addComponent(item, new SpriteGameComponent(content.load("images/green-32x32.png", Texture.class)));
+        world.addComponent(item, new CollisionGameComponent(200, 100, 32, 32));
 
-        world.init();
         world.load();
     }
 

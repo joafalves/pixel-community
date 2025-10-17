@@ -13,8 +13,8 @@ import lombok.Setter;
 @Setter
 @Builder
 public class WindowDimensions {
-    private int virtualWidth;
-    private int virtualHeight;
+    private int viewportWidth;
+    private int viewportHeight;
     private int windowWidth;
     private int windowHeight;
     private float pixelRatio;

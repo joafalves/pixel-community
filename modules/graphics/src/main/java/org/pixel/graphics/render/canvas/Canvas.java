@@ -136,6 +136,34 @@ public abstract class Canvas implements Disposable {
         renderer.end();
     }
     
+    /**
+     * Update the viewport dimensions.
+     * 
+     * <p>This allows the canvas to adapt to window resizes or resolution changes
+     * without recreating the canvas instance. The internal projection matrix will
+     * be recalculated to match the new dimensions.
+     * 
+     * <p><b>Important:</b> Do not call this between {@link #begin()} and {@link #end()}.
+     * Always call this before starting a new rendering frame.
+     * 
+     * <p>Example usage for window resize:
+     * <pre>
+     * // In your resize callback
+     * canvas.setViewport(newWidth, newHeight);
+     * 
+     * // Then continue rendering as normal
+     * canvas.begin();
+     * // ... drawing code ...
+     * canvas.end();
+     * </pre>
+     * 
+     * @param width  New viewport width
+     * @param height New viewport height
+     */
+    public void setViewport(float width, float height) {
+        renderer.setViewport(width, height);
+    }
+    
     // === State Management ===
     
     /**

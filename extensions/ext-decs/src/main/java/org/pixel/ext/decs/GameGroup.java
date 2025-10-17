@@ -8,17 +8,17 @@ import java.util.Set;
 /**
  * A live, automatically-updated collection of entities that match a specific set of components.
  */
-public class Group implements Iterable<Entity> {
+public class GameGroup implements Iterable<GameEntity> {
 
     private final Set<Class<?>> componentTypes;
-    private final Set<Entity> entities;
+    private final Set<GameEntity> entities;
 
     /**
      * Constructor.
      *
      * @param componentTypes The set of component types that define this group.
      */
-    Group(Set<Class<?>> componentTypes) {
+    GameGroup(Set<Class<?>> componentTypes) {
         this.componentTypes = componentTypes;
         this.entities = new LinkedHashSet<>(); // Use LinkedHashSet for O(1) ops and ordered iteration
     }
@@ -28,7 +28,7 @@ public class Group implements Iterable<Entity> {
      *
      * @return The collection of entities.
      */
-    public Collection<Entity> getEntities() {
+    public Collection<GameEntity> getEntities() {
         return entities;
     }
 
@@ -47,7 +47,7 @@ public class Group implements Iterable<Entity> {
      * @param entity The entity to check.
      * @return True if the group contains the entity, false otherwise.
      */
-    boolean contains(Entity entity) {
+    boolean contains(GameEntity entity) {
         return entities.contains(entity);
     }
 
@@ -56,7 +56,7 @@ public class Group implements Iterable<Entity> {
      *
      * @param entity The entity to add.
      */
-    void add(Entity entity) {
+    void add(GameEntity entity) {
         entities.add(entity);
     }
 
@@ -65,12 +65,12 @@ public class Group implements Iterable<Entity> {
      *
      * @param entity The entity to remove.
      */
-    void remove(Entity entity) {
+    void remove(GameEntity entity) {
         entities.remove(entity);
     }
 
     @Override
-    public Iterator<Entity> iterator() {
+    public Iterator<GameEntity> iterator() {
         return entities.iterator();
     }
 }

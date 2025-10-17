@@ -11,5 +11,5 @@ dependencies {
     api project(":${rootProject.name}-pipeline")
     api project(":${rootProject.name}-math")
 
-    api 'org.json:json:20231013'
+    api 'org.json:json:20250517'
 }

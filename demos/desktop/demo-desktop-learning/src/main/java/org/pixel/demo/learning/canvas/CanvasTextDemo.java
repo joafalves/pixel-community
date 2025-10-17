@@ -47,7 +47,7 @@ public class CanvasTextDemo extends DemoGame {
         camera = new Camera2D(this);
 
         // Initialize canvas with viewport dimensions
-        canvas = new GLCanvas(getVirtualWidth(), getVirtualHeight());
+        canvas = new GLCanvas(getViewportWidth(), getViewportHeight());
 
         // Initialize content manager
         content = ServiceProvider.get(ContentManager.class);
@@ -80,7 +80,7 @@ public class CanvasTextDemo extends DemoGame {
         canvas.begin(camera.getViewMatrix());
 
         // Draw background for better visibility
-        canvas.rect(0, 0, getVirtualWidth(), getVirtualHeight())
+        canvas.rect(0, 0, getViewportWidth(), getViewportHeight())
             .withFill(new Color(0.1f, 0.1f, 0.15f, 1.0f))
             .apply();
 

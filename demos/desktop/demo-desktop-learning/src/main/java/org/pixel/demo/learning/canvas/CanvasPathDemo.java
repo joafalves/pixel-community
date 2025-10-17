@@ -36,7 +36,7 @@ public class CanvasPathDemo extends DemoGame {
         super.load();
 
         // Create canvas renderer
-        canvas = new GLCanvasRenderer(getVirtualWidth(), getVirtualHeight());
+        canvas = new GLCanvasRenderer(getViewportWidth(), getViewportHeight());
 
         // Load content
         content = ServiceProvider.get(ContentManager.class);

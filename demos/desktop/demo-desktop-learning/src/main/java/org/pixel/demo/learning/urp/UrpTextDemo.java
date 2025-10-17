@@ -66,7 +66,7 @@ public class UrpTextDemo extends DemoGame {
         // Create a background sprite
         backgroundSprite = new SpriteRenderable()
                 .setTexture(earthTexture)
-                .setPosition(getVirtualWidth() / 2f, getVirtualHeight() / 2f)
+                .setPosition(getViewportWidth() / 2f, getViewportHeight() / 2f)
                 .setAnchor(Vector2.HALF)
                 .setScale(3)
                 .setDepth(10); // Behind text
@@ -132,7 +132,7 @@ public class UrpTextDemo extends DemoGame {
                         "Legacy fonts are bitmap-based (fixed size)\n" +
                         "SDF fonts are distance field-based (scale perfectly)\n" +
                         "Both render together in the Unified Render Pipeline!")
-                .setPosition(20, getVirtualHeight() - 110)
+                .setPosition(20, getViewportHeight() - 110)
                 .setStyle(new TextStyle(new Color(0.9f, 0.9f, 0.9f))) // Gray
                 .setTransform(camera.getViewMatrix())
                 .setDepth(0);

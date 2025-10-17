@@ -103,6 +103,7 @@ public class GLCanvasRenderer extends CanvasRenderer {
             int[] textureUnits = new int[1];
             glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, textureUnits);
             this.shaderTextureCount = Math.max(textureUnits[0], 1);
+
         } else {
             this.shaderTextureCount = shaderTextureCount;
         }
@@ -118,6 +119,7 @@ public class GLCanvasRenderer extends CanvasRenderer {
         if (begun) {
             throw new IllegalStateException("CanvasRenderer.begin() called twice without end()");
         }
+        
         this.activeViewMatrix = viewMatrix;
         begun = true;
         
@@ -147,6 +149,18 @@ public class GLCanvasRenderer extends CanvasRenderer {
         // Flush all batched rendering
         batchRenderer.end();
         begun = false;
+    }
+    
+    @Override
+    public void setViewport(float width, float height) {
+        if (begun) {
+            throw new IllegalStateException("Cannot change viewport between begin() and end()");
+        }
+        
+        // Update the default view matrix with new dimensions
+        // Since defaultViewMatrix is modified in place, the change takes effect
+        // on the next begin() call if using default view
+        this.defaultViewMatrix.setOrthographic(0, width, height, 0, -1, 1);
     }
 
     @Override

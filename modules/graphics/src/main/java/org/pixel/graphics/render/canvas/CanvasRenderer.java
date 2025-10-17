@@ -52,6 +52,20 @@ public abstract class CanvasRenderer implements Disposable {
      * Flushes all pending draw calls.
      */
     public abstract void end();
+    
+    /**
+     * Update the viewport dimensions and recalculate the default projection matrix.
+     * 
+     * <p>This allows the canvas to adapt to window resizes or resolution changes
+     * without recreating the canvas instance.
+     * 
+     * <p><b>Note:</b> This should not be called between {@link #begin()} and {@link #end()}.
+     * Call this before starting a new frame.
+     * 
+     * @param width  New viewport width
+     * @param height New viewport height
+     */
+    public abstract void setViewport(float width, float height);
 
     // === State Management ===
 

@@ -10,20 +10,9 @@ import org.pixel.commons.lifecycle.Updatable;
 /**
  * A base class for systems, which contain the logic of the ECS.
  */
-public abstract class System implements Initializable, Loadable, Updatable, Drawable, Disposable {
-
-    protected final World world;
+public abstract class GameSystem implements Loadable, Updatable, Drawable, Disposable {
 
     private boolean enabled = true;
-
-    /**
-     * Constructor.
-     *
-     * @param world The world this system belongs to.
-     */
-    public System(World world) {
-        this.world = world;
-    }
 
     /**
      * Checks if the system is enabled.
@@ -41,15 +30,6 @@ public abstract class System implements Initializable, Loadable, Updatable, Draw
      */
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
-    }
-
-    /**
-     * Initializes the system. Can be used to get dependencies from the ServiceProvider.
-     */
-    @Override
-    public boolean init() {
-        // intentionally left blank
-        return true;
     }
 
     /**

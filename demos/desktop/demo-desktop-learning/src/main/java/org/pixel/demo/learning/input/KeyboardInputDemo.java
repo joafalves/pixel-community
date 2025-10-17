@@ -50,7 +50,7 @@ public class KeyboardInputDemo extends DemoGame {
 
         // related org.pixel.learning.sprite properties
         spriteAnchor = Vector2.half();
-        spritePos = new Vector2(getVirtualWidth() / 2f, getVirtualHeight() / 2f);
+        spritePos = new Vector2(getViewportWidth() / 2f, getViewportHeight() / 2f);
 
         // character listener example:
         Keyboard.addCharListener(System.out::print);

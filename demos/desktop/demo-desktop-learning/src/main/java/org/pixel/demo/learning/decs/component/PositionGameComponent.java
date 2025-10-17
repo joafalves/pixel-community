@@ -1,17 +1,17 @@
 package org.pixel.demo.learning.decs.component;
 
 import lombok.Getter;
-import org.pixel.ext.decs.Component;
+import org.pixel.ext.decs.GameComponent;
 import org.pixel.math.Vector2;
 
 /**
  * A component that holds the position of an entity.
  */
 @Getter
-public class PositionComponent implements Component {
+public class PositionGameComponent implements GameComponent {
     private final Vector2 position;
 
-    public PositionComponent(float x, float y) {
+    public PositionGameComponent(float x, float y) {
         this.position = new Vector2(x, y);
     }
 }

@@ -64,8 +64,8 @@ public class GLFWWindowManager extends DesktopWindowManager {
         this.windowDimensions = WindowDimensions.builder()
                 .windowWidth(this.windowSettings.getWindowWidth())
                 .windowHeight(this.windowSettings.getWindowHeight())
-                .virtualWidth(this.windowSettings.getVirtualWidth())
-                .virtualHeight(this.windowSettings.getVirtualHeight())
+                .viewportWidth(this.windowSettings.getViewportWidth())
+                .viewportHeight(this.windowSettings.getViewportHeight())
                 .pixelRatio(1f)
                 .build();
 
@@ -145,7 +145,7 @@ public class GLFWWindowManager extends DesktopWindowManager {
     }
 
     @Override
-    public void setWindowDimensions(int width, int height) {
+    public void setWindowSize(int width, int height) {
         if (!this.state.hasInitialized()) {
             log.warn("Unable to set window dimensions, window manager is not initialized.");
             return;
@@ -157,6 +157,8 @@ public class GLFWWindowManager extends DesktopWindowManager {
         this.windowDimensions.setWindowWidth(width);
         this.windowDimensions.setWindowHeight(height);
         this.windowDimensions.setPixelRatio(width / (float) windowDimensions.getWindowWidth());
+
+        this.game.onWindowSizeChange(width, height);
     }
 
     @Override
@@ -409,12 +411,8 @@ public class GLFWWindowManager extends DesktopWindowManager {
                 glfwGetFramebufferSize(window, fbWidth, fbHeight);
                 int actualWidth = fbWidth.get(0);
                 int actualHeight = fbHeight.get(0);
-                this.windowSettings.setWindowWidth(actualWidth);
-                this.windowSettings.setWindowHeight(actualHeight);
-                this.windowDimensions.setPixelRatio(actualWidth / (float) windowDimensions.getVirtualWidth());
-                this.windowDimensions.setWindowWidth(actualWidth);
-                this.windowDimensions.setWindowHeight(actualHeight);
-                this.game.onViewportChanged(actualWidth, actualHeight);
+
+                setWindowSize(actualWidth, actualHeight);
             }
         });
 

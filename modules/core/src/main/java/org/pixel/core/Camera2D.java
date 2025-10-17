@@ -32,7 +32,7 @@ public class Camera2D implements Camera, Serializable {
      * @param game The game instance.
      */
     public Camera2D(GameContainer<?, ?> game) {
-        this(0, 0, game.getVirtualWidth(), game.getVirtualHeight());
+        this(0, 0, game.getViewportWidth(), game.getViewportHeight());
     }
 
     /**
@@ -42,7 +42,7 @@ public class Camera2D implements Camera, Serializable {
      * @param origin The camera view origin.
      */
     public Camera2D(GameContainer<?, ?> game, Vector2 origin) {
-        this(0, 0, game.getVirtualWidth(), game.getVirtualHeight(), 1.0f, origin);
+        this(0, 0, game.getViewportWidth(), game.getViewportHeight(), 1.0f, origin);
     }
 
     /**

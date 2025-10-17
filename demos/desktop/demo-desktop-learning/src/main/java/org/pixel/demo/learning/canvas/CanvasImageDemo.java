@@ -65,7 +65,7 @@ public class CanvasImageDemo extends DemoGame {
                 new FontImporterSettings(16, 2));
 
         // Create canvas with fluent API
-        canvas = new GLCanvas(getVirtualWidth(), getVirtualHeight());
+        canvas = new GLCanvas(getViewportWidth(), getViewportHeight());
 
         // Create camera
         camera = new Camera2D(this);

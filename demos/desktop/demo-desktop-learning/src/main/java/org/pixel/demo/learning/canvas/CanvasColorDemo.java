@@ -37,7 +37,7 @@ public class CanvasColorDemo extends DemoGame {
         super.load();
 
         // Create canvas
-        canvas = new GLCanvas(getVirtualWidth(), getVirtualHeight());
+        canvas = new GLCanvas(getViewportWidth(), getViewportHeight());
 
         // Load content
         content = ServiceProvider.get(ContentManager.class);

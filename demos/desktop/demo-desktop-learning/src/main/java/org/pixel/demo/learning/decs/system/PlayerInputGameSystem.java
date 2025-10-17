@@ -1,36 +1,38 @@
 package org.pixel.demo.learning.decs.system;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.demo.learning.decs.component.PlayerComponent;
-import org.pixel.demo.learning.decs.component.VelocityComponent;
-import org.pixel.ext.decs.Group;
-import org.pixel.ext.decs.System;
-import org.pixel.ext.decs.World;
+import org.pixel.demo.learning.decs.component.PlayerGameComponent;
+import org.pixel.demo.learning.decs.component.VelocityGameComponent;
+import org.pixel.ext.decs.GameGroup;
+import org.pixel.ext.decs.GameSystem;
+import org.pixel.ext.decs.GameWorld;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 
 /**
  * A system that handles player input and updates the velocity of the player entity.
  */
-public class PlayerInputSystem extends System {
+public class PlayerInputGameSystem extends GameSystem {
 
     private static final float PLAYER_SPEED = 100f;
 
-    private Group players;
+    private final GameWorld world;
 
-    public PlayerInputSystem(World world) {
-        super(world);
+    private GameGroup players;
+
+    public PlayerInputGameSystem(GameWorld world) {
+        this.world = world;
     }
 
     @Override
     public void load() {
-        players = world.getGroup(PlayerComponent.class, VelocityComponent.class);
+        players = world.getGroup(PlayerGameComponent.class, VelocityGameComponent.class);
     }
 
     @Override
     public void update(DeltaTime delta) {
         for (var entity : players) {
-            var velocity = world.getComponent(entity, VelocityComponent.class);
+            var velocity = world.getComponent(entity, VelocityGameComponent.class);
             velocity.getVelocity().set(0, 0);
 
             if (Keyboard.isKeyDown(KeyboardKey.W)) {

@@ -47,7 +47,7 @@ public class UrpPostProcessingDemo extends DemoGame {
         renderPipeline = new RenderPipeline();
 
         // 2. Create the off-screen render target
-        sceneTarget = new GLRenderTarget(getVirtualWidth(), getVirtualHeight());
+        sceneTarget = new GLRenderTarget(getViewportWidth(), getViewportHeight());
 
         // 3. Load content
         Texture starTexture = content.loadTexture("images/earth-48x48.png");
@@ -60,8 +60,8 @@ public class UrpPostProcessingDemo extends DemoGame {
             var starCmd = new SpriteRenderable()
                     .setTexture(starTexture)
                     .setPosition(new Vector2(
-                        MathHelper.random(-getVirtualWidth() / 2f, getVirtualWidth() / 2f), 
-                        MathHelper.random(-getVirtualHeight() / 2f, getVirtualHeight() / 2f)))
+                        MathHelper.random(-getViewportWidth() / 2f, getViewportWidth() / 2f),
+                        MathHelper.random(-getViewportHeight() / 2f, getViewportHeight() / 2f)))
                     .setColor(Color.random())
                     .setAnchor(Vector2.half())
                     .setScale(MathHelper.random(0.5f, 2.0f));
@@ -72,7 +72,7 @@ public class UrpPostProcessingDemo extends DemoGame {
         // This will draw the render target texture with the grayscale shader
         screenQuad = new SpriteRenderable()
                 .setTexture(sceneTarget.getTexture())
-                .setPosition(new Vector2(-getVirtualWidth() / 2f, -getVirtualHeight() / 2f))
+                .setPosition(new Vector2(-getViewportWidth() / 2f, -getViewportHeight() / 2f))
                 .setAnchor(Vector2.ZERO)
                 .setScale(1, 1)
                 .setShader(grayscaleShader);

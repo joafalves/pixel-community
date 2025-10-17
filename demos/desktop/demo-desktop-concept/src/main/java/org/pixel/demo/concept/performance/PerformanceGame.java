@@ -33,13 +33,15 @@ public class PerformanceGame extends Game {
 
     private static final Logger log = LoggerFactory.getLogger(PerformanceGame.class);
 
-    private static final int SPRITE_COUNT = 1024;
+    private static final int SPRITE_COUNT = 4096;
     private static final float SPRITE_MOVEMENT_SPEED = 100f;
     private static final boolean MULTI_TEXTURE = true;
 
     private ContentManager contentManager;
     private GameScene gameScene;
     private SpriteBatch spriteBatch;
+    private Camera2D camera;
+    private Boundary screenBoundary;
 
     private final Timer debugTimer = new Timer(1000);
 
@@ -51,9 +53,10 @@ public class PerformanceGame extends Game {
     public void load() {
         spriteBatch = ServiceProvider.get(SpriteBatch.class);
         contentManager = ServiceProvider.get(ContentManager.class);
-        gameScene = new GameScene("GameScene01", new Camera2D(this, Vector2.zero()), spriteBatch);
+        camera = new Camera2D(this, Vector2.zero());
+        gameScene = new GameScene("GameScene01", camera, spriteBatch);
 
-        var screenBoundary = new Boundary(0, 0, getVirtualWidth(), getVirtualHeight());
+        screenBoundary = new Boundary(0, 0, getViewportWidth(), getViewportHeight());
         var textureArray = new Texture[]{
                 contentManager.loadTexture("images/circle.png"),
                 contentManager.loadTexture("images/triangle.png"),
@@ -67,7 +70,7 @@ public class PerformanceGame extends Game {
             var sprite = new Sprite("Sprite_" + i, MULTI_TEXTURE ? textureArray[i % textureArray.length] : textureArray[0]);
             sprite.setOverlayColor(Color.random());
             sprite.getTransform().setPosition(
-                    MathHelper.random(0, getVirtualWidth()), MathHelper.random(0, getVirtualHeight()));
+                    MathHelper.random(0, getViewportWidth()), MathHelper.random(0, getViewportHeight()));
             sprite.addComponent(
                     new ConstantVelocityBoundComponent(velocity, screenBoundary));
             sprite.addComponent(
@@ -96,6 +99,14 @@ public class PerformanceGame extends Game {
     @Override
     public void draw(DeltaTime delta) {
         gameScene.draw(delta);
+    }
+
+    @Override
+    public void onWindowSizeChange(int width, int height) {
+        super.onWindowSizeChange(width, height);
+        syncViewportSize();
+        camera.setSize(width, height);
+        screenBoundary.set(0, 0 , width, height);
     }
 
     @Override

@@ -38,7 +38,7 @@ public class CanvasTextAlignmentDemoA extends DemoGame {
     public void load() {
         super.load();
         camera = new Camera2D(this);
-        canvas = new GLCanvas(getVirtualWidth(), getVirtualHeight());
+        canvas = new GLCanvas(getViewportWidth(), getViewportHeight());
         content = ServiceProvider.get(ContentManager.class);
         
         font = content.load("fonts/roboto-regular.ttf", SdfFont.class,
@@ -55,7 +55,7 @@ public class CanvasTextAlignmentDemoA extends DemoGame {
         canvas.begin(camera.getViewMatrix());
 
         // Background
-        canvas.rect(0, 0, getVirtualWidth(), getVirtualHeight())
+        canvas.rect(0, 0, getViewportWidth(), getViewportHeight())
             .withFill(new Color(0.1f, 0.1f, 0.15f, 1.0f))
             .apply();
 
@@ -63,7 +63,7 @@ public class CanvasTextAlignmentDemoA extends DemoGame {
         TextStyle titleStyle = new TextStyle(Color.WHITE)
             .withStroke(new Color(0.2f, 0.4f, 0.8f, 1.0f), 2.5f)
             .withAlign(TextAlign.TOP_CENTER);
-        canvas.text("Text Alignment Showcase", titleFont, getVirtualWidth() / 2f, 20)
+        canvas.text("Text Alignment Showcase", titleFont, getViewportWidth() / 2f, 20)
             .withStyle(titleStyle)
             .apply();
 
@@ -342,7 +342,7 @@ public class CanvasTextAlignmentDemoA extends DemoGame {
     }
 
     private void drawSection(String title, float x, float y) {
-        canvas.rect(x, y, getVirtualWidth() - x * 2, 28)
+        canvas.rect(x, y, getViewportWidth() - x * 2, 28)
             .withRoundedCorners(4)
             .withFill(new Color(0.2f, 0.3f, 0.5f, 0.7f))
             .apply();
