@@ -38,7 +38,7 @@ public abstract class DemoGame extends Game {
         }
 
         if (Keyboard.isKeyPressed(KeyboardKey.ESCAPE)) {
-            dispose();
+            quit();
         }
     }
 }

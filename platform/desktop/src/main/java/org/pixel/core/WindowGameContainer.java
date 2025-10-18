@@ -94,6 +94,17 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
     }
 
     /**
+     * Request the game to quit by asking the window manager to close the window.
+     * This performs a safe, main-loop driven shutdown instead of directly
+     * calling {@link #dispose()} from user code which can trigger native crashes.
+     */
+    public void quit() {
+        if (this.windowManager != null) {
+            this.windowManager.requestClose();
+        }
+    }
+
+    /**
      * The render loop.
      */
     protected void gameLoop() {

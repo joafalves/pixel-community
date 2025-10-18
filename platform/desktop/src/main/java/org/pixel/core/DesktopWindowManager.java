@@ -76,4 +76,13 @@ public abstract class DesktopWindowManager implements WindowManager {
     public int getWindowHeight() {
         return getWindowDimensions().getWindowHeight();
     }
+
+    /**
+     * Request that the window be closed. Default implementations should
+     * forward to platform-specific behavior.
+     */
+    @Override
+    public void requestClose() {
+        // Default no-op, platform implementations may override for proper behavior
+    }
 }

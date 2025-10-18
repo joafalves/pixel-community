@@ -40,6 +40,8 @@ public class GLFWWindowManager extends DesktopWindowManager {
     private long windowHandle;
     private long monitorHandle;
     private boolean isWindowFocused;
+    // Flag set by the GLFW close callback to request a clean shutdown from the main loop
+    private volatile boolean closeRequested = false;
 
     public GLFWWindowManager(WindowGameContainer<?, ?, ?> game) {
         this.game = game;
@@ -113,6 +115,17 @@ public class GLFWWindowManager extends DesktopWindowManager {
     }
 
     @Override
+    public void requestClose() {
+        // Mark that a close was requested. The actual disposal will happen
+        // later in endFrame() after glfwPollEvents()/glfwWaitEvents returns
+        this.closeRequested = true;
+        // Also mark the GLFW window as should-close so other checks observe it
+        if (this.windowHandle != 0) {
+            glfwSetWindowShouldClose(this.windowHandle, true);
+        }
+    }
+
+    @Override
     public void beginFrame() {
         // nothing to do here
     }
@@ -131,6 +144,16 @@ public class GLFWWindowManager extends DesktopWindowManager {
             glfwWaitEventsTimeout(.5); // Argument is in seconds
         } else {
             glfwPollEvents();
+        }
+
+        // If a close was requested from a GLFW callback, perform disposal here
+        // (outside of the native callback execution) to avoid crashing inside
+        // GLFW native code (glfwDestroyWindow/glfwTerminate must not be called
+        // from within event callbacks).
+        if (this.closeRequested) {
+            // reset flag to avoid re-entering dispose
+            this.closeRequested = false;
+            dispose();
         }
     }
 
@@ -424,7 +447,13 @@ public class GLFWWindowManager extends DesktopWindowManager {
 
         glfwSetWindowCloseCallback(windowHandle, (window) -> {
             log.debug("Close render window requested by user.");
-            dispose();
+            // Do not call dispose() from inside the GLFW event callback —
+            // callbacks run while glfwPollEvents()/glfwWaitEvents is executing
+            // and calling glfwDestroyWindow/glfwTerminate there can crash native code.
+            // Instead, set a flag and perform disposal after event polling completes
+            // in the main loop (see endFrame()).
+            this.closeRequested = true;
+            glfwSetWindowShouldClose(window, true);
         });
     }
 }
