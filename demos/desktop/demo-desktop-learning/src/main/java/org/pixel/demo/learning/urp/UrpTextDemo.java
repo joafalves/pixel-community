@@ -63,8 +63,6 @@ public class UrpTextDemo extends DemoGame {
         SdfFont smallSdfFont = content.load("fonts/roboto-regular.ttf", SdfFont.class, 
             new FontImporterSettings(14, 1));
 
-        // TODO: FIX SDF FONT RENDERING IN URP (appears to need camera matrix for some reason).
-
         // Create a background sprite
         backgroundSprite = new SpriteRenderable()
                 .setTexture(earthTexture)
@@ -79,7 +77,6 @@ public class UrpTextDemo extends DemoGame {
                 .setText("Font Comparison: Legacy vs SDF")
                 .setPosition(20, 30)
                 .setStyle(new TextStyle(Color.WHITE))
-                .setTransform(camera.getViewMatrix())
                 .setDepth(0);
 
         // LEGACY FONT DEMO
@@ -107,7 +104,6 @@ public class UrpTextDemo extends DemoGame {
                 .setText("SDF FONT (Scalable):")
                 .setPosition(20, sdfY)
                 .setStyle(new TextStyle(new Color(0.2f, 1f, 0.8f))) // Cyan-green
-                .setTransform(camera.getViewMatrix())
                 .setDepth(0);
 
         sdfText = new SdfTextRenderable()
@@ -115,7 +111,6 @@ public class UrpTextDemo extends DemoGame {
                 .setText("The quick brown fox jumps over the lazy dog 0123456789")
                 .setPosition(20, sdfY + 35)
                 .setStyle(new TextStyle(Color.WHITE))
-                .setTransform(camera.getViewMatrix())
                 .setDepth(0);
 
         // FPS counter
@@ -124,7 +119,6 @@ public class UrpTextDemo extends DemoGame {
                 .setText("FPS: 0")
                 .setPosition(20, 70)
                 .setStyle(new TextStyle(Color.LIME))
-                .setTransform(camera.getViewMatrix())
                 .setDepth(0);
 
         // Instructions
@@ -136,7 +130,6 @@ public class UrpTextDemo extends DemoGame {
                         "Both render together in the Unified Render Pipeline!")
                 .setPosition(20, getViewportHeight() - 110)
                 .setStyle(new TextStyle(new Color(0.9f, 0.9f, 0.9f))) // Gray
-                .setTransform(camera.getViewMatrix())
                 .setDepth(0);
 
         // Submit all renderables
@@ -154,6 +147,8 @@ public class UrpTextDemo extends DemoGame {
     public void update(DeltaTime delta) {
         // Animate the background sprite
         backgroundSprite.setRotation(delta.getTotalElapsed() * 0.5f);
+
+
 
         // Update FPS counter
         fpsText.setText("FPS: " + getSmoothedFps());

@@ -388,50 +388,20 @@ public class GLCanvasRenderer extends CanvasRenderer {
 
     /**
      * Internal method to measure text size with custom letter and line spacing.
+     * Delegates to SdfFont.measureText() with current transform scale applied.
      */
     private Size measureTextInternal(String text, SdfFont font, float letterSpacing, float lineSpacing) {
-        if (text == null || text.isEmpty() || font == null) {
+        if (font == null) {
             return new Size(0, 0);
         }
 
-        String[] lines = text.split("\n", -1);
-        float maxWidth = 0;
-        float totalHeight = 0;
-
-        for (int lineIdx = 0; lineIdx < lines.length; lineIdx++) {
-            String line = lines[lineIdx];
-            float lineWidth = 0;
-            
-            for (int i = 0; i < line.length(); i++) {
-                char ch = line.charAt(i);
-                
-                // Handle spaces (matching the rendering logic)
-                if (ch == ' ') {
-                    float spaceWidth = font.getFontSize() * GLSdfConstants.SPACE_WIDTH_RATIO;
-                    lineWidth += spaceWidth + letterSpacing;
-                    continue;
-                }
-                
-                var glyph = font.getGlyph(ch);
-                if (glyph != null) {
-                    lineWidth += glyph.getAdvance() + letterSpacing;
-                }
-            }
-            
-            maxWidth = Math.max(maxWidth, lineWidth);
-            totalHeight += font.getLineHeight();
-            
-            if (lineIdx < lines.length - 1) {
-                totalHeight += lineSpacing;
-            }
-        }
-
-        // Apply current transform scale to the measured size
+        // Extract scale from current transform matrix
         float[][] mat = currentTransform.transform.toUnsafeArray();
         float scaleX = (float) Math.sqrt(mat[0][0] * mat[0][0] + mat[0][1] * mat[0][1]);
         float scaleY = (float) Math.sqrt(mat[1][0] * mat[1][0] + mat[1][1] * mat[1][1]);
 
-        return new Size(maxWidth * scaleX, totalHeight * scaleY);
+        // Delegate to font's measurement method with current transform scale
+        return font.measureText(text, letterSpacing, lineSpacing, new Vector2(scaleX, scaleY));
     }
 
     @Override

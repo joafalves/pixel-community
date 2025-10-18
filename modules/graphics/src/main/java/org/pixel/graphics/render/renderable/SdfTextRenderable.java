@@ -18,7 +18,7 @@ public class SdfTextRenderable extends Renderable<SdfTextRenderer> {
     private String text;
     private SdfFont font;
     private TextStyle style;
-    private Matrix4 transform;
+    private Vector2 scale;
 
     /**
      * Constructor.
@@ -27,14 +27,13 @@ public class SdfTextRenderable extends Renderable<SdfTextRenderer> {
         super(SdfTextRenderer.class);
         this.text = "";
         this.style = new TextStyle(Color.WHITE);
-        this.transform = new Matrix4();
+        this.scale = new Vector2(1, 1);
     }
 
     @Override
     public void render(SdfTextRenderer renderer, Matrix4 viewMatrix) {
-        // Use the transform as-is (it already contains currentTransform * viewMatrix from Canvas)
-        // Do NOT multiply by viewMatrix again - that would apply it twice!
-        renderer.render(text, font, position.getX(), position.getY(), style, transform);
+        // Use the viewMatrix passed by RenderPipeline, just like SpriteRenderable does
+        renderer.render(text, font, position.getX(), position.getY(), style, viewMatrix, scale);
     }
 
     @Override
@@ -43,10 +42,10 @@ public class SdfTextRenderable extends Renderable<SdfTextRenderer> {
             return null;
         }
 
-        // Estimate text bounds based on font metrics
+        // Estimate text bounds based on font metrics with scale applied
         // TODO: Calculate actual bounds from glyph metrics
-        float estimatedWidth = text.length() * font.getFontSize() * 0.6f;
-        float estimatedHeight = font.getFontSize();
+        float estimatedWidth = text.length() * font.getFontSize() * 0.6f * scale.getX();
+        float estimatedHeight = font.getFontSize() * scale.getY();
 
         return new Rectangle(position.getX(), position.getY(), estimatedWidth, estimatedHeight);
     }
@@ -61,11 +60,10 @@ public class SdfTextRenderable extends Renderable<SdfTextRenderer> {
     public TextStyle getStyle() { return style; }
     public SdfTextRenderable setStyle(TextStyle style) { this.style = style; return this; }
 
-    public Matrix4 getTransform() { return transform; }
-    public SdfTextRenderable setTransform(Matrix4 transform) { 
-        this.transform = new Matrix4(transform); 
-        return this; 
-    }
+    public Vector2 getScale() { return scale; }
+    public SdfTextRenderable setScale(Vector2 scale) { this.scale = scale; return this; }
+    public SdfTextRenderable setScale(float x, float y) { this.scale.set(x, y); return this; }
+    public SdfTextRenderable setScale(float xy) { this.scale.set(xy, xy); return this; }
     //</editor-fold>
 
     //<editor-fold desc="Fluent Setters Override for Method Chaining">

@@ -79,9 +79,10 @@ public class GLSdfTextRenderer implements SdfTextRenderer {
      * @param y          Y position (world space)
      * @param style      Text styling
      * @param viewMatrix Camera view-projection matrix
+     * @param scale      Scale factor (x, y) for the text
      */
     @Override
-    public void render(String text, SdfFont font, float x, float y, TextStyle style, Matrix4 viewMatrix) {
+    public void render(String text, SdfFont font, float x, float y, TextStyle style, Matrix4 viewMatrix, Vector2 scale) {
         if (text == null || text.isEmpty() || font == null) {
             return;
         }
@@ -90,27 +91,27 @@ public class GLSdfTextRenderer implements SdfTextRenderer {
         if (style.isDropShadow()) {
             Vector2 shadowOffset = style.getShadowOffset();
             Color shadowColor = style.getShadowColor();
-            
+
             // Create shadow style with same stroke width and letter spacing as main text
             // This ensures the shadow has identical spacing and length
             TextStyle shadowStyle = new TextStyle(shadowColor);
             shadowStyle.setStroke(null, style.getStrokeWidth()); // Copy stroke width for spacing
             shadowStyle.setLetterSpacing(style.getLetterSpacing()); // Copy letter spacing too!
-            
-            renderPass(text, font, 
-                x + shadowOffset.getX(), 
-                y + shadowOffset.getY(), 
-                shadowStyle, viewMatrix);
+
+            renderPass(text, font,
+                x + shadowOffset.getX() * scale.getX(),
+                y + shadowOffset.getY() * scale.getY(),
+                shadowStyle, viewMatrix, scale);
         }
 
         // Render main text
-        renderPass(text, font, x, y, style, viewMatrix);
+        renderPass(text, font, x, y, style, viewMatrix, scale);
     }
 
     /**
      * Internal method to render a single text pass.
      */
-    private void renderPass(String text, SdfFont font, float x, float y, TextStyle style, Matrix4 viewMatrix) {
+    private void renderPass(String text, SdfFont font, float x, float y, TextStyle style, Matrix4 viewMatrix, Vector2 scale) {
         shader.bind();
         vao.bind();
 
@@ -173,16 +174,16 @@ public class GLSdfTextRenderer implements SdfTextRenderer {
             // Handle newlines
             if (ch == '\n') {
                 cursorX = x;
-                cursorY += font.getLineHeight();
+                cursorY += font.getLineHeight() * scale.getY();
                 continue;
             }
 
             // Handle spaces - advance cursor even though there's no glyph to render
             if (ch == ' ') {
                 // Use a standard space width (typically fontSize / 4, but we'll use a reasonable default)
-                float spaceWidth = font.getFontSize() * GLSdfConstants.SPACE_WIDTH_RATIO;
+                float spaceWidth = font.getFontSize() * GLSdfConstants.SPACE_WIDTH_RATIO * scale.getX();
                 // Note: strokeWidth affects visual appearance but NOT glyph spacing
-                cursorX += spaceWidth + style.getLetterSpacing();
+                cursorX += spaceWidth + (style.getLetterSpacing() * scale.getX());
                 continue;
             }
 
@@ -191,15 +192,15 @@ public class GLSdfTextRenderer implements SdfTextRenderer {
                 continue; // Skip unknown characters
             }
 
-            // Calculate glyph quad position
+            // Calculate glyph quad position with scale applied
             // cursorY = top of text line (UI-style positioning)
             // baseline = cursorY + ascent (ascent pixels down from top, since Y increases downward)
             // glyphY = baseline + offsetY (offsetY is negative, placing glyph above baseline)
             // Combined: glyphY = cursorY + ascent + offsetY
-            float glyphX = cursorX + glyph.getOffsetX();
-            float glyphY = cursorY + font.getAscent() + glyph.getOffsetY();
-            float glyphW = glyph.getWidth();
-            float glyphH = glyph.getHeight();
+            float glyphX = cursorX + (glyph.getOffsetX() * scale.getX());
+            float glyphY = cursorY + (font.getAscent() * scale.getY()) + (glyph.getOffsetY() * scale.getY());
+            float glyphW = glyph.getWidth() * scale.getX();
+            float glyphH = glyph.getHeight() * scale.getY();
 
             // Calculate texture coordinates (normalized)
             float atlasW = font.getAtlasWidth();
@@ -222,9 +223,9 @@ public class GLSdfTextRenderer implements SdfTextRenderer {
 
             glyphCount++;
 
-            // Advance cursor
+            // Advance cursor with scale applied
             // Note: strokeWidth affects visual appearance but NOT glyph spacing
-            cursorX += glyph.getAdvance() + style.getLetterSpacing();
+            cursorX += (glyph.getAdvance() * scale.getX()) + (style.getLetterSpacing() * scale.getX());
 
             // Flush if buffer is full
             if (glyphCount >= 100) {

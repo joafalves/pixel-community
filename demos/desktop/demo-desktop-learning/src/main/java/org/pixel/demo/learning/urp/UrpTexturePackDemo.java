@@ -10,11 +10,13 @@ import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.graphics.render.RenderPipeline;
+import org.pixel.graphics.render.canvas.Canvas;
 import org.pixel.graphics.render.canvas.TextStyle;
 import org.pixel.graphics.render.canvas.text.SdfFont;
 import org.pixel.graphics.render.renderable.SdfTextRenderable;
 import org.pixel.graphics.render.renderable.SpriteRenderable;
 import org.pixel.math.MathHelper;
+import org.pixel.math.Size;
 import org.pixel.math.Vector2;
 
 import java.util.ArrayList;
@@ -23,7 +25,7 @@ import java.util.List;
 public class UrpTexturePackDemo extends DemoGame {
 
     private static final float RENDER_SCALE = 0.25f;
-    private static final int SPRITES = 512;
+    private static final int SPRITES = 25;
     private static final float CHARACTER_SPEED = 20f;
     private static final float WOBBLE_SPEED = 8f;
     private static final float WOBBLE_ROTATION = 0.08f; // Rotation in radians (±0.08 rad ≈ ±4.6 degrees)
@@ -33,6 +35,7 @@ public class UrpTexturePackDemo extends DemoGame {
     private RenderPipeline render;
     private Camera2D camera;
     private List<CharacterState> characters;
+    private SdfTextRenderable fpsCounter;
 
     private static String generateRandomName() {
         String[] names = {
@@ -103,9 +106,13 @@ public class UrpTexturePackDemo extends DemoGame {
             sprite.setPosition(position.getX(), position.getY() - jumpBob);
             sprite.setRotation(wobbleRotation);
 
-            // Update name tag position
+            // Update name tag position (centered below sprite)
             if (nameTag != null) {
-                nameTag.setPosition(position.getX(), position.getY() - jumpBob);
+                // Get accurate text width using font measurement
+                Size textSize = nameTag.getFont().measureText(nameTag.getText(),
+                    nameTag.getStyle(), nameTag.getScale());
+                nameTag.setPosition(position.getX() - (textSize.getWidth() / 2),
+                    position.getY() - jumpBob + 2);
             }
 
             // Flip sprite based on horizontal direction (flip horizontally if moving right)
@@ -128,16 +135,28 @@ public class UrpTexturePackDemo extends DemoGame {
         camera = new Camera2D(renderWidth, renderHeight);
         characters = new ArrayList<>();
 
+        // Load font at higher resolution (48px) to maintain quality at low render scale
+        // We'll scale it down even further for small text below characters
         SdfFont font = contentManager.load("fonts/8-bit-regular.ttf", SdfFont.class,
-                new FontImporterSettings(12, 1));
+                new FontImporterSettings(48, 1));
 
         TexturePack charTexturePack =
                 contentManager.load("images/chars-16x16.pack.json", TexturePack.class);
 
+        // Create FPS counter
+        fpsCounter = new SdfTextRenderable();
+        fpsCounter.setFont(font);
+        fpsCounter.setText("FPS: 0");
+        fpsCounter.setStyle(new TextStyle(Color.LIME).setStroke(Color.BLACK, 4));
+        fpsCounter.setScale(0.12f); // Slightly larger than character names
+        fpsCounter.setPosition(2, 2); // Top-left corner with small margin
+        fpsCounter.setDepth(10); // Render in front of everything
+
+        render.submit(fpsCounter);
+
         String[] frames = new String[]{
                 "char-01", "char-02"
         };
-
         for (int i = 0; i < SPRITES; i++) {
             var randomFrame = frames[MathHelper.random(0, frames.length)];
 
@@ -149,9 +168,17 @@ public class UrpTexturePackDemo extends DemoGame {
 
             var nameTag = new SdfTextRenderable();
             nameTag.setFont(font);
-            nameTag.setText(generateRandomName());
-            nameTag.setPosition(sprite.getPosition().getX(), sprite.getPosition().getY());
-            nameTag.setStyle(new TextStyle(Color.WHITE));
+            String name = generateRandomName();
+            nameTag.setText(name);
+
+            // Position text below the sprite (sprite anchor is 0.5, 1.0 so bottom-center)
+            // Center the text horizontally using proper measurement
+            float textScale = 0.10f; // Scale to make text smaller (48px * 0.10f = 3.2px)
+            TextStyle textStyle = new TextStyle(Color.WHITE).setStroke(Color.BLACK, 6);
+            Size textSize = font.measureText(name, textStyle, new Vector2(textScale, textScale));
+            nameTag.setPosition(sprite.getPosition().getX() - (textSize.getWidth() / 2), sprite.getPosition().getY() + 2);
+            nameTag.setStyle(textStyle);
+            nameTag.setScale(textScale);
 
             render.submit(sprite);
             render.submit(nameTag);
@@ -163,6 +190,9 @@ public class UrpTexturePackDemo extends DemoGame {
     @Override
     public void update(DeltaTime delta) {
         super.update(delta);
+
+        // Update FPS counter
+        fpsCounter.setText("FPS: " + getFps());
 
         // Update all characters
         for (CharacterState character : characters) {
