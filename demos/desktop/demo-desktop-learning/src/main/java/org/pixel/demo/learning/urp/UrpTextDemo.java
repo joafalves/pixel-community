@@ -63,6 +63,8 @@ public class UrpTextDemo extends DemoGame {
         SdfFont smallSdfFont = content.load("fonts/roboto-regular.ttf", SdfFont.class, 
             new FontImporterSettings(14, 1));
 
+        // TODO: FIX SDF FONT RENDERING IN URP (appears to need camera matrix for some reason).
+
         // Create a background sprite
         backgroundSprite = new SpriteRenderable()
                 .setTexture(earthTexture)

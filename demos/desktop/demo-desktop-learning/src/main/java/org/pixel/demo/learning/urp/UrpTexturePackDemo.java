@@ -5,10 +5,14 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.TexturePack;
+import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.graphics.render.RenderPipeline;
+import org.pixel.graphics.render.canvas.TextStyle;
+import org.pixel.graphics.render.canvas.text.SdfFont;
+import org.pixel.graphics.render.renderable.SdfTextRenderable;
 import org.pixel.graphics.render.renderable.SpriteRenderable;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
@@ -30,18 +34,31 @@ public class UrpTexturePackDemo extends DemoGame {
     private Camera2D camera;
     private List<CharacterState> characters;
 
+    private static String generateRandomName() {
+        String[] names = {
+                "Alex", "Blake", "Casey", "Drew", "Elliot",
+                "Finley", "Gray", "Harper", "Jordan", "Kendall",
+                "Logan", "Morgan", "Parker", "Quinn", "Riley",
+                "Sawyer", "Taylor", "Val", "Winter", "Zion"
+        };
+
+        return names[MathHelper.random(0, names.length)];
+    }
+
     /**
      * Inner class to track character state including position, velocity, and animation
      */
     private static class CharacterState {
         SpriteRenderable sprite;
+        SdfTextRenderable nameTag;
         Vector2 position;
         Vector2 direction;
         float wobbleTime;
         float phaseOffset; // Random offset so characters don't sync up
 
-        CharacterState(SpriteRenderable sprite) {
+        CharacterState(SpriteRenderable sprite, SdfTextRenderable nameTag) {
             this.sprite = sprite;
+            this.nameTag = nameTag;
             this.position = new Vector2(sprite.getPosition());
             this.wobbleTime = 0f;
             // Random phase offset between 0 and 2π so all characters wobble independently
@@ -86,6 +103,11 @@ public class UrpTexturePackDemo extends DemoGame {
             sprite.setPosition(position.getX(), position.getY() - jumpBob);
             sprite.setRotation(wobbleRotation);
 
+            // Update name tag position
+            if (nameTag != null) {
+                nameTag.setPosition(position.getX(), position.getY() - jumpBob);
+            }
+
             // Flip sprite based on horizontal direction (flip horizontally if moving right)
             float scaleX = direction.getX() > 0 ? -1f : 1f;
             sprite.setScale(scaleX, 1f);
@@ -106,6 +128,9 @@ public class UrpTexturePackDemo extends DemoGame {
         camera = new Camera2D(renderWidth, renderHeight);
         characters = new ArrayList<>();
 
+        SdfFont font = contentManager.load("fonts/8-bit-regular.ttf", SdfFont.class,
+                new FontImporterSettings(12, 1));
+
         TexturePack charTexturePack =
                 contentManager.load("images/chars-16x16.pack.json", TexturePack.class);
 
@@ -122,8 +147,16 @@ public class UrpTexturePackDemo extends DemoGame {
             sprite.setSource(charTexturePack.getFrame(randomFrame).getSource());
             sprite.setAnchor(0.5f, 1.0f);
 
+            var nameTag = new SdfTextRenderable();
+            nameTag.setFont(font);
+            nameTag.setText(generateRandomName());
+            nameTag.setPosition(sprite.getPosition().getX(), sprite.getPosition().getY());
+            nameTag.setStyle(new TextStyle(Color.WHITE));
+
             render.submit(sprite);
-            characters.add(new CharacterState(sprite));
+            render.submit(nameTag);
+
+            characters.add(new CharacterState(sprite, nameTag));
         }
     }
 
