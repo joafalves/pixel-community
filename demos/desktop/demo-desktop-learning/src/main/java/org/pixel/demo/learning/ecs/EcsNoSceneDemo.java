@@ -27,8 +27,8 @@ public class EcsNoSceneDemo extends DemoGame {
 
     @Override
     public void load() {
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        contentManager = ServiceProvider.get(ContentManager.class);
+        spriteBatch = SpriteBatch.create();
+        contentManager = ContentManager.create();
 
         sprite = new Sprite("earth", contentManager.loadTexture("images/earth-48x48.png"));
         sprite.setPivot(Vector2.half());

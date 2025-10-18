@@ -49,7 +49,7 @@ public class CanvasLinesDemo extends DemoGame {
         canvas = new GLCanvasRenderer(getViewportWidth(), getViewportHeight());
 
         // Initialize content manager
-        content = ServiceProvider.get(ContentManager.class);
+        content = ContentManager.create();
 
         // Load font
         font = content.load("fonts/roboto-regular.ttf", SdfFont.class,

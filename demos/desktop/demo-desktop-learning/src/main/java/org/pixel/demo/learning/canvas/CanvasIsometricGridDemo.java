@@ -47,7 +47,7 @@ public class CanvasIsometricGridDemo extends DemoGame {
         canvas = new GLCanvasRenderer(windowWidth, windowHeight);
 
         // Initialize content manager
-        content = ServiceProvider.get(ContentManager.class);
+        content = ContentManager.create();
 
         // Load font for UI text
         font = content.load("fonts/roboto-regular.ttf", SdfFont.class,

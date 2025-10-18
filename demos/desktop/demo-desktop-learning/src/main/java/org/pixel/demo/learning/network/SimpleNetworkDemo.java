@@ -123,8 +123,8 @@ public class SimpleNetworkDemo extends DemoGame
         }
 
         // Complementary assets:
-        content = ServiceProvider.get(ContentManager.class);
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
+        content = ContentManager.create();
+        spriteBatch = SpriteBatch.create();
         gameCamera.setOrigin(Vector2.ZERO);
 
         debugFont = content.load("fonts/gidole-regular.ttf", Font.class, FontImporterSettings.builder()

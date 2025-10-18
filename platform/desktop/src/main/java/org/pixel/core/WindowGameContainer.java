@@ -71,7 +71,6 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
 
     @Override
     public void dispose() {
-        windowManager.dispose();
         super.dispose();
     }
 

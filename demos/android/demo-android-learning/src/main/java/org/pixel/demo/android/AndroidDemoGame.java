@@ -49,8 +49,8 @@ public class AndroidDemoGame extends Game {
 
     @Override
     public void load() {
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        contentManager = ServiceProvider.get(ContentManager.class);
+        spriteBatch = SpriteBatch.create();
+        contentManager = ContentManager.create();
         camera = new Camera2D(this);
         camera.setOrigin(0.5f);
 

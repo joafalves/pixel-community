@@ -39,8 +39,8 @@ public class MultiSpriteDemo extends DemoGame {
         gameCamera.setOrigin(Vector2.half());
 
         // general game instances
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        content = ServiceProvider.get(ContentManager.class);
+        spriteBatch = SpriteBatch.create();
+        content = ContentManager.create();
 
         // load texture into memory
         spriteTexA = content.load("images/earth-48x48.png", Texture.class);

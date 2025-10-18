@@ -124,8 +124,8 @@ Framework uses static service registry for platform-specific implementations:
 
 ```java
 // Retrieve services (registered during platform initialization)
-SpriteBatch spriteBatch = ServiceProvider.get(SpriteBatch.class);
-ContentManager content = ServiceProvider.get(ContentManager.class);
+SpriteBatch spriteBatch = SpriteBatch.create();
+ContentManager content = ContentManager.create();
 AudioPlayer audio = ServiceProvider.get(AudioPlayer.class);
 SdfTextRenderer textRenderer = ServiceProvider.get(SdfTextRenderer.class);
 
@@ -186,7 +186,7 @@ canvas.end();
 ContentManager provides centralized asset loading with caching:
 
 ```java
-ContentManager content = ServiceProvider.get(ContentManager.class);
+ContentManager content = ContentManager.create();
 
 // Load assets (automatically cached by path)
 Texture texture = content.load("path/to/texture.png", Texture.class);
@@ -217,7 +217,7 @@ vectorPool.free(v); // returns to pool
 ### Rendering Batches
 SpriteBatch automatically batches draw calls for performance:
 ```java
-SpriteBatch batch = ServiceProvider.get(SpriteBatch.class);
+SpriteBatch batch = SpriteBatch.create();
 batch.begin(camera.getViewMatrix(), BlendMode.NORMAL_BLEND);
 
 // All draws batched together

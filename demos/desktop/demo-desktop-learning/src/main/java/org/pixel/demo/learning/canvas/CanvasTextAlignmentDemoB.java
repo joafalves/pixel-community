@@ -7,7 +7,6 @@ package org.pixel.demo.learning.canvas;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.core.Camera2D;
@@ -43,7 +42,7 @@ public class CanvasTextAlignmentDemoB extends DemoGame {
         super.load();
         camera = new Camera2D(this);
         canvas = new GLCanvasRenderer(getViewportWidth(), getViewportHeight());
-        content = ServiceProvider.get(ContentManager.class);
+        content = ContentManager.create();
         font = content.load("fonts/roboto-regular.ttf", SdfFont.class,
             new FontImporterSettings(24, 3));
 

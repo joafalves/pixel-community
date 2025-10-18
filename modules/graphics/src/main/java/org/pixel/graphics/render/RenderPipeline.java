@@ -16,7 +16,7 @@ import java.util.Map;
  * Uses a generic renderer registry system - renderables specify which renderer type they need,
  * and the pipeline provides the appropriate renderer instance.
  * Supports optional frustum culling to skip rendering objects outside the camera view.
- * 
+ *
  * <p><b>Rendering Strategy:</b></p>
  * The pipeline respects submission order by default - if you mix renderer types, it will:
  * <ol>
@@ -24,7 +24,7 @@ import java.util.Map;
  *   <li>Switch renderers when the type changes</li>
  *   <li>This preserves visual ordering but may reduce batching efficiency</li>
  * </ol>
- * 
+ *
  * <p><b>Example:</b></p>
  * <pre>
  * submit(spriteA);        // SpriteBatch begins
@@ -32,21 +32,21 @@ import java.util.Map;
  * submit(shapeC);         // SpriteBatch ends, SdfShapeRenderer renders
  * submit(spriteD);        // NEW SpriteBatch begins (can't batch with A/B!)
  * </pre>
- * 
+ *
  * <p><b>Performance Tip:</b> Group submissions by renderer type when possible:
  * <pre>
  * // Good - minimal renderer switches
  * submit all sprites first
  * submit all shapes next
  * submit all text last
- * 
+ *
  * // Bad - constant renderer switching
  * submit(sprite)
  * submit(shape)
  * submit(sprite)
  * submit(shape)
  * </pre>
- * 
+ *
  * <p>Use {@code setDepth()} to control visual ordering within the same renderer type.</p>
  */
 public class RenderPipeline implements Disposable {
@@ -80,9 +80,9 @@ public class RenderPipeline implements Disposable {
     public RenderPipeline() {
         this(new HashMap<>());
         // Register default renderers from ServiceProvider
-        registerRenderer(SpriteBatch.class, ServiceProvider.get(SpriteBatch.class));
-        registerRenderer(DirectRenderer.class, ServiceProvider.get(DirectRenderer.class));
-        registerRenderer(SdfTextRenderer.class, ServiceProvider.get(SdfTextRenderer.class));
+        registerRenderer(SpriteBatch.class, SpriteBatch.create());
+        registerRenderer(DirectRenderer.class, DirectRenderer.create());
+        registerRenderer(SdfTextRenderer.class, SdfTextRenderer.create());
     }
 
     /**
@@ -153,7 +153,7 @@ public class RenderPipeline implements Disposable {
         if (hasDifferentDepths) {
             renderQueue.sort(depthSorter);
         }
-        
+
         // Optional: Group by renderer type for maximum batching efficiency
         if (groupByRenderer) {
             renderQueue.sort(Comparator.comparing(r -> r.getRendererType().getName()));
@@ -163,7 +163,7 @@ public class RenderPipeline implements Disposable {
         Class<? extends Renderer> currentRendererType = null;
         Renderer currentRenderer = null;
         boolean isBatching = false;
-        
+
         for (Renderable<?> renderable : renderQueue) {
             // Frustum culling check
             if (cullingEnabled) {
@@ -172,9 +172,9 @@ public class RenderPipeline implements Disposable {
                     continue; // Skip rendering - outside view frustum
                 }
             }
-            
+
             Class<? extends Renderer> rendererType = renderable.getRendererType();
-            
+
             // Check if we need to switch renderers
             if (currentRendererType == null || !currentRendererType.equals(rendererType)) {
                 // End previous renderer if it was batching
@@ -182,22 +182,22 @@ public class RenderPipeline implements Disposable {
                     ((BatchRenderer) currentRenderer).end();
                     isBatching = false;
                 }
-                
+
                 // Switch to new renderer
                 currentRendererType = rendererType;
                 currentRenderer = renderers.get(rendererType);
-                
+
                 if (currentRenderer == null) {
                     throw new IllegalStateException("Renderer not registered for type: " + rendererType.getName());
                 }
-                
+
                 // Start new renderer if it supports batching
                 if (currentRenderer instanceof BatchRenderer) {
                     ((BatchRenderer) currentRenderer).begin(viewMatrix);
                     isBatching = true;
                 }
             }
-            
+
             // Render using the appropriate renderer
             ((Renderable<Renderer>) renderable).render(currentRenderer, viewMatrix);
         }
@@ -230,18 +230,18 @@ public class RenderPipeline implements Disposable {
 
     /**
      * Enable renderer grouping for maximum batching efficiency.
-     * 
+     *
      * <p><b>WARNING:</b> This breaks submission order! Use only when:
      * <ul>
      *   <li>You don't care about visual ordering between different renderer types</li>
      *   <li>You're using depth values to control ordering</li>
      *   <li>Performance is critical (e.g., rendering thousands of objects)</li>
      * </ul>
-     * 
+     *
      * <p>When enabled, all sprites will batch together, all shapes together, etc.,
      * regardless of submission order. This minimizes renderer switches but may
      * cause visual artifacts if you rely on submission order for overlapping.
-     * 
+     *
      * @param enabled True to group by renderer type, false to preserve submission order
      */
     public void setGroupByRenderer(boolean enabled) {

@@ -41,8 +41,8 @@ public class GamePadInputDemo extends DemoGame {
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        content = ServiceProvider.get(ContentManager.class);
+        spriteBatch = SpriteBatch.create();
+        content = ContentManager.create();
 
         // load texture into memory
         spriteTex = content.load("images/earth-48x48.png", Texture.class);

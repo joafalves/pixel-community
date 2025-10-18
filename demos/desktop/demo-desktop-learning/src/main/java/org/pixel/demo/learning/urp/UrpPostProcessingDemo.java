@@ -41,7 +41,7 @@ public class UrpPostProcessingDemo extends DemoGame {
     @Override
     public void load() {
         super.load();
-        content = ServiceProvider.get(ContentManager.class);
+        content = ContentManager.create();
 
         // 1. Create the pipeline
         renderPipeline = new RenderPipeline();

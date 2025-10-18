@@ -1,6 +1,7 @@
 package org.pixel.graphics.render;
 
 import org.pixel.commons.Color;
+import org.pixel.commons.factory.FactoryProvider;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.commons.lifecycle.Initializable;
 import org.pixel.math.Matrix4;
@@ -11,7 +12,59 @@ import org.pixel.content.Texture;
 import org.pixel.graphics.shader.Shader;
 
 public abstract class SpriteBatch implements BatchRenderer, Initializable, Disposable {
-    
+
+    /**
+     * Create a platform-specific SpriteBatch instance with default settings.
+     *
+     * <p>This factory method delegates to the registered {@link SpriteBatchFactory} to create
+     * the appropriate platform-specific implementation (e.g., GLFastSpriteBatch on desktop).
+     *
+     * <p>Example usage:
+     * <pre>
+     * SpriteBatch batch = SpriteBatch.create();
+     * batch.begin(camera.getViewMatrix());
+     * batch.draw(texture, position);
+     * batch.end();
+     * batch.dispose();
+     * </pre>
+     *
+     * @return A new SpriteBatch instance appropriate for the current platform
+     */
+    public static SpriteBatch create() {
+        return FactoryProvider.get(SpriteBatchFactory.class).create();
+    }
+
+    /**
+     * Create a platform-specific SpriteBatch instance with a custom buffer size.
+     *
+     * <p>Larger buffer sizes reduce the number of draw calls but use more memory.
+     * Choose based on your typical sprite count per frame.
+     *
+     * <p>Example usage:
+     * <pre>
+     * SpriteBatch batch = SpriteBatch.create(16384); // Large buffer for many sprites
+     * </pre>
+     *
+     * @param bufferMaxSize The maximum number of sprites that can be batched before flushing
+     * @return A new SpriteBatch instance appropriate for the current platform
+     */
+    public static SpriteBatch create(int bufferMaxSize) {
+        return FactoryProvider.get(SpriteBatchFactory.class).create(bufferMaxSize);
+    }
+
+    /**
+     * Create a platform-specific SpriteBatch instance with custom buffer size and texture unit count.
+     *
+     * <p>Advanced configuration for fine-tuning batch performance and memory usage.
+     *
+     * @param bufferMaxSize      The maximum number of sprites that can be batched before flushing
+     * @param shaderTextureCount The number of texture units to use (0 for auto-detect)
+     * @return A new SpriteBatch instance appropriate for the current platform
+     */
+    public static SpriteBatch create(int bufferMaxSize, int shaderTextureCount) {
+        return FactoryProvider.get(SpriteBatchFactory.class).create(bufferMaxSize, shaderTextureCount);
+    }
+
     /**
      * Draws a sprite with a custom shader.
      *

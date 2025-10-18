@@ -7,7 +7,6 @@ package org.pixel.demo.learning.audio;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.Texture;
 import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
@@ -32,7 +31,7 @@ public class AudioPanningDemo extends AudioDemo {
     public void load() {
         super.load();
 
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
+        spriteBatch = SpriteBatch.create();
         camera = new Camera2D(this);
         camera.setOrigin(0.5f);
         texturePosition = new Vector2();

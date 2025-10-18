@@ -7,7 +7,6 @@ package org.pixel.demo.learning.canvas;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.core.WindowSettings;
@@ -39,7 +38,7 @@ public class CanvasPathDemo extends DemoGame {
         canvas = new GLCanvasRenderer(getViewportWidth(), getViewportHeight());
 
         // Load content
-        content = ServiceProvider.get(ContentManager.class);
+        content = ContentManager.create();
         font = content.load("fonts/roboto-regular.ttf", SdfFont.class,
                 new FontImporterSettings(16, 3));
         titleFont = content.load("fonts/roboto-medium.ttf", SdfFont.class,
@@ -276,10 +275,11 @@ public class CanvasPathDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        super.dispose();
         if (canvas != null) {
             canvas.dispose();
         }
+        content.dispose();
+        super.dispose();
     }
 
     public static void main(String[] args) {

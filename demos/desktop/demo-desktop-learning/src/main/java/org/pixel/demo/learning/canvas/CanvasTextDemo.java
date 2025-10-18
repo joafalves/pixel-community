@@ -6,7 +6,6 @@
 package org.pixel.demo.learning.canvas;
 
 import org.pixel.commons.Color;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.core.Camera2D;
@@ -50,7 +49,7 @@ public class CanvasTextDemo extends DemoGame {
         canvas = new GLCanvas(getViewportWidth(), getViewportHeight());
 
         // Initialize content manager
-        content = ServiceProvider.get(ContentManager.class);
+        content = ContentManager.create();
 
         // Load fonts using the content pipeline!
         smallFont = content.load("fonts/roboto-regular.ttf", SdfFont.class,

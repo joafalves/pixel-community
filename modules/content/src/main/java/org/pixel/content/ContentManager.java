@@ -6,6 +6,7 @@
 package org.pixel.content;
 
 import org.pixel.commons.annotation.Nullable;
+import org.pixel.commons.factory.FactoryProvider;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
@@ -25,6 +26,26 @@ public class ContentManager implements Disposable {
     private final ConcurrentHashMap<Class<?>, ContentImporter<?>> importers;
 
     private DataPipeline<byte[]> dataPipeline;
+
+    /**
+     * Create a platform-specific ContentManager instance.
+     *
+     * <p>This factory method delegates to the registered {@link ContentManagerFactory} to create
+     * a ContentManager with appropriate platform-specific importers (e.g., GLTextureImporter on desktop).
+     *
+     * <p>Example usage:
+     * <pre>
+     * ContentManager content = ContentManager.create();
+     * Texture texture = content.loadTexture("sprites/player.png");
+     * SdfFont font = content.loadFont("fonts/roboto.ttf");
+     * content.dispose();
+     * </pre>
+     *
+     * @return A new ContentManager instance with platform-specific importers
+     */
+    public static ContentManager create() {
+        return FactoryProvider.get(ContentManagerFactory.class).create();
+    }
 
     /**
      * Constructor. By default, includes all internal importers.

@@ -1,15 +1,14 @@
 package org.pixel.demo.learning.canvas;
 
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.core.WindowCursorType;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.commons.Color;
 import org.pixel.graphics.render.canvas.GLCanvasRenderer;
 import org.pixel.graphics.render.canvas.text.SdfFont;
 import org.pixel.input.mouse.Mouse;
@@ -71,7 +70,7 @@ public class CanvasIsometricCityDemo extends DemoGame {
         int windowHeight = getWindowManager().getWindowHeight();
         canvas = new GLCanvasRenderer(windowWidth, windowHeight);
 
-        content = ServiceProvider.get(ContentManager.class);
+        content = ContentManager.create();
 
         font = content.load("fonts/roboto-regular.ttf", SdfFont.class,
                 new FontImporterSettings(14, 3));

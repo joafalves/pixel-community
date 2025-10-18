@@ -51,8 +51,8 @@ public class PerformanceGame extends Game {
 
     @Override
     public void load() {
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        contentManager = ServiceProvider.get(ContentManager.class);
+        spriteBatch = SpriteBatch.create();
+        contentManager = ContentManager.create();
         camera = new Camera2D(this, Vector2.zero());
         gameScene = new GameScene("GameScene01", camera, spriteBatch);
 
@@ -92,7 +92,7 @@ public class PerformanceGame extends Game {
         }
 
         if (Keyboard.isKeyPressed(KeyboardKey.ESCAPE)) {
-            dispose();
+            quit();
         }
     }
 

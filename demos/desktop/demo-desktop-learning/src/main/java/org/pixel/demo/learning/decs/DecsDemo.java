@@ -11,6 +11,8 @@ import org.pixel.demo.learning.decs.system.*;
 import org.pixel.ext.decs.GameEntity;
 import org.pixel.ext.decs.GameWorld;
 import org.pixel.graphics.render.canvas.GLCanvasRenderer;
+import org.pixel.input.keyboard.Keyboard;
+import org.pixel.input.keyboard.KeyboardKey;
 
 /**
  * DECS Demo: "Neon Defenders" - A twin-stick shooter showcasing advanced DECS architecture
@@ -99,6 +101,10 @@ public class DecsDemo extends Game {
     public void update(DeltaTime delta) {
         super.update(delta);
         world.update(delta);
+
+        if (Keyboard.isKeyPressed(KeyboardKey.ESCAPE)) {
+            quit();
+        }
     }
 
     @Override

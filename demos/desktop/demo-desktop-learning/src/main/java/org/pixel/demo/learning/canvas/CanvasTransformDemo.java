@@ -45,7 +45,7 @@ public class CanvasTransformDemo extends DemoGame {
         canvas = new GLCanvas(getViewportWidth(), getViewportHeight());
 
         // Initialize content manager
-        content = ServiceProvider.get(ContentManager.class);
+        content = ContentManager.create();
 
         // Load font
         font = content.load("fonts/roboto-medium.ttf", SdfFont.class,

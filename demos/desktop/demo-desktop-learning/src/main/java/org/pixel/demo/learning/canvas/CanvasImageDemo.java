@@ -55,7 +55,7 @@ public class CanvasImageDemo extends DemoGame {
     public void load() {
         super.load();
 
-        content = ServiceProvider.get(ContentManager.class);
+        content = ContentManager.create();
 
         // Load the earth texture
         earthTexture = content.load("images/earth-48x48.png", Texture.class);

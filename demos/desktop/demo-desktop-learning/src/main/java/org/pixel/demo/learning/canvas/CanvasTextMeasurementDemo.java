@@ -41,7 +41,7 @@ public class CanvasTextMeasurementDemo extends DemoGame {
 
         camera = new Camera2D(this);
         canvas = new GLCanvas(getViewportWidth(), getViewportHeight());
-        content = ServiceProvider.get(ContentManager.class);
+        content = ContentManager.create();
         font = content.load("fonts/roboto-medium.ttf", SdfFont.class,
             new FontImporterSettings(18, 3));
         smallFont = content.load("fonts/roboto-medium.ttf", SdfFont.class,

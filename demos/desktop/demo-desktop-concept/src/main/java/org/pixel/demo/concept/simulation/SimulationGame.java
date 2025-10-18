@@ -29,7 +29,7 @@ public class SimulationGame extends Game {
     public void load() {
         // Base load
         world = new GameWorld();
-        contentManager = ServiceProvider.get(ContentManager.class);
+        contentManager = ContentManager.create();
         eventBus = new EventBus();
 
         // World property definition

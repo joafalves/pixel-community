@@ -46,7 +46,7 @@ public class UrpTextDemo extends DemoGame {
     @Override
     public void load() {
         super.load();
-        content = ServiceProvider.get(ContentManager.class);
+        content = ContentManager.create();
         camera = new Camera2D(this);
         camera.setOrigin(0);
 

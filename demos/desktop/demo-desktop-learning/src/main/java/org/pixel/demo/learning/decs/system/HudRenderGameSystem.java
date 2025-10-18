@@ -39,7 +39,7 @@ public class HudRenderGameSystem extends GameSystem {
             notificationTimer = NOTIFICATION_DURATION;
         });
 
-        this.font = ServiceProvider.get(ContentManager.class).load("fonts/gidole-regular.ttf", Font.class);
+        this.font = ContentManager.create().load("fonts/gidole-regular.ttf", Font.class);
     }
 
     @Override

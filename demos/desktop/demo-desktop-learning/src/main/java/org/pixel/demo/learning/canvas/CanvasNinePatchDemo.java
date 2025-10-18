@@ -9,7 +9,6 @@ import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.content.importer.settings.FontImporterSettings;
@@ -42,9 +41,6 @@ public class CanvasNinePatchDemo extends DemoGame {
     private Camera2D camera;
     private SdfFont font;
 
-    // Textures for 9-patches
-    private Texture texture;
-
     // 9-patches
     private NinePatch panelPatch;
     private NinePatch buttonPatch;
@@ -65,10 +61,10 @@ public class CanvasNinePatchDemo extends DemoGame {
     public void load() {
         super.load();
 
-        content = ServiceProvider.get(ContentManager.class);
+        content = ContentManager.create();
 
-        // Load textures
-        texture = content.load("images/window-bg-128x128.png", Texture.class);
+        // Textures for 9-patches
+        Texture texture = content.load("images/window-bg-128x128.png", Texture.class);
 
         // Load font
         font = content.load("fonts/roboto-medium.ttf", SdfFont.class,

@@ -30,7 +30,7 @@ public class DevSystem extends GameSystem {
     @Override
     public void load() {
         game = world.getData().get(Game.class);
-        canvas = new GLCanvas(game.getWindowManager().getWindowWidth(), game.getWindowManager().getWindowHeight());
+        canvas = Canvas.create(game.getWindowManager().getWindowWidth(), game.getWindowManager().getWindowHeight());
 
         final var eventBus = world.getData().optional(EventBus.class)
                 .orElseThrow(() -> new IllegalStateException("EventBus not found in world data"));
@@ -54,7 +54,7 @@ public class DevSystem extends GameSystem {
     public void update(DeltaTime delta) {
         if (Keyboard.isKeyPressed(KeyboardKey.ESCAPE)) {
             world.getData().optional(Game.class)
-                    .ifPresent(Game::dispose);
+                    .ifPresent(Game::quit);
         }
     }
 

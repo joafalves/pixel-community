@@ -5,6 +5,7 @@
 
 package org.pixel.graphics.render.canvas;
 
+import org.pixel.commons.factory.FactoryProvider;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.content.Texture;
 import org.pixel.graphics.render.canvas.text.SdfFont;
@@ -87,10 +88,37 @@ public abstract class Canvas implements Disposable {
     
     /** Pooled image builder */
     protected final ImageDrawOp imageOp;
-    
+
+    /**
+     * Create a platform-specific Canvas instance with the specified viewport dimensions.
+     *
+     * <p>This factory method delegates to the registered {@link CanvasFactory} to create
+     * the appropriate platform-specific implementation (e.g., GLCanvas on desktop).
+     *
+     * <p>Example usage:
+     * <pre>
+     * Canvas canvas = Canvas.create(800, 600);
+     *
+     * canvas.begin();
+     * canvas.rect(100, 100, 200, 50)
+     *     .withFill(Color.BLUE)
+     *     .withRoundedCorners(8);
+     * canvas.end();
+     *
+     * canvas.dispose();
+     * </pre>
+     *
+     * @param width  Viewport width in pixels
+     * @param height Viewport height in pixels
+     * @return A new Canvas instance appropriate for the current platform
+     */
+    public static Canvas create(int width, int height) {
+        return FactoryProvider.get(CanvasFactory.class).create(width, height);
+    }
+
     /**
      * Constructor.
-     * 
+     *
      * @param renderer The underlying renderer to use for drawing operations
      */
     protected Canvas(CanvasRenderer renderer) {

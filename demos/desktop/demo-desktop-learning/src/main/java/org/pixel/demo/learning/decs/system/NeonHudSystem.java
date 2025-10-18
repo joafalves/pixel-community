@@ -2,14 +2,12 @@ package org.pixel.demo.learning.decs.system;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.core.Camera2D;
 import org.pixel.core.Game;
 import org.pixel.demo.learning.decs.component.HealthComponent;
 import org.pixel.demo.learning.decs.component.PlayerGameComponent;
-import org.pixel.ext.decs.GameEntity;
 import org.pixel.ext.decs.GameGroup;
 import org.pixel.ext.decs.GameSystem;
 import org.pixel.ext.decs.GameWorld;
@@ -48,7 +46,7 @@ public class NeonHudSystem extends GameSystem {
         this.players = world.getGroup(PlayerGameComponent.class, HealthComponent.class);
 
         // Load font for HUD
-        this.font = ServiceProvider.get(ContentManager.class)
+        this.font = ContentManager.create()
                 .load("fonts/roboto-regular.ttf", SdfFont.class, new FontImporterSettings(32, 1));
     }
 
