@@ -47,8 +47,26 @@ public class GameGroup implements Iterable<GameEntity> {
      * @param entity The entity to check.
      * @return True if the group contains the entity, false otherwise.
      */
-    boolean contains(GameEntity entity) {
+    public boolean contains(GameEntity entity) {
         return entities.contains(entity);
+    }
+
+    /**
+     * Gets the number of entities in the group.
+     *
+     * @return The number of entities.
+     */
+    public int size() {
+        return entities.size();
+    }
+
+    /**
+     * Checks if the group is empty.
+     *
+     * @return True if the group is empty, false otherwise.
+     */
+    public boolean isEmpty() {
+        return entities.isEmpty();
     }
 
     /**

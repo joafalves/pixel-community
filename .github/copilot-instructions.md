@@ -164,7 +164,7 @@ canvas.text("Hello", font, x, y)
     .withAlign(TextAlign.middleCenter());
 
 // Lines and points
-        canvas.line(x1, y1, x2, y2)
+canvas.line(x1, y1, x2, y2)
     .withStroke(2, Color.RED);
 
 canvas.point(x, y)
@@ -221,18 +221,18 @@ SpriteBatch batch = ServiceProvider.get(SpriteBatch.class);
 batch.begin(camera.getViewMatrix(), BlendMode.NORMAL_BLEND);
 
 // All draws batched together
-        for (Sprite sprite : sprites) {
-        batch.draw(sprite.getTexture(), sprite.getPosition());
-        }
+for (Sprite sprite : sprites) {
+    batch.draw(sprite.getTexture(), sprite.getPosition());
+}
 
-        batch.end(); // Submits all batched draws to GPU
+batch.end(); // Submits all batched draws to GPU
 ```
 
 ### Custom Shaders
 ```java
 Shader customShader = new Shader(vertSource, fragSource);
 batch.begin(camera.getViewMatrix(), BlendMode.NORMAL_BLEND, customShader);
-        batch.setUniform("myUniform", value);
+batch.setUniform("myUniform", value);
 // ... draw with custom shader ...
 batch.end();
 ```

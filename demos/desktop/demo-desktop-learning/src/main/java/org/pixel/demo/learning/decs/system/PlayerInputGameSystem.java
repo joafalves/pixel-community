@@ -14,7 +14,7 @@ import org.pixel.input.keyboard.KeyboardKey;
  */
 public class PlayerInputGameSystem extends GameSystem {
 
-    private static final float PLAYER_SPEED = 100f;
+    private static final float PLAYER_SPEED = 200f; // Faster for action gameplay
 
     private final GameWorld world;
 
@@ -46,6 +46,12 @@ public class PlayerInputGameSystem extends GameSystem {
             }
             if (Keyboard.isKeyDown(KeyboardKey.D)) {
                 velocity.getVelocity().add(PLAYER_SPEED, 0);
+            }
+
+            // Normalize diagonal movement
+            if (velocity.getVelocity().length() > PLAYER_SPEED) {
+                velocity.getVelocity().normalize();
+                velocity.getVelocity().multiply(PLAYER_SPEED);
             }
         }
     }

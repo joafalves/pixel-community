@@ -12,11 +12,12 @@ import org.pixel.input.keyboard.KeyboardKey;
 public class PauseGameSystem extends GameSystem {
 
     private final GameWorld world;
-
+    private final NeonHudSystem hudSystem;
     private boolean isPaused = false;
 
-    public PauseGameSystem(GameWorld world) {
+    public PauseGameSystem(GameWorld world, NeonHudSystem hudSystem) {
         this.world = world;
+        this.hudSystem = hudSystem;
     }
 
     @Override
@@ -27,13 +28,17 @@ public class PauseGameSystem extends GameSystem {
             for (GameSystem system : world.getSystems()) {
                 // Don't disable this system or rendering systems
                 if (system == this
-                        || system instanceof SpriteRenderGameSystem
-                        || system instanceof CanvasRenderGameSystem
-                        || system instanceof HudRenderGameSystem) {
+                        || system instanceof NeonRenderSystem
+                        || system instanceof NeonHudSystem) {
                     continue;
                 }
 
                 system.setEnabled(!isPaused);
+            }
+
+            // Update HUD to show paused overlay
+            if (hudSystem != null) {
+                hudSystem.setPaused(isPaused);
             }
 
             if (isPaused) {
