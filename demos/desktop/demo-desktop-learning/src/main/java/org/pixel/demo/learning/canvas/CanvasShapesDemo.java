@@ -98,42 +98,53 @@ public class CanvasShapesDemo extends DemoGame {
         // Header
         canvas.rect(20, 60, 370, 180)
             .withFill(new Color(0.15f, 0.15f, 0.2f, 0.9f))
-            .withRoundedCorners(10);
+            .withRoundedCorners(10)
+            .apply();
         
         canvas.text("Filled Shapes", font, 30, 70)
-            .withFill(new Color(0.9f, 0.9f, 1.0f, 1.0f));
+            .withFill(new Color(0.9f, 0.9f, 1.0f, 1.0f))
+            .apply();
         
         canvas.text("All rendered with 6 vertices (2 triangles)!", font, 30, 90)
-            .withFill(new Color(0.6f, 0.6f, 0.7f, 1.0f));
+            .withFill(new Color(0.6f, 0.6f, 0.7f, 1.0f))
+            .apply();
 
         // Regular rectangle
         canvas.rect(40, 120, 60, 60)
-            .withFill(new Color(0.8f, 0.3f, 0.3f, 1.0f));
+            .withFill(new Color(0.8f, 0.3f, 0.3f, 1.0f))
+            .apply();
         
         canvas.text("Rect", font, 45, 190)
-            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f));
+            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f))
+            .apply();
 
         // Rounded rectangles with different radii
         canvas.rect(130, 120, 60, 60)
             .withFill(new Color(0.3f, 0.8f, 0.3f, 1.0f))
-            .withRoundedCorners(5);
+            .withRoundedCorners(5)
+            .apply();
         
         canvas.text("R=5", font, 140, 190)
-            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f));
+            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f))
+            .apply();
 
         canvas.rect(220, 120, 60, 60)
             .withFill(new Color(0.3f, 0.5f, 0.9f, 1.0f))
-            .withRoundedCorners(15);
+            .withRoundedCorners(15)
+            .apply();
         
         canvas.text("R=15", font, 230, 190)
-            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f));
+            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f))
+            .apply();
 
         // Circle
         canvas.circle(340, 150, 30)
-            .withFill(new Color(0.9f, 0.6f, 0.2f, 1.0f));
+            .withFill(new Color(0.9f, 0.6f, 0.2f, 1.0f))
+            .apply();
         
         canvas.text("Circle", font, 315, 190)
-            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f));
+            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f))
+            .apply();
     }
 
     /**
@@ -143,43 +154,54 @@ public class CanvasShapesDemo extends DemoGame {
         // Header
         canvas.rect(410, 60, 370, 180)
             .withFill(new Color(0.15f, 0.15f, 0.2f, 0.9f))
-            .withRoundedCorners(10);
+            .withRoundedCorners(10)
+            .apply();
         
         canvas.text("Stroked Shapes", font, 420, 70)
-            .withFill(new Color(0.9f, 0.9f, 1.0f, 1.0f));
+            .withFill(new Color(0.9f, 0.9f, 1.0f, 1.0f))
+            .apply();
         
         canvas.text("Different stroke widths, same efficiency!", font, 420, 90)
-            .withFill(new Color(0.6f, 0.6f, 0.7f, 1.0f));
+            .withFill(new Color(0.6f, 0.6f, 0.7f, 1.0f))
+            .apply();
 
         // Rectangle with thin stroke
         canvas.rect(430, 120, 60, 60)
-            .withStroke(2, new Color(0.8f, 0.3f, 0.3f, 1.0f));
+            .withStroke(2, new Color(0.8f, 0.3f, 0.3f, 1.0f))
+            .apply();
         
         canvas.text("W=2", font, 440, 190)
-            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f));
+            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f))
+            .apply();
 
         // Rounded rectangle with medium stroke
         canvas.rect(520, 120, 60, 60)
             .withStroke(4, new Color(0.3f, 0.8f, 0.3f, 1.0f))
-            .withRoundedCorners(10);
+            .withRoundedCorners(10)
+            .apply();
         
         canvas.text("W=4", font, 530, 190)
-            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f));
+            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f))
+            .apply();
 
         // Rounded rectangle with thick stroke
         canvas.rect(610, 120, 60, 60)
             .withStroke(6, new Color(0.3f, 0.5f, 0.9f, 1.0f))
-            .withRoundedCorners(15);
+            .withRoundedCorners(15)
+            .apply();
         
         canvas.text("W=6", font, 620, 190)
-            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f));
+            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f))
+            .apply();
 
         // Circle with stroke
         canvas.circle(730, 150, 30)
-            .withStroke(3, new Color(0.9f, 0.6f, 0.2f, 1.0f));
+            .withStroke(3, new Color(0.9f, 0.6f, 0.2f, 1.0f))
+            .apply();
         
         canvas.text("W=3", font, 710, 190)
-            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f));
+            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f))
+            .apply();
     }
 
     /**
@@ -190,13 +212,16 @@ public class CanvasShapesDemo extends DemoGame {
         // Header
         canvas.rect(20, 260, 760, 160)
             .withFill(new Color(0.15f, 0.15f, 0.2f, 0.9f))
-            .withRoundedCorners(10);
+            .withRoundedCorners(10)
+            .apply();
         
         canvas.text("Combined Fill + Stroke", font, 30, 270)
-            .withFill(new Color(0.9f, 0.9f, 1.0f, 1.0f));
+            .withFill(new Color(0.9f, 0.9f, 1.0f, 1.0f))
+            .apply();
         
         canvas.text("Fluent API with layered operations", font, 30, 290)
-            .withFill(new Color(0.6f, 0.6f, 0.7f, 1.0f));
+            .withFill(new Color(0.6f, 0.6f, 0.7f, 1.0f))
+            .apply();
 
         // Button-like element 1 - fill then stroke
         float button1Y = 320;
@@ -204,72 +229,88 @@ public class CanvasShapesDemo extends DemoGame {
         
         canvas.rect(50, button1Y, 100, button1Height)
             .withFill(new Color(0.2f, 0.4f, 0.8f, 1.0f))
-            .withRoundedCorners(8);
+            .withRoundedCorners(8)
+            .apply();
         
         canvas.rect(50, button1Y, 100, button1Height)
             .withStroke(2, new Color(0.4f, 0.6f, 1.0f, 1.0f))
-            .withRoundedCorners(8);
+            .withRoundedCorners(8)
+            .apply();
         
         String button1Text = "Button 1";
         canvas.text(button1Text, font, 
             canvas.centerTextHorizontally(50, 100, button1Text, font), 
             canvas.centerTextVertically(button1Y, button1Height, font))
-            .withFill(Color.WHITE);
+            .withFill(Color.WHITE)
+            .apply();
 
         // Button-like element 2
         canvas.rect(180, button1Y, 100, button1Height)
             .withFill(new Color(0.2f, 0.7f, 0.3f, 1.0f))
-            .withRoundedCorners(8);
+            .withRoundedCorners(8)
+            .apply();
         
         canvas.rect(180, button1Y, 100, button1Height)
             .withStroke(2, new Color(0.4f, 1.0f, 0.5f, 1.0f))
-            .withRoundedCorners(8);
+            .withRoundedCorners(8)
+            .apply();
         
         String button2Text = "Button 2";
         canvas.text(button2Text, font, 
             canvas.centerTextHorizontally(180, 100, button2Text, font),
             canvas.centerTextVertically(button1Y, button1Height, font))
-            .withFill(Color.WHITE);
+            .withFill(Color.WHITE)
+            .apply();
 
         // Checkbox-like element
         float checkboxY = 325;
         float checkboxSize = 30;
         
         canvas.rect(320, checkboxY, checkboxSize, checkboxSize)
-            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f));
+            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f))
+            .apply();
         
         canvas.rect(320, checkboxY, checkboxSize, checkboxSize)
-            .withStroke(2, new Color(0.3f, 0.3f, 0.3f, 1.0f));
+            .withStroke(2, new Color(0.3f, 0.3f, 0.3f, 1.0f))
+            .apply();
         
         canvas.text("Checkbox", font, 360, canvas.centerTextVertically(checkboxY, checkboxSize, font))
-            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f));
+            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f))
+            .apply();
 
         // Radio button-like element
         float radioCenterY = 340;
         
         canvas.circle(490, radioCenterY, 12)
-            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f));
+            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f))
+            .apply();
         
         canvas.circle(490, radioCenterY, 12)
-            .withStroke(2, new Color(0.3f, 0.3f, 0.3f, 1.0f));
+            .withStroke(2, new Color(0.3f, 0.3f, 0.3f, 1.0f))
+            .apply();
         
         canvas.circle(490, radioCenterY, 6)
-            .withFill(new Color(0.2f, 0.4f, 0.8f, 1.0f));
+            .withFill(new Color(0.2f, 0.4f, 0.8f, 1.0f))
+            .apply();
         
         canvas.text("Radio", font, 510, radioCenterY - font.getFontSize() / 2)
-            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f));
+            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f))
+            .apply();
 
         // Badge/notification
         float badgeCenterY = 340;
         
         canvas.circle(610, badgeCenterY, 15)
-            .withFill(new Color(0.9f, 0.2f, 0.2f, 1.0f));
+            .withFill(new Color(0.9f, 0.2f, 0.2f, 1.0f))
+            .apply();
         
         canvas.circle(610, badgeCenterY, 15)
-            .withStroke(2, new Color(1.0f, 0.4f, 0.4f, 1.0f));
+            .withStroke(2, new Color(1.0f, 0.4f, 0.4f, 1.0f))
+            .apply();
         
         canvas.text("Badge", font, 640, badgeCenterY - font.getFontSize() / 2)
-            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f));
+            .withFill(new Color(0.9f, 0.9f, 0.9f, 1.0f))
+            .apply();
     }
 
     /**
@@ -279,13 +320,16 @@ public class CanvasShapesDemo extends DemoGame {
         // Header
         canvas.rect(20, 440, 760, 140)
             .withFill(new Color(0.15f, 0.15f, 0.2f, 0.9f))
-            .withRoundedCorners(10);
+            .withRoundedCorners(10)
+            .apply();
         
         canvas.text("Animated Shapes", font, 30, 450)
-            .withFill(new Color(0.9f, 0.9f, 1.0f, 1.0f));
+            .withFill(new Color(0.9f, 0.9f, 1.0f, 1.0f))
+            .apply();
         
         canvas.text("Rotation, scaling, pulsing effects", font, 30, 470)
-            .withFill(new Color(0.6f, 0.6f, 0.7f, 1.0f));
+            .withFill(new Color(0.6f, 0.6f, 0.7f, 1.0f))
+            .apply();
 
         // Rotating rectangle
         canvas.save();
@@ -293,7 +337,8 @@ public class CanvasShapesDemo extends DemoGame {
         canvas.rotate(time * 2);
         
         canvas.rect(-20, -20, 40, 40)
-            .withStroke(3, new Color(0.8f, 0.3f, 0.8f, 1.0f));
+            .withStroke(3, new Color(0.8f, 0.3f, 0.8f, 1.0f))
+            .apply();
         
         canvas.restore();
 
@@ -304,7 +349,8 @@ public class CanvasShapesDemo extends DemoGame {
         canvas.scale(pulse);
         
         canvas.circle(0, 0, 20)
-            .withFill(new Color(0.3f, 0.8f, 0.8f, 1.0f));
+            .withFill(new Color(0.3f, 0.8f, 0.8f, 1.0f))
+            .apply();
         
         canvas.restore();
 
@@ -319,7 +365,8 @@ public class CanvasShapesDemo extends DemoGame {
             
             canvas.rect(-15, -15, 30, 30)
                 .withFill(new Color(0.9f, 0.6f, 0.2f, alpha))
-                .withRoundedCorners(8);
+                .withRoundedCorners(8)
+                .apply();
             
             canvas.restore();
         }
@@ -342,9 +389,10 @@ public class CanvasShapesDemo extends DemoGame {
             );
             
             canvas.circle(cx, cy, 8)
-                .withFill(orbitColor);
+                .withFill(orbitColor)
+                .apply();
         }
-        canvas.restore();
+    canvas.restore();
 
         // Breathing rounded rectangle with fill + stroke
         float breathe = 1.0f + 0.2f * (float) Math.sin(time * 3);
@@ -354,11 +402,13 @@ public class CanvasShapesDemo extends DemoGame {
         
         canvas.rect(-25, -25, 50, 50)
             .withFill(new Color(0.4f, 0.3f, 0.9f, 1.0f))
-            .withRoundedCorners(12);
+            .withRoundedCorners(12)
+            .apply();
         
         canvas.rect(-25, -25, 50, 50)
             .withStroke(2, new Color(0.7f, 0.6f, 1.0f, 1.0f))
-            .withRoundedCorners(12);
+            .withRoundedCorners(12)
+            .apply();
         
         canvas.restore();
     }
@@ -380,7 +430,7 @@ public class CanvasShapesDemo extends DemoGame {
     public static void main(String[] args) {
         var settings = new WindowSettings(800, 600);
         settings.setTitle("Canvas Shapes Demo - SDF Rendering");
-        settings.setWindowResizable(false);
+        settings.setWindowResizable(true);
         
         CanvasShapesDemo demo = new CanvasShapesDemo(settings);
         demo.start();
