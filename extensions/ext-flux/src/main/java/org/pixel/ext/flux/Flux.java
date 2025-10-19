@@ -2,6 +2,14 @@ package org.pixel.ext.flux;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.lifecycle.Disposable;
+import org.pixel.ext.flux.core.FluxInputProcessor;
+import org.pixel.ext.flux.core.FluxLayoutManager;
+import org.pixel.ext.flux.core.FluxPanelManager;
+import org.pixel.ext.flux.core.FluxViewport;
+import org.pixel.ext.flux.state.CollapsingState;
+import org.pixel.ext.flux.state.FluxStateStore;
+import org.pixel.ext.flux.state.PanelState;
+import org.pixel.ext.flux.state.TextFieldState;
 import org.pixel.graphics.render.canvas.Canvas;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Size;
@@ -11,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 /**
  * Flux - Immediate Mode GUI system for Pixel Framework.
@@ -45,109 +52,43 @@ import java.util.Stack;
 public class Flux implements Disposable {
 
     private final Canvas canvas;
+    private final FluxViewport viewport;
+    private final FluxStateStore stateStore;
+    private final FluxLayoutManager layoutManager;
+    private final FluxInputProcessor inputProcessor;
+    private final FluxPanelManager panelManager;
     private FluxTheme theme;
-    private int viewportWidth;
-    private int viewportHeight;
+    private FluxInput input; // Input provider (set by user)
 
-    // === Input State ===
-    private final Vector2 mousePos = new Vector2();
-    private boolean mouseClicked; // From Mouse.isMouseButtonPressed() via context (edge)
-    private boolean mouseHeld; // From Mouse.isMouseButtonDown() via context (continuous)
-    private boolean mouseHeldPrev; // Previous frame's held state (for release detection)
-    private boolean mouseReleased; // Detected release edge
-    private String textInputThisFrame = "";
+    // === Layout State (managed by FluxLayoutManager) ===
+    private float spacing; // Cache of theme spacing value
 
-    // === Layout State ===
-    private float cursorX;
-    private float cursorY;
-    private float lineHeight; // Height of current line (max widget height)
-    private float lastWidgetX; // X position where last widget was drawn
-    private float lastWidgetY; // Y position where last widget was drawn
-    private float lastWidgetWidth; // Width of last drawn widget (for sameLine)
-    private float lastWidgetHeight; // Height of last drawn widget (for sameLine)
-    private float spacing;
-    private final Stack<LayoutContext> layoutStack = new Stack<>();
-
-    // === Widget State ===
-    private final Map<String, WidgetState> widgetStates = new HashMap<>();
-    private final Map<String, PanelState> panelStates = new HashMap<>(); // Panel ID -> panel state
-    private final Map<String, CollapsingState> collapsingStates = new HashMap<>(); // Collapsing ID -> state
-    private String focusedWidgetId = null;
-    private String hoveredWidgetId = null;
-    private String activeWidgetId = null; // Currently being clicked
-    private String currentPanelId = null; // ID of currently active panel (for scroll)
+    // === Widget State (now managed by FluxStateStore) ===
+    // Removed: Map<String, WidgetState> widgetStates - use stateStore instead
+    // Removed: Map<String, PanelState> panelStates - use stateStore instead
+    // Removed: Map<String, CollapsingState> collapsingStates - use stateStore instead
+    // Removed: focusedWidgetId, hoveredWidgetId, activeWidgetId - use stateStore instead
+    // Removed: currentPanelId, panelDragging, scrollbarDragging, panelFocusOrder, etc. - use panelManager instead
 
     // === Frame State ===
     private boolean frameActive = false;
-    private float mouseWheelDelta = 0; // This frame's mouse wheel delta
-
-    // === Scrollbar Drag State ===
-    private String scrollbarDragging = null; // ID of panel whose scrollbar is being dragged
-    private float scrollbarDragStartMouseY; // Mouse Y when drag started
-    private float scrollbarDragStartOffset; // Scroll offset when drag started
-
-    // === Panel Drag State ===
-    private String panelDragging = null; // ID of panel being dragged
-    private float panelDragStartMouseX; // Mouse X when panel drag started
-    private float panelDragStartMouseY; // Mouse Y when panel drag started
-    private float panelDragStartX; // Panel X when drag started
-    private float panelDragStartY; // Panel Y when drag started
 
     // === Menu State ===
     private boolean menuBarActive = false;
     private String openMenuId = null; // ID of currently open menu
     private boolean menuOpenedThisFrame = false; // Flag to prevent immediate close
-    private boolean insideMenuPopup = false; // Flag to preserve cursor X inside menu popups
     private float menuPopupStartY = 0; // Y position where menu content starts (for height calculation)
     private int menuItemsStartIndex = -1; // Index in rootCommands where menu items start
     private float menuBarCursorX = 0; // Saved cursor X position in menu bar (before entering popup)
-    private float menuPopupCursorX = 0; // Cursor X position inside popup (preserved across lines)
 
-    // === Panel Focus/Z-Order (like Dear ImGui) ===
-    private final List<String> panelFocusOrder = new ArrayList<>(); // Panel IDs in focus order (first = back, last = front)
-    private final List<String> panelsThisFrame = new ArrayList<>(); // Panels declared this frame
+    // === Panel Rendering (deferred until end of frame) ===
     private final Map<String, PanelRenderData> panelRenderQueue = new HashMap<>(); // Deferred panel rendering
     private final List<Runnable> rootCommands = new ArrayList<>(); // Commands outside any panel
-    private final Stack<String> recordingPanelStack = new Stack<>(); // Stack of panel IDs for nested panels (top = current)
-    private String hotPanelId = null; // ID of panel mouse is currently over (topmost in focus order)
-    private String previousHotPanelId = null; // Hot panel from previous frame (for consistent event handling)
-    private boolean enablePanelOrdering = true; // Toggle for panel z-order management
-    private boolean shouldBringHotPanelToFront = false; // Flag to bring hot panel to front after all panels declared
 
     // === Menu State ===
     private float menuBarHeight = 0;
     private float menuPopupX = 0;
     private float menuPopupY = 0;
-
-    /**
-     * Widget persistent state across frames.
-     */
-    private static class WidgetState {
-        boolean focused;
-        String textValue = "";
-        int cursorPosition = 0;
-    }
-
-    /**
-     * Panel persistent state across frames.
-     */
-    private static class PanelState {
-        float scrollOffset = 0;
-        float contentHeight = 0; // Total content height (for scroll range calculation)
-        float x = 0; // Panel X position (for draggable panels)
-        float y = 0; // Panel Y position (for draggable panels)
-        float width = 0; // Panel width (stored for hot panel pre-computation)
-        float height = 0; // Panel height (stored for hot panel pre-computation)
-        boolean positionInitialized = false; // Whether position has been set
-    }
-
-    /**
-     * Collapsing section persistent state across frames.
-     */
-    private static class CollapsingState {
-        boolean open = false;
-        boolean initialized = false;
-    }
 
     /**
      * Deferred panel render data.
@@ -172,40 +113,6 @@ public class Flux implements Disposable {
     }
 
     /**
-     * Layout context for nested containers.
-     */
-    private static class LayoutContext {
-        float cursorX;
-        float cursorY;
-        float lineHeight;
-        float contentX; // Content area X offset
-        float contentY; // Content area Y offset
-        float contentWidth; // Available width for content
-        float contentHeight; // Available height for content
-        float panelX; // Panel X position (for scrollbar positioning)
-        float panelWidth; // Panel full width (for scrollbar positioning)
-        boolean hasScroll; // Whether scrolling is enabled
-        boolean hasScrollbar; // Whether to show scrollbar
-
-        LayoutContext(float cursorX, float cursorY, float lineHeight,
-                     float contentX, float contentY, float contentWidth, float contentHeight,
-                     float panelX, float panelWidth,
-                     boolean hasScroll, boolean hasScrollbar) {
-            this.cursorX = cursorX;
-            this.cursorY = cursorY;
-            this.lineHeight = lineHeight;
-            this.contentX = contentX;
-            this.contentY = contentY;
-            this.contentWidth = contentWidth;
-            this.contentHeight = contentHeight;
-            this.panelX = panelX;
-            this.panelWidth = panelWidth;
-            this.hasScroll = hasScroll;
-            this.hasScrollbar = hasScrollbar;
-        }
-    }
-
-    /**
      * Create a new Flux instance with the given viewport size.
      * Creates an internal Canvas for rendering.
      *
@@ -213,11 +120,18 @@ public class Flux implements Disposable {
      * @param viewportHeight Initial viewport height
      */
     public Flux(int viewportWidth, int viewportHeight) {
+        this.viewport = new FluxViewport(viewportWidth, viewportHeight);
         this.canvas = Canvas.create(viewportWidth, viewportHeight);
-        this.viewportWidth = viewportWidth;
-        this.viewportHeight = viewportHeight;
+        this.stateStore = new FluxStateStore();
+        this.layoutManager = new FluxLayoutManager();
+        this.inputProcessor = new FluxInputProcessor();
+        this.panelManager = new FluxPanelManager();
         this.theme = new DefaultFluxTheme();
         this.spacing = theme.getItemSpacing();
+        
+        // Sync layout manager defaults with theme
+        layoutManager.setDefaultSpacing(spacing);
+        layoutManager.setDefaultPadding(theme.getWindowPadding());
     }
 
     /**
@@ -227,9 +141,35 @@ public class Flux implements Disposable {
      * @param height New viewport height
      */
     public void setViewport(int width, int height) {
-        this.viewportWidth = width;
-        this.viewportHeight = height;
+        viewport.resize(width, height);
         canvas.setViewport(width, height);
+    }
+
+    /**
+     * Get the viewport.
+     *
+     * @return The FluxViewport instance
+     */
+    public FluxViewport getViewport() {
+        return viewport;
+    }
+
+    /**
+     * Get the state store.
+     *
+     * @return The FluxStateStore instance
+     */
+    public FluxStateStore getStateStore() {
+        return stateStore;
+    }
+    
+    /**
+     * Get the layout manager.
+     *
+     * @return The FluxLayoutManager instance
+     */
+    public FluxLayoutManager getLayoutManager() {
+        return layoutManager;
     }
 
     /**
@@ -252,6 +192,16 @@ public class Flux implements Disposable {
     }
 
     /**
+     * Set the input provider for this Flux instance.
+     * Must be called before begin() is called.
+     * 
+     * @param input Input provider implementation
+     */
+    public void setInput(FluxInput input) {
+        this.input = input;
+    }
+
+    /**
      * Enable or disable automatic panel z-ordering.
      * When enabled (default), clicking a panel brings it to front.
      * When disabled, panels render in declaration order.
@@ -259,7 +209,7 @@ public class Flux implements Disposable {
      * @param enable True to enable panel ordering (like Dear ImGui)
      */
     public void setEnablePanelOrdering(boolean enable) {
-        this.enablePanelOrdering = enable;
+        panelManager.setEnablePanelOrdering(enable);
     }
 
     /**
@@ -268,100 +218,162 @@ public class Flux implements Disposable {
      * @return True if panel ordering is enabled
      */
     public boolean isEnablePanelOrdering() {
-        return enablePanelOrdering;
+        return panelManager.isEnablePanelOrdering();
     }
 
     /**
-     * Begin a new GUI frame with context.
+     * Begin a new GUI frame.
      * Must be called before any widget methods.
-     *
-     * @param ctx Context for this frame (input, viewport, camera, etc.)
+     * Requires input provider to be set via {@link #setInput(FluxInput)}.
      */
+    public void begin() {
+        if (input == null) {
+            throw new IllegalStateException("Input provider not set. Call setInput() before begin().");
+        }
+        
+        if (frameActive) {
+            throw new IllegalStateException("begin() called twice without end()");
+        }
+        frameActive = true;
+
+        // Gather input from provider
+        inputProcessor.updateFrame(
+            input.getMouseX(), input.getMouseY(),
+            input.isMousePressed(), input.isMouseDown(),
+            input.getMouseWheelDelta(), input.getTextInput()
+        );
+        // Note: viewport managed separately via setViewport()
+
+        // Clear drag states if mouse was released
+        if (inputProcessor.isMouseReleased()) {
+            panelManager.stopScrollbarDrag();
+            panelManager.stopPanelDrag();
+        }
+
+        // Handle backspace for text fields
+        String focusedId = stateStore.getFocusedWidgetId();
+        if (input.isBackspacePressed() && focusedId != null) {
+            TextFieldState state = (TextFieldState) stateStore.getWidgetState(focusedId);
+            if (state != null && !state.getValue().isEmpty()) {
+                state.setValue(state.getValue().substring(0, state.getValue().length() - 1));
+            }
+        }
+
+        // Begin frame in state store (resets hovered widget, etc.)
+        stateStore.beginFrame();
+
+        // Reset menu state for this frame
+        menuOpenedThisFrame = false;
+
+        // Reset panel tracking for this frame (via panel manager)
+        panelManager.beginFrame();
+        panelRenderQueue.clear();
+        rootCommands.clear();
+        
+        // PRE-COMPUTE hot panel using previous frame's panel bounds
+        // This prevents click-through by determining which panel is hot BEFORE any widgets check
+        // Walk through all panels that exist from last frame and find topmost one under mouse
+        for (Map.Entry<String, org.pixel.ext.flux.state.PanelState> entry : stateStore.getAllPanelStates().entrySet()) {
+            String panelId = entry.getKey();
+            org.pixel.ext.flux.state.PanelState state = entry.getValue();
+            
+            // Only check panels that have bounds stored and are in focus order
+            if (state.getWidth() > 0 && state.getHeight() > 0 && panelManager.isPanelRegistered(panelId)) {
+                Vector2 pos = state.getPosition();
+                Rectangle panelBounds = new Rectangle(pos.getX(), pos.getY(), state.getWidth(), state.getHeight());
+                
+                if (isMouseOver(panelBounds)) {
+                    // Pick panel with highest focus index (topmost)
+                    String currentHot = panelManager.getHotPanelId();
+                    if (currentHot == null || panelManager.getPanelFocusIndex(panelId) > panelManager.getPanelFocusIndex(currentHot)) {
+                        panelManager.setHotPanel(panelId);
+                    }
+                }
+            }
+        }
+
+        // Reset layout state
+        layoutManager.reset(theme.getWindowPadding());
+
+        // Start Canvas rendering
+        canvas.begin();
+    }
+
+    /**
+     * Begin a new GUI frame with context (legacy/advanced API).
+     * Most users should use {@link #begin()} with {@link #setInput(FluxInput)} instead.
+     * 
+     * @param ctx Context for this frame (input, viewport, camera, etc.)
+     * @deprecated Use {@link #begin()} with {@link #setInput(FluxInput)} instead
+     */
+    @Deprecated
     public void begin(FluxContext ctx) {
         if (frameActive) {
             throw new IllegalStateException("begin() called twice without end()");
         }
         frameActive = true;
 
-        // Update mouse position
-        mousePos.set(ctx.getMouseX(), ctx.getMouseY());
+        // Update input processor with frame data
+        inputProcessor.updateFrame(
+            ctx.getMouseX(), ctx.getMouseY(),
+            ctx.isMouseDown(), // mousePressed
+            ctx.isMouseHeld(), // mouseDown
+            ctx.getMouseWheelDelta(),
+            ctx.getTextInput()
+        );
 
-        // Use mouse state from context (edge detection done by Mouse class)
-        mouseClicked = ctx.isMouseDown(); // Actually "pressed" from Mouse.isMouseButtonPressed()
-        mouseHeld = ctx.isMouseHeld(); // Continuous hold state from Mouse.isMouseButtonDown()
-        mouseReleased = !mouseHeld && mouseHeldPrev; // Release edge: was held, now not
-        mouseHeldPrev = mouseHeld; // Save for next frame
-
-        // Store text input for this frame
-        textInputThisFrame = ctx.getTextInput();
-
-        // Store mouse wheel delta for this frame
-        mouseWheelDelta = ctx.getMouseWheelDelta();
-
-        // Store viewport dimensions
-        viewportWidth = (int) ctx.getViewportWidth();
-        viewportHeight = (int) ctx.getViewportHeight();
+        // Update viewport from context (deprecated path)
+        viewport.resize((int) ctx.getViewportWidth(), (int) ctx.getViewportHeight());
 
         // Clear drag states if mouse was released
-        if (mouseReleased) {
-            scrollbarDragging = null;
-            panelDragging = null;
+        if (inputProcessor.isMouseReleased()) {
+            panelManager.stopScrollbarDrag();
+            panelManager.stopPanelDrag();
         }
 
         // Handle backspace for text fields
-        if (ctx.isBackspace() && focusedWidgetId != null) {
-            WidgetState state = widgetStates.get(focusedWidgetId);
-            if (state != null && !state.textValue.isEmpty()) {
-                state.textValue = state.textValue.substring(0, state.textValue.length() - 1);
-                state.cursorPosition = state.textValue.length();
+        if (ctx.isBackspace() && stateStore.getFocusedWidgetId() != null) {
+            TextFieldState state = stateStore.getOrCreateWidgetState(stateStore.getFocusedWidgetId(), TextFieldState.class);
+            if (state != null && !state.getValue().isEmpty()) {
+                state.setValue(state.getValue().substring(0, state.getValue().length() - 1));
             }
         }
 
         // Reset hovered widget
-        hoveredWidgetId = null;
+        stateStore.setHoveredWidget(null);
 
         // Reset menu state for this frame
         menuOpenedThisFrame = false;
 
-        // Reset panel tracking for this frame
-        panelsThisFrame.clear();
+        // Reset panel tracking for this frame (via panel manager)
+        panelManager.beginFrame();
         panelRenderQueue.clear();
         rootCommands.clear();
-        recordingPanelStack.clear();
-        previousHotPanelId = hotPanelId; // Save previous frame's hot panel
-        hotPanelId = null;
         
         // PRE-COMPUTE hot panel using previous frame's panel bounds
         // This prevents click-through by determining which panel is hot BEFORE any widgets check
         // Walk through all panels that exist from last frame and find topmost one under mouse
-        for (Map.Entry<String, PanelState> entry : panelStates.entrySet()) {
+        for (Map.Entry<String, PanelState> entry : stateStore.getAllPanelStates().entrySet()) {
             String panelId = entry.getKey();
             PanelState state = entry.getValue();
             
             // Only check panels that have bounds stored and are in focus order
-            if (state.width > 0 && state.height > 0 && panelFocusOrder.contains(panelId)) {
-                Rectangle panelBounds = new Rectangle(state.x, state.y, state.width, state.height);
+            if (state.getWidth() > 0 && state.getHeight() > 0 && panelManager.isPanelRegistered(panelId)) {
+                Rectangle panelBounds = new Rectangle(state.getPosition().getX(), state.getPosition().getY(), 
+                                                     state.getWidth(), state.getHeight());
                 
                 if (isMouseOver(panelBounds)) {
                     // Pick panel with highest focus index (topmost)
-                    if (hotPanelId == null || getPanelFocusIndex(panelId) > getPanelFocusIndex(hotPanelId)) {
-                        hotPanelId = panelId;
+                    String currentHot = panelManager.getHotPanelId();
+                    if (currentHot == null || panelManager.getPanelFocusIndex(panelId) > panelManager.getPanelFocusIndex(currentHot)) {
+                        panelManager.setHotPanel(panelId);
                     }
                 }
             }
         }
-        
-        shouldBringHotPanelToFront = false;
 
         // Reset layout state
-        cursorX = theme.getWindowPadding();
-        cursorY = theme.getWindowPadding();
-        lineHeight = 0;
-        lastWidgetX = 0;
-        lastWidgetY = 0;
-        lastWidgetWidth = 0;
-        lastWidgetHeight = 0;
-        layoutStack.clear();
+        layoutManager.reset(theme.getWindowPadding());
 
         // Start Canvas rendering with optional camera view matrix
         if (ctx.getViewMatrix() != null) {
@@ -413,14 +425,13 @@ public class Flux implements Disposable {
 
         // Bring hot panel to front if clicked (after all panels have been declared)
         // This ensures the correct panel (by z-order) gets focus, not the first one in code
-        if (shouldBringHotPanelToFront && hotPanelId != null) {
-            bringPanelToFront(hotPanelId);
-        }
+        panelManager.endFrame();
 
         // Render panels in focus order (if ordering enabled)
-        if (enablePanelOrdering && !panelRenderQueue.isEmpty()) {
+        if (panelManager.isEnablePanelOrdering() && !panelRenderQueue.isEmpty()) {
             // Filter to only root-level panels (nested panels are in parent's commands)
             List<String> rootPanels = new ArrayList<>();
+            List<String> panelsThisFrame = panelManager.getPanelFocusOrder();
             for (String panelId : panelsThisFrame) {
                 PanelRenderData renderData = panelRenderQueue.get(panelId);
                 if (renderData != null && renderData.parentId == null) {
@@ -430,7 +441,7 @@ public class Flux implements Disposable {
 
             // Sort root panels by focus order
             rootPanels.sort((a, b) ->
-                Integer.compare(getPanelFocusIndex(a), getPanelFocusIndex(b))
+                Integer.compare(panelManager.getPanelFocusIndex(a), panelManager.getPanelFocusIndex(b))
             );
 
             // Render each root panel in order (back to front)
@@ -444,9 +455,10 @@ public class Flux implements Disposable {
                     }
                 }
             }
-        } else if (!enablePanelOrdering) {
+        } else if (!panelManager.isEnablePanelOrdering()) {
             // If ordering disabled, render only root panels in declaration order
             // Nested panels are in parent's commands
+            List<String> panelsThisFrame = panelManager.getPanelFocusOrder();
             for (String panelId : panelsThisFrame) {
                 PanelRenderData renderData = panelRenderQueue.get(panelId);
                 if (renderData != null && renderData.parentId == null) {
@@ -482,23 +494,23 @@ public class Flux implements Disposable {
 
         Rectangle bounds = new Rectangle(x, y, width, height);
         boolean hovered = isMouseOver(bounds) && canProcessMouseEvents();
-        boolean active = activeWidgetId != null && activeWidgetId.equals(id);
+        boolean active = stateStore.isWidgetActive(id);
         boolean clicked = false;
 
         if (hovered) {
-            hoveredWidgetId = id;
+            stateStore.setHoveredWidget(id);
         }
 
         // Handle interaction (only if we can process events)
-        if (hovered && mouseClicked && canProcessMouseEvents()) {
-            activeWidgetId = id;
+        if (hovered && inputProcessor.isMouseClicked() && canProcessMouseEvents()) {
+            stateStore.setActiveWidget(id);
         }
 
-        if (active && mouseReleased) {
+        if (active && inputProcessor.isMouseReleased()) {
             if (hovered) {
                 clicked = true;
             }
-            activeWidgetId = null;
+            stateStore.setActiveWidget(null);
         }
 
         // Determine button color
@@ -575,30 +587,28 @@ public class Flux implements Disposable {
      * @return The current text value
      */
     public String textField(String id, float x, float y, float width, float height) {
-        WidgetState state = widgetStates.computeIfAbsent(id, k -> new WidgetState());
+        TextFieldState state = stateStore.getOrCreateWidgetState(id, TextFieldState.class);
 
         Rectangle bounds = new Rectangle(x, y, width, height);
         boolean hovered = isMouseOver(bounds);
 
         if (hovered) {
-            hoveredWidgetId = id;
+            stateStore.setHoveredWidget(id);
         }
 
+        boolean isFocused = stateStore.isWidgetFocused(id);
+
         // Handle focus
-        if (hovered && mouseClicked) {
-            focusedWidgetId = id;
-            state.focused = true;
-        } else if (mouseClicked && !hovered && state.focused) {
-            state.focused = false;
-            if (id.equals(focusedWidgetId)) {
-                focusedWidgetId = null;
-            }
+        if (hovered && inputProcessor.isMouseClicked()) {
+            stateStore.setFocusedWidget(id);
+        } else if (inputProcessor.isMouseClicked() && !hovered && isFocused) {
+            stateStore.clearFocus();
         }
 
         // Handle text input if focused
-        if (state.focused && textInputThisFrame.length() > 0) {
-            state.textValue += textInputThisFrame;
-            state.cursorPosition = state.textValue.length();
+        String textInput = inputProcessor.getTextInput();
+        if (stateStore.isWidgetFocused(id) && textInput.length() > 0) {
+            state.setValue(state.getValue() + textInput);
         }
 
         // Capture final variables for lambda
@@ -606,8 +616,8 @@ public class Flux implements Disposable {
         final float finalY = y;
         final float finalWidth = width;
         final float finalHeight = height;
-        final String finalTextValue = state.textValue;
-        final boolean finalFocused = state.focused;
+        final String finalTextValue = state.getValue();
+        final boolean finalFocused = stateStore.isWidgetFocused(id);
 
         // Determine border color
         Color borderColor = finalFocused ? theme.getTextFieldFocusBorder() : theme.getTextFieldBorder();
@@ -653,7 +663,7 @@ public class Flux implements Disposable {
             }
         }
 
-        return state.textValue;
+        return state.getValue();
     }
 
     // === Auto-Layout Widget Overloads ===
@@ -667,8 +677,8 @@ public class Flux implements Disposable {
      * @return true if the button was clicked this frame
      */
     public boolean button(String text, float width, float height) {
-        boolean result = button(text, cursorX, cursorY, width, height);
-        advanceCursor(width, height);
+        boolean result = button(text, layoutManager.getCursorX(), layoutManager.getCursorY(), width, height);
+        layoutManager.advanceCursor(width, height);
         return result;
     }
 
@@ -695,14 +705,14 @@ public class Flux implements Disposable {
      * @param text The label text
      */
     public void label(String text) {
-        label(text, cursorX, cursorY);
+        label(text, layoutManager.getCursorX(), layoutManager.getCursorY());
 
         float height = theme.getFontSize();
         if (theme.getFont() != null) {
             Size textSize = canvas.measureText(text, theme.getFont());
             height = textSize.getHeight();
         }
-        advanceCursor(0, height);
+        layoutManager.advanceCursor(0, height);
     }
 
     /**
@@ -714,8 +724,8 @@ public class Flux implements Disposable {
      * @return The current text value
      */
     public String textField(String id, float width, float height) {
-        String result = textField(id, cursorX, cursorY, width, height);
-        advanceCursor(width, height);
+        String result = textField(id, layoutManager.getCursorX(), layoutManager.getCursorY(), width, height);
+        layoutManager.advanceCursor(width, height);
         return result;
     }
 
@@ -745,12 +755,7 @@ public class Flux implements Disposable {
      * </pre>
      */
     public void sameLine() {
-        // Move cursor back to the same Y as the last widget
-        cursorY = lastWidgetY;
-        // Move cursor right past the last widget
-        cursorX = lastWidgetX + lastWidgetWidth + spacing;
-        // Track the tallest widget on this line
-        lineHeight = Math.max(lineHeight, lastWidgetHeight);
+        layoutManager.sameLine();
     }
 
     /**
@@ -759,9 +764,7 @@ public class Flux implements Disposable {
      * @param offsetX Horizontal offset from previous widget (instead of default spacing)
      */
     public void sameLine(float offsetX) {
-        cursorY = lastWidgetY;
-        cursorX = lastWidgetX + lastWidgetWidth + offsetX;
-        lineHeight = Math.max(lineHeight, lastWidgetHeight);
+        layoutManager.sameLine(offsetX);
     }
 
     /**
@@ -770,19 +773,19 @@ public class Flux implements Disposable {
      * @param height Height of spacing in pixels
      */
     public void spacing(float height) {
-        advanceCursor(0, height);
+        layoutManager.spacing(height);
     }
 
     /**
      * Add a horizontal separator line.
      */
     public void separator() {
-        float x = cursorX;
-        float y = cursorY + spacing;
+        float x = layoutManager.getCursorX();
+        float y = layoutManager.getCursorY() + spacing;
         float width;
 
-        if (!layoutStack.isEmpty()) {
-            LayoutContext ctx = layoutStack.peek();
+        if (!layoutManager.isLayoutStackEmpty()) {
+            FluxLayoutManager.LayoutContext ctx = layoutManager.peekContext();
             width = ctx.contentWidth - theme.getWindowPadding() * 2;
         } else {
             // Default separator width when not in a container
@@ -841,22 +844,22 @@ public class Flux implements Disposable {
         // Use full bounds for hit testing (checkbox + label)
         Rectangle fullBounds = new Rectangle(x, y, totalWidth, totalHeight);
         boolean hovered = isMouseOver(fullBounds) && canProcessMouseEvents();
-        boolean active = activeWidgetId != null && activeWidgetId.equals(widgetId);
+        boolean active = stateStore.isWidgetActive(widgetId);
 
         // Handle interaction using active pattern (like button)
         if (hovered) {
-            hoveredWidgetId = widgetId;
+            stateStore.setHoveredWidget(widgetId);
         }
 
-        if (hovered && mouseClicked && activeWidgetId == null && canProcessMouseEvents()) {
-            activeWidgetId = widgetId;
+        if (hovered && inputProcessor.isMouseClicked() && stateStore.getActiveWidgetId() == null && canProcessMouseEvents()) {
+            stateStore.setActiveWidget(widgetId);
         }
 
-        if (active && mouseReleased) {
+        if (active && inputProcessor.isMouseReleased()) {
             if (hovered) {
                 checked = !checked;
             }
-            activeWidgetId = null;
+            stateStore.setActiveWidget(null);
         }
 
         // Capture final variables for lambda
@@ -923,7 +926,7 @@ public class Flux implements Disposable {
      * @return New checked state (toggled if clicked)
      */
     public boolean checkbox(String id, String label, boolean checked) {
-        boolean result = checkbox(id, label, checked, cursorX, cursorY);
+        boolean result = checkbox(id, label, checked, layoutManager.getCursorX(), layoutManager.getCursorY());
 
         float checkboxSize = 16;
         float labelSpacing = 8;
@@ -936,7 +939,7 @@ public class Flux implements Disposable {
             height = Math.max(checkboxSize, labelSize.getHeight());
         }
 
-        advanceCursor(width, height);
+        layoutManager.advanceCursor(width, height);
         return result;
     }
 
@@ -967,21 +970,21 @@ public class Flux implements Disposable {
         Rectangle thumbBounds = new Rectangle(thumbX, thumbY, thumbWidth, thumbHeight);
 
         boolean thumbHovered = isMouseOver(thumbBounds) && canProcessMouseEvents();
-        boolean active = activeWidgetId != null && activeWidgetId.equals(widgetId);
+        boolean active = stateStore.isWidgetActive(widgetId);
 
         // Handle interaction
-        if (thumbHovered && mouseClicked && canProcessMouseEvents()) {
-            activeWidgetId = widgetId;
+        if (thumbHovered && inputProcessor.isMouseClicked() && canProcessMouseEvents()) {
+            stateStore.setActiveWidget(widgetId);
         }
 
         if (active) {
             // Dragging the slider
-            float mouseX = mousePos.getX();
+            float mouseX = inputProcessor.getMouseX();
             float newValue = (mouseX - x) / (width - thumbWidth);
             value = Math.max(0, Math.min(1, newValue));
 
-            if (mouseReleased) {
-                activeWidgetId = null;
+            if (inputProcessor.isMouseReleased()) {
+                stateStore.setActiveWidget(null);
             }
         }
 
@@ -1042,9 +1045,9 @@ public class Flux implements Disposable {
      * @return New value
      */
     public float slider(String id, float value, float width) {
-        float result = slider(id, value, cursorX, cursorY, width);
+        float result = slider(id, value, layoutManager.getCursorX(), layoutManager.getCursorY(), width);
         float sliderHeight = 20;
-        advanceCursor(width, sliderHeight);
+        layoutManager.advanceCursor(width, sliderHeight);
         return result;
     }
 
@@ -1093,51 +1096,50 @@ public class Flux implements Disposable {
      */
     boolean beginCollapsingInternal(String id, String title, boolean defaultOpen) {
         // Get or create collapsing state
-        CollapsingState state = collapsingStates.computeIfAbsent(id, k -> new CollapsingState());
+        CollapsingState state = stateStore.getOrCreateCollapsingState(id);
 
         // Initialize default state on first use
-        if (!state.initialized) {
-            state.open = defaultOpen;
-            state.initialized = true;
+        if (!state.isInitialized()) {
+            state.setOpen(defaultOpen);
         }
 
-        String widgetId = generateId("collapsing", id, cursorX, cursorY);
+        String widgetId = generateId("collapsing", id, layoutManager.getCursorX(), layoutManager.getCursorY());
 
         float headerHeight = theme.getFontSize() + theme.getPadding() * 2;
         float arrowSize = 8;
         float arrowPadding = theme.getPadding();
 
-        Rectangle headerBounds = new Rectangle(cursorX, cursorY,
-                                               layoutStack.isEmpty() ? 200 : layoutStack.peek().contentWidth - theme.getWindowPadding() * 2,
+        Rectangle headerBounds = new Rectangle(layoutManager.getCursorX(), layoutManager.getCursorY(),
+                                               layoutManager.isLayoutStackEmpty() ? 200 : layoutManager.peekContext().contentWidth - theme.getWindowPadding() * 2,
                                                headerHeight);
         boolean hovered = isMouseOver(headerBounds) && canProcessMouseEvents();
-        boolean active = activeWidgetId != null && activeWidgetId.equals(widgetId);
+        boolean active = stateStore.isWidgetActive(widgetId);
 
         // Handle interaction using active pattern (like button)
         if (hovered) {
-            hoveredWidgetId = widgetId;
+            stateStore.setHoveredWidget(widgetId);
         }
 
-        if (hovered && mouseClicked && activeWidgetId == null && canProcessMouseEvents()) {
-            activeWidgetId = widgetId;
+        if (hovered && inputProcessor.isMouseClicked() && stateStore.getActiveWidgetId() == null && canProcessMouseEvents()) {
+            stateStore.setActiveWidget(widgetId);
         }
 
-        if (active && mouseReleased) {
+        if (active && inputProcessor.isMouseReleased()) {
             if (hovered) {
-                state.open = !state.open;
+                state.setOpen(!state.isOpen());
             }
-            activeWidgetId = null;
+            stateStore.setActiveWidget(null);
         }
 
         // Capture final variables for lambda
-        final float finalCursorX = cursorX;
-        final float finalCursorY = cursorY;
+        final float finalCursorX = layoutManager.getCursorX();
+        final float finalCursorY = layoutManager.getCursorY();
         final float finalHeaderHeight = headerHeight;
         final float finalArrowSize = arrowSize;
         final float finalArrowPadding = arrowPadding;
         final float finalArrowX = finalCursorX + finalArrowPadding;
         final float finalArrowY = finalCursorY + finalHeaderHeight / 2;
-        final boolean finalOpen = state.open;
+        final boolean finalOpen = state.isOpen();
         final boolean finalHovered = hovered;
         final String finalTitle = title;
         final float finalHeaderWidth = headerBounds.getWidth();
@@ -1201,10 +1203,10 @@ public class Flux implements Disposable {
         }
 
         // Advance cursor past header
-        advanceCursor(headerBounds.getWidth(), headerHeight);
+        layoutManager.advanceCursor(headerBounds.getWidth(), headerHeight);
 
         // Return whether section is open (content should be rendered)
-        return state.open;
+        return state.isOpen();
     }
 
     // === Menu Bar Methods ===
@@ -1220,7 +1222,7 @@ public class Flux implements Disposable {
         menuBarHeight = theme.getFontSize() + theme.getPadding() * 2;
 
         // Capture final variables for lambda
-        final float finalViewportWidth = viewportWidth;
+        final float finalViewportWidth = viewport.getWidth();
         final float finalMenuBarHeight = menuBarHeight;
 
         // Record menu bar background drawing
@@ -1232,9 +1234,8 @@ public class Flux implements Disposable {
         });
 
         // Set cursor to start of menu bar
-        cursorX = theme.getPadding();
-        cursorY = theme.getPadding();
-        lineHeight = 0;
+        layoutManager.setCursor(theme.getPadding(), theme.getPadding());
+        layoutManager.setLineHeight(0);
 
         return true;
     }
@@ -1247,7 +1248,7 @@ public class Flux implements Disposable {
 
         // Close menu if we have an open menu and conditions are met
         if (openMenuId != null && !menuOpenedThisFrame) {
-            Rectangle menuBarBounds = new Rectangle(0, 0, viewportWidth, menuBarHeight);
+            Rectangle menuBarBounds = new Rectangle(0, 0, viewport.getWidth(), menuBarHeight);
             // Use generous bounds for popup (will be refined in endMenu, but we need something for click detection)
             Rectangle popupBounds = new Rectangle(menuPopupX, menuPopupY, 200, 300);
 
@@ -1256,9 +1257,9 @@ public class Flux implements Disposable {
 
             // Close menu if:
             // 1. User clicked outside both the menu bar and popup
-            if (mouseClicked && !mouseOnMenuBar && !mouseOnPopup) {
+            if (inputProcessor.isMouseClicked() && !mouseOnMenuBar && !mouseOnPopup) {
                 openMenuId = null;
-                insideMenuPopup = false; // Exit menu popup mode
+                layoutManager.setInsideMenuPopup(false); // Exit menu popup mode
             }
         }
     }
@@ -1270,7 +1271,7 @@ public class Flux implements Disposable {
      * @return True if menu is open
      */
     public boolean beginMenu(String label) {
-        String menuId = generateId("menu", label, cursorX, cursorY);
+        String menuId = generateId("menu", label, layoutManager.getCursorX(), layoutManager.getCursorY());
 
         float menuWidth = 80;
         if (theme.getFont() != null) {
@@ -1280,20 +1281,20 @@ public class Flux implements Disposable {
 
         float menuHeight = menuBarHeight - theme.getPadding() * 2;
 
-        Rectangle menuBounds = new Rectangle(cursorX, cursorY, menuWidth, menuHeight);
+        Rectangle menuBounds = new Rectangle(layoutManager.getCursorX(), layoutManager.getCursorY(), menuWidth, menuHeight);
         boolean hovered = isMouseOver(menuBounds);
         boolean isOpen = menuId.equals(openMenuId);
 
         // Handle click to open/close
         // Don't toggle if we just opened this menu this frame (prevents immediate re-close)
-        if (hovered && mouseClicked && !menuOpenedThisFrame) {
+        if (hovered && inputProcessor.isMouseClicked() && !menuOpenedThisFrame) {
             if (isOpen) {
                 openMenuId = null;
                 isOpen = false; // Update state
-                insideMenuPopup = false; // Exit menu popup mode
+                layoutManager.setInsideMenuPopup(false); // Exit menu popup mode
             } else {
                 openMenuId = menuId;
-                menuPopupX = cursorX;
+                menuPopupX = layoutManager.getCursorX();
                 menuPopupY = menuBarHeight;
                 isOpen = true; // Update state
                 menuOpenedThisFrame = true; // Prevent toggle this frame
@@ -1301,8 +1302,8 @@ public class Flux implements Disposable {
         }
 
         // Capture final variables for lambda
-        final float finalCursorX = cursorX;
-        final float finalCursorY = cursorY;
+        final float finalCursorX = layoutManager.getCursorX();
+        final float finalCursorY = layoutManager.getCursorY();
         final float finalMenuWidth = menuWidth;
         final float finalMenuHeight = menuHeight;
         final String finalLabel = label;
@@ -1331,7 +1332,7 @@ public class Flux implements Disposable {
         }
 
         // Move cursor for next menu
-        cursorX += menuWidth + theme.getItemSpacing();
+        layoutManager.setCursorX(layoutManager.getCursorX() + menuWidth + theme.getItemSpacing());
 
         // If menu is open, prepare for popup content
         if (isOpen) {
@@ -1339,15 +1340,14 @@ public class Flux implements Disposable {
             menuItemsStartIndex = rootCommands.size();
 
             // Save current menu bar cursor position (for restoration in endMenu)
-            menuBarCursorX = cursorX;
+            menuBarCursorX = layoutManager.getCursorX();
 
             // Start popup content (background will be drawn in endMenu after we know height)
-            cursorX = menuPopupX + theme.getPadding();
-            cursorY = menuPopupY + theme.getPadding();
-            menuPopupCursorX = cursorX; // Save popup cursor X for preserving across lines
-            menuPopupStartY = cursorY; // Save start position for height calculation
-            insideMenuPopup = true; // Mark that we're inside a menu popup
-            lineHeight = 0;
+            layoutManager.setCursor(menuPopupX + theme.getPadding(), menuPopupY + theme.getPadding());
+            layoutManager.setMenuPopupCursorX(layoutManager.getCursorX()); // Save popup cursor X for preserving across lines
+            menuPopupStartY = layoutManager.getCursorY(); // Save start position for height calculation
+            layoutManager.setInsideMenuPopup(true); // Mark that we're inside a menu popup
+            layoutManager.setLineHeight(0);
 
             return true;
         }
@@ -1362,7 +1362,7 @@ public class Flux implements Disposable {
         // Draw popup background NOW that we know the actual content height
         if (openMenuId != null && menuItemsStartIndex >= 0) {
             final float popupWidth = 200;
-            final float popupHeight = (cursorY - menuPopupStartY) + theme.getPadding(); // Actual content height
+            final float popupHeight = (layoutManager.getCursorY() - menuPopupStartY) + theme.getPadding(); // Actual content height
             final float finalMenuPopupX = menuPopupX;
             final float finalMenuPopupY = menuPopupY;
 
@@ -1379,9 +1379,8 @@ public class Flux implements Disposable {
             rootCommands.add(menuItemsStartIndex, backgroundCmd);
 
             // Restore cursor to menu bar for next menu button
-            cursorX = menuBarCursorX; // Restore X position in menu bar
-            cursorY = theme.getPadding(); // Back to menu bar Y
-            insideMenuPopup = false; // Exit menu popup mode
+            layoutManager.setCursor(menuBarCursorX, theme.getPadding()); // Restore X position in menu bar
+            layoutManager.setInsideMenuPopup(false); // Exit menu popup mode
         }
     }
 
@@ -1407,25 +1406,25 @@ public class Flux implements Disposable {
             return false; // Not in an open menu
         }
 
-        String itemId = generateId("menuitem", label, cursorX, cursorY);
+        String itemId = generateId("menuitem", label, layoutManager.getCursorX(), layoutManager.getCursorY());
 
         float itemWidth = 180;
         float itemHeight = theme.getFontSize() + theme.getPadding();
 
-        Rectangle itemBounds = new Rectangle(cursorX, cursorY, itemWidth, itemHeight);
+        Rectangle itemBounds = new Rectangle(layoutManager.getCursorX(), layoutManager.getCursorY(), itemWidth, itemHeight);
         boolean hovered = isMouseOver(itemBounds);
         boolean clicked = false;
 
         // Handle interaction
-        if (hovered && mouseClicked) {
+        if (hovered && inputProcessor.isMouseClicked()) {
             clicked = true;
             openMenuId = null; // Close menu on click
-            insideMenuPopup = false; // Exit menu popup mode immediately
+            layoutManager.setInsideMenuPopup(false); // Exit menu popup mode immediately
         }
 
         // Capture final variables for lambda
-        final float finalCursorX = cursorX;
-        final float finalCursorY = cursorY;
+        final float finalCursorX = layoutManager.getCursorX();
+        final float finalCursorY = layoutManager.getCursorY();
         final float finalItemWidth = itemWidth;
         final float finalItemHeight = itemHeight;
         final String finalLabel = label;
@@ -1463,7 +1462,7 @@ public class Flux implements Disposable {
         }
 
         // Advance cursor
-        cursorY += itemHeight;
+        layoutManager.setCursorY(layoutManager.getCursorY() + itemHeight);
 
         return clicked;
     }
@@ -1514,7 +1513,7 @@ public class Flux implements Disposable {
      * @return A PanelBuilder for fluent configuration
      */
     public PanelBuilder panel(String id, float width, float height) {
-        return new PanelBuilder(this, id, cursorX, cursorY, width, height);
+        return new PanelBuilder(this, id, layoutManager.getCursorX(), layoutManager.getCursorY(), width, height);
     }
 
     /**
@@ -1540,32 +1539,25 @@ public class Flux implements Disposable {
                             boolean isDraggable) {
 
         // Track this panel for this frame
-        panelsThisFrame.add(id);
-
-        // Ensure panel is in focus order (add to back if new)
-        if (!panelFocusOrder.contains(id)) {
-            panelFocusOrder.add(id);
-        }
+        panelManager.registerPanel(id);
 
         // Get or create panel state
-        PanelState panelState = panelStates.computeIfAbsent(id, k -> new PanelState());
+        PanelState panelState = stateStore.getOrCreatePanelState(id);
 
         // Initialize panel position if draggable and not yet initialized
-        if (isDraggable && !panelState.positionInitialized) {
-            panelState.x = x;
-            panelState.y = y;
-            panelState.positionInitialized = true;
+        if (isDraggable && !panelState.isPositionInitialized()) {
+            panelState.setPosition(x, y);
         }
 
         // Use stored position for draggable panels
         if (isDraggable) {
-            x = panelState.x;
-            y = panelState.y;
+            x = panelState.getPosition().getX();
+            y = panelState.getPosition().getY();
         }
         
         // Store panel dimensions for next frame's hot panel pre-computation
-        panelState.width = width;
-        panelState.height = height;
+        panelState.setWidth(width);
+        panelState.setHeight(height);
 
         float titleBarHeight = 0;
         float contentStartY = y;
@@ -1580,19 +1572,38 @@ public class Flux implements Disposable {
         Rectangle panelBounds = new Rectangle(x, y, width, height);
         boolean mouseOverPanel = isMouseOver(panelBounds);
 
-        // Update hotPanelId based on focus order (if not already determined in pre-pass)
-        // Only update if this panel has HIGHER focus than current hotPanelId
-        // This prevents lower-focus panels from stealing hot status during declaration
+        // Update hotPanelId:
+        // 1. If no hot panel set yet, this panel becomes hot
+        // 2. If mouse is over this panel AND this panel has higher focus than current hot, update
+        // 3. If mouse is NOT over current hot panel anymore, this panel can become hot
         if (mouseOverPanel) {
-            if (hotPanelId == null || getPanelFocusIndex(id) > getPanelFocusIndex(hotPanelId)) {
-                hotPanelId = id;
+            String currentHot = panelManager.getHotPanelId();
+            if (currentHot == null) {
+                // No hot panel yet, this becomes hot
+                panelManager.setHotPanel(id);
+            } else if (panelManager.getPanelFocusIndex(id) > panelManager.getPanelFocusIndex(currentHot)) {
+                // This panel has higher focus (more in front), it becomes hot
+                panelManager.setHotPanel(id);
+            } else {
+                // Check if mouse is still over the current hot panel
+                // If not, allow this panel to become hot even if it has lower focus
+                PanelState currentHotState = stateStore.getPanelState(currentHot);
+                if (currentHotState != null && currentHotState.getWidth() > 0) {
+                    Vector2 hotPos = currentHotState.getPosition();
+                    Rectangle hotBounds = new Rectangle(hotPos.getX(), hotPos.getY(), 
+                                                       currentHotState.getWidth(), currentHotState.getHeight());
+                    if (!isMouseOver(hotBounds)) {
+                        // Mouse no longer over previous hot panel, this panel becomes hot
+                        panelManager.setHotPanel(id);
+                    }
+                }
             }
         }
 
         // Mark that we should bring hot panel to front on click
         // Don't do it here - defer until end() after all panels have been declared
-        if (mouseOverPanel && mouseClicked) {
-            shouldBringHotPanelToFront = true;
+        if (mouseOverPanel && inputProcessor.isMouseClicked()) {
+            panelManager.markShouldBringHotPanelToFront();
         }
 
         // Handle panel dragging
@@ -1600,26 +1611,25 @@ public class Flux implements Disposable {
             Rectangle titleBarBounds = new Rectangle(x, y, width, titleBarHeight);
 
             // Check if we're currently dragging this panel
-            if (id.equals(panelDragging)) {
+            if (panelManager.isPanelDragging(id)) {
                 // Update panel position based on mouse movement
-                float deltaX = mousePos.getX() - panelDragStartMouseX;
-                float deltaY = mousePos.getY() - panelDragStartMouseY;
+                float deltaX = panelManager.getPanelDragDeltaX(inputProcessor.getMouseX());
+                float deltaY = panelManager.getPanelDragDeltaY(inputProcessor.getMouseY());
 
-                panelState.x = panelDragStartX + deltaX;
-                panelState.y = panelDragStartY + deltaY;
+                panelState.setPosition(panelManager.getPanelDragStartX() + deltaX, panelManager.getPanelDragStartY() + deltaY);
 
                 // Update local positions for rendering
-                x = panelState.x;
-                y = panelState.y;
+                x = panelState.getPosition().getX();
+                y = panelState.getPosition().getY();
                 contentStartY = y + titleBarHeight;
 
-            } else if (isMouseOver(titleBarBounds) && mouseClicked && activeWidgetId == null && id.equals(hotPanelId)) {
-                // Start dragging on title bar click (only if no other widget is active AND this is the hot panel)
-                panelDragging = id;
-                panelDragStartMouseX = mousePos.getX();
-                panelDragStartMouseY = mousePos.getY();
-                panelDragStartX = panelState.x;
-                panelDragStartY = panelState.y;
+            } else if (isMouseOver(titleBarBounds) && inputProcessor.isMouseClicked() && stateStore.getActiveWidgetId() == null) {
+                // Start dragging on title bar click (only if no other widget is active)
+                // Make this panel hot AND start dragging
+                panelManager.setHotPanel(id);
+                panelManager.markShouldBringHotPanelToFront();
+                panelManager.startPanelDrag(id, inputProcessor.getMouseX(), inputProcessor.getMouseY(), 
+                                           panelState.getPosition().getX(), panelState.getPosition().getY());
             }
         }
 
@@ -1632,7 +1642,7 @@ public class Flux implements Disposable {
 
         // Create panel render data and capture all visual state
         PanelRenderData renderData = new PanelRenderData(id);
-        renderData.parentId = recordingPanelStack.isEmpty() ? null : recordingPanelStack.peek(); // Track parent
+        renderData.parentId = panelManager.isRecordingStackEmpty() ? null : panelManager.getCurrentRecordingPanel(); // Track parent
         renderData.x = x;
         renderData.y = y;
         renderData.width = width;
@@ -1649,7 +1659,7 @@ public class Flux implements Disposable {
         panelRenderQueue.put(id, renderData);
 
         // Start recording commands to this panel (push to stack for nested panel support)
-        recordingPanelStack.push(id);
+        panelManager.pushRecordingPanel(id);
 
         // Record panel background/title drawing as first commands
         final float finalX = x;
@@ -1701,16 +1711,16 @@ public class Flux implements Disposable {
         });
 
         // Handle scrollbar dragging if this panel's scrollbar is being dragged
-        if (hasScroll && id.equals(scrollbarDragging)) {
+        if (hasScroll && panelManager.isScrollbarDragging(id)) {
             // Calculate scrollbar dimensions (same as in renderScrollbar)
             float scrollbarHeight = height - titleBarHeight - 4; // padding * 2
 
             // Calculate how much the mouse moved
-            float mouseDeltaY = mousePos.getY() - scrollbarDragStartMouseY;
+            float mouseDeltaY = inputProcessor.getMouseY() - panelManager.getScrollbarDragStartMouseY();
 
             // Convert mouse delta to scroll offset delta
             // The scrollbar thumb moves within the track, so we need to scale appropriately
-            float contentHeight = panelState.contentHeight;
+            float contentHeight = panelState.getContentHeight();
             float viewportHeight = height - titleBarHeight;
             float scrollableHeight = Math.max(0, contentHeight - viewportHeight + theme.getWindowPadding() * 2);
 
@@ -1721,42 +1731,42 @@ public class Flux implements Disposable {
 
                 // Mouse delta in track space -> scroll offset delta
                 float scrollDelta = (mouseDeltaY / trackHeight) * scrollableHeight;
-                panelState.scrollOffset = scrollbarDragStartOffset + scrollDelta;
+                panelState.setScrollOffset(panelManager.getScrollbarDragStartOffset() + scrollDelta);
 
                 // Clamp scroll offset
-                panelState.scrollOffset = Math.max(0, Math.min(panelState.scrollOffset, scrollableHeight));
+                panelState.setScrollOffset(Math.max(0, Math.min(panelState.getScrollOffset(), scrollableHeight)));
             }
         }
 
         // Handle mouse wheel scrolling if panel is hovered AND is the hot panel
-        if (hasScroll && !id.equals(scrollbarDragging)) { // Don't wheel scroll while dragging
+        if (hasScroll && !panelManager.isScrollbarDragging(id)) { // Don't wheel scroll while dragging
             Rectangle panelContentBounds = new Rectangle(x, contentStartY, width, height - titleBarHeight);
-            if (isMouseOver(panelContentBounds) && mouseWheelDelta != 0 && id.equals(hotPanelId)) {
+            float wheelDelta = inputProcessor.getMouseWheelDelta();
+            if (isMouseOver(panelContentBounds) && wheelDelta != 0 && panelManager.isHotPanel(id)) {
                 float scrollSpeed = 20f; // Pixels per wheel notch
-                panelState.scrollOffset -= mouseWheelDelta * scrollSpeed;
+                panelState.setScrollOffset(panelState.getScrollOffset() - wheelDelta * scrollSpeed);
 
                 // Clamp scroll offset to valid range (will be refined in endPanel)
-                panelState.scrollOffset = Math.max(0, panelState.scrollOffset);
+                panelState.setScrollOffset(Math.max(0, panelState.getScrollOffset()));
             }
         }
 
         // Store current panel ID for scroll tracking
-        currentPanelId = id;
+        panelManager.setCurrentPanel(id);
 
         // Save current layout context
-        layoutStack.push(new LayoutContext(
-                cursorX, cursorY, lineHeight,
+        FluxLayoutManager.LayoutContext context = new FluxLayoutManager.LayoutContext(
+                layoutManager.getCursorX(), layoutManager.getCursorY(), layoutManager.getLineHeight(),
                 x, contentStartY, contentWidth, height - titleBarHeight,
                 x, width,
                 hasScroll, hasScrollbar
-        ));
+        );
+        layoutManager.pushContext(context);
 
         // Set up content area with padding and scroll offset
         float padding = theme.getWindowPadding();
-        cursorX = x + padding;
-        // Apply scroll offset only if scrolling is enabled
-        cursorY = contentStartY + padding - (hasScroll ? panelState.scrollOffset : 0);
-        lineHeight = 0;
+        layoutManager.setCursor(x + padding, contentStartY + padding - (hasScroll ? panelState.getScrollOffset() : 0));
+        layoutManager.setLineHeight(0);
     }
 
     /**
@@ -1764,26 +1774,27 @@ public class Flux implements Disposable {
      * Restores previous layout context and canvas clipping state.
      */
     public void endPanel() {
-        if (layoutStack.isEmpty()) {
+        if (layoutManager.isLayoutStackEmpty()) {
             throw new IllegalStateException("endPanel() called without matching beginPanel()");
         }
 
-        LayoutContext ctx = layoutStack.peek(); // Peek to calculate content height before popping
+        FluxLayoutManager.LayoutContext ctx = layoutManager.peekContext(); // Peek to calculate content height before popping
 
         // Update panel state with content height and clamp scroll
         PanelState panelState = null;
         boolean shouldRenderScrollbar = false;
+        String currentPanelId = panelManager.getCurrentPanelId();
         if (currentPanelId != null && ctx.hasScroll) {
-            panelState = panelStates.get(currentPanelId);
+            panelState = stateStore.getPanelState(currentPanelId);
             if (panelState != null) {
                 // Calculate actual content height (how far down the cursor went)
                 // We need to add back the scroll offset because cursorY started with it subtracted
-                float contentHeight = (cursorY + panelState.scrollOffset) - (ctx.contentY + theme.getWindowPadding());
-                panelState.contentHeight = contentHeight;
+                float contentHeight = (layoutManager.getCursorY() + panelState.getScrollOffset()) - (ctx.contentY + theme.getWindowPadding());
+                panelState.setContentHeight(contentHeight);
 
                 // Clamp scroll offset: can't scroll past content
                 float maxScroll = Math.max(0, contentHeight - ctx.contentHeight + theme.getWindowPadding() * 2);
-                panelState.scrollOffset = Math.max(0, Math.min(panelState.scrollOffset, maxScroll));
+                panelState.setScrollOffset(Math.max(0, Math.min(panelState.getScrollOffset(), maxScroll)));
 
                 // Check if scrollbar should be rendered
                 boolean contentOverflows = contentHeight > ctx.contentHeight - theme.getWindowPadding() * 2;
@@ -1797,20 +1808,21 @@ public class Flux implements Disposable {
         // Record scrollbar rendering AFTER restore so it's not clipped
         if (shouldRenderScrollbar && panelState != null) {
             final String finalPanelId = currentPanelId;
-            final boolean wasHotPanel = finalPanelId != null && finalPanelId.equals(hotPanelId);
+            final boolean wasHotPanel = finalPanelId != null && panelManager.isHotPanel(finalPanelId);
             final PanelState finalPanelState = panelState;
-            final LayoutContext finalCtx = ctx;
+            final FluxLayoutManager.LayoutContext finalCtx = ctx;
             recordCommand(() -> renderScrollbar(finalPanelId, finalCtx, finalPanelState, wasHotPanel));
         }
 
         // Stop recording to this panel (pop from stack)
         String poppedPanelId = null;
-        if (!recordingPanelStack.isEmpty()) {
-            poppedPanelId = recordingPanelStack.pop();
+        if (!panelManager.isRecordingStackEmpty()) {
+            poppedPanelId = panelManager.getCurrentRecordingPanel();
+            panelManager.popRecordingPanel();
         }
         
         // If this was a nested panel, add its commands to the parent's command list
-        if (poppedPanelId != null && !recordingPanelStack.isEmpty()) {
+        if (poppedPanelId != null && !panelManager.isRecordingStackEmpty()) {
             PanelRenderData nestedRenderData = panelRenderQueue.get(poppedPanelId);
             if (nestedRenderData != null && !nestedRenderData.commands.isEmpty()) {
                 // Create a single command that executes all nested panel commands
@@ -1824,23 +1836,22 @@ public class Flux implements Disposable {
         }
 
         // Restore previous layout context
-        layoutStack.pop();
-        cursorX = ctx.cursorX;
-        cursorY = ctx.cursorY;
-        lineHeight = ctx.lineHeight;
+        layoutManager.popContext();
+        layoutManager.setCursor(ctx.cursorX, ctx.cursorY);
+        layoutManager.setLineHeight(ctx.lineHeight);
 
         // Clear current panel ID
-        currentPanelId = null;
+        panelManager.setCurrentPanel(null);
 
         // Advance cursor past the panel
         float panelHeight = ctx.contentHeight;
-        advanceCursor(0, panelHeight);
+        layoutManager.advanceCursor(0, panelHeight);
     }
 
     /**
      * Render a scrollbar for a panel.
      */
-    private void renderScrollbar(String panelId, LayoutContext ctx, PanelState panelState, boolean wasHotPanel) {
+    private void renderScrollbar(String panelId, FluxLayoutManager.LayoutContext ctx, PanelState panelState, boolean wasHotPanel) {
         float scrollbarWidth = 8;
         float scrollbarPadding = 4;
 
@@ -1856,7 +1867,7 @@ public class Flux implements Disposable {
                 .apply();
 
         // Calculate thumb size and position
-        float contentHeight = panelState.contentHeight;
+        float contentHeight = panelState.getContentHeight();
         float viewportHeight = ctx.contentHeight;
         float scrollableHeight = Math.max(0, contentHeight - viewportHeight + theme.getWindowPadding() * 2);
 
@@ -1866,7 +1877,7 @@ public class Flux implements Disposable {
             float thumbHeight = Math.max(20, scrollbarHeight * thumbHeightRatio);
 
             // Thumb position based on scroll offset
-            float scrollRatio = panelState.scrollOffset / scrollableHeight;
+            float scrollRatio = panelState.getScrollOffset() / scrollableHeight;
             float thumbY = scrollbarY + scrollRatio * (scrollbarHeight - thumbHeight);
 
             // Check for scrollbar thumb interaction
@@ -1874,14 +1885,12 @@ public class Flux implements Disposable {
             boolean thumbHovered = isMouseOver(thumbBounds);
 
             // Start drag on click (only if no other widget is active AND this was the hot panel)
-            if (thumbHovered && mouseClicked && panelId != null && activeWidgetId == null && wasHotPanel) {
-                scrollbarDragging = panelId;
-                scrollbarDragStartMouseY = mousePos.getY();
-                scrollbarDragStartOffset = panelState.scrollOffset;
+            if (thumbHovered && inputProcessor.isMouseClicked() && panelId != null && stateStore.getActiveWidgetId() == null && wasHotPanel) {
+                panelManager.startScrollbarDrag(panelId, inputProcessor.getMouseY(), panelState.getScrollOffset());
             }
 
             // Render thumb with hover feedback
-            Color thumbColor = thumbHovered || panelId.equals(scrollbarDragging)
+            Color thumbColor = thumbHovered || panelManager.isScrollbarDragging(panelId)
                     ? theme.getText()
                     : theme.getBorder();
 
@@ -1898,7 +1907,7 @@ public class Flux implements Disposable {
      * Check if mouse is over a rectangle.
      */
     private boolean isMouseOver(Rectangle bounds) {
-        return bounds.contains(mousePos);
+        return inputProcessor.isMouseOver(bounds);
     }
 
     /**
@@ -1910,36 +1919,14 @@ public class Flux implements Disposable {
 
     /**
      * Advance the layout cursor after drawing a widget.
+     * This method is now deprecated - use layoutManager.advanceCursor() instead.
      *
      * @param width  Width of the widget just drawn
      * @param height Height of the widget just drawn
      */
     private void advanceCursor(float width, float height) {
-        // Save widget position and dimensions BEFORE moving cursor
-        lastWidgetX = cursorX;
-        lastWidgetY = cursorY;
-        lastWidgetWidth = width;
-        lastWidgetHeight = height;
-
-        // Move cursor down to next line
-        if (lineHeight > 0) {
-            cursorY += lineHeight + spacing;
-        } else {
-            cursorY += height + spacing;
-        }
-
-        // Reset to left margin (unless we're inside a menu popup)
-        if (insideMenuPopup) {
-            // Inside menu popup - preserve the popup cursor X
-            cursorX = menuPopupCursorX;
-        } else if (layoutStack.isEmpty()) {
-            cursorX = theme.getWindowPadding();
-        } else {
-            LayoutContext ctx = layoutStack.peek();
-            cursorX = ctx.contentX + theme.getWindowPadding();
-        }
-
-        lineHeight = 0;
+        // Delegate to layout manager
+        layoutManager.advanceCursor(width, height);
     }
 
     /**
@@ -1957,6 +1944,7 @@ public class Flux implements Disposable {
      */
     private boolean canProcessMouseEvents() {
         // If we're not in a panel, allow events (root-level widgets)
+        String currentPanelId = panelManager.getCurrentPanelId();
         if (currentPanelId == null) {
             return true;
         }
@@ -1964,6 +1952,8 @@ public class Flux implements Disposable {
         // Use previous frame's hot panel if current frame's isn't determined yet
         // This handles the case where early-declared panels check events before
         // later-declared (but higher-focus) panels update hotPanelId
+        String hotPanelId = panelManager.getHotPanelId();
+        String previousHotPanelId = panelManager.getPreviousHotPanelId();
         String effectiveHotPanel = (hotPanelId != null) ? hotPanelId : previousHotPanelId;
         
         // If no hot panel determined (first frame or no panels under mouse), block panel events
@@ -1996,9 +1986,9 @@ public class Flux implements Disposable {
      * Otherwise, records to root command list.
      */
     private void recordCommand(Runnable command) {
-        if (!recordingPanelStack.isEmpty()) {
+        if (!panelManager.isRecordingStackEmpty()) {
             // Inside a panel - add to the current panel's command list (top of stack)
-            String currentPanel = recordingPanelStack.peek();
+            String currentPanel = panelManager.getCurrentRecordingPanel();
             PanelRenderData renderData = panelRenderQueue.get(currentPanel);
             if (renderData != null) {
                 renderData.commands.add(command);
@@ -2007,25 +1997,6 @@ public class Flux implements Disposable {
             // Outside any panel - add to root commands
             rootCommands.add(command);
         }
-    }
-
-    /**
-     * Bring a panel to the front (highest z-order).
-     * Moves the panel to the end of the focus order list.
-     */
-    private void bringPanelToFront(String panelId) {
-        // Remove from current position
-        panelFocusOrder.remove(panelId);
-        // Add to end (front)
-        panelFocusOrder.add(panelId);
-    }
-
-    /**
-     * Get the focus index of a panel (higher = more in front).
-     * Returns -1 if panel not in focus order.
-     */
-    private int getPanelFocusIndex(String panelId) {
-        return panelFocusOrder.indexOf(panelId);
     }
 
     @Override

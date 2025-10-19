@@ -1,139 +1,87 @@
+/*
+ * This software is available under Apache License
+ * Copyright (c) 2020
+ */
+
 package org.pixel.ext.flux;
 
 /**
- * Input state container for Flux.
- *
- * <p>Stores all input data for a single frame. This design keeps the API clean
- * and scalable as new input types are added (gamepad, touch, etc.).
- *
- * <p>Inspired by ImGui's ImGuiIO structure.
+ * Input provider interface for Flux GUI system.
+ * 
+ * <p>Platform-specific implementations provide input state to Flux.
+ * This abstraction keeps the Flux extension layer platform-agnostic
+ * while allowing desktop, mobile, or web implementations.
+ * 
+ * <p>Example desktop implementation:
+ * <pre>
+ * public class DesktopFluxInput implements FluxInput {
+ *     public float getMouseX() {
+ *         return Mouse.getX();
+ *     }
+ *     // ... other methods
+ * }
+ * </pre>
+ * 
+ * @see Flux#setInput(FluxInput)
  */
-public class FluxInput {
-
-    // === Mouse State ===
-    private float mouseX;
-    private float mouseY;
-    private boolean mouseDown;
-
-    // === Keyboard State ===
-    private String textInput = "";
-    private boolean backspace;
-
-    // === Mouse Wheel ===
-    private float mouseWheelDelta;
-
-    // === Viewport ===
-    private float viewportWidth;
-    private float viewportHeight;
-
-    // === Future: Additional Input ===
-    // private boolean mouseRightDown;
-    // private boolean[] keys;
-
+public interface FluxInput {
+    
     /**
-     * Create empty input state.
+     * Get current mouse X position in screen coordinates.
+     * 
+     * @return Mouse X position
      */
-    public FluxInput() {
-    }
-
+    float getMouseX();
+    
     /**
-     * Create input state with mouse data.
-     *
-     * @param mouseX    Mouse X position
-     * @param mouseY    Mouse Y position
-     * @param mouseDown Left mouse button state
+     * Get current mouse Y position in screen coordinates.
+     * 
+     * @return Mouse Y position
      */
-    public FluxInput(float mouseX, float mouseY, boolean mouseDown) {
-        this.mouseX = mouseX;
-        this.mouseY = mouseY;
-        this.mouseDown = mouseDown;
-    }
-
-    // === Fluent Setters ===
-
-    public FluxInput setMouse(float x, float y, boolean down) {
-        this.mouseX = x;
-        this.mouseY = y;
-        this.mouseDown = down;
-        return this;
-    }
-
-    public FluxInput setMousePosition(float x, float y) {
-        this.mouseX = x;
-        this.mouseY = y;
-        return this;
-    }
-
-    public FluxInput setMouseDown(boolean down) {
-        this.mouseDown = down;
-        return this;
-    }
-
-    public FluxInput setTextInput(String text) {
-        this.textInput = text != null ? text : "";
-        return this;
-    }
-
-    public FluxInput setBackspace(boolean backspace) {
-        this.backspace = backspace;
-        return this;
-    }
-
-    public FluxInput setMouseWheel(float delta) {
-        this.mouseWheelDelta = delta;
-        return this;
-    }
-
-    public FluxInput setViewport(float width, float height) {
-        this.viewportWidth = width;
-        this.viewportHeight = height;
-        return this;
-    }
-
-    // === Getters ===
-
-    public float getMouseX() {
-        return mouseX;
-    }
-
-    public float getMouseY() {
-        return mouseY;
-    }
-
-    public boolean isMouseDown() {
-        return mouseDown;
-    }
-
-    public String getTextInput() {
-        return textInput;
-    }
-
-    public boolean isBackspace() {
-        return backspace;
-    }
-
-    public float getMouseWheelDelta() {
-        return mouseWheelDelta;
-    }
-
-    public float getViewportWidth() {
-        return viewportWidth;
-    }
-
-    public float getViewportHeight() {
-        return viewportHeight;
-    }
-
+    float getMouseY();
+    
     /**
-     * Reset all input state to defaults.
-     * Useful for clearing input between frames if needed.
+     * Check if left mouse button was pressed this frame (edge-triggered).
+     * Should return true only on the frame the button transitions from up to down.
+     * 
+     * @return True if mouse was pressed this frame
      */
-    public void reset() {
-        mouseX = 0;
-        mouseY = 0;
-        mouseDown = false;
-        textInput = "";
-        backspace = false;
-        mouseWheelDelta = 0;
-    }
+    boolean isMousePressed();
+    
+    /**
+     * Check if left mouse button is currently held down (level-triggered).
+     * Returns true on every frame while the button is down.
+     * 
+     * @return True if mouse is currently down
+     */
+    boolean isMouseDown();
+    
+    /**
+     * Get text input captured this frame.
+     * Should return all characters typed since last frame.
+     * 
+     * @return Text input string (empty if none)
+     */
+    String getTextInput();
+    
+    /**
+     * Check if backspace key was pressed this frame.
+     * 
+     * @return True if backspace was pressed
+     */
+    boolean isBackspacePressed();
+    
+    /**
+     * Get mouse wheel delta for this frame.
+     * Positive values = scroll up, negative = scroll down.
+     * 
+     * @return Mouse wheel delta
+     */
+    float getMouseWheelDelta();
+    
+    /**
+     * Dispose of resources held by this input provider.
+     * Called when the input provider is no longer needed.
+     */
+    void dispose();
 }

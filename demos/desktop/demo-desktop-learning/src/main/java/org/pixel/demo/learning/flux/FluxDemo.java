@@ -11,7 +11,7 @@ import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.ext.flux.Flux;
-import org.pixel.ext.flux.FluxContext;
+import org.pixel.ext.flux.desktop.DesktopFluxInput;
 import org.pixel.graphics.render.canvas.text.SdfFont;
 
 /**
@@ -20,7 +20,7 @@ import org.pixel.graphics.render.canvas.text.SdfFont;
 public class FluxDemo extends DemoGame {
 
     private Flux gui;
-    private FluxInputHelper inputHelper;
+    private DesktopFluxInput fluxInput;
     private ContentManager content;
 
     private int clickCount = 0;
@@ -42,11 +42,12 @@ public class FluxDemo extends DemoGame {
         SdfFont font = content.load("fonts/roboto-regular.ttf", SdfFont.class,
                 new FontImporterSettings(16, 2));
 
-        // Create input helper
-        inputHelper = new FluxInputHelper(getViewportWidth(), getViewportHeight());
+        // Create desktop input provider (NO viewport - that's separate!)
+        fluxInput = new DesktopFluxInput();
 
-        // Create GUI with internal canvas
+        // Create GUI and set input provider
         gui = new Flux(getViewportWidth(), getViewportHeight());
+        gui.setInput(fluxInput);
         gui.getTheme().setFont(font);
     }
 
@@ -59,11 +60,8 @@ public class FluxDemo extends DemoGame {
     public void draw(DeltaTime delta) {
         super.draw(delta);
 
-        // Gather input state using helper and create context
-        FluxContext ctx = inputHelper.createContext();
-
-        // Begin GUI frame
-        gui.begin(ctx);
+        // Clean, simple API - just begin and go!
+        gui.begin();
 
         // === Menu Bar ===
         if (gui.beginMenuBar()) {
@@ -277,7 +275,7 @@ public class FluxDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        inputHelper.dispose();
+        fluxInput.dispose();
         gui.dispose();
         content.dispose();
 
@@ -288,14 +286,9 @@ public class FluxDemo extends DemoGame {
     public void onWindowSizeChange(int width, int height) {
         super.onWindowSizeChange(width, height);
 
-        // Update GUI viewport
+        // Update GUI viewport (input provider doesn't need to know about viewport!)
         if (gui != null) {
             gui.setViewport(width, height);
-        }
-        
-        // Update input helper viewport
-        if (inputHelper != null) {
-            inputHelper.setViewport(width, height);
         }
     }
 
