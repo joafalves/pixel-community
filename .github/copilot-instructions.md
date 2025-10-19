@@ -78,6 +78,8 @@ The framework is divided into core modules and platform implementations:
 - **ext-network**: Networking utilities
 - **ext-log4j2**: Advanced logging integration
 
+Use Lombok annotations (`@Getter`, `@Setter`, `@NoArgsConstructor`, etc.) to reduce boilerplate code.
+
 ### Game Lifecycle
 
 All games extend `Game` (which extends `WindowGameContainer` → `GameContainer`):
@@ -143,33 +145,38 @@ Common services:
 The Canvas API provides a fluent interface for 2D drawing with auto-execution:
 
 ```java
-Canvas canvas = new GlCanvas(800, 600);
+Canvas canvas = Canvas.create(800, 600);
 canvas.begin();
 
 // Rectangles
 canvas.rect(x, y, w, h)
     .withFill(Color.BLUE)
     .withStroke(2, Color.WHITE)
-    .withRoundedCorners(8);
+    .withRoundedCorners(8)
+    .apply();
 
 // Circles with gradients
 canvas.circle(x, y, radius)
-    .withFillRadialGradient(Color.YELLOW, Color.RED);
+    .withFillRadialGradient(Color.YELLOW, Color.RED)
+    .apply();
 
 // Text rendering
 canvas.text("Hello", font, x, y)
     .withFill(Color.WHITE)
     .withStroke(Color.BLACK, 2)
     .withShadow(Color.GRAY, 2, 2, 0.5f)
-    .withAlign(TextAlign.middleCenter());
+    .withAlign(TextAlign.middleCenter())
+    .apply();
 
 // Lines and points
-canvas.line(x1, y1, x2, y2)
-    .withStroke(2, Color.RED);
+        canvas.line(x1, y1, x2, y2)
+    .withStroke(2, Color.RED)
+    .apply();
 
 canvas.point(x, y)
     .withSize(5)
-    .withFill(Color.GREEN);
+    .withFill(Color.GREEN)
+    .apply();
 
 canvas.end();
 ```
@@ -221,18 +228,18 @@ SpriteBatch batch = SpriteBatch.create();
 batch.begin(camera.getViewMatrix(), BlendMode.NORMAL_BLEND);
 
 // All draws batched together
-for (Sprite sprite : sprites) {
-    batch.draw(sprite.getTexture(), sprite.getPosition());
-}
+        for (Sprite sprite : sprites) {
+        batch.draw(sprite.getTexture(), sprite.getPosition());
+        }
 
-batch.end(); // Submits all batched draws to GPU
+        batch.end(); // Submits all batched draws to GPU
 ```
 
 ### Custom Shaders
 ```java
 Shader customShader = new Shader(vertSource, fragSource);
 batch.begin(camera.getViewMatrix(), BlendMode.NORMAL_BLEND, customShader);
-batch.setUniform("myUniform", value);
+        batch.setUniform("myUniform", value);
 // ... draw with custom shader ...
 batch.end();
 ```

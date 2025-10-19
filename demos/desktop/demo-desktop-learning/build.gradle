@@ -12,6 +12,7 @@ dependencies {
     implementation project(":${rootProject.name}-ext-decs");
     implementation project(":${rootProject.name}-ext-tween");
     implementation project(":${rootProject.name}-ext-network");
+    implementation project(":${rootProject.name}-ext-flux");
 }
 
 application {

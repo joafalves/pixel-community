@@ -132,8 +132,10 @@ public class GLFWWindowManager extends DesktopWindowManager {
 
     @Override
     public void endFrame() {
-        // Clear single-frame mapped keys
+        // Clear single-frame mapped keys/buttons and mouse wheel delta
         Keyboard.clear();
+        Mouse.clear();
+        Mouse.resetWheelDelta();
 
         // NOTE: The following code, MUST be at the end of the render cycle:
         // Swap buffers and poll events
@@ -425,6 +427,7 @@ public class GLFWWindowManager extends DesktopWindowManager {
         glfwSetCharCallback(windowHandle, new Keyboard.KeyboardCharacterHandler());
         glfwSetCursorPosCallback(windowHandle, new Mouse.CursorPositionHandler());
         glfwSetMouseButtonCallback(windowHandle, new Mouse.MouseButtonHandler());
+        glfwSetScrollCallback(windowHandle, new Mouse.MouseScrollHandler());
 
         // Window resize callback:
         glfwSetWindowSizeCallback(windowHandle, (window, width, height) -> {

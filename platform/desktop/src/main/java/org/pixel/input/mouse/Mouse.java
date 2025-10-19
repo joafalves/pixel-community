@@ -7,6 +7,7 @@ package org.pixel.input.mouse;
 
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
+import org.lwjgl.glfw.GLFWScrollCallback;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 
@@ -18,17 +19,25 @@ public class Mouse {
 
     static {
         buttons = new HashMap<>();
+        pressedButtons = new HashMap<>();
         position = new Vector2();
         positionBox = new Rectangle();
+        wheelDelta = 0f;
     }
 
     //endregion
 
     //region properties
 
-    private static final HashMap<Integer, Integer> buttons;
+    // NOTE: the pressed buttons exist because it's much faster to consider that only
+    // pressed buttons exist on that map than having to manually loop through the buttons
+    // map to check if the button is pressed or not (end of frame clean).
+
+    private static final HashMap<Integer, Integer> pressedButtons; // <Button, Action>
+    private static final HashMap<Integer, Integer> buttons; // <Button, Action>
     private static final Vector2 position;
     private static final Rectangle positionBox;
+    private static float wheelDelta;
 
     //endregion
 
@@ -67,6 +76,26 @@ public class Mouse {
     public static boolean isMouseButtonUp(MouseButton button) {
         Integer value = buttons.get(button.getValue());
         return value != null && value == 0;
+    }
+
+    /**
+     * Static method to determine if the given mouse button was just pressed this frame.
+     * Returns true only on the frame when the button transitions from up to down.
+     *
+     * @param button MouseButton to check.
+     * @return True if the button was just pressed, false otherwise.
+     */
+    public static boolean isMouseButtonPressed(MouseButton button) {
+        Integer value = pressedButtons.get(button.getValue());
+        return value != null && value == 1; // GLFW_PRESS = 1
+    }
+
+    /**
+     * Static method to clear all single-frame mapped buttons. This function shall be
+     * called once at the end of the render frame (before native event polling).
+     */
+    public static void clear() {
+        pressedButtons.clear();
     }
 
     /**
@@ -136,6 +165,24 @@ public class Mouse {
         destination.set(positionBox);
     }
 
+    /**
+     * Get the mouse wheel delta for this frame.
+     * Positive values indicate scrolling up, negative values indicate scrolling down.
+     *
+     * @return The mouse wheel delta.
+     */
+    public static float getWheelDelta() {
+        return wheelDelta;
+    }
+
+    /**
+     * Reset the mouse wheel delta.
+     * This should be called at the end of each frame to clear the delta for the next frame.
+     */
+    public static void resetWheelDelta() {
+        wheelDelta = 0f;
+    }
+
     //endregion
 
     //region internal classes
@@ -160,6 +207,20 @@ public class Mouse {
         @Override
         public void invoke(long window, int button, int action, int mods) {
             buttons.put(button, action);
+            if (action == 1) { // GLFW_PRESS = 1
+                pressedButtons.put(button, action);
+            }
+        }
+    }
+
+    /**
+     * Mouse Scroll Handler.
+     */
+    public static class MouseScrollHandler extends GLFWScrollCallback {
+
+        @Override
+        public void invoke(long window, double xOffset, double yOffset) {
+            wheelDelta = (float) yOffset;
         }
     }
 
