@@ -18,7 +18,6 @@ import java.nio.IntBuffer;
 import static org.lwjgl.stb.STBTruetype.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
-import static org.lwjgl.opengl.GL30.*;
 
 /**
  * OpenGL implementation of FontGenerator using STB TrueType.
@@ -180,8 +179,10 @@ public class GLSdfFontGenerator implements SdfFontGenerator {
         int textureId = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, textureId);
         
-        // Use linear filtering for smooth text at any scale
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        // SDF textures should NOT use mipmaps!
+        // Mipmaps average/blur the distance field values, destroying the SDF information
+        // and causing jagged rendering at small scales. The distance field itself handles scaling.
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -195,8 +196,8 @@ public class GLSdfFontGenerator implements SdfFontGenerator {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 
             0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         
-        // Generate mipmaps for better quality at different sizes
-        glGenerateMipmap(GL_TEXTURE_2D);
+        // DO NOT generate mipmaps for SDF textures!
+        // Mipmapping destroys the distance field information
     }
 
     private static int nextPowerOfTwo(int value) {

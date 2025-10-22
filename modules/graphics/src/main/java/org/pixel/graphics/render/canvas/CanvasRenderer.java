@@ -313,9 +313,30 @@ public abstract class CanvasRenderer implements Disposable {
     public abstract void drawText(String text, SdfFont font, float x, float y, Color color);
 
     /**
-     * Draw text with advanced styling (stroke, shadow, etc.).
+     * Draw text with advanced styling (stroke, shadow, etc.) using font's base size.
+     * Convenience method that calls drawText() with fontSize=-1.
+     * 
+     * @param text The text to draw
+     * @param font The SDF font to use
+     * @param x The x position
+     * @param y The y position
+     * @param style The text style (fill, stroke, shadow, etc.)
      */
-    public abstract void drawText(String text, SdfFont font, float x, float y, TextStyle style);
+    public void drawText(String text, SdfFont font, float x, float y, TextStyle style) {
+        drawText(text, font, x, y, style, -1);
+    }
+
+    /**
+     * Draw text with advanced styling (stroke, shadow, etc.) and custom size.
+     * 
+     * @param text The text to draw
+     * @param font The SDF font to use
+     * @param x The x position
+     * @param y The y position
+     * @param style The text style (fill, stroke, shadow, etc.)
+     * @param fontSize The font size in pixels, or -1 to use font's base size
+     */
+    public abstract void drawText(String text, SdfFont font, float x, float y, TextStyle style, float fontSize);
 
     /**
      * Measure text bounds with default spacing.
@@ -335,6 +356,20 @@ public abstract class CanvasRenderer implements Disposable {
      * @return The size of the text when rendered
      */
     public abstract Size measureText(String text, SdfFont font, TextStyle style);
+    
+    /**
+     * Measure text bounds with custom font size (zero-GC version).
+     * 
+     * <p>This method measures text at a specific font size, accounting for both
+     * the fontSize scale and any Canvas transform scale. This ensures measurements
+     * match rendering exactly.
+     * 
+     * @param text     The text to measure
+     * @param font     The font to use
+     * @param fontSize The font size in pixels (or -1/0 to use font's base size)
+     * @return The size of the text when rendered
+     */
+    public abstract Size measureText(String text, SdfFont font, float fontSize);
 
     // === Text Helper Methods ===
 

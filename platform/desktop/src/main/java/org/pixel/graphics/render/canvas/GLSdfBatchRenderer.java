@@ -554,7 +554,7 @@ public class GLSdfBatchRenderer {
      * Draw text using SDF font.
      */
     public void drawText(String text, SdfFont font, float x, float y, Color color) {
-        drawText(text, font, x, y, color, Color.BLACK, 0.0f, 0.0f, 0.0f);
+        drawText(text, font, x, y, color, Color.BLACK, 0.0f, 0.0f, 0.0f, 1.0f);
     }
     
     /**
@@ -572,6 +572,25 @@ public class GLSdfBatchRenderer {
      */
     public void drawText(String text, SdfFont font, float x, float y, Color fillColor, 
                         Color strokeColor, float strokeWidth, float letterSpacing, float lineSpacing) {
+        drawText(text, font, x, y, fillColor, strokeColor, strokeWidth, letterSpacing, lineSpacing, 1.0f);
+    }
+    
+    /**
+     * Draw text using SDF font with stroke support and custom scale.
+     * 
+     * @param text The text to render
+     * @param font The SDF font to use
+     * @param x X position (top-left)
+     * @param y Y position (top-left)
+     * @param fillColor Text fill color
+     * @param strokeColor Text stroke/outline color
+     * @param strokeWidth Stroke width (0 = no stroke)
+     * @param letterSpacing Additional spacing between letters
+     * @param lineSpacing Additional vertical spacing between lines
+     * @param scale Scale factor (1.0 = base size, 2.0 = double size, etc.)
+     */
+    public void drawText(String text, SdfFont font, float x, float y, Color fillColor, 
+                        Color strokeColor, float strokeWidth, float letterSpacing, float lineSpacing, float scale) {
         if (text == null || text.isEmpty() || font == null) {
             return;
         }
@@ -589,8 +608,8 @@ public class GLSdfBatchRenderer {
             glUniform1i(shader.getUniformLocation("uTextAtlas"), 0);
         }
         
-        // Render glyphs
-        final float sdfPadding = 4.0f;
+        // Render glyphs with scale applied
+        final float sdfPadding = 4.0f * scale; // SDF padding scales with the glyph
         float cursorX = x;
         float cursorY = y;
         
@@ -600,14 +619,14 @@ public class GLSdfBatchRenderer {
             // Handle newlines
             if (ch == '\n') {
                 cursorX = x;
-                cursorY += font.getLineHeight() + lineSpacing;
+                cursorY += (font.getLineHeight() + lineSpacing) * scale;
                 continue;
             }
             
             // Handle spaces
             if (ch == ' ') {
-                float spaceWidth = font.getFontSize() * GLSdfConstants.SPACE_WIDTH_RATIO;
-                cursorX += spaceWidth + letterSpacing;
+                float spaceWidth = font.getFontSize() * GLSdfConstants.SPACE_WIDTH_RATIO * scale;
+                cursorX += spaceWidth + (letterSpacing * scale);
                 continue;
             }
             
@@ -616,16 +635,16 @@ public class GLSdfBatchRenderer {
                 continue; // Skip unknown characters
             }
             
-            // Calculate glyph quad position
-            float glyphX = cursorX + glyph.getOffsetX();
-            float glyphY = cursorY + font.getAscent() + glyph.getOffsetY() - (sdfPadding / 2f); // - padding
-            float glyphW = glyph.getWidth();
-            float glyphH = glyph.getHeight();
+            // Calculate glyph quad position with scale applied
+            float glyphX = cursorX + (glyph.getOffsetX() * scale);
+            float glyphY = cursorY + (font.getAscent() + glyph.getOffsetY()) * scale - (sdfPadding / 2f);
+            float glyphW = glyph.getWidth() * scale;
+            float glyphH = glyph.getHeight() * scale;
             
             // Cull individual glyphs that are off-screen
             if (cullingEnabled && shouldCull(glyphX, glyphY, glyphW, glyphH)) {
                 // Still advance cursor for spacing consistency
-                cursorX += glyph.getAdvance() + letterSpacing;
+                cursorX += (glyph.getAdvance() + letterSpacing) * scale;
                 continue;
             }
             
@@ -667,8 +686,8 @@ public class GLSdfBatchRenderer {
             addVertex(glyphX + glyphW, glyphY + glyphH, u1, v1, fillColor,
                      normalizedStrokeWidth, strokeR, strokeG, strokeB, glyphW, glyphH, SHAPE_TEXT_GLYPH, 0);
             
-            // Advance cursor
-            cursorX += glyph.getAdvance() + letterSpacing;
+            // Advance cursor with scale applied
+            cursorX += (glyph.getAdvance() + letterSpacing) * scale;
         }
     }
 

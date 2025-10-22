@@ -13,6 +13,8 @@ dependencies {
     implementation project(":${rootProject.name}-ext-tween");
     implementation project(":${rootProject.name}-ext-network");
     implementation project(":${rootProject.name}-ext-flux-desktop");  // Now uses desktop extension
+    implementation project(":${rootProject.name}-ext-rune");  // Rune GUI framework
+    implementation project(":${rootProject.name}-ext-rune-desktop");  // Rune desktop input
 }
 
 application {

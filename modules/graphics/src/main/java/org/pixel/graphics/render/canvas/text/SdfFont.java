@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * SDF (Signed Distance Field) font for high-quality text rendering.
  * Independent font system optimized for Canvas Renderer.
- * 
+ *
  * <p>SDF fonts provide:
  * <ul>
  *   <li>Crisp rendering at any scale</li>
@@ -71,7 +71,7 @@ public class SdfFont implements Disposable {
 
     /**
      * Get SDF-specific glyph data for a character.
-     * 
+     *
      * @return The SDF glyph, or null if character not in font
      */
     public SdfGlyph getGlyph(char character) {
@@ -118,6 +118,21 @@ public class SdfFont implements Disposable {
     public Size measureText(String text) {
         return measureText(text, 0, 0, new Vector2(1, 1));
     }
+    
+    /**
+     * Measure text dimensions with uniform scale (zero-GC version).
+     * 
+     * <p>This method is used by Canvas/Renderer to measure text with a combined
+     * scale factor (fontSize scale * transform scale). It delegates to the full
+     * measurement method with uniform X/Y scale.
+     *
+     * @param text  The text to measure
+     * @param scale Uniform scale factor to apply (combines fontSize and transform scales)
+     * @return The size of the text when rendered
+     */
+    public Size measureText(String text, float scale) {
+        return measureText(text, 0, 0, scale, scale);
+    }
 
     /**
      * Measure text dimensions with custom style and no scale.
@@ -163,6 +178,27 @@ public class SdfFont implements Disposable {
      * @return The size of the text when rendered
      */
     public Size measureText(String text, float letterSpacing, float lineSpacing, Vector2 scale) {
+        return measureText(text, letterSpacing, lineSpacing, scale.getX(), scale.getY());
+    }
+
+    /**
+     * Measure text dimensions with custom letter spacing, line spacing, and scale.
+     *
+     * <p>This is the most flexible measurement method. It calculates the exact dimensions
+     * of the rendered text by iterating through all characters and summing their advances,
+     * accounting for letter spacing, line spacing, and scale transformations.
+     *
+     * <p>The measurement logic mirrors the rendering logic in GLSdfTextRenderer to ensure
+     * accurate results.
+     *
+     * @param text          The text to measure
+     * @param letterSpacing Additional spacing between characters (in pixels, before scale)
+     * @param lineSpacing   Additional spacing between lines (in pixels, before scale)
+     * @param scaleX        Scale factor to apply on X axis
+     * @param scaleY        Scale factor to apply on Y axis
+     * @return The size of the text when rendered
+     */
+    public Size measureText(String text, float letterSpacing, float lineSpacing, float scaleX, float scaleY) {
         if (text == null || text.isEmpty()) {
             return new Size(0, 0);
         }
@@ -180,27 +216,27 @@ public class SdfFont implements Disposable {
 
                 // Handle spaces (matching the rendering logic in GLSdfTextRenderer)
                 if (ch == ' ') {
-                    float spaceWidth = fontSize * SPACE_WIDTH_RATIO;
-                    lineWidth += spaceWidth + letterSpacing;
+                    float spaceWidth = fontSize * SPACE_WIDTH_RATIO * scaleX;
+                    lineWidth += spaceWidth + (letterSpacing * scaleX);
                     continue;
                 }
 
                 SdfGlyph glyph = getGlyph(ch);
                 if (glyph != null) {
-                    lineWidth += glyph.getAdvance() + letterSpacing;
+                    lineWidth += (glyph.getAdvance() * scaleX) + (letterSpacing * scaleX);
                 }
             }
 
             maxWidth = Math.max(maxWidth, lineWidth);
-            totalHeight += lineHeight;
+            totalHeight += lineHeight * scaleY;
 
             if (lineIdx < lines.length - 1) {
-                totalHeight += lineSpacing;
+                totalHeight += lineSpacing * scaleY;
             }
         }
 
-        // Apply scale to the measured size
-        return new Size(maxWidth * scale.getX(), totalHeight * scale.getY());
+        // Return final size (already scaled during accumulation)
+        return new Size(maxWidth, totalHeight);
     }
 
     @Override

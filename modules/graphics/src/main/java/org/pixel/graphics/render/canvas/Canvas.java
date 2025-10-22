@@ -502,6 +502,33 @@ public abstract class Canvas implements Disposable {
     }
     
     /**
+     * Measure text bounds with custom font size (zero-GC version).
+     * 
+     * <p>This method measures text at a specific font size, accounting for both
+     * the fontSize scale and any Canvas transform scale. This ensures measurements
+     * match rendering exactly.
+     * 
+     * <p>This is the recommended method for UI widgets that need accurate text
+     * measurement for layout purposes.
+     * 
+     * <p>Example:
+     * <pre>
+     * Size textSize = canvas.measureText("Hello", font, 24f);
+     * canvas.text("Hello", font, x, y)
+     *     .withSize(24f)
+     *     .withFill(Color.WHITE);
+     * </pre>
+     * 
+     * @param text     The text to measure
+     * @param font     The font to use
+     * @param fontSize The font size in pixels (or -1/0 to use font's base size)
+     * @return The size of the text when rendered
+     */
+    public Size measureText(String text, SdfFont font, float fontSize) {
+        return renderer.measureText(text, font, fontSize);
+    }
+    
+    /**
      * Measure text bounds with custom text style (including letter and line spacing).
      * 
      * <p>This is a convenience method that delegates to the underlying renderer.

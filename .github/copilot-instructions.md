@@ -290,3 +290,7 @@ Then run: `./gradlew :pixel-demo-desktop-learning:run`
 - After making changes, BUILD the project to verify compilation: `./gradlew build`
 - Let the USER run and test the game applications themselves
 - You can verify the build succeeds, but leave execution to the user
+
+## Other notes
+
+- Do not create summary / markdown files unless asked to.

@@ -288,13 +288,19 @@ public class GLCanvasRenderer extends CanvasRenderer {
 
     @Override
     public void drawText(String text, SdfFont font, float x, float y, Color color) {
-        drawText(text, font, x, y, new TextStyle(color));
+        drawText(text, font, x, y, new TextStyle(color), -1);
     }
 
     @Override
-    public void drawText(String text, SdfFont font, float x, float y, TextStyle style) {
+    public void drawText(String text, SdfFont font, float x, float y, TextStyle style, float fontSize) {
         if (text == null || text.isEmpty() || font == null) {
             return;
+        }
+
+        // Calculate scale factor if fontSize is provided
+        float scale = 1.0f;
+        if (fontSize > 0) {
+            scale = fontSize / font.getFontSize();
         }
 
         // Calculate alignment offsets
@@ -303,7 +309,7 @@ public class GLCanvasRenderer extends CanvasRenderer {
         
         TextAlign align = style.getAlign();
         if (align != null) {
-            Size textSize = measureText(text, font, style);
+            Size textSize = measureTextInternal(text, font, style.getLetterSpacing(), style.getLineSpacing(), scale);
             
             // Horizontal alignment
             switch (align.getHorizontal()) {
@@ -322,7 +328,7 @@ public class GLCanvasRenderer extends CanvasRenderer {
             // Vertical alignment
             // Note: We subtract SDF_PADDING when rendering glyphs, so we need to compensate
             // for that in alignment calculations
-            final float SDF_PADDING = GLSdfConstants.SDF_PADDING_PX / 2.0f;
+            final float SDF_PADDING = (GLSdfConstants.SDF_PADDING_PX / 2.0f) * scale;
             
             switch (align.getVertical()) {
                 case MIDDLE:
@@ -331,7 +337,7 @@ public class GLCanvasRenderer extends CanvasRenderer {
                 case BASELINE:
                     // Y is already at top, move down by ascent to get to baseline
                     // Add SDF_PADDING since we subtract it during rendering
-                    offsetY = font.getAscent() + SDF_PADDING;
+                    offsetY = font.getAscent() * scale + SDF_PADDING;
                     break;
                 case BOTTOM:
                     // For BOTTOM, we need additional offset to account for descenders
@@ -355,11 +361,11 @@ public class GLCanvasRenderer extends CanvasRenderer {
             Vector2 shadowOffset = style.getShadowOffset();
             Color shadowColor = style.getShadowColor();
             
-            // Shadow has no stroke, same letter/line spacing
+            // Shadow has no stroke, same letter/line spacing, scaled offset
             batchRenderer.drawText(text, font, 
-                adjustedX + shadowOffset.getX(), 
-                adjustedY + shadowOffset.getY(), 
-                shadowColor, Color.BLACK, 0.0f, style.getLetterSpacing(), style.getLineSpacing());
+                adjustedX + shadowOffset.getX() * scale, 
+                adjustedY + shadowOffset.getY() * scale, 
+                shadowColor, Color.BLACK, 0.0f, style.getLetterSpacing(), style.getLineSpacing(), scale);
         }
 
         // Render main text
@@ -369,7 +375,7 @@ public class GLCanvasRenderer extends CanvasRenderer {
         float letterSpacing = style.getLetterSpacing();
         float lineSpacing = style.getLineSpacing();
         
-        batchRenderer.drawText(text, font, adjustedX, adjustedY, fillColor, strokeColor, strokeWidth, letterSpacing, lineSpacing);
+        batchRenderer.drawText(text, font, adjustedX, adjustedY, fillColor, strokeColor, strokeWidth, letterSpacing, lineSpacing, scale);
     }
 
     @Override
@@ -385,23 +391,43 @@ public class GLCanvasRenderer extends CanvasRenderer {
         // Delegate to the TextStyle version with default values
         return measureText(text, font, new TextStyle());
     }
+    
+    @Override
+    public Size measureText(String text, SdfFont font, float fontSize) {
+        // Calculate fontSize scale
+        float fontScale = (fontSize > 0) ? fontSize / font.getFontSize() : 1.0f;
+        
+        // Use default letterSpacing of 1.0 to match TextStyle default
+        // (TextStyle constructor sets letterSpacing = 1f by default)
+        return measureTextInternal(text, font, 1.0f, 0, fontScale);
+    }
 
+    /**
+     * Internal method to measure text size with custom letter and line spacing.
+     * Delegates to SdfFont.measureText() with current transform scale applied.
+     * 
+     * @param text The text to measure
+     * @param font The font to use
+     * @param letterSpacing Letter spacing in pixels
+     * @param lineSpacing Line spacing in pixels
+     * @param fontScale Additional scale factor from fontSize (1.0 = base size)
+     */
+    private Size measureTextInternal(String text, SdfFont font, float letterSpacing, float lineSpacing, float fontScale) {
+        if (font == null) {
+            return new Size(0, 0);
+        }
+
+        // Measurement uses ONLY fontSize scale, not transform scale
+        // (Transform is applied via view matrix in shader, not vertex scaling)
+        return font.measureText(text, letterSpacing, lineSpacing, fontScale, fontScale);
+    }
+    
     /**
      * Internal method to measure text size with custom letter and line spacing.
      * Delegates to SdfFont.measureText() with current transform scale applied.
      */
     private Size measureTextInternal(String text, SdfFont font, float letterSpacing, float lineSpacing) {
-        if (font == null) {
-            return new Size(0, 0);
-        }
-
-        // Extract scale from current transform matrix
-        float[][] mat = currentTransform.transform.toUnsafeArray();
-        float scaleX = (float) Math.sqrt(mat[0][0] * mat[0][0] + mat[0][1] * mat[0][1]);
-        float scaleY = (float) Math.sqrt(mat[1][0] * mat[1][0] + mat[1][1] * mat[1][1]);
-
-        // Delegate to font's measurement method with current transform scale
-        return font.measureText(text, letterSpacing, lineSpacing, new Vector2(scaleX, scaleY));
+        return measureTextInternal(text, font, letterSpacing, lineSpacing, 1.0f);
     }
 
     @Override
@@ -409,7 +435,13 @@ public class GLCanvasRenderer extends CanvasRenderer {
         // End batch before changing clipping state
         batchRenderer.end();
         
-        currentTransform.clipRect = new Rectangle(x, y, width, height);
+        // Intersect with existing clip region (for nested clipping)
+        Rectangle newClip = new Rectangle(x, y, width, height);
+        if (currentTransform.clipRect != null) {
+            // Compute intersection of current clip and new clip
+            newClip.intersection(currentTransform.clipRect);
+        }
+        currentTransform.clipRect = newClip;
         applyClipping();
         
         // Restart batch with new clipping state

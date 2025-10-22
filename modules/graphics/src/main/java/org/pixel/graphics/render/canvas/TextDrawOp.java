@@ -39,6 +39,7 @@ public class TextDrawOp extends DrawOp<TextDrawOp> {
     private TextAlign align;
     private float letterSpacing;
     private float lineSpacing;
+    private float fontSize = -1;  // -1 means use font's base size
     
     // State
     private boolean hasFill = false;
@@ -68,6 +69,7 @@ public class TextDrawOp extends DrawOp<TextDrawOp> {
         letterSpacing = 0;
         lineSpacing = 0;
         strokeWidth = 0;
+        fontSize = -1;
         return this;
     }
     
@@ -92,7 +94,6 @@ public class TextDrawOp extends DrawOp<TextDrawOp> {
     public TextDrawOp withStyle(TextStyle style) {
         this.style = style;
         this.useStyleObject = true;
-
         return this;
     }
     
@@ -120,7 +121,6 @@ public class TextDrawOp extends DrawOp<TextDrawOp> {
         this.strokeColor = color;
         this.strokeWidth = width;
         this.hasStroke = true;
-
         return this;
     }
     
@@ -139,7 +139,6 @@ public class TextDrawOp extends DrawOp<TextDrawOp> {
         this.shadowOffsetX = offsetX;
         this.shadowOffsetY = offsetY;
         this.hasShadow = true;
-
         return this;
     }
     
@@ -151,7 +150,6 @@ public class TextDrawOp extends DrawOp<TextDrawOp> {
      */
     public TextDrawOp withAlign(TextAlign align) {
         this.align = align;
-        // Don't execute yet - this is a modifier
         return this;
     }
     
@@ -163,7 +161,6 @@ public class TextDrawOp extends DrawOp<TextDrawOp> {
      */
     public TextDrawOp withLetterSpacing(float spacing) {
         this.letterSpacing = spacing;
-        // Don't execute yet - this is a modifier
         return this;
     }
     
@@ -175,8 +172,36 @@ public class TextDrawOp extends DrawOp<TextDrawOp> {
      */
     public TextDrawOp withLineSpacing(float spacing) {
         this.lineSpacing = spacing;
-        // Don't execute yet - this is a modifier
         return this;
+    }
+    
+    /**
+     * Set font size for rendering.
+     * If not set (or set to -1), uses the font's base size.
+     * Internally scales the SDF font to achieve the requested size.
+     * 
+     * <p>Example:
+     * <pre>
+     * canvas.text("Hello", font, x, y)
+     *     .withSize(24f)  // Render at 24px regardless of font's base size
+     *     .withFill(Color.WHITE);
+     * </pre>
+     * 
+     * @param size Font size in pixels (or -1 to use font's base size)
+     * @return This builder for chaining
+     */
+    public TextDrawOp withSize(float size) {
+        this.fontSize = size;
+        return this;
+    }
+    
+    /**
+     * Get the requested font size.
+     * 
+     * @return Font size in pixels, or -1 if using font's base size
+     */
+    public float getFontSize() {
+        return fontSize;
     }
     
     @Override
@@ -189,7 +214,7 @@ public class TextDrawOp extends DrawOp<TextDrawOp> {
     protected void performDraw() {
         if (useStyleObject) {
             // Use the complete style object
-            canvas.drawText(text, font, x, y, style);
+            canvas.drawText(text, font, x, y, style, fontSize);
         } else {
             // Build a TextStyle from individual properties
             TextStyle builtStyle = new TextStyle(fillColor != null ? fillColor : Color.WHITE);
@@ -214,7 +239,7 @@ public class TextDrawOp extends DrawOp<TextDrawOp> {
                 builtStyle.withLineSpacing(lineSpacing);
             }
             
-            canvas.drawText(text, font, x, y, builtStyle);
+            canvas.drawText(text, font, x, y, builtStyle, fontSize);
         }
     }
 }

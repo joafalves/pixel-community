@@ -55,7 +55,9 @@ include "extensions/ext-log4j2",
         "extensions/ext-decs",
         "extensions/ext-network",
         "extensions/ext-flux",
-        "extensions/ext-flux-desktop"
+        "extensions/ext-flux-desktop",
+        "extensions/ext-rune",
+        "extensions/ext-rune-desktop"
 
 // tools:
 include "tools/arkade"
