@@ -243,15 +243,16 @@ public class RuneContainer extends RuneWidget {
     protected void onLayout() {
         // If layout manager is set, use it to position children
         if (layout != null && !children.isEmpty()) {
-            // Use contentBounds (inner area after padding+border) for layout
-            // This ensures children are positioned inside the padding
-            layout.layout(this, children, 
-                          box.contentBounds.getX(), 
-                          box.contentBounds.getY(),
-                          box.contentBounds.getWidth(), 
+            // Layout managers work in RELATIVE coordinate space (0,0-based)
+            // We pass content bounds dimensions, but origin is always (0, 0) for relative coords
+            // The layout manager will emit positions relative to content origin,
+            // which will be converted to absolute during calculateBounds()
+            layout.layout(this, children,
+                          0, 0,  // Always 0,0 for relative coordinate space
+                          box.contentBounds.getWidth(),
                           box.contentBounds.getHeight());
         }
-        // Otherwise children use their explicitly set positions
+        // Otherwise children use their explicitly set positions (also relative)
     }
     
     /**
@@ -754,6 +755,20 @@ public class RuneContainer extends RuneWidget {
         return px >= thumbX && px <= thumbX + thumbW && py >= thumbY && py <= thumbY + thumbH;
     }
     
+    /**
+     * Invalidate all children's box models when this container moves/resizes.
+     * This ensures children recalculate their absolute positions from their relative positions.
+     */
+    @Override
+    protected void invalidateChildrenBoxes() {
+        for (RuneWidget child : children) {
+            child.boxDirty = true;
+            child.markDirty();
+            // Recursively invalidate grandchildren
+            child.invalidateChildrenBoxes();
+        }
+    }
+
     @Override
     public void dispose() {
         // Dispose all children
@@ -761,7 +776,7 @@ public class RuneContainer extends RuneWidget {
             child.dispose();
         }
         children.clear();
-        
+
         super.dispose();
     }
 }

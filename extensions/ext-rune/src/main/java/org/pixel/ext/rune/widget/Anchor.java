@@ -62,52 +62,64 @@ public enum Anchor {
     BOTTOM_RIGHT;
     
     /**
+     * Calculate the top-left corner X position based on anchor.
+     * Zero-allocation alternative to calculatePosition().
+     *
+     * @param x The anchored x position
+     * @param width Widget width
+     * @return Actual X position (top-left corner)
+     */
+    public float calculateX(float x, float width) {
+        switch (this) {
+            case TOP_CENTER:
+            case CENTER:
+            case BOTTOM_CENTER:
+                return x - width / 2f;
+            case TOP_RIGHT:
+            case CENTER_RIGHT:
+            case BOTTOM_RIGHT:
+                return x - width;
+            default:  // TOP_LEFT, CENTER_LEFT, BOTTOM_LEFT
+                return x;
+        }
+    }
+
+    /**
+     * Calculate the top-left corner Y position based on anchor.
+     * Zero-allocation alternative to calculatePosition().
+     *
+     * @param y The anchored y position
+     * @param height Widget height
+     * @return Actual Y position (top-left corner)
+     */
+    public float calculateY(float y, float height) {
+        switch (this) {
+            case CENTER_LEFT:
+            case CENTER:
+            case CENTER_RIGHT:
+                return y - height / 2f;
+            case BOTTOM_LEFT:
+            case BOTTOM_CENTER:
+            case BOTTOM_RIGHT:
+                return y - height;
+            default:  // TOP_LEFT, TOP_CENTER, TOP_RIGHT
+                return y;
+        }
+    }
+
+    /**
      * Calculate the top-left corner position based on anchor.
-     * 
+     * DEPRECATED: Use calculateX() and calculateY() to avoid allocation.
+     *
      * @param x The anchored x position
      * @param y The anchored y position
      * @param width Widget width
      * @param height Widget height
      * @return Array [actualX, actualY] representing top-left corner
+     * @deprecated Use {@link #calculateX(float, float)} and {@link #calculateY(float, float)} instead
      */
+    @Deprecated
     public float[] calculatePosition(float x, float y, float width, float height) {
-        float actualX = x;
-        float actualY = y;
-        
-        switch (this) {
-            case TOP_LEFT:
-                // Already top-left
-                break;
-            case TOP_CENTER:
-                actualX = x - width / 2f;
-                break;
-            case TOP_RIGHT:
-                actualX = x - width;
-                break;
-            case CENTER_LEFT:
-                actualY = y - height / 2f;
-                break;
-            case CENTER:
-                actualX = x - width / 2f;
-                actualY = y - height / 2f;
-                break;
-            case CENTER_RIGHT:
-                actualX = x - width;
-                actualY = y - height / 2f;
-                break;
-            case BOTTOM_LEFT:
-                actualY = y - height;
-                break;
-            case BOTTOM_CENTER:
-                actualX = x - width / 2f;
-                actualY = y - height;
-                break;
-            case BOTTOM_RIGHT:
-                actualX = x - width;
-                actualY = y - height;
-                break;
-        }
-        
-        return new float[] { actualX, actualY };
+        return new float[] { calculateX(x, width), calculateY(y, height) };
     }
 }

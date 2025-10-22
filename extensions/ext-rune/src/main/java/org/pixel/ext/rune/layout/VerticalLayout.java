@@ -162,49 +162,52 @@ public class VerticalLayout implements RuneLayout {
         if (children.isEmpty()) {
             return;
         }
-        
-        // Calculate content area (inside padding)
-        float contentX = x + paddingLeft;
-        float contentY = y + paddingTop;
-        float contentWidth = width - paddingLeft - paddingRight;
-        float contentHeight = height - paddingTop - paddingBottom;
-        
-        // Layout children vertically
-        float cursorY = contentY;
-        
+
+        // Note: (x, y, width, height) represent the parent's CONTENT bounds in ABSOLUTE coords
+        // We need to emit RELATIVE positions for children (relative to parent's content origin)
+        // So we work in a 0,0-based coordinate system
+
+        // Calculate layout area (inside padding) - still in relative 0,0 space
+        float layoutX = paddingLeft;
+        float layoutY = paddingTop;
+        float layoutWidth = width - paddingLeft - paddingRight;
+        float layoutHeight = height - paddingTop - paddingBottom;
+
+        // Position children vertically starting from top
+        float cursorY = layoutY;
+
         for (RuneWidget child : children) {
             if (!child.isVisible()) continue;
-            
+
             // Measure child constraints:
             // - STRETCH: fixed width (must fit parent)
             // - NON-STRETCH: unbounded (can overflow parent)
             SizeConstraints childConstraints = alignment.stretchesHorizontally()
-                ? SizeConstraints.fixed(contentWidth, Float.POSITIVE_INFINITY)
+                ? SizeConstraints.fixed(layoutWidth, Float.POSITIVE_INFINITY)
                 : SizeConstraints.loose(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY);
-            
+
             Size childSize = child.getPreferredSize(childConstraints);
-            
-            // If alignment stretches horizontally, force content width
+
+            // If alignment stretches horizontally, force layout width
             // Otherwise, use child's preferred width (may overflow parent)
-            float childWidth = alignment.stretchesHorizontally() 
-                ? contentWidth 
+            float childWidth = alignment.stretchesHorizontally()
+                ? layoutWidth
                 : childSize.getWidth();
-            
+
             float childHeight = childSize.getHeight();
-            
-            // Calculate x position based on alignment
-            float childX = alignment.calculateX(contentX, contentWidth, childWidth);
-            
-            // Position child - different handling for containers vs leaf widgets
+
+            // Calculate x position based on alignment (in relative 0,0 space)
+            float childX = alignment.calculateX(layoutX, layoutWidth, childWidth);
+
+            // Position child using RELATIVE coordinates (both containers and leaf widgets)
             if (child instanceof RuneContainer) {
                 ((RuneContainer) child).setBounds(childX, cursorY, childWidth, childHeight);
             } else {
-                // Leaf widgets are content-sized - just set position
                 child.setPosition(childX, cursorY);
             }
-            
+
             // Move cursor down
-            cursorY += childHeight + spacing;
+            cursorY += childSize.getHeight() + spacing;
         }
     }
 }

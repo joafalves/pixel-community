@@ -169,15 +169,19 @@ public class HorizontalLayout implements RuneLayout {
     }
     
     @Override
-    public void layout(RuneWidget container, List<RuneWidget> children, 
+    public void layout(RuneWidget container, List<RuneWidget> children,
                       float x, float y, float width, float height) {
         if (children.isEmpty()) return;
-        
-        // Calculate content area (inside padding)
-        float contentX = x + paddingLeft;
-        float contentY = y + paddingTop;
-        float contentWidth = width - paddingLeft - paddingRight;
-        float contentHeight = height - paddingTop - paddingBottom;
+
+        // Note: (x, y, width, height) represent the parent's CONTENT bounds in ABSOLUTE coords
+        // We need to emit RELATIVE positions for children (relative to parent's content origin)
+        // So we work in a 0,0-based coordinate system
+
+        // Calculate layout area (inside padding) - in relative 0,0 space
+        float layoutX = paddingLeft;
+        float layoutY = paddingTop;
+        float layoutWidth = width - paddingLeft - paddingRight;
+        float layoutHeight = height - paddingTop - paddingBottom;
         
         // Count visible children
         int visibleCount = 0;
@@ -189,46 +193,45 @@ public class HorizontalLayout implements RuneLayout {
         // Handle horizontal STRETCH: divide width equally among children
         if (alignment.stretchesHorizontally()) {
             float totalSpacing = spacing * (visibleCount - 1);
-            float childWidth = (contentWidth - totalSpacing) / visibleCount;
-            float currentX = contentX;
-            
+            float childWidth = (layoutWidth - totalSpacing) / visibleCount;
+            float currentX = layoutX;
+
             for (RuneWidget child : children) {
                 if (!child.isVisible()) continue;
-                
+
                 // Get child's natural height
                 SizeConstraints childConstraints = SizeConstraints.builder()
                         .maxWidth(childWidth)
-                        .maxHeight(contentHeight)
+                        .maxHeight(layoutHeight)
                         .build();
                 Size childSize = child.getPreferredSize(childConstraints);
                 float childHeight = childSize.getHeight();
-                
-                // Apply vertical alignment
+
+                // Apply vertical alignment (in relative 0,0 space)
                 float childY;
                 switch (alignment.getVertical()) {
                     case TOP:
-                        childY = contentY;
+                        childY = layoutY;
                         break;
                     case CENTER:
-                        childY = contentY + (contentHeight - childHeight) / 2;
+                        childY = layoutY + (layoutHeight - childHeight) / 2;
                         break;
                     case BOTTOM:
-                        childY = contentY + contentHeight - childHeight;
+                        childY = layoutY + layoutHeight - childHeight;
                         break;
                     case STRETCH:
-                        childY = contentY;
-                        childHeight = contentHeight;
+                        childY = layoutY;
+                        childHeight = layoutHeight;
                         break;
                     default:
-                        childY = contentY;
+                        childY = layoutY;
                         break;
                 }
-                
-                // Set child bounds to stretched width - different for containers vs leaf
+
+                // Set child position using RELATIVE coordinates
                 if (child instanceof RuneContainer) {
                     ((RuneContainer) child).setBounds(currentX, childY, childWidth, childHeight);
                 } else {
-                    // Leaf widgets ignore explicit dimensions (content-sized)
                     child.setPosition(currentX, childY);
                 }
                 currentX += childWidth + spacing;
@@ -239,64 +242,63 @@ public class HorizontalLayout implements RuneLayout {
         // Normal flow: use natural child sizes
         // Measure children to get their natural sizes
         SizeConstraints childConstraints = SizeConstraints.builder()
-                .maxWidth(contentWidth)
-                .maxHeight(contentHeight)
+                .maxWidth(layoutWidth)
+                .maxHeight(layoutHeight)
                 .build();
-        
+
         // Calculate total width of all visible children
         float totalChildrenWidth = 0;
         for (RuneWidget child : children) {
             if (!child.isVisible()) continue;
-            
+
             Size childSize = child.getPreferredSize(childConstraints);
             totalChildrenWidth += childSize.getWidth();
         }
-        
+
         // Add spacing between visible children
         if (visibleCount > 1) {
             totalChildrenWidth += spacing * (visibleCount - 1);
         }
-        
-        // Calculate starting X position based on horizontal alignment
-        float currentX = alignment.calculateX(contentX, contentWidth, totalChildrenWidth);
-        
+
+        // Calculate starting X position based on horizontal alignment (in relative 0,0 space)
+        float currentX = alignment.calculateX(layoutX, layoutWidth, totalChildrenWidth);
+
         // Position each child
         for (RuneWidget child : children) {
             if (!child.isVisible()) continue;
-            
+
             Size childSize = child.getPreferredSize(childConstraints);
             float childWidth = childSize.getWidth();
             float childHeight = childSize.getHeight();
-            
-            // Apply vertical alignment
+
+            // Apply vertical alignment (in relative 0,0 space)
             float childY;
             switch (alignment.getVertical()) {
                 case TOP:
-                    childY = contentY;
+                    childY = layoutY;
                     break;
                 case CENTER:
-                    childY = contentY + (contentHeight - childHeight) / 2;
+                    childY = layoutY + (layoutHeight - childHeight) / 2;
                     break;
                 case BOTTOM:
-                    childY = contentY + contentHeight - childHeight;
+                    childY = layoutY + layoutHeight - childHeight;
                     break;
                 case STRETCH:
-                    childY = contentY;
-                    childHeight = contentHeight;
+                    childY = layoutY;
+                    childHeight = layoutHeight;
                     break;
                 default:
-                    childY = contentY;
+                    childY = layoutY;
                     break;
             }
-            
-            // Set child position/size - different for containers vs leaf
+
+            // Set child position using RELATIVE coordinates
             if (child instanceof RuneContainer) {
                 ((RuneContainer) child).setBounds(currentX, childY, childWidth, childHeight);
             } else {
-                // Leaf widgets are content-sized - just set position
                 child.setPosition(currentX, childY);
             }
-            
+
             // Move to next position
             currentX += childWidth + spacing;
         }

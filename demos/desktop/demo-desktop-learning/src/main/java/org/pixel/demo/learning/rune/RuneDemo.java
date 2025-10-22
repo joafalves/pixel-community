@@ -16,10 +16,10 @@ import org.pixel.ext.rune.layout.HorizontalLayout;
 import org.pixel.ext.rune.layout.VerticalLayout;
 import org.pixel.ext.rune.style.StyleProperties;
 import org.pixel.ext.rune.theme.RuneDarkTheme;
-import org.pixel.ext.rune.widget.Overflow;
-import org.pixel.ext.rune.widget.RuneButton;
-import org.pixel.ext.rune.widget.RuneContainer;
-import org.pixel.ext.rune.widget.RuneLabel;
+import org.pixel.ext.rune.widget.*;
+import org.pixel.math.Rectangle;
+
+import java.util.ArrayList;
 
 public class RuneDemo extends DemoGame {
 
@@ -45,7 +45,7 @@ public class RuneDemo extends DemoGame {
     }
 
     private void buildUI() {
-        // Panel 1: Interactive Buttons (moved to top)
+        // Panel: Interactive Buttons (draggable panel with title)
         RuneButton disabledBtn = new RuneButton();
         disabledBtn.text("Disabled");
         disabledBtn.setEnabled(false);
@@ -59,7 +59,6 @@ public class RuneDemo extends DemoGame {
         });
         
         RuneContainer buttonRow = new RuneContainer();
-        buttonRow.setStyle(StyleProperties.BACKGROUND_COLOR, new Color(0x55555555));
         buttonRow.setSize(720, 55);
         buttonRow.setLayout(new HorizontalLayout(10).align(Alignment.topLeft()));
         buttonRow.add(new RuneButton().text("Normal Button")
@@ -74,23 +73,26 @@ public class RuneDemo extends DemoGame {
             .add(disabledBtn)
             .add(toggleBtn);
         
-        RuneContainer panel1 = new RuneContainer("panel1");
-        panel1.setOverflow(Overflow.HIDDEN);
+        // Use RunePanel with title
+        RuneContainer panel1 = new RuneContainer("Interactive Buttons");
         panel1.setBounds(20, 20, 740, 100);
         panel1.setLayout(new VerticalLayout(10).align(Alignment.topLeft()));
-        panel1.add(new RuneLabel().text("Interactive Buttons"));
         panel1.add(buttonRow);
         gui.add(panel1);
         
-        // Panel 2: SCROLLABLE CONTENT
-        RuneContainer scrollPanel = new RuneContainer("scrollPanel");
-        scrollPanel.setOverflow(Overflow.SCROLL);
-        scrollPanel.setStyle(StyleProperties.PADDING, 4f);
+        // Panel: SCROLLABLE CONTENT (draggable panel with title)
+        RuneContainer scrollPanel = new RuneContainer("Scrollable Content");
         scrollPanel.setBounds(20, 140, 300, 460);
+        scrollPanel.setDraggable(true);
+        scrollPanel.setDragHandles(new ArrayList<>(0) {{
+            add(new Rectangle(0, 0,300, 460));
+        }});
+        scrollPanel.setOverflow(Overflow.SCROLL);
+
         scrollPanel.setLayout(new VerticalLayout(8).align(Alignment.topLeft()));
         
         // Add header
-        scrollPanel.add(new RuneLabel().text("=== SCROLLABLE PANEL (Use mouse wheel or drag scrollbars!) ===")
+        scrollPanel.add(new RuneLabel().text("Use mouse wheel or drag scrollbars!")
                 .textColor(RuneDarkTheme.INFO));
         
         // Add lots of content to demonstrate scrolling
@@ -112,6 +114,18 @@ public class RuneDemo extends DemoGame {
                 .textColor(RuneDarkTheme.INFO));
         
         gui.add(scrollPanel);
+
+        // Panel: Color Samples
+        RuneContainer colorPanel = new RuneContainer("Color Palette");
+        colorPanel.setBounds(340, 360, 420, 240);
+        colorPanel.setLayout(new VerticalLayout(8).align(Alignment.topLeft()));
+        colorPanel.add(new RuneLabel().text("Primary").textColor(RuneDarkTheme.PRIMARY));
+        colorPanel.add(new RuneLabel().text("Secondary").textColor(RuneDarkTheme.SECONDARY));
+        colorPanel.add(new RuneLabel().text("Success").textColor(RuneDarkTheme.SUCCESS));
+        colorPanel.add(new RuneLabel().text("Warning").textColor(RuneDarkTheme.WARNING));
+        colorPanel.add(new RuneLabel().text("Error").textColor(RuneDarkTheme.ERROR));
+        colorPanel.add(new RuneLabel().text("Info").textColor(RuneDarkTheme.INFO));
+        gui.add(colorPanel);
     }
 
     @Override
@@ -127,6 +141,12 @@ public class RuneDemo extends DemoGame {
     }
 
     @Override
+    public void onWindowSizeChange(int width, int height) {
+        gui.setViewport(width, height);
+        super.onWindowSizeChange(width, height);
+    }
+
+    @Override
     public void dispose() {
         super.dispose();
         if (gui != null) gui.dispose();
@@ -136,6 +156,7 @@ public class RuneDemo extends DemoGame {
     public static void main(String[] args) {
         WindowSettings settings = new WindowSettings("Rune UI - Scrolling Demo", 800, 630);
         settings.setVsync(false);
+        settings.setWindowResizable(true);
         settings.setBackgroundColor(Color.BLACK);
         RuneDemo game = new RuneDemo(settings);
         game.start();

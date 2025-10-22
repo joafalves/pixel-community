@@ -88,6 +88,36 @@ public class RuneDarkTheme {
                 .set(PADDING, 8f)
                 .set(BOX_SIZING, BoxSizing.BORDER_BOX));
 
+        // Panel - outer container
+        sheet.type("panel", s -> s
+                .set(BACKGROUND_COLOR, new Color(0.15f, 0.15f, 0.15f, 0.95f))
+                .set(BORDER_COLOR, new Color(0.4f, 0.4f, 0.4f, 1f))
+                .set(BORDER_WIDTH, 1f)
+                .set(BORDER_RADIUS, 6f)
+                .set(BOX_SIZING, BoxSizing.BORDER_BOX));
+
+        // Panel title bar
+        sheet.type("panel-title", s -> s
+                .set(BACKGROUND_COLOR, new Color(0.25f, 0.25f, 0.25f, 1f))
+                .set(TEXT_COLOR, new Color(0.9f, 0.9f, 0.9f, 1f))
+                .set(FONT_SIZE, 14f)
+                .set(PADDING_TOP, 8f)
+                .set(PADDING_RIGHT, 12f)
+                .set(PADDING_BOTTOM, 8f)
+                .set(PADDING_LEFT, 12f)
+                .set(BORDER_RADIUS, 6f)  // Top corners rounded
+                .set(BOX_SIZING, BoxSizing.BORDER_BOX));
+
+        // Panel title bar hover (visual feedback for dragging)
+        sheet.type("panel-title:hover", s -> s
+                .set(BACKGROUND_COLOR, new Color(0.3f, 0.3f, 0.3f, 1f)));
+
+        // Panel body
+        sheet.type("panel-body", s -> s
+                .set(BACKGROUND_COLOR, null)  // Transparent, inherits from panel
+                .set(PADDING, 12f)
+                .set(BOX_SIZING, BoxSizing.BORDER_BOX));
+
         // === SEMANTIC STYLE CLASSES ===
 
         sheet.styleClass("primary", s -> s

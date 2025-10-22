@@ -84,7 +84,7 @@ public abstract class RuneWidget implements Disposable, Updatable {
     
     // Box model (CSS-style, cached)
     protected transient ComputedBox box = new ComputedBox();
-    private transient boolean boxDirty = true;
+    protected transient boolean boxDirty = true;  // Protected so containers can invalidate children
     
     // State
     protected boolean visible = true;
@@ -274,23 +274,26 @@ public abstract class RuneWidget implements Disposable, Updatable {
         // Handle dragging if enabled
         if (draggable) {
             if (event.getType() == RuneMouseEvent.Type.PRESS && event.getButton() == 0) {
-                // Convert screen coordinates to local coordinates
-                float localX = event.getX() - x;
-                float localY = event.getY() - y;
-                
+                // Convert absolute screen coordinates to widget-local coordinates (zero-allocation)
+                float localX = absoluteToRelativeX(event.getX());
+                float localY = absoluteToRelativeY(event.getY());
+
                 // Check if clicking on a drag handle
                 if (isDragHandleHit(localX, localY)) {
                     isDragging = true;
-                    dragStartX = event.getX();
+                    dragStartX = event.getX();  // Store absolute coords for drag delta
                     dragStartY = event.getY();
-                    widgetStartX = x;
+                    widgetStartX = x;  // Store relative position
                     widgetStartY = y;
                     return true; // Consume press event when drag starts
                 }
             } else if (event.getType() == RuneMouseEvent.Type.DRAG && isDragging) {
-                // Update widget position based on drag delta
+                // Calculate drag delta in absolute (screen) coordinates
                 float deltaX = event.getX() - dragStartX;
                 float deltaY = event.getY() - dragStartY;
+
+                // Update relative position by adding delta
+                // This works because relative coords move 1:1 with absolute coords
                 setPosition(widgetStartX + deltaX, widgetStartY + deltaY);
                 return true; // Consume drag events
             } else if (event.getType() == RuneMouseEvent.Type.RELEASE && isDragging) {
@@ -803,37 +806,63 @@ public abstract class RuneWidget implements Disposable, Updatable {
     /**
      * Calculate all bounds rectangles (total, border, padding, content).
      * Called by computeBox().
+     *
+     * <p>Coordinate System:
+     * - Widget (x, y) fields store RELATIVE coordinates to parent's content bounds
+     * - For root widgets (no parent), relative to viewport origin (0, 0)
+     * - This method converts relative → absolute by adding parent's content origin
+     *
+     * <p>Example:
+     * - Parent content bounds at (100, 50)
+     * - Child has relative position (10, 20)
+     * - Child's absolute position = (110, 70)
      */
     private void calculateBounds() {
         float totalW = box.totalSize.getWidth();
         float totalH = box.totalSize.getHeight();
-        
-        // Calculate position with anchor (excludes margin for positioning)
-        float[] pos = anchor.calculatePosition(x, y, 
-            totalW - box.marginHorizontal(),
-            totalH - box.marginVertical()
-        );
+
+        // Get parent's content origin (where children are positioned relative to)
+        // If no parent, origin is (0, 0) - widget is at root level
+        float parentContentX = 0;
+        float parentContentY = 0;
+        if (parent != null) {
+            // Parent's content bounds origin is the (0, 0) point for children
+            parentContentX = parent.box.contentBounds.getX();
+            parentContentY = parent.box.contentBounds.getY();
+        }
+
+        // Apply anchor to relative position (excludes margin for positioning)
+        // Note: x, y are ALREADY relative to parent, so we apply anchor first
+        // Use zero-allocation methods to avoid GC
+        float widthWithoutMargin = totalW - box.marginHorizontal();
+        float heightWithoutMargin = totalH - box.marginVertical();
+        float anchoredX = anchor.calculateX(x, widthWithoutMargin);
+        float anchoredY = anchor.calculateY(y, heightWithoutMargin);
+
+        // Convert relative → absolute by adding parent's content origin
+        float absoluteX = anchoredX + parentContentX;
+        float absoluteY = anchoredY + parentContentY;
         
         // Total bounds (including margin, for layout spacing)
         box.totalBounds.set(
-            pos[0] - box.marginLeft,
-            pos[1] - box.marginTop,
+            absoluteX - box.marginLeft,
+            absoluteY - box.marginTop,
             totalW,
             totalH
         );
         
         // Border bounds (excluding margin, this is the visual widget box)
         box.borderBounds.set(
-            pos[0],
-            pos[1],
+            absoluteX,
+            absoluteY,
             totalW - box.marginHorizontal(),
             totalH - box.marginVertical()
         );
         
         // Padding bounds (excluding margin + border, background fill area)
         box.paddingBounds.set(
-            pos[0] + box.borderWidth,
-            pos[1] + box.borderWidth,
+            absoluteX + box.borderWidth,
+            absoluteY + box.borderWidth,
             box.borderBounds.getWidth() - box.borderHorizontal(),
             box.borderBounds.getHeight() - box.borderVertical()
         );
@@ -944,14 +973,44 @@ public abstract class RuneWidget implements Disposable, Updatable {
     }
     
     /**
-     * Set widget position.
-     * Position is interpreted relative to the anchor point.
+     * Set widget position (RELATIVE to parent's content bounds).
+     *
+     * <p>Coordinate System:
+     * - (x, y) are relative to parent's content area origin
+     * - For root widgets (no parent), relative to viewport (0, 0)
+     * - Anchor point determines what (x, y) represents (e.g., top-left, center, etc.)
+     *
+     * <p>Example:
+     * <pre>
+     * container.add(button.setPosition(10, 20));  // 10px from left, 20px from top of container's content
+     * </pre>
+     *
+     * <p>With relative positioning, moving a parent automatically moves all children
+     * because their absolute positions are recalculated from the parent's content origin.
+     *
+     * @param x X position relative to parent's content origin
+     * @param y Y position relative to parent's content origin
      */
     public void setPosition(float x, float y) {
+        if (this.x == x && this.y == y) return; // No change
+
         this.x = x;
         this.y = y;
         boxDirty = true;  // Position affects bounds rectangles
         markDirty();
+
+        // Invalidate children's boxes so they recalculate with new parent offset
+        invalidateChildrenBoxes();
+    }
+
+    /**
+     * Invalidate this widget's children's box models.
+     * Called when parent position/size changes, forcing children to recalculate bounds.
+     * Containers override this to propagate to their children.
+     */
+    protected void invalidateChildrenBoxes() {
+        // Default: no children, nothing to do
+        // Containers override this
     }
     
     /**
@@ -964,24 +1023,90 @@ public abstract class RuneWidget implements Disposable, Updatable {
     }
     
     /**
-     * Get X position (relative to anchor).
+     * Get X position (relative to parent's content origin).
      */
     public float getX() {
         return x;
     }
-    
+
     /**
-     * Get Y position (relative to anchor).
+     * Get Y position (relative to parent's content origin).
      */
     public float getY() {
         return y;
     }
-    
+
     /**
      * Get anchor point.
      */
     public Anchor getAnchor() {
         return anchor;
+    }
+
+    /**
+     * Get absolute X position in screen/viewport coordinates.
+     * This is the actual rendered position after parent offset is applied.
+     * Useful for debugging or converting mouse coordinates.
+     *
+     * @return Absolute X coordinate
+     */
+    public float getAbsoluteX() {
+        return box.borderBounds.getX();
+    }
+
+    /**
+     * Get absolute Y position in screen/viewport coordinates.
+     * This is the actual rendered position after parent offset is applied.
+     * Useful for debugging or converting mouse coordinates.
+     *
+     * @return Absolute Y coordinate
+     */
+    public float getAbsoluteY() {
+        return box.borderBounds.getY();
+    }
+
+    /**
+     * Convert absolute X coordinate to relative X within this widget's content area.
+     * Zero-allocation alternative to absoluteToRelative().
+     *
+     * @param absoluteX Absolute X coordinate (screen/viewport)
+     * @return X relative to this widget's content origin
+     */
+    public float absoluteToRelativeX(float absoluteX) {
+        return absoluteX - box.contentBounds.getX();
+    }
+
+    /**
+     * Convert absolute Y coordinate to relative Y within this widget's content area.
+     * Zero-allocation alternative to absoluteToRelative().
+     *
+     * @param absoluteY Absolute Y coordinate (screen/viewport)
+     * @return Y relative to this widget's content origin
+     */
+    public float absoluteToRelativeY(float absoluteY) {
+        return absoluteY - box.contentBounds.getY();
+    }
+
+    /**
+     * Convert relative X coordinate to absolute screen coordinate.
+     * Zero-allocation alternative to relativeToAbsolute().
+     *
+     * @param relativeX X relative to this widget's content origin
+     * @return Absolute X coordinate in screen/viewport coordinates
+     */
+    public float relativeToAbsoluteX(float relativeX) {
+        return relativeX + box.contentBounds.getX();
+    }
+
+    /**
+     * Convert relative Y coordinate to absolute screen coordinate.
+     * Zero-allocation alternative to relativeToAbsolute().
+     *
+     * @param relativeY Y relative to this widget's content origin
+     * @return Absolute Y coordinate in screen/viewport coordinates
+     */
+    public float relativeToAbsoluteY(float relativeY) {
+        return relativeY + box.contentBounds.getY();
     }
     
     /**
