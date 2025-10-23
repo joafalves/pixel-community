@@ -125,7 +125,7 @@ public class RuneLabel extends RuneWidget {
         
         // Render background if set (uses padding bounds)
         if (backgroundColor != null) {
-            ctx.canvas.rect(
+            ctx.getCanvas().rect(
                 box.paddingBounds.getX(),
                 box.paddingBounds.getY(),
                 box.paddingBounds.getWidth(),
@@ -143,7 +143,7 @@ public class RuneLabel extends RuneWidget {
         
         // Render border if set
         if (box.borderWidth > 0 && borderColor != null) {
-            ctx.canvas.rect(
+            ctx.getCanvas().rect(
                 box.paddingBounds.getX(),
                 box.paddingBounds.getY(),
                 box.paddingBounds.getWidth(),
@@ -168,7 +168,7 @@ public class RuneLabel extends RuneWidget {
         Float fontSize = style.get(FONT_SIZE);
         
         // Lookup font from RuneUI registry
-        SdfFont font = ctx.ui.getFont(fontFamily);
+        SdfFont font = ctx.getUi().getFont(fontFamily);
         if (font == null) {
             return; // No font available - cannot render text
         }
@@ -179,7 +179,7 @@ public class RuneLabel extends RuneWidget {
         // Render text in content bounds (pre-calculated, zero allocation!)
         // When autoSize = false, textAlign positions text within fixed content area
         // When autoSize = true, textAlign is ignored (text determines size)
-        var textOp = ctx.canvas.text(text, font, 
+        var textOp = ctx.getCanvas().text(text, font,
             box.contentBounds.getX(), 
             box.contentBounds.getY())
             .withFill(color);
@@ -206,12 +206,12 @@ public class RuneLabel extends RuneWidget {
         RuneStyle style = getComputedStyle(ctx);
         String fontFamily = style.get(FONT_FAMILY);
         Float fontSize = style.get(FONT_SIZE);
-        SdfFont font = ctx.ui.getFont(fontFamily);
+        SdfFont font = ctx.getUi().getFont(fontFamily);
         
         if (font != null && fontSize != null && fontSize > 0) {
             // Use canvas measurement - accounts for fontSize scale
             // This matches rendering exactly (includes default letterSpacing)
-            return ctx.canvas.measureText(text, font, fontSize);
+            return ctx.getCanvas().measureText(text, font, fontSize);
         }
         
         // Fallback: rough estimate (will be replaced after first render)

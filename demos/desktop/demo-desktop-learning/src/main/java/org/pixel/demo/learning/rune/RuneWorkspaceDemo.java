@@ -112,11 +112,14 @@ public class RuneWorkspaceDemo extends DemoGame {
 
         workspace.add(consolePanel);
 
-        // Create status label (outside workspace, fixed position)
+        // Create status label (outside workspace, with FIXED positioning for responsive design)
         statusLabel = new RuneLabel();
-        statusLabel.setAnchor(Anchor.BOTTOM_LEFT);
-        statusLabel.text("Instructions: Click panels to bring to front | Drag title bars to reposition | Hover only affects topmost panel");
-        statusLabel.setBounds(10, getViewportHeight() - 30, getViewportWidth() - 20, 25);
+        statusLabel.text("Instructions: Click panels to bring to front | Drag title bars to reposition | Resize window to test responsive layout");
+        statusLabel.setPositionMode(PositionMode.FIXED);
+        statusLabel.setInsets(10f, null, 10f, 10f);  // left, top, right, bottom
+        statusLabel.setAutoSize(false);
+        statusLabel.setHeight(25);
+        statusLabel.setZIndex(100);  // Render on top of workspace
         ui.add(statusLabel);
     }
 
@@ -141,15 +144,13 @@ public class RuneWorkspaceDemo extends DemoGame {
     @Override
     public void draw(DeltaTime delta) {
         super.draw(delta);
-
-        // Draw UI
-        workspace.setBounds(0, 0, getViewportWidth(), getViewportHeight());
         ui.draw(delta);
     }
 
     @Override
     public void onWindowSizeChange(int width, int height) {
         ui.setViewport(width, height);
+        workspace.setSize(width, height);
         super.onWindowSizeChange(width, height);
     }
 
@@ -160,7 +161,7 @@ public class RuneWorkspaceDemo extends DemoGame {
     }
 
     public static void main(String[] args) {
-        WindowSettings settings = new WindowSettings("Rune UI - Scrolling Demo", 800, 630);
+        WindowSettings settings = new WindowSettings("Rune UI - Scrolling Demo", 1280, 720);
         settings.setVsync(false);
         settings.setWindowResizable(true);
         settings.setBackgroundColor(Color.BLACK);

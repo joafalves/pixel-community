@@ -118,7 +118,7 @@ public class RuneButton extends RuneWidget {
         Color brdColor = style.get(BORDER_COLOR);
         
         // Render background using padding bounds (excludes margin+border stroke)
-        ctx.canvas.rect(
+        ctx.getCanvas().rect(
             box.paddingBounds.getX(),
             box.paddingBounds.getY(),
             box.paddingBounds.getWidth(),
@@ -135,7 +135,7 @@ public class RuneButton extends RuneWidget {
         
         // Render border if set
         if (box.borderWidth > 0 && brdColor != null) {
-            ctx.canvas.rect(
+            ctx.getCanvas().rect(
                 box.paddingBounds.getX(),
                 box.paddingBounds.getY(),
                 box.paddingBounds.getWidth(),
@@ -156,7 +156,7 @@ public class RuneButton extends RuneWidget {
             // Get font from RuneUI registry
             String fontFamily = style.get(FONT_FAMILY);
             Float fontSize = style.get(FONT_SIZE);
-            SdfFont font = ctx.ui.getFont(fontFamily);
+            SdfFont font = ctx.getUi().getFont(fontFamily);
             
             if (font != null) {
                 cachedFont = font; // Cache for measurement
@@ -166,7 +166,7 @@ public class RuneButton extends RuneWidget {
                 float centerX = box.contentBounds.getX() + box.contentBounds.getWidth() / 2;
                 float centerY = box.contentBounds.getY() + box.contentBounds.getHeight() / 2;
                 
-                var textOp = ctx.canvas.text(text, font, centerX, centerY)
+                var textOp = ctx.getCanvas().text(text, font, centerX, centerY)
                     .withFill(txtColor)
                     .withAlign(TextAlign.MIDDLE_CENTER);
                 
@@ -190,12 +190,12 @@ public class RuneButton extends RuneWidget {
             RuneStyle style = getComputedStyle(ctx);
             String fontFamily = style.get(FONT_FAMILY);
             Float fontSize = style.get(FONT_SIZE);
-            SdfFont font = ctx.ui.getFont(fontFamily);
+            SdfFont font = ctx.getUi().getFont(fontFamily);
             
             if (font != null && fontSize != null && fontSize > 0) {
                 // Use canvas measurement - accounts for fontSize scale + transform scale
                 // This is zero-GC and matches rendering exactly
-                Size textSize = ctx.canvas.measureText(text, font, fontSize);
+                Size textSize = ctx.getCanvas().measureText(text, font, fontSize);
                 textWidth = textSize.getWidth();
                 textHeight = textSize.getHeight();
             } else {

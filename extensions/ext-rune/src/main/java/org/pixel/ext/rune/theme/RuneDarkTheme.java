@@ -130,6 +130,12 @@ public class RuneDarkTheme {
         sheet.styleClass("panel-title:pressed", s -> s
                 .set(BACKGROUND_COLOR, new Color(0.18f, 0.23f, 0.30f, 1f)));
 
+        // Labels inside panel-title should inherit title styles (descendant selector)
+        sheet.descendant(".panel-title label", s -> s
+                .set(TEXT_COLOR, new Color(0.95f, 0.95f, 1f, 1f))  // Bright white text like title
+                .set(FONT_SIZE, 14f)  // Match title font size
+                .set(MARGIN, 0f));  // No margin for labels in title
+
         // Panel body - blue for debugging (CLASS selector)
         sheet.styleClass("panel-body", s -> s
                 .set(BACKGROUND_COLOR, new Color(0.12f, 0.12f, 0.12f, 0.9f))

@@ -113,9 +113,16 @@ public class RuneUI implements Disposable, Updatable {
     public void setViewport(float width, float height) {
         this.viewportWidth = width;
         this.viewportHeight = height;
+        this.canvas.setViewport(width, height);
 
-        canvas.setViewport(width, height);
-        
+        // Invalidate all root widget boxes (viewport change affects FIXED/ABSOLUTE positioning)
+        for (RuneWidget widget : rootWidgets) {
+            widget.invalidateBoxRecursive();
+        }
+        for (RuneWidget modal : modalStack) {
+            modal.invalidateBoxRecursive();
+        }
+
         // Trigger layout recalculation
         layout();
     }
@@ -207,12 +214,11 @@ public class RuneUI implements Disposable, Updatable {
             // Load default Roboto font at 32px base size
             // SDF fonts scale beautifully without mipmaps - texture filtering handles quality
             FontImporterSettings settings = new FontImporterSettings(32, 2);
-            SdfFont robotoFont = content.load("__rune__/font/roboto-regular.ttf", 
-                                               SdfFont.class, settings);
+            SdfFont defaultFont = content.load("__rune__/font/roboto-regular.ttf", SdfFont.class, settings);
             
             // Register as both "roboto" and "default"
-            fonts.put("roboto", robotoFont);
-            fonts.put("default", robotoFont);
+            fonts.put("roboto", defaultFont);
+            fonts.put("default", defaultFont);
             
             // Future: Load other resources here (icons, cursors, etc.)
             
