@@ -386,7 +386,7 @@ public class CanvasShapesDemo extends DemoGame {
                     1.0f
             );
 
-            canvas.circle(cx, cy, 6.0f + 2f * (float) Math.sin(time * i))
+            canvas.circle(cx, cy, 6.0f + 2f * (float) Math.sin(time * i)) // pulsing size
                     .withFill(orbitColor)
                     .apply();
         }

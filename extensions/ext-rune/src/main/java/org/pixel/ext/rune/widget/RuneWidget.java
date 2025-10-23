@@ -840,9 +840,19 @@ public abstract class RuneWidget implements Disposable, Updatable {
         float anchoredY = anchor.calculateY(y, heightWithoutMargin);
 
         // Convert relative → absolute by adding parent's content origin
+        // IMPORTANT: With CONTENT_BOX, x/y represent content position, not border position
+        // So we need to offset backward by border+padding to get border-box position
         float absoluteX = anchoredX + parentContentX;
         float absoluteY = anchoredY + parentContentY;
-        
+
+        if (box.boxSizing == BoxSizing.CONTENT_BOX) {
+            // With CONTENT_BOX, x/y is the content position
+            // Border-box is offset outward (left/up) by border + padding
+            absoluteX -= (box.borderWidth + box.paddingLeft);
+            absoluteY -= (box.borderWidth + box.paddingTop);
+        }
+        // With BORDER_BOX, x/y is already the border position (no adjustment needed)
+
         // Total bounds (including margin, for layout spacing)
         box.totalBounds.set(
             absoluteX - box.marginLeft,
@@ -850,7 +860,7 @@ public abstract class RuneWidget implements Disposable, Updatable {
             totalW,
             totalH
         );
-        
+
         // Border bounds (excluding margin, this is the visual widget box)
         box.borderBounds.set(
             absoluteX,

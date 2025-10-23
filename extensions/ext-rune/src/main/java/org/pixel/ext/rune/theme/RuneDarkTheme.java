@@ -26,7 +26,7 @@ public class RuneDarkTheme {
     public static final Color SCROLLBAR_THUMB_HOVER = new Color(0.6f, 0.6f, 0.6f, 0.9f);
 
     // Common properties
-    public static final float BORDER_RADIUS_DEFAULT = 4f;
+    public static final float BORDER_RADIUS_DEFAULT = 8f;
 
     /**
      * Create a dark theme stylesheet.
@@ -98,7 +98,13 @@ public class RuneDarkTheme {
                 .set(BORDER_WIDTH, 0f)
                 .set(BORDER_RADIUS, 0f)
                 .set(PADDING, 0f)  // No padding, title and body handle their own
-                .set(BOX_SIZING, BoxSizing.BORDER_BOX));
+                .set(BOX_SIZING, BoxSizing.CONTENT_BOX));
+
+        // Active panel pseudo-class - subtle border highlight
+        sheet.type("panel:active", s -> s
+                .set(BORDER_COLOR, new Color(0.45f, 0.65f, 0.85f, 1f))
+                .set(BORDER_WIDTH, 4f)
+                .set(BORDER_RADIUS, BORDER_RADIUS_DEFAULT));
 
         // Panel title bar - pronounced header with accent color (CLASS selector)
         sheet.styleClass("panel-title", s -> s
@@ -133,6 +139,15 @@ public class RuneDarkTheme {
                 .set(BORDER_RADIUS_BOTTOM_RIGHT, BORDER_RADIUS_DEFAULT)
                 .set(PADDING, 12f)  // Comfortable padding for content
                 .set(MARGIN, 0f)
+                .set(BOX_SIZING, BoxSizing.BORDER_BOX));
+
+        // Workspace - dark background for panel container
+        sheet.type("workspace", s -> s
+                .set(BACKGROUND_COLOR, new Color(0.10f, 0.10f, 0.12f, 1.0f))
+                .set(BORDER_COLOR, new Color(0.2f, 0.2f, 0.2f, 1f))
+                .set(BORDER_WIDTH, 0f)
+                .set(BORDER_RADIUS, 0f)
+                .set(PADDING, 0f)  // No padding, panels position themselves
                 .set(BOX_SIZING, BoxSizing.BORDER_BOX));
 
         // === SEMANTIC STYLE CLASSES ===

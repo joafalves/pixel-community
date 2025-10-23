@@ -565,10 +565,21 @@ public class RuneContainer extends RuneWidget {
     public void validateMouseStates(float mouseX, float mouseY) {
         // Validate this container's state
         super.validateMouseStates(mouseX, mouseY);
-        
+
         // Container is responsible for validating its children
+        // IMPORTANT: When scrolled, children are rendered with a translation offset
+        // So we need to adjust mouse coordinates by scroll offset for correct hover detection
+        float adjustedMouseX = mouseX;
+        float adjustedMouseY = mouseY;
+
+        if (overflow == Overflow.SCROLL || overflow == Overflow.SCROLL_HORIZONTAL || overflow == Overflow.SCROLL_VERTICAL) {
+            // Add scroll offset to mouse coords (children are at position - scroll visually)
+            adjustedMouseX = mouseX + scrollX;
+            adjustedMouseY = mouseY + scrollY;
+        }
+
         for (RuneWidget child : children) {
-            child.validateMouseStates(mouseX, mouseY);
+            child.validateMouseStates(adjustedMouseX, adjustedMouseY);
         }
     }
     
