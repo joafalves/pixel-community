@@ -115,10 +115,10 @@ public class RuneDemo extends DemoGame {
         
         gui.add(scrollPanel);
 
-        // Panel: Color Samples
-        RuneContainer colorPanel = new RuneContainer("Color Palette");
+        // Panel: Color Samples (using RunePanel with draggable title)
+        RunePanel colorPanel = new RunePanel("Color Palette");
         colorPanel.setBounds(340, 360, 420, 240);
-        colorPanel.setLayout(new VerticalLayout(8).align(Alignment.topLeft()));
+        colorPanel.setBodyLayout(new VerticalLayout(8).align(Alignment.topLeft()));
         colorPanel.add(new RuneLabel().text("Primary").textColor(RuneDarkTheme.PRIMARY));
         colorPanel.add(new RuneLabel().text("Secondary").textColor(RuneDarkTheme.SECONDARY));
         colorPanel.add(new RuneLabel().text("Success").textColor(RuneDarkTheme.SUCCESS));

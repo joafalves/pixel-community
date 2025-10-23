@@ -33,8 +33,8 @@ public class RuneStyle {
     }
     
     /**
-     * Expand shorthand properties (PADDING, MARGIN) to individual properties.
-     * 
+     * Expand shorthand properties (PADDING, MARGIN, BORDER_RADIUS) to individual properties.
+     *
      * @param targetMap The map to add expanded properties to
      * @param property The property being set
      * @param value The value being set
@@ -50,6 +50,11 @@ public class RuneStyle {
             targetMap.put(StyleProperties.MARGIN_RIGHT, margin);
             targetMap.put(StyleProperties.MARGIN_BOTTOM, margin);
             targetMap.put(StyleProperties.MARGIN_LEFT, margin);
+        } else if (property == StyleProperties.BORDER_RADIUS && value instanceof Float radius) {
+            targetMap.put(StyleProperties.BORDER_RADIUS_TOP_LEFT, radius);
+            targetMap.put(StyleProperties.BORDER_RADIUS_TOP_RIGHT, radius);
+            targetMap.put(StyleProperties.BORDER_RADIUS_BOTTOM_RIGHT, radius);
+            targetMap.put(StyleProperties.BORDER_RADIUS_BOTTOM_LEFT, radius);
         }
     }
 

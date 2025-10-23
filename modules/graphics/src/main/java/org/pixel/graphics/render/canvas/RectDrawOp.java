@@ -36,7 +36,10 @@ public class RectDrawOp extends DrawOp<RectDrawOp> {
     private Color strokeColor;
     
     // Rounded corners
-    private float cornerRadius = 0;
+    private Float cornerRadiusTopLeft;
+    private Float cornerRadiusTopRight;
+    private Float cornerRadiusBottomRight;
+    private Float cornerRadiusBottomLeft;
     
     /**
      * Constructor.
@@ -71,7 +74,10 @@ public class RectDrawOp extends DrawOp<RectDrawOp> {
         hasFill = false;
         hasFillGradient = false;
         hasStroke = false;
-        cornerRadius = 0;
+        cornerRadiusTopLeft = null;
+        cornerRadiusTopRight = null;
+        cornerRadiusBottomRight = null;
+        cornerRadiusBottomLeft = null;
         fillColor = null;
         gradientTL = gradientTR = gradientBR = gradientBL = null;
         strokeColor = null;
@@ -171,12 +177,33 @@ public class RectDrawOp extends DrawOp<RectDrawOp> {
     
     /**
      * Set corner radius for rounded rectangles.
-     * 
+     *
      * @param radius Corner radius
      * @return This builder for chaining
      */
     public RectDrawOp withRoundedCorners(float radius) {
-        this.cornerRadius = radius;
+        this.cornerRadiusTopLeft = radius;
+        this.cornerRadiusTopRight = radius;
+        this.cornerRadiusBottomRight = radius;
+        this.cornerRadiusBottomLeft = radius;
+        // Don't execute yet - this is a modifier, not a terminal property
+        return this;
+    }
+
+    /**
+     * Set individual corner radii for rounded rectangles.
+     *
+     * @param topLeft     Top-left corner radius
+     * @param topRight    Top-right corner radius
+     * @param bottomRight Bottom-right corner radius
+     * @param bottomLeft  Bottom-left corner radius
+     * @return This builder for chaining
+     */
+    public RectDrawOp withRoundedCorners(float topLeft, float topRight, float bottomRight, float bottomLeft) {
+        this.cornerRadiusTopLeft = topLeft;
+        this.cornerRadiusTopRight = topRight;
+        this.cornerRadiusBottomRight = bottomRight;
+        this.cornerRadiusBottomLeft = bottomLeft;
         // Don't execute yet - this is a modifier, not a terminal property
         return this;
     }
@@ -189,28 +216,38 @@ public class RectDrawOp extends DrawOp<RectDrawOp> {
     
     @Override
     protected void performDraw() {
+        // Determine if we're using individual corner radii
+        boolean hasRadii = cornerRadiusTopLeft != null || cornerRadiusTopRight != null ||
+                                     cornerRadiusBottomRight != null || cornerRadiusBottomLeft != null;
+
         // Draw fill first (if any)
         if (hasFill) {
             if (hasFillGradient) {
-                if (cornerRadius > 0) {
-                    // TODO: Rounded rect gradient not yet supported - fall back to solid color for now
-                    canvas.fillRoundedRect(x, y, width, height, cornerRadius, gradientTL);
-                } else {
-                    canvas.fillRectGradient(x, y, width, height, gradientTL, gradientTR, gradientBR, gradientBL);
-                }
+                // TODO: Rounded rect gradient not yet supported - fall back to solid color for now
+                canvas.fillRectGradient(x, y, width, height, gradientTL, gradientTR, gradientBR, gradientBL);
             } else {
-                if (cornerRadius > 0) {
-                    canvas.fillRoundedRect(x, y, width, height, cornerRadius, fillColor);
+                if (hasRadii) {
+                    float tl = cornerRadiusTopLeft != null ? cornerRadiusTopLeft : 0;
+                    float tr = cornerRadiusTopRight != null ? cornerRadiusTopRight : 0;
+                    float br = cornerRadiusBottomRight != null ? cornerRadiusBottomRight : 0;
+                    float bl = cornerRadiusBottomLeft != null ? cornerRadiusBottomLeft : 0;
+                    canvas.fillRoundedRect(x, y, width, height, tl, tr, br, bl, fillColor);
                 } else {
                     canvas.fillRect(x, y, width, height, fillColor);
                 }
             }
         }
-        
+
         // Draw stroke second (if any)
         if (hasStroke) {
-            if (cornerRadius > 0) {
-                canvas.strokeRoundedRect(x, y, width, height, cornerRadius, strokeWidth, strokeColor);
+            if (hasRadii) {
+                // Use individual corner radii
+                float tl = cornerRadiusTopLeft != null ? cornerRadiusTopLeft : 0;
+                float tr = cornerRadiusTopRight != null ? cornerRadiusTopRight : 0;
+                float br = cornerRadiusBottomRight != null ? cornerRadiusBottomRight : 0;
+                float bl = cornerRadiusBottomLeft != null ? cornerRadiusBottomLeft : 0;
+                canvas.strokeRoundedRect(x, y, width, height, tl, tr, br, bl, strokeWidth, strokeColor);
+
             } else {
                 canvas.strokeRect(x, y, width, height, strokeWidth, strokeColor);
             }

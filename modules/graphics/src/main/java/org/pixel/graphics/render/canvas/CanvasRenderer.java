@@ -137,6 +137,24 @@ public abstract class CanvasRenderer implements Disposable {
     }
 
     /**
+     * Draw a filled rounded rectangle with individual corner radii.
+     *
+     * @param x X position
+     * @param y Y position
+     * @param width Rectangle width
+     * @param height Rectangle height
+     * @param radiusTopLeft Top-left corner radius
+     * @param radiusTopRight Top-right corner radius
+     * @param radiusBottomRight Bottom-right corner radius
+     * @param radiusBottomLeft Bottom-left corner radius
+     * @param color Fill color
+     */
+    public abstract void fillRoundedRect(float x, float y, float width, float height,
+                                        float radiusTopLeft, float radiusTopRight,
+                                        float radiusBottomRight, float radiusBottomLeft,
+                                        Color color);
+
+    /**
      * Draw a filled circle.
      */
     public abstract void fillCircle(float x, float y, float radius, Color color);
@@ -262,6 +280,25 @@ public abstract class CanvasRenderer implements Disposable {
     public void strokeRoundedRect(Rectangle bounds, float radius, float lineWidth, Color color) {
         strokeRoundedRect(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight(), radius, lineWidth, color);
     }
+
+    /**
+     * Draw a stroked rounded rectangle outline with individual corner radii.
+     *
+     * @param x X position
+     * @param y Y position
+     * @param width Rectangle width
+     * @param height Rectangle height
+     * @param radiusTopLeft Top-left corner radius
+     * @param radiusTopRight Top-right corner radius
+     * @param radiusBottomRight Bottom-right corner radius
+     * @param radiusBottomLeft Bottom-left corner radius
+     * @param lineWidth Stroke width
+     * @param color Stroke color
+     */
+    public abstract void strokeRoundedRect(float x, float y, float width, float height,
+                                          float radiusTopLeft, float radiusTopRight,
+                                          float radiusBottomRight, float radiusBottomLeft,
+                                          float lineWidth, Color color);
 
     /**
      * Draw a stroked circle outline.

@@ -119,13 +119,18 @@ public class RuneButton extends RuneWidget {
         
         // Render background using padding bounds (excludes margin+border stroke)
         ctx.canvas.rect(
-            box.paddingBounds.getX(), 
-            box.paddingBounds.getY(), 
-            box.paddingBounds.getWidth(), 
+            box.paddingBounds.getX(),
+            box.paddingBounds.getY(),
+            box.paddingBounds.getWidth(),
             box.paddingBounds.getHeight()
         )
         .withFill(bgColor)
-        .withRoundedCorners(box.borderRadius)
+        .withRoundedCorners(
+            box.getEffectiveBorderRadiusTopLeft(),
+            box.getEffectiveBorderRadiusTopRight(),
+            box.getEffectiveBorderRadiusBottomRight(),
+            box.getEffectiveBorderRadiusBottomLeft()
+        )
         .apply();
         
         // Render border if set
@@ -137,7 +142,12 @@ public class RuneButton extends RuneWidget {
                 box.paddingBounds.getHeight()
             )
             .withStroke(box.borderWidth, brdColor)
-            .withRoundedCorners(box.borderRadius)
+            .withRoundedCorners(
+                box.getEffectiveBorderRadiusTopLeft(),
+                box.getEffectiveBorderRadiusTopRight(),
+                box.getEffectiveBorderRadiusBottomRight(),
+                box.getEffectiveBorderRadiusBottomLeft()
+            )
             .apply();
         }
         

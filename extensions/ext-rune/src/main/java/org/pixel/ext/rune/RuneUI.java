@@ -404,12 +404,20 @@ public class RuneUI implements Disposable, Updatable {
         
         // Validate mouse states after update, before render
         // This ensures hover/pressed states are always correct even with fast mouse movement
-        // Each container is responsible for validating its own children
+        // Validate in REVERSE order (top-to-bottom z-order) so topmost widgets get priority
         for (RuneWidget modal : modalStack) {
             modal.validateMouseStates(mouseX, mouseY);
         }
-        for (RuneWidget widget : rootWidgets) {
+        // Validate root widgets in reverse (last added = on top)
+        for (int i = rootWidgets.size() - 1; i >= 0; i--) {
+            RuneWidget widget = rootWidgets.get(i);
             widget.validateMouseStates(mouseX, mouseY);
+
+            // If this widget is visible and contains the mouse, don't validate widgets below it
+            // This prevents hover bleeding through panels to widgets underneath
+            if (widget.isVisible() && widget.getBounds().contains(mouseX, mouseY)) {
+                break;
+            }
         }
         
         mousePressedLastFrame = mousePressed;

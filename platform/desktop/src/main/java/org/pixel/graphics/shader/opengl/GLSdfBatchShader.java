@@ -25,7 +25,9 @@ public class GLSdfBatchShader extends GLShader {
         "aPosition",      // vec2: vertex position
         "aTexCoord",      // vec2: texture coordinate
         "aColor",         // vec4: vertex color
-        "aShapeData",     // vec4: shape-specific data
+        "aShapeData",     // vec4: shape-specific data part 1
+        "aShapeDataExtra",// vec3: shape-specific data part 2
+        "aQuadSize",      // vec2: quad size
         "aShapeType",     // float: shape type discriminator
         "aTextureId"      // float: texture atlas ID
     );

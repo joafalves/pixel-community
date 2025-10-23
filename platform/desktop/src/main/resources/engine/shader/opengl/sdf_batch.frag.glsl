@@ -4,6 +4,7 @@
 in vec2 vTexCoord;
 in vec4 vColor;
 in vec4 vShapeData;
+in vec3 vShapeDataExtra;
 in vec2 vQuadSize;
 flat in int vShapeType;
 flat in int vTextureId;
@@ -30,11 +31,25 @@ const int SHAPE_TEXTURED_QUAD = 6;
 // SDF Functions
 // ============================================================================
 
-// SDF for a rounded rectangle
+// SDF for a rounded rectangle with uniform corner radius
 // p: point position, size: half-size, radius: corner radius
 float sdRoundedRect(vec2 p, vec2 size, float radius) {
     vec2 d = abs(p) - size + radius;
     return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0) - radius;
+}
+
+// SDF for a rounded rectangle with individual corner radii
+// p: point position, size: half-size, radii: (topLeft, topRight, bottomRight, bottomLeft)
+float sdRoundedRectCorners(vec2 p, vec2 size, vec4 radii) {
+    // Select radius based on which quadrant we're in
+    // p.x < 0 means left side, p.y < 0 means top
+    float r = (p.x < 0.0) ?
+              (p.y < 0.0 ? radii.x : radii.w) :  // left side: TL or BL
+              (p.y < 0.0 ? radii.y : radii.z);   // right side: TR or BR
+
+    vec2 q = abs(p);
+    vec2 d = q - size + r;
+    return min(max(d.x, d.y), 0.0) + length(max(d, 0.0)) - r;
 }
 
 // SDF for a circle
@@ -63,19 +78,20 @@ void main() {
     
     // Shape type discriminator - evaluate different SDF based on type
     if (vShapeType == SHAPE_ROUNDED_RECT) {
-        // vShapeData: (width, height, radius, strokeWidth)
+        // vShapeData: (width, height, radiusTL, radiusTR)
+        // vShapeDataExtra: (radiusBR, radiusBL, strokeWidth)
         // These are the ORIGINAL shape dimensions (before padding)
         vec2 size = vShapeData.xy;
-        float radius = vShapeData.z;
-        float strokeWidth = vShapeData.w;
-        
+        vec4 radii = vec4(vShapeData.z, vShapeData.w, vShapeDataExtra.x, vShapeDataExtra.y);
+        float strokeWidth = vShapeDataExtra.z;
+
         // Convert texture coordinates (0-1) to centered position
         // Use vQuadSize for coordinate mapping (expanded quad)
         // but size for SDF calculation (original shape)
         vec2 pos = (vTexCoord - 0.5) * vQuadSize;
-        
-        dist = sdRoundedRect(pos, size * 0.5, radius);
-        
+
+        dist = sdRoundedRectCorners(pos, size * 0.5, radii);
+
         if (strokeWidth > 0.0) {
             // Stroke rendering
             float outerEdge = abs(dist) - strokeWidth * 0.5;
@@ -84,7 +100,7 @@ void main() {
             // Fill rendering
             alpha = 1.0 - smoothstep(-uSmoothness, uSmoothness, dist);
         }
-        
+
     } else if (vShapeType == SHAPE_CIRCLE) {
         // vShapeData: (radius, strokeWidth, unused, unused)
         float radius = vShapeData.x;

@@ -40,8 +40,9 @@ public class GLSdfBatchRenderer {
     public static final int SHAPE_TRIANGLE = 5; // Raw filled triangle (no SDF)
     public static final int SHAPE_TEXTURED_QUAD = 6; // Textured image quad
 
-    // Vertex layout: position(2) + texCoord(2) + color(4) + shapeData(4) + quadSize(2) + shapeType(1) + textureId(1) = 16 floats
-    private static final int VERTEX_SIZE = 16;
+    // Vertex layout: position(2) + texCoord(2) + color(4) + shapeData(7) + quadSize(2) + shapeType(1) + textureId(1) = 19 floats
+    // shapeData for rounded rects: (width, height, radiusTL, radiusTR, radiusBR, radiusBL, strokeWidth)
+    private static final int VERTEX_SIZE = 19;
     private static final int MAX_VERTICES = 60000; // 10,000 quads (60,000 vertices)
     
     private final GLSdfBatchShader shader;
@@ -102,24 +103,29 @@ public class GLSdfBatchRenderer {
         glVertexAttribPointer(2, 4, GL_FLOAT, false, stride, offset);
         offset += 4 * Float.BYTES;
 
-        // ShapeData attribute (location 3) - vec4
+        // ShapeData attribute (location 3) - vec4 (width, height, radiusTL, radiusTR)
         glEnableVertexAttribArray(3);
         glVertexAttribPointer(3, 4, GL_FLOAT, false, stride, offset);
         offset += 4 * Float.BYTES;
 
-        // QuadSize attribute (location 4) - vec2
+        // ShapeDataExtra attribute (location 4) - vec3 (radiusBR, radiusBL, strokeWidth)
         glEnableVertexAttribArray(4);
-        glVertexAttribPointer(4, 2, GL_FLOAT, false, stride, offset);
+        glVertexAttribPointer(4, 3, GL_FLOAT, false, stride, offset);
+        offset += 3 * Float.BYTES;
+
+        // QuadSize attribute (location 5) - vec2
+        glEnableVertexAttribArray(5);
+        glVertexAttribPointer(5, 2, GL_FLOAT, false, stride, offset);
         offset += 2 * Float.BYTES;
 
-        // ShapeType attribute (location 5) - float
-        glEnableVertexAttribArray(5);
-        glVertexAttribPointer(5, 1, GL_FLOAT, false, stride, offset);
-        offset += Float.BYTES;
-
-        // TextureId attribute (location 6) - float
+        // ShapeType attribute (location 6) - float
         glEnableVertexAttribArray(6);
         glVertexAttribPointer(6, 1, GL_FLOAT, false, stride, offset);
+        offset += Float.BYTES;
+
+        // TextureId attribute (location 7) - float
+        glEnableVertexAttribArray(7);
+        glVertexAttribPointer(7, 1, GL_FLOAT, false, stride, offset);
 
         vao.unbind();
     }
@@ -240,8 +246,9 @@ public class GLSdfBatchRenderer {
         }
     }
 
-    private void addVertex(float x, float y, float u, float v, Color color, 
-                          float sd1, float sd2, float sd3, float sd4,
+    private void addVertex(float x, float y, float u, float v, Color color,
+                          float shapeData1, float shapeData2, float shapeData3, float shapeData4,
+                          float shapeData5, float shapeData6, float shapeData7,
                           float quadWidth, float quadHeight,
                           int shapeType, int textureId) {
         // Apply local transform to vertex position on CPU
@@ -251,20 +258,49 @@ public class GLSdfBatchRenderer {
         float[][] mat = currentLocalTransform.toUnsafeArray();
         float transformedX = mat[0][0] * x + mat[1][0] * y + mat[3][0];
         float transformedY = mat[0][1] * x + mat[1][1] * y + mat[3][1];
-        
-        // For shapes, we need to transform the quad size for proper SDF rendering
+
+        // For shapes, we need to transform the quad size and shape data for proper SDF rendering
         // For text, quad size transformation is NOT needed (texture coords are fixed)
         float transformedQuadWidth = quadWidth;
         float transformedQuadHeight = quadHeight;
-        
+        float transformedShapeData1 = shapeData1;
+        float transformedShapeData2 = shapeData2;
+        float transformedShapeData3 = shapeData3;
+        float transformedShapeData4 = shapeData4;
+        float transformedShapeData5 = shapeData5;
+        float transformedShapeData6 = shapeData6;
+        float transformedShapeData7 = shapeData7;
+
         if (shapeType != SHAPE_TEXT_GLYPH) {
             // Extract scale from matrix: scale_x = length of first column, scale_y = length of second column
             float scaleX = (float) Math.sqrt(mat[0][0] * mat[0][0] + mat[0][1] * mat[0][1]);
             float scaleY = (float) Math.sqrt(mat[1][0] * mat[1][0] + mat[1][1] * mat[1][1]);
             transformedQuadWidth = quadWidth * scaleX;
             transformedQuadHeight = quadHeight * scaleY;
+            
+            // Scale shape-specific data based on shape type
+            // For SHAPE_ROUNDED_RECT: (width, height, radiusTL, radiusTR, radiusBR, radiusBL, strokeWidth)
+            // For SHAPE_CIRCLE: (radius, strokeWidth, unused...)
+            // For SHAPE_LINE: (lineWidth, unused...)
+            // For SHAPE_POINT: (size, unused...)
+            if (shapeType == SHAPE_ROUNDED_RECT) {
+                transformedShapeData1 = shapeData1 * scaleX; // width
+                transformedShapeData2 = shapeData2 * scaleY; // height
+                transformedShapeData3 = shapeData3 * Math.min(scaleX, scaleY); // radiusTL
+                transformedShapeData4 = shapeData4 * Math.min(scaleX, scaleY); // radiusTR
+                transformedShapeData5 = shapeData5 * Math.min(scaleX, scaleY); // radiusBR
+                transformedShapeData6 = shapeData6 * Math.min(scaleX, scaleY); // radiusBL
+                transformedShapeData7 = shapeData7 * Math.min(scaleX, scaleY); // strokeWidth
+            } else if (shapeType == SHAPE_CIRCLE) {
+                transformedShapeData1 = shapeData1 * Math.min(scaleX, scaleY); // radius (use min to keep circular)
+                transformedShapeData2 = shapeData2 * Math.min(scaleX, scaleY); // strokeWidth
+            } else if (shapeType == SHAPE_LINE) {
+                transformedShapeData1 = shapeData1 * Math.min(scaleX, scaleY); // lineWidth
+            } else if (shapeType == SHAPE_POINT) {
+                transformedShapeData1 = shapeData1 * Math.min(scaleX, scaleY); // size
+            }
         }
-        
+
         vertexBuffer.put(transformedX);
         vertexBuffer.put(transformedY);
         vertexBuffer.put(u);
@@ -273,10 +309,13 @@ public class GLSdfBatchRenderer {
         vertexBuffer.put(color.getGreen());
         vertexBuffer.put(color.getBlue());
         vertexBuffer.put(color.getAlpha());
-        vertexBuffer.put(sd1);
-        vertexBuffer.put(sd2);
-        vertexBuffer.put(sd3);
-        vertexBuffer.put(sd4);
+        vertexBuffer.put(transformedShapeData1);
+        vertexBuffer.put(transformedShapeData2);
+        vertexBuffer.put(transformedShapeData3);
+        vertexBuffer.put(transformedShapeData4);
+        vertexBuffer.put(transformedShapeData5);
+        vertexBuffer.put(transformedShapeData6);
+        vertexBuffer.put(transformedShapeData7);
         vertexBuffer.put(transformedQuadWidth);
         vertexBuffer.put(transformedQuadHeight);
         vertexBuffer.put((float) shapeType);
@@ -288,42 +327,57 @@ public class GLSdfBatchRenderer {
     /**
      * Add a quad (2 triangles, 6 vertices) to the batch.
      */
-    private void addQuad(float x, float y, float width, float height,
-                        Color color, float sd1, float sd2, float sd3, float sd4,
+    /**
+     * Add a quad with shape-specific data.
+     *
+     * @param quadX X position of the quad
+     * @param quadY Y position of the quad
+     * @param quadWidth Width of the quad
+     * @param quadHeight Height of the quad
+     * @param color Vertex color
+     * @param shapeData1-7 Shape-specific data (meaning depends on shapeType)
+     * @param shapeType Shape type constant
+     * @param textureId Texture ID for textured quads
+     */
+    private void addQuad(float quadX, float quadY, float quadWidth, float quadHeight,
+                        Color color,
+                        float shapeData1, float shapeData2, float shapeData3, float shapeData4,
+                        float shapeData5, float shapeData6, float shapeData7,
                         int shapeType, int textureId) {
         // Triangle 1: TL, TR, BL
-        addVertex(x, y, 0, 0, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
-        addVertex(x + width, y, 1, 0, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
-        addVertex(x, y + height, 0, 1, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
-        
+        addVertex(quadX, quadY, 0, 0, color, shapeData1, shapeData2, shapeData3, shapeData4, shapeData5, shapeData6, shapeData7, quadWidth, quadHeight, shapeType, textureId);
+        addVertex(quadX + quadWidth, quadY, 1, 0, color, shapeData1, shapeData2, shapeData3, shapeData4, shapeData5, shapeData6, shapeData7, quadWidth, quadHeight, shapeType, textureId);
+        addVertex(quadX, quadY + quadHeight, 0, 1, color, shapeData1, shapeData2, shapeData3, shapeData4, shapeData5, shapeData6, shapeData7, quadWidth, quadHeight, shapeType, textureId);
+
         // Triangle 2: BL, TR, BR
-        addVertex(x, y + height, 0, 1, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
-        addVertex(x + width, y, 1, 0, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
-        addVertex(x + width, y + height, 1, 1, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
+        addVertex(quadX, quadY + quadHeight, 0, 1, color, shapeData1, shapeData2, shapeData3, shapeData4, shapeData5, shapeData6, shapeData7, quadWidth, quadHeight, shapeType, textureId);
+        addVertex(quadX + quadWidth, quadY, 1, 0, color, shapeData1, shapeData2, shapeData3, shapeData4, shapeData5, shapeData6, shapeData7, quadWidth, quadHeight, shapeType, textureId);
+        addVertex(quadX + quadWidth, quadY + quadHeight, 1, 1, color, shapeData1, shapeData2, shapeData3, shapeData4, shapeData5, shapeData6, shapeData7, quadWidth, quadHeight, shapeType, textureId);
     }
 
     /**
      * Add a quad with custom UV coordinates (for textured images).
      */
-    private void addQuadWithUVs(float x, float y, float width, float height,
+    private void addQuadWithUVs(float quadX, float quadY, float quadWidth, float quadHeight,
                                Color color, float srcX, float srcY, float srcWidth, float srcHeight,
-                               float sd1, float sd2, float sd3, float sd4,
+                               float shapeData1, float shapeData2, float shapeData3, float shapeData4,
+                               float shapeData5, float shapeData6, float shapeData7,
                                int shapeType, int textureId) {
         // Calculate UVs for the source rectangle
         float u0 = srcX;
         float v0 = srcY;
         float u1 = srcX + srcWidth;
         float v1 = srcY + srcHeight;
-        
+
         // Triangle 1: TL, TR, BL
-        addVertex(x, y, u0, v0, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
-        addVertex(x + width, y, u1, v0, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
-        addVertex(x, y + height, u0, v1, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
+        addVertex(quadX, quadY, u0, v0, color, shapeData1, shapeData2, shapeData3, shapeData4, shapeData5, shapeData6, shapeData7, quadWidth, quadHeight, shapeType, textureId);
+        addVertex(quadX + quadWidth, quadY, u1, v0, color, shapeData1, shapeData2, shapeData3, shapeData4, shapeData5, shapeData6, shapeData7, quadWidth, quadHeight, shapeType, textureId);
+        addVertex(quadX, quadY + quadHeight, u0, v1, color, shapeData1, shapeData2, shapeData3, shapeData4, shapeData5, shapeData6, shapeData7, quadWidth, quadHeight, shapeType, textureId);
         
         // Triangle 2: BL, TR, BR
-        addVertex(x, y + height, u0, v1, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
-        addVertex(x + width, y, u1, v0, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
-        addVertex(x + width, y + height, u1, v1, color, sd1, sd2, sd3, sd4, width, height, shapeType, textureId);
+        addVertex(quadX, quadY + quadHeight, u0, v1, color, shapeData1, shapeData2, shapeData3, shapeData4, shapeData5, shapeData6, shapeData7, quadWidth, quadHeight, shapeType, textureId);
+        addVertex(quadX + quadWidth, quadY, u1, v0, color, shapeData1, shapeData2, shapeData3, shapeData4, shapeData5, shapeData6, shapeData7, quadWidth, quadHeight, shapeType, textureId);
+        addVertex(quadX + quadWidth, quadY + quadHeight, u1, v1, color, shapeData1, shapeData2, shapeData3, shapeData4, shapeData5, shapeData6, shapeData7, quadWidth, quadHeight, shapeType, textureId);
     }
 
     // ============================================================================
@@ -338,17 +392,53 @@ public class GLSdfBatchRenderer {
             return;
         }
         checkFlush(6);
-        
+
         // For SDF shapes, we need padding for anti-aliasing
         float padding = 2.0f;
         float quadX = x - padding;
         float quadY = y - padding;
         float quadWidth = width + padding * 2;
         float quadHeight = height + padding * 2;
-        
-        // ShapeData: (width, height, radius, strokeWidth)
+
+        // ShapeData: (width, height, radiusTL, radiusTR, radiusBR, radiusBL, strokeWidth)
         addQuad(quadX, quadY, quadWidth, quadHeight, color,
-               width, height, radius, 0.0f, SHAPE_ROUNDED_RECT, -1);
+               width, height, radius, radius, radius, radius, 0.0f,
+               SHAPE_ROUNDED_RECT, -1);
+    }
+
+    /**
+     * Draw a filled rounded rectangle with individual corner radii.
+     *
+     * @param x X position
+     * @param y Y position
+     * @param width Rectangle width
+     * @param height Rectangle height
+     * @param radiusTopLeft Top-left corner radius
+     * @param radiusTopRight Top-right corner radius
+     * @param radiusBottomRight Bottom-right corner radius
+     * @param radiusBottomLeft Bottom-left corner radius
+     * @param color Fill color
+     */
+    public void fillRoundedRect(float x, float y, float width, float height,
+                               float radiusTopLeft, float radiusTopRight,
+                               float radiusBottomRight, float radiusBottomLeft,
+                               Color color) {
+        if (cullingEnabled && shouldCull(x, y, width, height)) {
+            return;
+        }
+        checkFlush(6);
+
+        // For SDF shapes, we need padding for anti-aliasing
+        float padding = 2.0f;
+        float quadX = x - padding;
+        float quadY = y - padding;
+        float quadWidth = width + padding * 2;
+        float quadHeight = height + padding * 2;
+
+        // ShapeData: (width, height, radiusTL, radiusTR, radiusBR, radiusBL, strokeWidth)
+        addQuad(quadX, quadY, quadWidth, quadHeight, color,
+               width, height, radiusTopLeft, radiusTopRight, radiusBottomRight, radiusBottomLeft, 0.0f,
+               SHAPE_ROUNDED_RECT, -1);
     }
 
     /**
@@ -359,17 +449,54 @@ public class GLSdfBatchRenderer {
             return;
         }
         checkFlush(6);
-        
+
         // Expand quad for stroke
         float padding = strokeWidth / 2 + 2;
         float quadX = x - padding;
         float quadY = y - padding;
         float quadWidth = width + padding * 2;
         float quadHeight = height + padding * 2;
-        
-        // ShapeData: (width, height, radius, strokeWidth)
+
+        // ShapeData: (width, height, radiusTL, radiusTR, radiusBR, radiusBL, strokeWidth)
         addQuad(quadX, quadY, quadWidth, quadHeight, color,
-               width, height, radius, strokeWidth, SHAPE_ROUNDED_RECT, -1);
+               width, height, radius, radius, radius, radius, strokeWidth,
+               SHAPE_ROUNDED_RECT, -1);
+    }
+
+    /**
+     * Draw a stroked rounded rectangle with individual corner radii.
+     *
+     * @param x X position
+     * @param y Y position
+     * @param width Rectangle width
+     * @param height Rectangle height
+     * @param radiusTopLeft Top-left corner radius
+     * @param radiusTopRight Top-right corner radius
+     * @param radiusBottomRight Bottom-right corner radius
+     * @param radiusBottomLeft Bottom-left corner radius
+     * @param strokeWidth Stroke width
+     * @param color Stroke color
+     */
+    public void strokeRoundedRect(float x, float y, float width, float height,
+                                 float radiusTopLeft, float radiusTopRight,
+                                 float radiusBottomRight, float radiusBottomLeft,
+                                 float strokeWidth, Color color) {
+        if (cullingEnabled && shouldCull(x, y, width, height)) {
+            return;
+        }
+        checkFlush(6);
+
+        // Expand quad for stroke
+        float padding = strokeWidth / 2 + 2;
+        float quadX = x - padding;
+        float quadY = y - padding;
+        float quadWidth = width + padding * 2;
+        float quadHeight = height + padding * 2;
+
+        // ShapeData: (width, height, radiusTL, radiusTR, radiusBR, radiusBL, strokeWidth)
+        addQuad(quadX, quadY, quadWidth, quadHeight, color,
+               width, height, radiusTopLeft, radiusTopRight, radiusBottomRight, radiusBottomLeft, strokeWidth,
+               SHAPE_ROUNDED_RECT, -1);
     }
 
     /**
@@ -386,10 +513,11 @@ public class GLSdfBatchRenderer {
         float size = radius * 2 + padding * 2;
         float x = centerX - radius - padding;
         float y = centerY - radius - padding;
-        
-        // ShapeData: (radius, strokeWidth, unused, unused)
+
+        // ShapeData: (radius, strokeWidth, unused...)
         addQuad(x, y, size, size, color,
-               radius, 0.0f, 0.0f, 0.0f, SHAPE_CIRCLE, -1);
+               radius, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+               SHAPE_CIRCLE, -1);
     }
 
     /**
@@ -405,10 +533,11 @@ public class GLSdfBatchRenderer {
         float size = radius * 2 + padding * 2;
         float x = centerX - radius - padding;
         float y = centerY - radius - padding;
-        
-        // ShapeData: (radius, strokeWidth, unused, unused)
+
+        // ShapeData: (radius, strokeWidth, unused...)
         addQuad(x, y, size, size, color,
-               radius, strokeWidth, 0.0f, 0.0f, SHAPE_CIRCLE, -1);
+               radius, strokeWidth, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+               SHAPE_CIRCLE, -1);
     }
 
     /**
@@ -463,18 +592,18 @@ public class GLSdfBatchRenderer {
         float ex2 = x2 - perpX * hw;
         float ey2 = y2 - perpY * hw;
         
-        // ShapeData: (lineWidth, unused, unused, unused)
+        // ShapeData: (lineWidth, unused...)
         // Add the oriented quad manually (not using addQuad helper)
         // The quad dimensions are: width=length, height=lineWidth
         // Triangle 1: sx1,sy1 -> ex1,ey1 -> sx2,sy2
-        addVertex(sx1, sy1, 0, 0, color, lineWidth, 0, 0, 0, length, lineWidth, SHAPE_LINE, -1);
-        addVertex(ex1, ey1, 1, 0, color, lineWidth, 0, 0, 0, length, lineWidth, SHAPE_LINE, -1);
-        addVertex(sx2, sy2, 0, 1, color, lineWidth, 0, 0, 0, length, lineWidth, SHAPE_LINE, -1);
-        
+        addVertex(sx1, sy1, 0, 0, color, lineWidth, 0, 0, 0, 0, 0, 0, length, lineWidth, SHAPE_LINE, -1);
+        addVertex(ex1, ey1, 1, 0, color, lineWidth, 0, 0, 0, 0, 0, 0, length, lineWidth, SHAPE_LINE, -1);
+        addVertex(sx2, sy2, 0, 1, color, lineWidth, 0, 0, 0, 0, 0, 0, length, lineWidth, SHAPE_LINE, -1);
+
         // Triangle 2: sx2,sy2 -> ex1,ey1 -> ex2,ey2
-        addVertex(sx2, sy2, 0, 1, color, lineWidth, 0, 0, 0, length, lineWidth, SHAPE_LINE, -1);
-        addVertex(ex1, ey1, 1, 0, color, lineWidth, 0, 0, 0, length, lineWidth, SHAPE_LINE, -1);
-        addVertex(ex2, ey2, 1, 1, color, lineWidth, 0, 0, 0, length, lineWidth, SHAPE_LINE, -1);
+        addVertex(sx2, sy2, 0, 1, color, lineWidth, 0, 0, 0, 0, 0, 0, length, lineWidth, SHAPE_LINE, -1);
+        addVertex(ex1, ey1, 1, 0, color, lineWidth, 0, 0, 0, 0, 0, 0, length, lineWidth, SHAPE_LINE, -1);
+        addVertex(ex2, ey2, 1, 1, color, lineWidth, 0, 0, 0, 0, 0, 0, length, lineWidth, SHAPE_LINE, -1);
     }
 
     /**
@@ -490,10 +619,11 @@ public class GLSdfBatchRenderer {
         float quadSize = size + padding * 2;
         float quadX = x - size / 2 - padding;
         float quadY = y - size / 2 - padding;
-        
-        // ShapeData: (size, unused, unused, unused)
+
+        // ShapeData: (size, unused...)
         addQuad(quadX, quadY, quadSize, quadSize, color,
-               size / 2, 0.0f, 0.0f, 0.0f, SHAPE_POINT, -1);
+               size / 2, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+               SHAPE_POINT, -1);
     }
 
     /**
@@ -516,9 +646,9 @@ public class GLSdfBatchRenderer {
         // Add three vertices forming a triangle
         // For raw triangles, we don't need SDF, just flat color
         // Use dummy texture coords and shape data
-        addVertex(x1, y1, 0, 0, color, 0, 0, 0, 0, 0, 0, SHAPE_TRIANGLE, -1);
-        addVertex(x2, y2, 0, 0, color, 0, 0, 0, 0, 0, 0, SHAPE_TRIANGLE, -1);
-        addVertex(x3, y3, 0, 0, color, 0, 0, 0, 0, 0, 0, SHAPE_TRIANGLE, -1);
+        addVertex(x1, y1, 0, 0, color, 0, 0, 0, 0, 0, 0, 0, 0, 0, SHAPE_TRIANGLE, -1);
+        addVertex(x2, y2, 0, 0, color, 0, 0, 0, 0, 0, 0, 0, 0, 0, SHAPE_TRIANGLE, -1);
+        addVertex(x3, y3, 0, 0, color, 0, 0, 0, 0, 0, 0, 0, 0, 0, SHAPE_TRIANGLE, -1);
     }
 
     /**
@@ -547,7 +677,8 @@ public class GLSdfBatchRenderer {
         // ShapeData is unused for textured quads, but we pass dummy values
         addQuadWithUVs(x, y, width, height, tint,
                       srcX, srcY, srcWidth, srcHeight,
-                      0, 0, 0, 0, SHAPE_TEXTURED_QUAD, textureSlot);
+                      0, 0, 0, 0, 0, 0, 0,
+                      SHAPE_TEXTURED_QUAD, textureSlot);
     }
 
     /**
@@ -670,21 +801,28 @@ public class GLSdfBatchRenderer {
             
             // Add glyph quad with proper texture coordinates
             // Quad size is just the glyph size for text (no padding/expansion needed for SDF text)
+            // ShapeData for text: (strokeWidth, strokeR, strokeG, strokeB, unused...)
             // Triangle 1: TL, TR, BL
-            addVertex(glyphX, glyphY, u0, v0, fillColor, 
-                     normalizedStrokeWidth, strokeR, strokeG, strokeB, glyphW, glyphH, SHAPE_TEXT_GLYPH, 0);
+            addVertex(glyphX, glyphY, u0, v0, fillColor,
+                     normalizedStrokeWidth, strokeR, strokeG, strokeB, 0, 0, 0,
+                     glyphW, glyphH, SHAPE_TEXT_GLYPH, 0);
             addVertex(glyphX + glyphW, glyphY, u1, v0, fillColor,
-                     normalizedStrokeWidth, strokeR, strokeG, strokeB, glyphW, glyphH, SHAPE_TEXT_GLYPH, 0);
+                     normalizedStrokeWidth, strokeR, strokeG, strokeB, 0, 0, 0,
+                     glyphW, glyphH, SHAPE_TEXT_GLYPH, 0);
             addVertex(glyphX, glyphY + glyphH, u0, v1, fillColor,
-                     normalizedStrokeWidth, strokeR, strokeG, strokeB, glyphW, glyphH, SHAPE_TEXT_GLYPH, 0);
-            
+                     normalizedStrokeWidth, strokeR, strokeG, strokeB, 0, 0, 0,
+                     glyphW, glyphH, SHAPE_TEXT_GLYPH, 0);
+
             // Triangle 2: BL, TR, BR
             addVertex(glyphX, glyphY + glyphH, u0, v1, fillColor,
-                     normalizedStrokeWidth, strokeR, strokeG, strokeB, glyphW, glyphH, SHAPE_TEXT_GLYPH, 0);
+                     normalizedStrokeWidth, strokeR, strokeG, strokeB, 0, 0, 0,
+                     glyphW, glyphH, SHAPE_TEXT_GLYPH, 0);
             addVertex(glyphX + glyphW, glyphY, u1, v0, fillColor,
-                     normalizedStrokeWidth, strokeR, strokeG, strokeB, glyphW, glyphH, SHAPE_TEXT_GLYPH, 0);
+                     normalizedStrokeWidth, strokeR, strokeG, strokeB, 0, 0, 0,
+                     glyphW, glyphH, SHAPE_TEXT_GLYPH, 0);
             addVertex(glyphX + glyphW, glyphY + glyphH, u1, v1, fillColor,
-                     normalizedStrokeWidth, strokeR, strokeG, strokeB, glyphW, glyphH, SHAPE_TEXT_GLYPH, 0);
+                     normalizedStrokeWidth, strokeR, strokeG, strokeB, 0, 0, 0,
+                     glyphW, glyphH, SHAPE_TEXT_GLYPH, 0);
             
             // Advance cursor with scale applied
             cursorX += (glyph.getAdvance() + letterSpacing) * scale;

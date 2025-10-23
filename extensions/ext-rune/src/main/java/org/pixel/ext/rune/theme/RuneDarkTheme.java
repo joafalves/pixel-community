@@ -25,6 +25,9 @@ public class RuneDarkTheme {
     public static final Color SCROLLBAR_THUMB = new Color(0.4f, 0.4f, 0.4f, 0.8f);
     public static final Color SCROLLBAR_THUMB_HOVER = new Color(0.6f, 0.6f, 0.6f, 0.9f);
 
+    // Common properties
+    public static final float BORDER_RADIUS_DEFAULT = 4f;
+
     /**
      * Create a dark theme stylesheet.
      *
@@ -47,7 +50,7 @@ public class RuneDarkTheme {
                 .set(BACKGROUND_COLOR, null)
                 .set(FONT_FAMILY, "roboto")
                 .set(FONT_SIZE, 14f)
-                .set(BORDER_RADIUS, 4f)
+                .set(BORDER_RADIUS, BORDER_RADIUS_DEFAULT)
                 .set(MARGIN_BOTTOM, 4f)
                 .set(BOX_SIZING, BoxSizing.BORDER_BOX));
 
@@ -57,7 +60,7 @@ public class RuneDarkTheme {
                 .set(TEXT_COLOR, Color.WHITE)
                 .set(BORDER_COLOR, new Color(0.3f, 0.3f, 0.3f, 1f))
                 .set(BORDER_WIDTH, 1f)
-                .set(BORDER_RADIUS, 4f)
+                .set(BORDER_RADIUS, BORDER_RADIUS_DEFAULT)
                 .set(PADDING_TOP, 8f)
                 .set(PADDING_RIGHT, 16f)
                 .set(PADDING_BOTTOM, 8f)
@@ -84,38 +87,52 @@ public class RuneDarkTheme {
                 .set(BACKGROUND_COLOR, new Color(0.12f, 0.12f, 0.12f, 0.9f))
                 .set(BORDER_COLOR, new Color(0.3f, 0.3f, 0.3f, 1f))
                 .set(BORDER_WIDTH, 1f)
-                .set(BORDER_RADIUS, 4f)
+                .set(BORDER_RADIUS, BORDER_RADIUS_DEFAULT)
                 .set(PADDING, 8f)
                 .set(BOX_SIZING, BoxSizing.BORDER_BOX));
 
-        // Panel - outer container
+        // Panel - outer container (main background)
         sheet.type("panel", s -> s
-                .set(BACKGROUND_COLOR, new Color(0.15f, 0.15f, 0.15f, 0.95f))
-                .set(BORDER_COLOR, new Color(0.4f, 0.4f, 0.4f, 1f))
-                .set(BORDER_WIDTH, 1f)
-                .set(BORDER_RADIUS, 6f)
+                .set(BACKGROUND_COLOR, Color.TRANSPARENT)
+                .set(BORDER_COLOR, new Color(0.35f, 0.35f, 0.4f, 1f))
+                .set(BORDER_WIDTH, 0f)
+                .set(BORDER_RADIUS, 0f)
+                .set(PADDING, 0f)  // No padding, title and body handle their own
                 .set(BOX_SIZING, BoxSizing.BORDER_BOX));
 
-        // Panel title bar
-        sheet.type("panel-title", s -> s
+        // Panel title bar - pronounced header with accent color (CLASS selector)
+        sheet.styleClass("panel-title", s -> s
                 .set(BACKGROUND_COLOR, new Color(0.25f, 0.25f, 0.25f, 1f))
-                .set(TEXT_COLOR, new Color(0.9f, 0.9f, 0.9f, 1f))
+                .set(TEXT_COLOR, new Color(0.95f, 0.95f, 1f, 1f))  // Bright white text
                 .set(FONT_SIZE, 14f)
                 .set(PADDING_TOP, 8f)
                 .set(PADDING_RIGHT, 12f)
                 .set(PADDING_BOTTOM, 8f)
                 .set(PADDING_LEFT, 12f)
-                .set(BORDER_RADIUS, 6f)  // Top corners rounded
+                .set(BORDER_WIDTH, 0f)
+                .set(BORDER_RADIUS, 0f)
+                .set(BORDER_RADIUS_TOP_LEFT, BORDER_RADIUS_DEFAULT)
+                .set(BORDER_RADIUS_TOP_RIGHT, BORDER_RADIUS_DEFAULT)
+                .set(MARGIN, 0f)  // No margin
                 .set(BOX_SIZING, BoxSizing.BORDER_BOX));
 
         // Panel title bar hover (visual feedback for dragging)
-        sheet.type("panel-title:hover", s -> s
-                .set(BACKGROUND_COLOR, new Color(0.3f, 0.3f, 0.3f, 1f)));
+        sheet.styleClass("panel-title:hover", s -> s
+                .set(BACKGROUND_COLOR, new Color(0.26f, 0.31f, 0.40f, 1f)));
 
-        // Panel body
-        sheet.type("panel-body", s -> s
-                .set(BACKGROUND_COLOR, null)  // Transparent, inherits from panel
-                .set(PADDING, 12f)
+        // Panel title bar pressed - darker when dragging
+        sheet.styleClass("panel-title:pressed", s -> s
+                .set(BACKGROUND_COLOR, new Color(0.18f, 0.23f, 0.30f, 1f)));
+
+        // Panel body - blue for debugging (CLASS selector)
+        sheet.styleClass("panel-body", s -> s
+                .set(BACKGROUND_COLOR, new Color(0.12f, 0.12f, 0.12f, 0.9f))
+                .set(BORDER_WIDTH, 0f)
+                .set(BORDER_RADIUS, 0f)
+                .set(BORDER_RADIUS_BOTTOM_LEFT, BORDER_RADIUS_DEFAULT)
+                .set(BORDER_RADIUS_BOTTOM_RIGHT, BORDER_RADIUS_DEFAULT)
+                .set(PADDING, 12f)  // Comfortable padding for content
+                .set(MARGIN, 0f)
                 .set(BOX_SIZING, BoxSizing.BORDER_BOX));
 
         // === SEMANTIC STYLE CLASSES ===

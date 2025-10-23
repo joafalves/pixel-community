@@ -132,7 +132,12 @@ public class RuneLabel extends RuneWidget {
                 box.paddingBounds.getHeight()
             )
             .withFill(backgroundColor)
-            .withRoundedCorners(box.borderRadius)
+            .withRoundedCorners(
+                box.getEffectiveBorderRadiusTopLeft(),
+                box.getEffectiveBorderRadiusTopRight(),
+                box.getEffectiveBorderRadiusBottomRight(),
+                box.getEffectiveBorderRadiusBottomLeft()
+            )
             .apply();
         }
         
@@ -145,7 +150,12 @@ public class RuneLabel extends RuneWidget {
                 box.paddingBounds.getHeight()
             )
             .withStroke(box.borderWidth, borderColor)
-            .withRoundedCorners(box.borderRadius)
+            .withRoundedCorners(
+                box.getEffectiveBorderRadiusTopLeft(),
+                box.getEffectiveBorderRadiusTopRight(),
+                box.getEffectiveBorderRadiusBottomRight(),
+                box.getEffectiveBorderRadiusBottomLeft()
+            )
             .apply();
         }
         

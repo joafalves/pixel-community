@@ -29,9 +29,21 @@ public class StyleProperties {
     public static final StyleProperty<Float> BORDER_WIDTH = 
         new StyleProperty<>("borderWidth", Float.class, 0f);
     
-    public static final StyleProperty<Float> BORDER_RADIUS = 
+    public static final StyleProperty<Float> BORDER_RADIUS =
         new StyleProperty<>("borderRadius", Float.class, 0f);
-    
+
+    public static final StyleProperty<Float> BORDER_RADIUS_TOP_LEFT =
+        new StyleProperty<>("borderRadiusTopLeft", Float.class, 0f);
+
+    public static final StyleProperty<Float> BORDER_RADIUS_TOP_RIGHT =
+        new StyleProperty<>("borderRadiusTopRight", Float.class, 0f);
+
+    public static final StyleProperty<Float> BORDER_RADIUS_BOTTOM_RIGHT =
+        new StyleProperty<>("borderRadiusBottomRight", Float.class, 0f);
+
+    public static final StyleProperty<Float> BORDER_RADIUS_BOTTOM_LEFT =
+        new StyleProperty<>("borderRadiusBottomLeft", Float.class, 0f);
+
     // Padding properties
     public static final StyleProperty<Float> PADDING = 
         new StyleProperty<>("padding", Float.class, 0f);

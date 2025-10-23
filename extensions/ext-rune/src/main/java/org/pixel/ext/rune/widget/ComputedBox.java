@@ -37,7 +37,10 @@ public class ComputedBox {
     public float paddingTop, paddingRight, paddingBottom, paddingLeft;
     public float marginTop, marginRight, marginBottom, marginLeft;
     public float borderWidth;
-    public float borderRadius;
+    public float borderRadiusTopLeft;
+    public float borderRadiusTopRight;
+    public float borderRadiusBottomRight;
+    public float borderRadiusBottomLeft;
     public BoxSizing boxSizing;
     
     // Calculated bounds (updated in calculateBounds())
@@ -93,11 +96,39 @@ public class ComputedBox {
     }
     
     /**
+     * Get border radius for top-left corner.
+     */
+    public float getEffectiveBorderRadiusTopLeft() {
+        return borderRadiusTopLeft;
+    }
+
+    /**
+     * Get border radius for top-right corner.
+     */
+    public float getEffectiveBorderRadiusTopRight() {
+        return borderRadiusTopRight;
+    }
+
+    /**
+     * Get border radius for bottom-right corner.
+     */
+    public float getEffectiveBorderRadiusBottomRight() {
+        return borderRadiusBottomRight;
+    }
+
+    /**
+     * Get border radius for bottom-left corner.
+     */
+    public float getEffectiveBorderRadiusBottomLeft() {
+        return borderRadiusBottomLeft;
+    }
+
+    /**
      * Apply style properties to this box.
      * Reads all box model geometry properties from the style and caches them.
      * Visual properties (colors) should be queried directly from style in onRender().
      * Call this when style changes.
-     * 
+     *
      * @param style The computed style to read from
      */
     public void applyStyle(RuneStyle style) {
@@ -105,15 +136,20 @@ public class ComputedBox {
         this.paddingRight = style.get(PADDING_RIGHT);
         this.paddingBottom = style.get(PADDING_BOTTOM);
         this.paddingLeft = style.get(PADDING_LEFT);
-        
+
         this.marginTop = style.get(MARGIN_TOP);
         this.marginRight = style.get(MARGIN_RIGHT);
         this.marginBottom = style.get(MARGIN_BOTTOM);
         this.marginLeft = style.get(MARGIN_LEFT);
-        
+
         this.borderWidth = style.get(BORDER_WIDTH);
-        this.borderRadius = style.get(BORDER_RADIUS);
-        
+
+        // Border radius - individual properties, expanded from BORDER_RADIUS shorthand by RuneStyle
+        this.borderRadiusTopLeft = style.get(BORDER_RADIUS_TOP_LEFT);
+        this.borderRadiusTopRight = style.get(BORDER_RADIUS_TOP_RIGHT);
+        this.borderRadiusBottomRight = style.get(BORDER_RADIUS_BOTTOM_RIGHT);
+        this.borderRadiusBottomLeft = style.get(BORDER_RADIUS_BOTTOM_LEFT);
+
         this.boxSizing = style.get(BOX_SIZING);
     }
 }

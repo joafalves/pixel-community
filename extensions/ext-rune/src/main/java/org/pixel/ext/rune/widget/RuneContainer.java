@@ -225,16 +225,32 @@ public class RuneContainer extends RuneWidget {
      * Set horizontal scroll offset (will be clamped to valid range).
      */
     public void setScrollX(float scrollX) {
-        float maxScrollX = Math.max(0, contentWidth - box.contentBounds.getWidth());
+        // Account for vertical scrollbar taking up space
+        float visibleWidth = box.contentBounds.getWidth();
+        if (overflow == Overflow.SCROLL || overflow == Overflow.SCROLL_VERTICAL) {
+            // Check if vertical scrollbar will be visible
+            if (contentHeight > box.contentBounds.getHeight()) {
+                visibleWidth -= SCROLLBAR_WIDTH;
+            }
+        }
+        float maxScrollX = Math.max(0, contentWidth - visibleWidth);
         this.scrollX = Math.max(0, Math.min(scrollX, maxScrollX));
         markDirty();
     }
-    
+
     /**
      * Set vertical scroll offset (will be clamped to valid range).
      */
     public void setScrollY(float scrollY) {
-        float maxScrollY = Math.max(0, contentHeight - box.contentBounds.getHeight());
+        // Account for horizontal scrollbar taking up space
+        float visibleHeight = box.contentBounds.getHeight();
+        if (overflow == Overflow.SCROLL || overflow == Overflow.SCROLL_HORIZONTAL) {
+            // Check if horizontal scrollbar will be visible
+            if (contentWidth > box.contentBounds.getWidth()) {
+                visibleHeight -= SCROLLBAR_WIDTH;
+            }
+        }
+        float maxScrollY = Math.max(0, contentHeight - visibleHeight);
         this.scrollY = Math.max(0, Math.min(scrollY, maxScrollY));
         markDirty();
     }
@@ -495,13 +511,18 @@ public class RuneContainer extends RuneWidget {
         Color bgColor = backgroundColor != null ? backgroundColor : styleBackgroundColor;
         if (bgColor != null) {
             ctx.getCanvas().rect(
-                    box.paddingBounds.getX(), 
+                    box.paddingBounds.getX(),
                     box.paddingBounds.getY(),
                     box.paddingBounds.getWidth(),
                     box.paddingBounds.getHeight()
             )
             .withFill(bgColor)
-            .withRoundedCorners(box.borderRadius)
+            .withRoundedCorners(
+                box.getEffectiveBorderRadiusTopLeft(),
+                box.getEffectiveBorderRadiusTopRight(),
+                box.getEffectiveBorderRadiusBottomRight(),
+                box.getEffectiveBorderRadiusBottomLeft()
+            )
             .apply();
         }
         
@@ -514,7 +535,12 @@ public class RuneContainer extends RuneWidget {
                     box.paddingBounds.getHeight()
             )
             .withStroke(box.borderWidth, borderColor)
-            .withRoundedCorners(box.borderRadius)
+            .withRoundedCorners(
+                box.getEffectiveBorderRadiusTopLeft(),
+                box.getEffectiveBorderRadiusTopRight(),
+                box.getEffectiveBorderRadiusBottomRight(),
+                box.getEffectiveBorderRadiusBottomLeft()
+            )
             .apply();
         }
         

@@ -236,6 +236,16 @@ public class GLCanvasRenderer extends CanvasRenderer {
     }
 
     @Override
+    public void fillRoundedRect(float x, float y, float width, float height,
+                               float radiusTopLeft, float radiusTopRight,
+                               float radiusBottomRight, float radiusBottomLeft,
+                               Color color) {
+        // Batched rendering with individual corner radii
+        batchRenderer.fillRoundedRect(x, y, width, height, radiusTopLeft, radiusTopRight,
+                                     radiusBottomRight, radiusBottomLeft, color);
+    }
+
+    @Override
     public void fillCircle(float x, float y, float radius, Color color) {
         // Batched rendering
         batchRenderer.fillCircle(x, y, radius, color);
@@ -266,6 +276,16 @@ public class GLCanvasRenderer extends CanvasRenderer {
     public void strokeRoundedRect(float x, float y, float width, float height, float radius, float lineWidth, Color color) {
         // Batched rendering
         batchRenderer.strokeRoundedRect(x, y, width, height, radius, lineWidth, color);
+    }
+
+    @Override
+    public void strokeRoundedRect(float x, float y, float width, float height,
+                                 float radiusTopLeft, float radiusTopRight,
+                                 float radiusBottomRight, float radiusBottomLeft,
+                                 float lineWidth, Color color) {
+        // Batched rendering with individual corner radii
+        batchRenderer.strokeRoundedRect(x, y, width, height, radiusTopLeft, radiusTopRight,
+                                       radiusBottomRight, radiusBottomLeft, lineWidth, color);
     }
 
     @Override
