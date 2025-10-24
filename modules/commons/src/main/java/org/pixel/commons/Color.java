@@ -329,9 +329,10 @@ public class Color implements Serializable {
 
         String value;
         if (hex.length() == 4) {
-            value = "#" + hex.substring(1, 2) + hex.substring(1, 2) +
-                    hex.substring(2, 3) + hex.substring(2, 3) +
-                    hex.substring(3, 4) + hex.substring(3, 4) +
+            // Short hex format (#RGB)
+            value = "#" + hex.charAt(1) + hex.charAt(1) +
+                    hex.charAt(2) + hex.charAt(2) +
+                    hex.charAt(3) + hex.charAt(3) +
                     "ff";
 
         } else if (hex.length() == 7) {

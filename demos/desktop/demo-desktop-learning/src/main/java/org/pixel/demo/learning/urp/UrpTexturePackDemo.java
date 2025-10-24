@@ -126,7 +126,7 @@ public class UrpTexturePackDemo extends DemoGame {
         final var renderWidth = getViewportWidth() * RENDER_SCALE;
         final var renderHeight = getViewportHeight() * RENDER_SCALE;
 
-        contentManager = ServiceProvider.get(ContentManager.class);
+        contentManager = ContentManager.create();
         render = new RenderPipeline();
         camera = new Camera2D(renderWidth, renderHeight);
         characters = new ArrayList<>();

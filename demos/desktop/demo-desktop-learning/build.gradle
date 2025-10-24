@@ -15,6 +15,7 @@ dependencies {
     implementation project(":${rootProject.name}-ext-flux-desktop");  // Now uses desktop extension
     implementation project(":${rootProject.name}-ext-rune");  // Rune GUI framework
     implementation project(":${rootProject.name}-ext-rune-desktop");  // Rune desktop input
+    implementation project(":${rootProject.name}-ext-weaver");  // Rune desktop input
 }
 
 application {
