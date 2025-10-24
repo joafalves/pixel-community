@@ -3,8 +3,6 @@ package org.pixel.ext.weaver.widget;
 import lombok.Getter;
 import lombok.Setter;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.lifecycle.Drawable;
-import org.pixel.commons.lifecycle.Updatable;
 import org.pixel.ext.weaver.WeaverContext;
 import org.pixel.ext.weaver.style.Styleable;
 
@@ -13,7 +11,7 @@ import java.util.Set;
 
 @Getter
 @Setter
-public abstract class Widget implements Updatable, Drawable, Styleable {
+public abstract class Widget implements Styleable {
 
     private final Set<String> classes = new HashSet<>();
 

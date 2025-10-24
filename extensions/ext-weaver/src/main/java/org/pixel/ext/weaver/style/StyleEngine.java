@@ -47,6 +47,15 @@ public class StyleEngine {
     private final Map<Styleable, Style> styleCache = new WeakHashMap<>();
 
     /**
+     * Clears all loaded stylesheets and caches.
+     */
+    public void clear() {
+        this.stylesheets.clear();
+        this.globalVariables.clear();
+        this.styleCache.clear();
+    }
+
+    /**
      * Loads a new stylesheet into the engine.
      * This is a "heavy" operation, as it invalidates all caches.
      *

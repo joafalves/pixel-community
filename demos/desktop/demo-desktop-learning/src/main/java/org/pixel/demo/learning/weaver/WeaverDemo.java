@@ -16,7 +16,7 @@ public class WeaverDemo extends DemoGame {
     @Override
     public void load() {
         ui = new Weaver(getViewportWidth(), getViewportHeight());
-        ui.applyStyleFromResources("css/weaver-demo-style.css");
+        ui.loadStyleSheetFromResources("css/weaver-demo-style.css");
     }
 
     @Override

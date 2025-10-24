@@ -26,14 +26,15 @@ public class Weaver implements Updatable, Drawable, Disposable {
 
     public Weaver(int viewportWidth, int viewportHeight) {
         this.widgets = List.of();
+        this.styleSheetParser = new StyleSheetParser();
+        this.styleEngine = new StyleEngine(); // TODO: apply base style
+        this.contentManager = ContentManager.create();
         this.context = WeaverContext.builder()
                 .canvas(Canvas.create(viewportWidth, viewportHeight))
                 .viewportWidth(viewportWidth)
                 .viewportHeight(viewportHeight)
+                .styleEngine(styleEngine)
                 .build();
-        this.styleSheetParser = new StyleSheetParser();
-        this.styleEngine = new StyleEngine(); // TODO: apply base style
-        this.contentManager = ContentManager.create();
     }
 
     @Override
@@ -64,16 +65,35 @@ public class Weaver implements Updatable, Drawable, Disposable {
         }
     }
 
-    public boolean applyStyleFromResources(String resourcePath) {
+    /**
+     * Clears all applied styles associated to this Weaver instance.
+     */
+    public void clearStyles() {
+        styleEngine.clear();
+    }
+
+    /**
+     * Applies style from a resource path.
+     *
+     * @param resourcePath Path to the CSS resource
+     * @return True if the style was applied successfully, false otherwise
+     */
+    public boolean loadStyleSheetFromResources(String resourcePath) {
         var css = contentManager.loadText(resourcePath);
         if (css == null || css.isEmpty()) {
             LOG.warn("Could not load CSS from resource: " + resourcePath);
             return false;
         }
-        return applyStyle(css);
+        return loadStyleSheet(css);
     }
 
-    public boolean applyStyle(String css) {
+    /**
+     * Applies style from a CSS string.
+     *
+     * @param css CSS string
+     * @return True if the style was applied successfully, false otherwise
+     */
+    public boolean loadStyleSheet(String css) {
         var styleSheet = styleSheetParser.parse(css);
         if (styleSheet.rules().isEmpty() && styleSheet.variables().isEmpty() && styleSheet.resources().isEmpty()) {
             LOG.warn("Could not apply style: parsed stylesheet is empty or malformed.");
@@ -85,6 +105,12 @@ public class Weaver implements Updatable, Drawable, Disposable {
         return true;
     }
 
+    /**
+     * Sets the viewport size for this Weaver instance.
+     *
+     * @param width  New viewport width
+     * @param height New viewport height
+     */
     public void setViewport(int width, int height) {
         context.setViewportWidth(width);
         context.setViewportHeight(height);
