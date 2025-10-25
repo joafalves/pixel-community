@@ -8,6 +8,7 @@ import org.pixel.commons.lifecycle.Updatable;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ContentManager;
+import org.pixel.ext.weaver.layout.LayoutEngine;
 import org.pixel.ext.weaver.style.StyleEngine;
 import org.pixel.ext.weaver.style.parser.StyleSheetParser;
 import org.pixel.ext.weaver.widget.Widget;
@@ -19,20 +20,19 @@ public class Weaver implements Updatable, Drawable, Disposable {
 
     private final WeaverContext context;
     private final ContentManager contentManager;
-    private final StyleEngine styleEngine;
     private final StyleSheetParser styleSheetParser;
 
     private Widget root;
 
     public Weaver(int viewportWidth, int viewportHeight) {
         this.styleSheetParser = new StyleSheetParser();
-        this.styleEngine = new StyleEngine(); // TODO: apply base style
         this.contentManager = ContentManager.create();
         this.context = WeaverContext.builder()
                 .canvas(Canvas.create(viewportWidth, viewportHeight))
                 .viewportWidth(viewportWidth)
                 .viewportHeight(viewportHeight)
-                .styleEngine(styleEngine)
+                .styleEngine(new StyleEngine())
+                .layoutEngine(new LayoutEngine())
                 .build();
     }
 
@@ -72,6 +72,7 @@ public class Weaver implements Updatable, Drawable, Disposable {
         final var previousRoot = this.root;
         this.root = root;
         this.root.detach(); // root has no parent
+        this.context.getLayoutEngine().setRootWidget(root);
 
         return previousRoot;
     }
@@ -89,7 +90,7 @@ public class Weaver implements Updatable, Drawable, Disposable {
      * Clears all applied styles associated to this Weaver instance.
      */
     public void clearStyles() {
-        styleEngine.clear();
+        this.context.getStyleEngine().clear();
     }
 
     /**
@@ -120,7 +121,7 @@ public class Weaver implements Updatable, Drawable, Disposable {
             return false;
         }
 
-        styleEngine.loadStyleSheet(styleSheet);
+        context.getStyleEngine().loadStyleSheet(styleSheet);
 
         return true;
     }
@@ -132,9 +133,7 @@ public class Weaver implements Updatable, Drawable, Disposable {
      * @param height New viewport height
      */
     public void setViewport(int width, int height) {
-        context.setViewportWidth(width);
-        context.setViewportHeight(height);
-        context.getCanvas().setViewport(width, height);
+        context.setViewport(width, height);
         // TODO: invalidate layout of widgets
     }
 

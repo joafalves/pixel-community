@@ -13,8 +13,8 @@ import java.util.*;
 public abstract class Widget implements Styleable {
 
     private final Map<String, Object> inlineStyleMap = new HashMap<>();
-    private final Set<String> pseudoStyleClasses = new HashSet<>();
-    private final Set<String> styleClasses = new HashSet<>();
+    private final Set<String> pseudoClasses = new HashSet<>();
+    private final Set<String> classes = new HashSet<>();
     private final List<Widget> children = new ArrayList<>();
 
     @Setter
@@ -35,12 +35,12 @@ public abstract class Widget implements Styleable {
 
     @Override
     public Set<String> getClasses() {
-        return styleClasses;
+        return classes;
     }
 
     @Override
     public Set<String> getPseudoClasses() {
-        return pseudoStyleClasses;
+        return pseudoClasses;
     }
 
     @Override
@@ -147,7 +147,7 @@ public abstract class Widget implements Styleable {
      * @param className The style class to add
      */
     public void addClass(String className) {
-        if (this.styleClasses.add(className)) {
+        if (this.classes.add(className)) {
             this.styleVersion++;
         }
     }
@@ -158,7 +158,7 @@ public abstract class Widget implements Styleable {
      * @param className The style class to remove
      */
     public void removeClass(String className) {
-        if (this.styleClasses.remove(className)) {
+        if (this.classes.remove(className)) {
             this.styleVersion++;
         }
     }
@@ -205,7 +205,7 @@ public abstract class Widget implements Styleable {
      * @param pseudoClass The pseudo-class to add
      */
     public void addPseudoClass(String pseudoClass) {
-        if (this.pseudoStyleClasses.add(pseudoClass)) {
+        if (this.pseudoClasses.add(pseudoClass)) {
             this.styleVersion++;
         }
     }
@@ -216,7 +216,7 @@ public abstract class Widget implements Styleable {
      * @param pseudoClass The pseudo-class to remove
      */
     public void removePseudoClass(String pseudoClass) {
-        if (this.pseudoStyleClasses.remove(pseudoClass)) {
+        if (this.pseudoClasses.remove(pseudoClass)) {
             this.styleVersion++;
         }
     }
