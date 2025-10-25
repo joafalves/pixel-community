@@ -1,5 +1,6 @@
 package org.pixel.ext.weaver;
 
+import lombok.Getter;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.commons.lifecycle.Drawable;
@@ -12,8 +13,6 @@ import org.pixel.ext.weaver.style.parser.StyleSheetParser;
 import org.pixel.ext.weaver.widget.Widget;
 import org.pixel.graphics.render.canvas.Canvas;
 
-import java.util.List;
-
 public class Weaver implements Updatable, Drawable, Disposable {
 
     private static final Logger LOG = LoggerFactory.getLogger(Weaver.class);
@@ -22,10 +21,10 @@ public class Weaver implements Updatable, Drawable, Disposable {
     private final ContentManager contentManager;
     private final StyleEngine styleEngine;
     private final StyleSheetParser styleSheetParser;
-    private final List<Widget> widgets;
+
+    private Widget root;
 
     public Weaver(int viewportWidth, int viewportHeight) {
-        this.widgets = List.of();
         this.styleSheetParser = new StyleSheetParser();
         this.styleEngine = new StyleEngine(); // TODO: apply base style
         this.contentManager = ContentManager.create();
@@ -39,19 +38,17 @@ public class Weaver implements Updatable, Drawable, Disposable {
 
     @Override
     public void update(DeltaTime delta) {
-        for (var widget : widgets) {
-            if (widget.isEnabled()) {
-                widget.update(delta, context);
-            }
+        if (root != null && root.isEnabled()) {
+            root.update(delta, context);
         }
     }
 
     @Override
     public void draw(DeltaTime delta) {
-        for (var widget : widgets) {
-            if (widget.isEnabled()) {
-                widget.draw(delta, context);
-            }
+        if (root != null && root.isEnabled()) {
+            context.getCanvas().begin();
+            root.draw(delta, context);
+            context.getCanvas().end();
         }
     }
 
@@ -63,6 +60,29 @@ public class Weaver implements Updatable, Drawable, Disposable {
         if (contentManager != null) {
             contentManager.dispose();
         }
+    }
+
+    /**
+     * Sets the root container widget for this Weaver instance.
+     *
+     * @param root New root container widget
+     * @return Previous root container widget if any, null otherwise
+     */
+    public Widget setContent(Widget root) {
+        final var previousRoot = this.root;
+        this.root = root;
+        this.root.detach(); // root has no parent
+
+        return previousRoot;
+    }
+
+    /**
+     * Gets the root container widget for this Weaver instance.
+     *
+     * @return Root container widget
+     */
+    public Widget getContent() {
+        return this.root;
     }
 
     /**

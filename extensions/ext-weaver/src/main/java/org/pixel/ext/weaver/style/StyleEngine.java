@@ -1,6 +1,7 @@
 package org.pixel.ext.weaver.style;
 
 import org.pixel.commons.Color;
+import org.pixel.commons.data.Pair;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 
@@ -43,8 +44,11 @@ public class StyleEngine {
      * The style cache is the most important performance feature.
      * We use WeakHashMap so that when a UIWidget is garbage collected,
      * its cached style is automatically removed.
+     *
+     * Key: Styleable widget
+     * Value: A Pair of (Computed Style, Style Version)
      */
-    private final Map<Styleable, Style> styleCache = new WeakHashMap<>();
+    private final Map<Styleable, Pair<Style, Integer>> styleCache = new WeakHashMap<>();
 
     /**
      * Clears all loaded stylesheets and caches.
@@ -80,17 +84,25 @@ public class StyleEngine {
             return Style.EMPTY; // Base case for recursion
         }
 
-        // 1. Check cache first
-        Style cached = styleCache.get(widget);
-        if (cached != null) {
-            return cached;
+        // Check cache first
+        int widgetStyleVersion = widget.getStyleVersion();
+        Pair<Style, Integer> cacheEntry = styleCache.get(widget);
+        if (cacheEntry != null && cacheEntry.getB() == widgetStyleVersion) {
+            return cacheEntry.getA();
         }
 
-        // 2. Not in cache? Compute it.
+        // Not in cache or outdated? Compute it.
         Style computed = computeStyle(widget);
 
-        // 3. Cache and return
-        styleCache.put(widget, computed);
+        // Cache and return
+        if (cacheEntry == null) {
+            cacheEntry = new Pair<>(computed, widgetStyleVersion);
+            styleCache.put(widget, cacheEntry);
+
+        } else {
+            cacheEntry.set(computed, widgetStyleVersion);
+        }
+
         return computed;
     }
 
@@ -142,6 +154,15 @@ public class StyleEngine {
             Object nativeValue = parseValue(prop, resolvedValue);
 
             nativeProperties.put(prop, nativeValue);
+        }
+
+        // --- Apply Inline Styles ---
+        // Inline styles have the highest specificity.
+        Map<String, Object> inlineStyles = widget.getInlineStyleMap();
+        for (Map.Entry<String, Object> entry : inlineStyles.entrySet()) {
+            String prop = entry.getKey();
+            Object value = entry.getValue();
+            nativeProperties.put(prop, value);
         }
 
         // --- Apply Inheritance ---

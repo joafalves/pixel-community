@@ -1,6 +1,7 @@
 package org.pixel.ext.weaver.style;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -25,6 +26,14 @@ public interface Styleable {
     String getStyleId();
 
     /**
+     * Gets the current style revision number.
+     * This should be incremented whenever the style-related
+     * state of the component changes (e.g., classes or pseudo-classes).
+     * @return An integer revision number
+     */
+    int getStyleVersion();
+
+    /**
      * Gets the set of CSS ".class" selectors.
      * @return A Set of strings, e.g., ["dark-mode", "rounded", "primary"]
      */
@@ -38,6 +47,13 @@ public interface Styleable {
     Set<String> getPseudoClasses();
 
     /**
+     * Gets the inline styles directly applied to this component.
+     * These styles have the highest specificity.
+     * @return A Map of property names to their values
+     */
+    Map<String, Object> getInlineStyleMap();
+
+    /**
      * Gets the direct parent of this component in the hierarchy.
      * This is crucial for matching descendant selectors.
      * @return The parent as a Styleable, or null if this is the root.
@@ -48,6 +64,5 @@ public interface Styleable {
      * Gets the direct children of this component.
      * This is needed for invalidating child caches on inheritance changes.
      * @return A List of Styleable children.
-     */
-    List<Styleable> getStyleableChildren();
+    List<Styleable> getStyleableChildren(); */
 }

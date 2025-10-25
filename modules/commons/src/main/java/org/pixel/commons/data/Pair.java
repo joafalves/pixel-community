@@ -40,6 +40,17 @@ public class Pair<A, B> {
     }
 
     /**
+     * Set both A and B values.
+     *
+     * @param a A value.
+     * @param b B value.
+     */
+    public void set(A a, B b) {
+        this.a = a;
+        this.b = b;
+    }
+
+    /**
      * Set A value.
      *
      * @param a A value.

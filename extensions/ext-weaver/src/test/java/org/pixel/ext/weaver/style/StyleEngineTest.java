@@ -3,7 +3,10 @@ package org.pixel.ext.weaver.style;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.pixel.commons.Color;
+import org.pixel.commons.DeltaTime;
+import org.pixel.ext.weaver.WeaverContext;
 import org.pixel.ext.weaver.style.parser.StyleSheetParser;
+import org.pixel.ext.weaver.widget.Widget;
 
 import java.util.*;
 
@@ -34,7 +37,7 @@ class StyleEngineTest {
         styleEngine.loadStyleSheet(sheet);
 
         // Create a mock button widget
-        MockStyleable button = new MockStyleable("button");
+        TestWidget button = new TestWidget("button");
 
         // Get computed style
         Style style = styleEngine.getComputedStyle(button);
@@ -56,8 +59,8 @@ class StyleEngineTest {
         StyleSheet sheet = parser.parse(css);
         styleEngine.loadStyleSheet(sheet);
 
-        MockStyleable button = new MockStyleable("button");
-        button.addStyleClass("primary");
+        TestWidget button = new TestWidget("button");
+        button.addClass("primary");
 
         Style style = styleEngine.getComputedStyle(button);
 
@@ -75,8 +78,8 @@ class StyleEngineTest {
         StyleSheet sheet = parser.parse(css);
         styleEngine.loadStyleSheet(sheet);
 
-        MockStyleable button = new MockStyleable("button");
-        button.setStyleId("submit-btn");
+        TestWidget button = new TestWidget("button");
+        button.setId("submit-btn");
 
         Style style = styleEngine.getComputedStyle(button);
 
@@ -94,7 +97,7 @@ class StyleEngineTest {
         StyleSheet sheet = parser.parse(css);
         styleEngine.loadStyleSheet(sheet);
 
-        MockStyleable button = new MockStyleable("button");
+        TestWidget button = new TestWidget("button");
         button.addPseudoClass("hover");
 
         Style style = styleEngine.getComputedStyle(button);
@@ -113,9 +116,9 @@ class StyleEngineTest {
         StyleSheet sheet = parser.parse(css);
         styleEngine.loadStyleSheet(sheet);
 
-        MockStyleable panel = new MockStyleable("panel");
-        MockStyleable button = new MockStyleable("button");
-        button.setParent(panel);
+        TestWidget panel = new TestWidget("panel");
+        TestWidget button = new TestWidget("button");
+        panel.addChild(button);
 
         Style style = styleEngine.getComputedStyle(button);
 
@@ -126,11 +129,8 @@ class StyleEngineTest {
     void testSpecificityCascade() {
         // Higher specificity should override lower specificity
         String css = """
-                button {
-                    background-color: #FF0000;
-                }
-                
                 .primary {
+                    color: #FF0000;
                     background-color: #0000FF;
                 }
                 
@@ -142,14 +142,15 @@ class StyleEngineTest {
         StyleSheet sheet = parser.parse(css);
         styleEngine.loadStyleSheet(sheet);
 
-        MockStyleable button = new MockStyleable("button");
-        button.addStyleClass("primary");
-        button.setStyleId("submit-btn");
+        TestWidget button = new TestWidget("button");
+        button.setId("submit-btn");
+        button.addClass("primary");
 
         Style style = styleEngine.getComputedStyle(button);
 
         // ID selector (#submit-btn) has highest specificity, so green should win
         assertColorEquals(Color.fromString("#00FF00"), style.get(StyleProperties.BACKGROUND_COLOR));
+        assertColorEquals(Color.fromString("#FF0000"), style.get(StyleProperties.COLOR));
     }
 
     @Test
@@ -167,7 +168,7 @@ class StyleEngineTest {
         StyleSheet sheet = parser.parse(css);
         styleEngine.loadStyleSheet(sheet);
 
-        MockStyleable button = new MockStyleable("button");
+        TestWidget button = new TestWidget("button");
 
         Style style = styleEngine.getComputedStyle(button);
 
@@ -194,8 +195,8 @@ class StyleEngineTest {
         StyleSheet sheet = parser.parse(css);
         styleEngine.loadStyleSheet(sheet);
 
-        MockStyleable panel = new MockStyleable("panel");
-        panel.addStyleClass("specific");
+        TestWidget panel = new TestWidget("panel");
+        panel.addClass("specific");
 
         Style style = styleEngine.getComputedStyle(panel);
         // color should be inherited from panel
@@ -221,9 +222,9 @@ class StyleEngineTest {
         StyleSheet sheet = parser.parse(css);
         styleEngine.loadStyleSheet(sheet);
 
-        MockStyleable panel = new MockStyleable("panel");
-        MockStyleable button = new MockStyleable("button");
-        button.setParent(panel);
+        TestWidget panel = new TestWidget("panel");
+        TestWidget button = new TestWidget("button");
+        panel.addChild(button);
 
         Style buttonStyle = styleEngine.getComputedStyle(button);
 
@@ -247,7 +248,7 @@ class StyleEngineTest {
 
         StyleSheet sheet = parser.parse(css);
 
-        MockStyleable button = new MockStyleable("button");
+        TestWidget button = new TestWidget("button");
         styleEngine.loadStyleSheet(sheet);
 
         assertEquals(2, sheet.rules().size(), "There should be two rules for .button selector");
@@ -278,7 +279,7 @@ class StyleEngineTest {
         StyleSheet sheet = parser.parse(css);
         styleEngine.loadStyleSheet(sheet);
 
-        MockStyleable button = new MockStyleable("button");
+        TestWidget button = new TestWidget("button");
 
         Style style1 = styleEngine.getComputedStyle(button);
         Style style2 = styleEngine.getComputedStyle(button);
@@ -298,7 +299,7 @@ class StyleEngineTest {
         StyleSheet sheet1 = parser.parse(css1);
         styleEngine.loadStyleSheet(sheet1);
 
-        MockStyleable button = new MockStyleable("button");
+        TestWidget button = new TestWidget("button");
         Style style1 = styleEngine.getComputedStyle(button);
 
         assertColorEquals(Color.fromString("#FF0000"), style1.get(StyleProperties.BACKGROUND_COLOR));
@@ -339,11 +340,11 @@ class StyleEngineTest {
         StyleSheet sheet = parser.parse(css);
         styleEngine.loadStyleSheet(sheet);
 
-        MockStyleable panel = new MockStyleable("panel");
-        panel.addStyleClass("dark");
+        TestWidget panel = new TestWidget("panel");
+        panel.addClass("dark");
 
-        MockStyleable button = new MockStyleable("button");
-        button.setParent(panel);
+        TestWidget button = new TestWidget("button");
+        panel.addChild(button);
 
         Style style = styleEngine.getComputedStyle(button);
 
@@ -363,13 +364,13 @@ class StyleEngineTest {
         StyleSheet sheet = parser.parse(css);
         styleEngine.loadStyleSheet(sheet);
 
-        MockStyleable panel = new MockStyleable("panel");
-        MockStyleable darkContainer = new MockStyleable("div");
-        darkContainer.addStyleClass("dark");
-        darkContainer.setParent(panel);
+        TestWidget panel = new TestWidget("panel");
+        TestWidget darkContainer = new TestWidget("div");
+        darkContainer.addClass("dark");
+        panel.addChild(darkContainer);
 
-        MockStyleable button = new MockStyleable("button");
-        button.setParent(darkContainer);
+        TestWidget button = new TestWidget("button");
+        darkContainer.addChild(button);
 
         Style style = styleEngine.getComputedStyle(button);
 
@@ -389,21 +390,21 @@ class StyleEngineTest {
         styleEngine.loadStyleSheet(sheet);
 
         // Case 1: panel.dark button - should match (panel has dark class, button is child)
-        MockStyleable panelWithDark = new MockStyleable("panel");
-        panelWithDark.addStyleClass("dark");
-        MockStyleable buttonInPanelDark = new MockStyleable("button");
-        buttonInPanelDark.setParent(panelWithDark);
+        TestWidget panelWithDark = new TestWidget("panel");
+        panelWithDark.addClass("dark");
+        TestWidget buttonInPanelDark = new TestWidget("button");
+        panelWithDark.addChild(buttonInPanelDark);
 
         Style style1 = styleEngine.getComputedStyle(buttonInPanelDark);
         assertColorEquals(Color.fromString("#111111"), style1.get(StyleProperties.BACKGROUND_COLOR));
 
         // Case 2: panel > div.dark > button - should NOT match (panel doesn't have dark class)
-        MockStyleable panelPlain = new MockStyleable("panel");
-        MockStyleable divWithDark = new MockStyleable("div");
-        divWithDark.addStyleClass("dark");
-        divWithDark.setParent(panelPlain);
-        MockStyleable buttonInDiv = new MockStyleable("button");
-        buttonInDiv.setParent(divWithDark);
+        TestWidget panelPlain = new TestWidget("panel");
+        TestWidget divWithDark = new TestWidget("div");
+        divWithDark.addClass("dark");
+        panelPlain.addChild(divWithDark);
+        TestWidget buttonInDiv = new TestWidget("button");
+        divWithDark.addChild(buttonInDiv);
 
         Style style2 = styleEngine.getComputedStyle(buttonInDiv);
         assertNull(style2.get(StyleProperties.BACKGROUND_COLOR), "Should not match panel.dark button when dark is on child, not panel");
@@ -427,13 +428,32 @@ class StyleEngineTest {
         styleEngine.loadStyleSheet(parser.parse(css1));
         styleEngine.loadStyleSheet(parser.parse(css2));
 
-        MockStyleable button = new MockStyleable("button");
+        TestWidget button = new TestWidget("button");
         Style style = styleEngine.getComputedStyle(button);
 
         // Second stylesheet should override background-color
         assertColorEquals(Color.fromString("#0000FF"), style.get(StyleProperties.BACKGROUND_COLOR));
         // But font-size from first stylesheet should remain
         assertEquals(14.0f, style.<Float>get(StyleProperties.FONT_SIZE));
+    }
+
+    @Test
+    void testWidgetInlineStyling() {
+        String css = """
+                button {
+                    background-color: #FF0000;
+                }
+                """;
+
+        styleEngine.loadStyleSheet(parser.parse(css));
+
+        TestWidget button = new TestWidget("button");
+        button.setInlineStyle(StyleProperties.BACKGROUND_COLOR, Color.fromString("#00FF00"));
+
+        Style style = styleEngine.getComputedStyle(button);
+
+        // Inline style should take precedence
+        assertColorEquals(Color.fromString("#00FF00"), style.get(StyleProperties.BACKGROUND_COLOR));
     }
 
     /**
@@ -448,63 +468,27 @@ class StyleEngineTest {
         assertEquals(expected.getAlpha(), actual.getAlpha(), 0.01f, "Alpha component mismatch");
     }
 
-    // Mock implementation of Styleable for testing
-    private static class MockStyleable implements Styleable {
-        private final String type;
-        private String id;
-        private final Set<String> classes = new HashSet<>();
-        private final Set<String> pseudoClasses = new HashSet<>();
-        private Styleable parent;
-        private final List<Styleable> children = new ArrayList<>();
+    private static class TestWidget extends Widget {
 
-        public MockStyleable(String type) {
-            this.type = type;
+        private final String styleType;
+
+        public TestWidget(String styleType) {
+            this.styleType = styleType;
         }
 
-        public void setStyleId(String id) {
-            this.id = id;
+        @Override
+        public void update(DeltaTime delta, WeaverContext ctx) {
+
         }
 
-        public void addStyleClass(String className) {
-            this.classes.add(className);
-        }
+        @Override
+        public void draw(DeltaTime delta, WeaverContext ctx) {
 
-        public void addPseudoClass(String pseudoClass) {
-            this.pseudoClasses.add(pseudoClass);
-        }
-
-        public void setParent(Styleable parent) {
-            this.parent = parent;
         }
 
         @Override
         public String getStyleType() {
-            return type;
-        }
-
-        @Override
-        public String getStyleId() {
-            return id;
-        }
-
-        @Override
-        public Set<String> getClasses() {
-            return classes;
-        }
-
-        @Override
-        public Set<String> getPseudoClasses() {
-            return pseudoClasses;
-        }
-
-        @Override
-        public Styleable getStyleableParent() {
-            return parent;
-        }
-
-        @Override
-        public List<Styleable> getStyleableChildren() {
-            return children;
+            return styleType;
         }
     }
 }
