@@ -4,7 +4,7 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.ext.weaver.Weaver;
-import org.pixel.ext.weaver.widget.LabelWidget;
+import org.pixel.ext.weaver.widget.Label;
 import org.pixel.ext.weaver.widget.PanelWidget;
 
 public class WeaverDemo extends DemoGame {
@@ -22,7 +22,7 @@ public class WeaverDemo extends DemoGame {
 
         var panel = new PanelWidget();
 
-        var label = new LabelWidget();
+        var label = new Label();
         label.setText("Hello, Weaver!");
 
         panel.addChild(label);

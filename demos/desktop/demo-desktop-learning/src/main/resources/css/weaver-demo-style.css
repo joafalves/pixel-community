@@ -4,4 +4,23 @@
 
 widget {
     background: #333;
+    color: #FF0000;
+}
+
+panel {
+    background: #666;
+    overflow: hidden;
+
+    width: 800px;
+    height: 600px;
+}
+
+label {
+    left: 20px;
+    font-size: 18px;
+
+    background-color: #f90;
+    border-radius: 8px;
+
+    color: #fff;
 }

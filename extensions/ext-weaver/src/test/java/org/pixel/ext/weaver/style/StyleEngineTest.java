@@ -437,6 +437,35 @@ class StyleEngineTest {
     }
 
     @Test
+    void testWidgetInheritance() {
+        String css = """
+                panel {
+                    background-color: #CCCCCC;
+                    width: 800px;
+                    height: 600px;
+                }
+                
+                button {
+                    font-size: 14px;
+                }
+                """;
+
+        styleEngine.loadStyleSheet(parser.parse(css));
+
+        TestWidget panel = new TestWidget("panel");
+        TestWidget button = new TestWidget("button");
+        panel.addChild(button);
+
+        Style buttonStyle = styleEngine.getComputedStyle(button);
+
+        // Button should inherit nothing from panel since no inheritance is defined for these properties
+        assertNull(buttonStyle.get(StyleProperties.BACKGROUND_COLOR), "Button should not inherit background-color from panel");
+        assertNull(buttonStyle.get(StyleProperties.WIDTH), "Button should not inherit width from panel");
+        assertNull(buttonStyle.get(StyleProperties.HEIGHT), "Button should not inherit height from panel");
+        // But button should have its own font-size
+    }
+
+    @Test
     void testWidgetInlineStyling() {
         String css = """
                 button {
@@ -482,6 +511,11 @@ class StyleEngineTest {
 
         @Override
         public void draw(DeltaTime delta, WeaverContext ctx) {
+
+        }
+
+        @Override
+        protected void drawContent(DeltaTime delta, WeaverContext ctx) {
 
         }
 

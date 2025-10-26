@@ -7,7 +7,7 @@ import org.pixel.ext.weaver.WeaverContext;
 import org.pixel.ext.weaver.style.property.StyleProperties;
 import org.pixel.graphics.render.canvas.TextAlign;
 
-public class LabelWidget extends Widget {
+public class Label extends Widget {
 
     private final static String STYLE_TYPE = "label";
 
@@ -16,7 +16,7 @@ public class LabelWidget extends Widget {
     private String text;
 
     @Override
-    public void draw(DeltaTime delta, WeaverContext ctx) {
+    public void drawContent(DeltaTime delta, WeaverContext ctx) {
         var styleEngine = ctx.getStyleEngine();
         var style = styleEngine.getComputedStyle(this);
 
@@ -35,7 +35,7 @@ public class LabelWidget extends Widget {
         var canvas = ctx.getCanvas();
 
         var op = canvas.text(text, font, box.getContentBox().getX(), box.getContentBox().getY() + box.getContentBox().getHeight())
-                .withAlign(TextAlign.TOP_LEFT)
+                .withAlign(TextAlign.BOTTOM_LEFT)
                 .withSize(fontSize.value())
                 .withFill(color);
 
@@ -44,12 +44,44 @@ public class LabelWidget extends Widget {
         }
 
         op.apply();
-
-        super.draw(delta, ctx);
     }
 
     @Override
     public String getStyleType() {
         return STYLE_TYPE;
+    }
+
+    @Override
+    public float getIntrinsicWidth(WeaverContext ctx) {
+        var styleEngine = ctx.getStyleEngine();
+        var style = styleEngine.getComputedStyle(this);
+
+        var fontName = style.get(StyleProperties.FONT_FAMILY);
+        var fontSize = style.get(StyleProperties.FONT_SIZE);
+        var font = ctx.getFontStore().get(fontName);
+        if (font == null) {
+            return 0;
+        }
+
+        // TODO: support a more efficient measurement (without GC issues)...
+        // TODO: support letter spacing...
+        return ctx.getCanvas().measureText(text, font, fontSize.value()).getWidth();
+    }
+
+    @Override
+    public float getIntrinsicHeight(WeaverContext ctx) {
+        var styleEngine = ctx.getStyleEngine();
+        var style = styleEngine.getComputedStyle(this);
+
+        var fontName = style.get(StyleProperties.FONT_FAMILY);
+        var fontSize = style.get(StyleProperties.FONT_SIZE);
+        var font = ctx.getFontStore().get(fontName);
+        if (font == null) {
+            return 0;
+        }
+
+        // TODO: support a more efficient measurement (without GC issues)...
+        // TODO: support line spacing...
+        return ctx.getCanvas().measureText(text, font, fontSize.value()).getHeight();
     }
 }

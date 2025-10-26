@@ -6,9 +6,9 @@ import lombok.Setter;
 import org.pixel.commons.DeltaTime;
 import org.pixel.ext.weaver.WeaverContext;
 import org.pixel.ext.weaver.layout.BoxModel;
+import org.pixel.ext.weaver.style.property.StyleProperties;
 import org.pixel.ext.weaver.style.property.StyleProperty;
 import org.pixel.ext.weaver.style.Styleable;
-import org.pixel.math.Vector2;
 
 import java.util.*;
 
@@ -72,6 +72,24 @@ public abstract class Widget implements Styleable {
     }
 
     /**
+     * Gets the intrinsic width of the widget.
+     *
+     * @return Intrinsic width
+     */
+    public float getIntrinsicWidth(WeaverContext ctx) {
+        return 0;
+    }
+
+    /**
+     * Gets the intrinsic height of the widget.
+     *
+     * @return Intrinsic height
+     */
+    public float getIntrinsicHeight(WeaverContext ctx) {
+        return 0;
+    }
+
+    /**
      * Updates the widget.
      *
      * @param delta Time since last update
@@ -92,6 +110,70 @@ public abstract class Widget implements Styleable {
      * @param ctx   Weaver context
      */
     public void draw(DeltaTime delta, WeaverContext ctx) {
+        var styleEngine = ctx.getStyleEngine();
+        var style = styleEngine.getComputedStyle(this);
+        var overflow = style.get(StyleProperties.OVERFLOW);
+
+        drawBackground(delta, ctx);
+
+        // Apply clipping if overflow is set to hidden or scroll
+        if (overflow.hasClipping()) {
+            var box = getBoxModel().getContentBox(); // Clip to content box which excludes padding, border, margin
+            ctx.getCanvas().save();
+            ctx.getCanvas().clipRect(box.getX(), box.getY(), box.getWidth(), box.getHeight());
+        }
+
+        drawContent(delta, ctx);
+        drawChildren(delta, ctx);
+
+        // Restore canvas state if clipping was applied
+        if (overflow.hasClipping()) {
+            ctx.getCanvas().restore();
+        }
+    }
+
+    protected abstract void drawContent(DeltaTime delta, WeaverContext ctx);
+
+    protected void drawBackground(DeltaTime delta, WeaverContext ctx) {
+        var styleEngine = ctx.getStyleEngine();
+        var style = styleEngine.getComputedStyle(this);
+
+        var bgColor = style.get(StyleProperties.BACKGROUND_COLOR);
+        if (bgColor == null || bgColor.getAlpha() <= 0) {
+            return; // No background to draw
+        }
+
+        var borderWidth = style.get(StyleProperties.BORDER_WIDTH);
+        var borderTopLeftRadius = style.get(StyleProperties.BORDER_TOP_LEFT_RADIUS);
+        var borderTopRightRadius = style.get(StyleProperties.BORDER_TOP_RIGHT_RADIUS);
+        var borderBottomLeftRadius = style.get(StyleProperties.BORDER_BOTTOM_LEFT_RADIUS);
+        var borderBottomRightRadius = style.get(StyleProperties.BORDER_BOTTOM_RIGHT_RADIUS);
+        var borderColor = style.get(StyleProperties.BORDER_COLOR);
+
+        var contentBox = getBoxModel().getContentBox();
+        var canvas = ctx.getCanvas();
+
+        var op = canvas.rect(contentBox.getX(), contentBox.getY(), contentBox.getWidth(), contentBox.getHeight())
+                .withFill(bgColor); // TODO: support background images, gradients, etc.
+
+        if (borderWidth.value() > 0) {
+            op.withStroke(borderWidth.value(), borderColor);
+        }
+
+        if (borderTopLeftRadius.value() > 0 || borderTopRightRadius.value() > 0 ||
+            borderBottomLeftRadius.value() > 0 || borderBottomRightRadius.value() > 0) {
+            op.withRoundedCorners(
+                    borderTopLeftRadius.value(),
+                    borderTopRightRadius.value(),
+                    borderBottomRightRadius.value(),
+                    borderBottomLeftRadius.value()
+            );
+        }
+
+        op.apply();
+    }
+
+    protected void drawChildren(DeltaTime delta, WeaverContext ctx) {
         for (Widget child : children) {
             if (child.isEnabled()) {
                 child.draw(delta, ctx);
@@ -101,6 +183,7 @@ public abstract class Widget implements Styleable {
 
     /**
      * Adds a child widget.
+     *
      * @param child The child widget to add
      */
     public void addChild(Widget child) {
@@ -113,6 +196,7 @@ public abstract class Widget implements Styleable {
 
     /**
      * Removes a child widget.
+     *
      * @param child The child widget to remove
      */
     public void removeChild(Widget child) {

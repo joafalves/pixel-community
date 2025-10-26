@@ -4,6 +4,7 @@ import lombok.NoArgsConstructor;
 import org.pixel.commons.Color;
 import org.pixel.ext.weaver.style.property.model.Measurement;
 import org.pixel.ext.weaver.style.property.type.BoxSizingType;
+import org.pixel.ext.weaver.style.property.type.OverflowType;
 import org.pixel.ext.weaver.style.property.type.PositionType;
 
 /**
@@ -63,6 +64,18 @@ public final class StyleProperties {
     // ===== Border Properties =====
     public static final StyleProperty<Measurement> BORDER_RADIUS =
             new StyleProperty<>("border-radius", Measurement.class, Measurement.defaultValue());
+
+    public static final StyleProperty<Measurement> BORDER_TOP_LEFT_RADIUS =
+            new StyleProperty<>("border-top-left-radius", Measurement.class, Measurement.defaultValue());
+
+    public static final StyleProperty<Measurement> BORDER_TOP_RIGHT_RADIUS =
+            new StyleProperty<>("border-top-right-radius", Measurement.class, Measurement.defaultValue());
+
+    public static final StyleProperty<Measurement> BORDER_BOTTOM_RIGHT_RADIUS =
+            new StyleProperty<>("border-bottom-right-radius", Measurement.class, Measurement.defaultValue());
+
+    public static final StyleProperty<Measurement> BORDER_BOTTOM_LEFT_RADIUS =
+            new StyleProperty<>("border-bottom-left-radius", Measurement.class, Measurement.defaultValue());
 
     public static final StyleProperty<Measurement> BORDER_WIDTH =
             new StyleProperty<>("border-width", Measurement.class, Measurement.defaultValue());
@@ -198,7 +211,7 @@ public final class StyleProperties {
     public static final StyleProperty<PositionType> POSITION =
             new StyleProperty<>("position", PositionType.class, PositionType.defaultValue());
 
-    public static final StyleProperty<String> OVERFLOW =
-            new StyleProperty<>("overflow", String.class, "visible");
+    public static final StyleProperty<OverflowType> OVERFLOW =
+            new StyleProperty<>("overflow", OverflowType.class, OverflowType.defaultValue());
 }
 

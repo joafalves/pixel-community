@@ -8,6 +8,7 @@ import org.pixel.ext.weaver.style.property.StyleProperties;
 import org.pixel.ext.weaver.style.property.model.Measurement;
 import org.pixel.ext.weaver.style.property.type.BoxSizingType;
 import org.pixel.ext.weaver.style.property.type.MeasurementType;
+import org.pixel.ext.weaver.style.property.type.OverflowType;
 import org.pixel.ext.weaver.style.property.type.PositionType;
 
 import java.util.*;
@@ -49,7 +50,7 @@ public class StyleEngine {
      * The style cache is the most important performance feature.
      * We use WeakHashMap so that when a UIWidget is garbage collected,
      * its cached style is automatically removed.
-     *
+     * <p>
      * Key: Styleable widget
      * Value: A Pair of (Computed Style, Style Version)
      */
@@ -149,16 +150,50 @@ public class StyleEngine {
         // This is the critical optimization. We parse strings to native types *once*, right here.
         Map<String, Object> nativeProperties = new HashMap<>();
         for (Map.Entry<String, String> entry : stringProperties.entrySet()) {
-            String prop = entry.getKey();
+            String prop = entry.getKey().trim().toLowerCase();
             String value = entry.getValue();
 
-            // 5a. Resolve variable (e.g., "var(--main-color)")
+            // Resolve variable (e.g., "var(--main-color)")
             String resolvedValue = resolveVariable(value);
 
-            // 5b. Parse to native type (e.g., "#fff" -> Color object)
+            // Parse to native type (e.g., "#fff" -> Color object)
             Object nativeValue = parseValue(prop, resolvedValue);
 
             nativeProperties.put(prop, nativeValue);
+
+            // TODO: Optimize this with a registry or map of property expanders/parsers.
+            // Some properties MUST be expanded into multiple native properties (e.g., "margin: 10px" -> margin-top, margin-right, etc.)
+            if (prop.equals(StyleProperties.MARGIN.name())) {
+                Measurement m = (Measurement) nativeValue;
+                nativeProperties.put(StyleProperties.MARGIN_TOP.name(), m);
+                nativeProperties.put(StyleProperties.MARGIN_RIGHT.name(), m);
+                nativeProperties.put(StyleProperties.MARGIN_BOTTOM.name(), m);
+                nativeProperties.put(StyleProperties.MARGIN_LEFT.name(), m);
+            } else if (prop.equals(StyleProperties.PADDING.name())) {
+                Measurement p = (Measurement) nativeValue;
+                nativeProperties.put(StyleProperties.PADDING_TOP.name(), p);
+                nativeProperties.put(StyleProperties.PADDING_RIGHT.name(), p);
+                nativeProperties.put(StyleProperties.PADDING_BOTTOM.name(), p);
+                nativeProperties.put(StyleProperties.PADDING_LEFT.name(), p);
+            } else if (prop.equals(StyleProperties.BORDER_WIDTH.name())) {
+                Measurement b = (Measurement) nativeValue;
+                nativeProperties.put(StyleProperties.BORDER_TOP_WIDTH.name(), b);
+                nativeProperties.put(StyleProperties.BORDER_RIGHT_WIDTH.name(), b);
+                nativeProperties.put(StyleProperties.BORDER_BOTTOM_WIDTH.name(), b);
+                nativeProperties.put(StyleProperties.BORDER_LEFT_WIDTH.name(), b);
+            } else if (prop.equals(StyleProperties.BORDER_COLOR.name())) {
+                Color c = (Color) nativeValue;
+                nativeProperties.put(StyleProperties.BORDER_TOP_COLOR.name(), c);
+                nativeProperties.put(StyleProperties.BORDER_RIGHT_COLOR.name(), c);
+                nativeProperties.put(StyleProperties.BORDER_BOTTOM_COLOR.name(), c);
+                nativeProperties.put(StyleProperties.BORDER_LEFT_COLOR.name(), c);
+            } else if (prop.equals(StyleProperties.BORDER_RADIUS.name())) {
+                Measurement r = (Measurement) nativeValue;
+                nativeProperties.put(StyleProperties.BORDER_TOP_LEFT_RADIUS.name(), r);
+                nativeProperties.put(StyleProperties.BORDER_TOP_RIGHT_RADIUS.name(), r);
+                nativeProperties.put(StyleProperties.BORDER_BOTTOM_RIGHT_RADIUS.name(), r);
+                nativeProperties.put(StyleProperties.BORDER_BOTTOM_LEFT_RADIUS.name(), r);
+            }
         }
 
         // --- Apply Inline Styles ---
@@ -205,54 +240,53 @@ public class StyleEngine {
      */
     private Object parseValue(String property, String value) {
         // TODO: Make this more elegant, perhaps using a registry or map of parsers.
-
         // Color properties
         if (property.equals(StyleProperties.BACKGROUND_COLOR.name()) ||
-            property.equals(StyleProperties.COLOR.name()) ||
-            property.equals(StyleProperties.BORDER_COLOR.name()) ||
-            property.equals(StyleProperties.BORDER_TOP_COLOR.name()) ||
-            property.equals(StyleProperties.BORDER_RIGHT_COLOR.name()) ||
-            property.equals(StyleProperties.BORDER_BOTTOM_COLOR.name()) ||
-            property.equals(StyleProperties.BORDER_LEFT_COLOR.name()) ||
-            property.equals(StyleProperties.CARET_COLOR.name()) ||
-            property.equals(StyleProperties.OUTLINE_COLOR.name())) {
+                property.equals(StyleProperties.COLOR.name()) ||
+                property.equals(StyleProperties.BORDER_COLOR.name()) ||
+                property.equals(StyleProperties.BORDER_TOP_COLOR.name()) ||
+                property.equals(StyleProperties.BORDER_RIGHT_COLOR.name()) ||
+                property.equals(StyleProperties.BORDER_BOTTOM_COLOR.name()) ||
+                property.equals(StyleProperties.BORDER_LEFT_COLOR.name()) ||
+                property.equals(StyleProperties.CARET_COLOR.name()) ||
+                property.equals(StyleProperties.OUTLINE_COLOR.name())) {
             return Color.fromString(value);
         }
 
         // Measurements (e.g., "10px", "50%")
         if (property.equals(StyleProperties.BORDER_RADIUS.name()) ||
-            property.equals(StyleProperties.FONT_SIZE.name()) ||
-            property.equals(StyleProperties.WIDTH.name()) ||
-            property.equals(StyleProperties.HEIGHT.name()) ||
-            property.equals(StyleProperties.MIN_WIDTH.name()) ||
-            property.equals(StyleProperties.MIN_HEIGHT.name()) ||
-            property.equals(StyleProperties.MAX_WIDTH.name()) ||
-            property.equals(StyleProperties.MAX_HEIGHT.name()) ||
-            property.equals(StyleProperties.LINE_HEIGHT.name()) ||
-            property.equals(StyleProperties.LETTER_SPACING.name()) ||
-            property.equals(StyleProperties.WORD_SPACING.name()) ||
-            property.equals(StyleProperties.TEXT_INDENT.name()) ||
-            property.equals(StyleProperties.BORDER_WIDTH.name()) ||
-            property.equals(StyleProperties.BORDER_TOP_WIDTH.name()) ||
-            property.equals(StyleProperties.BORDER_RIGHT_WIDTH.name()) ||
-            property.equals(StyleProperties.BORDER_BOTTOM_WIDTH.name()) ||
-            property.equals(StyleProperties.BORDER_LEFT_WIDTH.name()) ||
-            property.equals(StyleProperties.OUTLINE_WIDTH.name()) ||
-            property.equals(StyleProperties.OUTLINE_OFFSET.name()) ||
-            property.equals(StyleProperties.PADDING.name()) ||
-            property.equals(StyleProperties.PADDING_TOP.name()) ||
-            property.equals(StyleProperties.PADDING_RIGHT.name()) ||
-            property.equals(StyleProperties.PADDING_BOTTOM.name()) ||
-            property.equals(StyleProperties.PADDING_LEFT.name()) ||
-            property.equals(StyleProperties.MARGIN.name()) ||
-            property.equals(StyleProperties.MARGIN_TOP.name()) ||
-            property.equals(StyleProperties.MARGIN_RIGHT.name()) ||
-            property.equals(StyleProperties.MARGIN_BOTTOM.name()) ||
-            property.equals(StyleProperties.MARGIN_LEFT.name()) ||
-            property.equals(StyleProperties.TOP.name()) ||
-            property.equals(StyleProperties.RIGHT.name()) ||
-            property.equals(StyleProperties.BOTTOM.name()) ||
-            property.equals(StyleProperties.LEFT.name())) {
+                property.equals(StyleProperties.FONT_SIZE.name()) ||
+                property.equals(StyleProperties.WIDTH.name()) ||
+                property.equals(StyleProperties.HEIGHT.name()) ||
+                property.equals(StyleProperties.MIN_WIDTH.name()) ||
+                property.equals(StyleProperties.MIN_HEIGHT.name()) ||
+                property.equals(StyleProperties.MAX_WIDTH.name()) ||
+                property.equals(StyleProperties.MAX_HEIGHT.name()) ||
+                property.equals(StyleProperties.LINE_HEIGHT.name()) ||
+                property.equals(StyleProperties.LETTER_SPACING.name()) ||
+                property.equals(StyleProperties.WORD_SPACING.name()) ||
+                property.equals(StyleProperties.TEXT_INDENT.name()) ||
+                property.equals(StyleProperties.BORDER_WIDTH.name()) ||
+                property.equals(StyleProperties.BORDER_TOP_WIDTH.name()) ||
+                property.equals(StyleProperties.BORDER_RIGHT_WIDTH.name()) ||
+                property.equals(StyleProperties.BORDER_BOTTOM_WIDTH.name()) ||
+                property.equals(StyleProperties.BORDER_LEFT_WIDTH.name()) ||
+                property.equals(StyleProperties.OUTLINE_WIDTH.name()) ||
+                property.equals(StyleProperties.OUTLINE_OFFSET.name()) ||
+                property.equals(StyleProperties.PADDING.name()) ||
+                property.equals(StyleProperties.PADDING_TOP.name()) ||
+                property.equals(StyleProperties.PADDING_RIGHT.name()) ||
+                property.equals(StyleProperties.PADDING_BOTTOM.name()) ||
+                property.equals(StyleProperties.PADDING_LEFT.name()) ||
+                property.equals(StyleProperties.MARGIN.name()) ||
+                property.equals(StyleProperties.MARGIN_TOP.name()) ||
+                property.equals(StyleProperties.MARGIN_RIGHT.name()) ||
+                property.equals(StyleProperties.MARGIN_BOTTOM.name()) ||
+                property.equals(StyleProperties.MARGIN_LEFT.name()) ||
+                property.equals(StyleProperties.TOP.name()) ||
+                property.equals(StyleProperties.RIGHT.name()) ||
+                property.equals(StyleProperties.BOTTOM.name()) ||
+                property.equals(StyleProperties.LEFT.name())) {
             return parseCssMeasurement(value);
         }
 
@@ -281,8 +315,11 @@ public class StyleEngine {
             return BoxSizingType.valueOf(value.toUpperCase().replace("-", "_"));
         }
 
-        // Keywords and other properties stay as String
-        // (display, position, overflow, text-align, font-family, cursor, etc.)
+        if (property.equals(StyleProperties.OVERFLOW.name())) {
+            return OverflowType.valueOf(value.toUpperCase());
+        }
+
+        // Keywords and other properties stay as String ( possibly due to lack of specific parsers YET )
         return value;
     }
 
@@ -300,7 +337,7 @@ public class StyleEngine {
     }
 
     /**
-     * Parses a CSS measurement (e.g., "10px", "50%")
+     * Parses a CSS measurement (e.g., "10px", "50%", or "auto")
      */
     private Measurement parseCssMeasurement(String value) {
         if (value == null || value.isEmpty()) {
@@ -310,6 +347,10 @@ public class StyleEngine {
         String trimmed = value.trim();
         if (trimmed.isEmpty()) {
             return Measurement.defaultValue();
+        }
+
+        if (trimmed.equalsIgnoreCase("auto")) {
+            return new Measurement(0, MeasurementType.AUTO);
         }
 
         // Find the split point: the first character that isn't part of a number.

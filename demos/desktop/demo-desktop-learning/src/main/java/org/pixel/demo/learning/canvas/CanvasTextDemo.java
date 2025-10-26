@@ -89,7 +89,7 @@ public class CanvasTextDemo extends DemoGame {
         // === TITLE ===
         TextStyle titleStyle = new TextStyle(Color.WHITE)
             .withStroke(new Color(0.2f, 0.4f, 0.8f, 1.0f), 3.0f);
-        canvas.text("Canvas Text Renderer - Comprehensive Demo", titleFont, x, y)
+        canvas.text("Canvas Text Renderer - Comprehensive Demo ♥", titleFont, x, y)
             .withStyle(titleStyle)
             .apply();
         y += 50;

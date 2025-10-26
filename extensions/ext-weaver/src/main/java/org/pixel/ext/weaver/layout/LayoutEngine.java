@@ -5,6 +5,7 @@ import org.pixel.ext.weaver.WeaverContext;
 import org.pixel.ext.weaver.style.property.StyleProperties;
 import org.pixel.ext.weaver.style.property.model.Measurement;
 import org.pixel.ext.weaver.style.property.type.BoxSizingType;
+import org.pixel.ext.weaver.style.property.type.MeasurementType;
 import org.pixel.ext.weaver.widget.Widget;
 
 public class LayoutEngine {
@@ -40,7 +41,23 @@ public class LayoutEngine {
         var width = style.get(StyleProperties.WIDTH);
         var height = style.get(StyleProperties.HEIGHT);
 
+        float calculatedWidth = 0;
+        if (width.type() == MeasurementType.AUTO) {
+            calculatedWidth = widget.getIntrinsicWidth(ctx);
+        } else {
+            calculatedWidth = resolveMeasurement(width, parentContentBox.getWidth());
+        }
+
+        float calculatedHeight = 0;
+        if (height.type() == MeasurementType.AUTO) {
+            calculatedHeight = widget.getIntrinsicHeight(ctx);
+        } else {
+            calculatedHeight = resolveMeasurement(height, parentContentBox.getHeight());
+        }
+
         // calculate CONTENT-BOX:
+        boxModel.getContentBox().setWidth(calculatedWidth);
+        boxModel.getContentBox().setHeight(calculatedHeight);
 
 
         // Recursively layout child widgets
@@ -69,4 +86,15 @@ public class LayoutEngine {
         this.needsLayout = false; // there is nothing to layout
     }
 
+    private float resolveMeasurement(Measurement measurement, float parentSize) {
+        if (measurement == null) {
+            return 0;
+        }
+
+        return switch (measurement.type()) {
+            case PIXEL -> measurement.value();
+            case PERCENTAGE -> (measurement.value() / 100.0f) * parentSize;
+            case AUTO -> 0; // Auto handling can be implemented as needed
+        };
+    }
 }
