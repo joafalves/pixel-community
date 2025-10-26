@@ -151,7 +151,7 @@ public abstract class Widget implements Styleable {
         var borderBottomRightRadius = style.get(StyleProperties.BORDER_BOTTOM_RIGHT_RADIUS);
         var borderColor = style.get(StyleProperties.BORDER_COLOR);
 
-        var contentBox = getBoxModel().getContentBox();
+        var contentBox = getBoxModel().getBorderBox(); // Background and border are drawn in the border box
         var canvas = ctx.getCanvas();
 
         var op = canvas.rect(contentBox.getX(), contentBox.getY(), contentBox.getWidth(), contentBox.getHeight())

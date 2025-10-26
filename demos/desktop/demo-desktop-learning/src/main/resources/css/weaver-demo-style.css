@@ -11,8 +11,8 @@ panel {
     background-color: #666;
     overflow: hidden;
 
-    left: 25px;
-    top: 25px;
+    left: 20px;
+    top: 20px;
 
     width: 800px;
     height: 600px;
@@ -24,12 +24,15 @@ panel {
 label {
     top: 20px;
     left: 20px;
-    font-size: 18px;
+    font-size: 16px;
 
     background-color: #f90;
     border-radius: 8px;
+    border-width: 4px;
+    border-color: #995;
 
     color: #fff;
 
+    margin: 8px;
     padding: 8px;
 }
