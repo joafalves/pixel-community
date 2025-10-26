@@ -2,11 +2,13 @@ package org.pixel.ext.weaver;
 
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.ext.weaver.layout.LayoutEngine;
 import org.pixel.ext.weaver.style.StyleEngine;
+import org.pixel.ext.weaver.style.resource.ResourceStore;
 import org.pixel.graphics.render.canvas.Canvas;
+import org.pixel.graphics.render.canvas.text.SdfFont;
+import org.pixel.math.Rectangle;
 
 @Builder
 public class WeaverContext implements Disposable {
@@ -19,11 +21,10 @@ public class WeaverContext implements Disposable {
     private LayoutEngine layoutEngine;
 
     @Getter
-    @Setter
-    private int viewportWidth;
+    private ResourceStore<SdfFont> fontStore;
+
     @Getter
-    @Setter
-    private int viewportHeight;
+    private Rectangle viewport;
 
     @Override
     public void dispose() {
@@ -33,8 +34,7 @@ public class WeaverContext implements Disposable {
     }
 
     public void setViewport(int width, int height) {
-        this.viewportWidth = width;
-        this.viewportHeight = height;
+        viewport.set(0, 0, width, height);
         if (canvas != null) {
             canvas.setViewport(width, height);
         }

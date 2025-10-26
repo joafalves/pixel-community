@@ -1,6 +1,5 @@
 package org.pixel.ext.weaver;
 
-import lombok.Getter;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.commons.lifecycle.Drawable;
@@ -11,8 +10,15 @@ import org.pixel.content.ContentManager;
 import org.pixel.ext.weaver.layout.LayoutEngine;
 import org.pixel.ext.weaver.style.StyleEngine;
 import org.pixel.ext.weaver.style.parser.StyleSheetParser;
+import org.pixel.ext.weaver.style.resource.FontResource;
+import org.pixel.ext.weaver.style.resource.Resource;
+import org.pixel.ext.weaver.style.resource.ResourceStore;
 import org.pixel.ext.weaver.widget.Widget;
 import org.pixel.graphics.render.canvas.Canvas;
+import org.pixel.graphics.render.canvas.text.SdfFont;
+import org.pixel.math.Rectangle;
+
+import java.util.List;
 
 public class Weaver implements Updatable, Drawable, Disposable {
 
@@ -29,15 +35,18 @@ public class Weaver implements Updatable, Drawable, Disposable {
         this.contentManager = ContentManager.create();
         this.context = WeaverContext.builder()
                 .canvas(Canvas.create(viewportWidth, viewportHeight))
-                .viewportWidth(viewportWidth)
-                .viewportHeight(viewportHeight)
+                .viewport(new Rectangle(0, 0, viewportWidth, viewportHeight))
                 .styleEngine(new StyleEngine())
                 .layoutEngine(new LayoutEngine())
+                .fontStore(new ResourceStore<>())
                 .build();
     }
 
     @Override
     public void update(DeltaTime delta) {
+        // Call layout engine to update layouts if needed
+        context.getLayoutEngine().layout(context);
+
         if (root != null && root.isEnabled()) {
             root.update(delta, context);
         }
@@ -70,9 +79,15 @@ public class Weaver implements Updatable, Drawable, Disposable {
      */
     public Widget setContent(Widget root) {
         final var previousRoot = this.root;
-        this.root = root;
-        this.root.detach(); // root has no parent
-        this.context.getLayoutEngine().setRootWidget(root);
+
+        if (root != null) {
+            this.root = root;
+            this.root.detach(); // ensure root has no parent
+            this.context.getLayoutEngine().setRootWidget(root);
+
+        } else {
+            this.context.getLayoutEngine().clear();
+        }
 
         return previousRoot;
     }
@@ -123,6 +138,10 @@ public class Weaver implements Updatable, Drawable, Disposable {
 
         context.getStyleEngine().loadStyleSheet(styleSheet);
 
+        if (styleSheet.resources() != null && !styleSheet.resources().isEmpty()) {
+            loadResources(styleSheet.resources());
+        }
+
         return true;
     }
 
@@ -134,7 +153,21 @@ public class Weaver implements Updatable, Drawable, Disposable {
      */
     public void setViewport(int width, int height) {
         context.setViewport(width, height);
-        // TODO: invalidate layout of widgets
+        // TODO: invalidate layout of widgets (?)
     }
 
+    private void loadResources(List<Resource> resources) {
+        for (Resource resource : resources) {
+            if (resource instanceof FontResource fontResource) {
+                LOG.debug("Loading font resource from path: {0}.", fontResource.getPath());
+
+                var font = contentManager.load(fontResource.getPath(), SdfFont.class);
+                if (font != null) {
+                    context.getFontStore().put(fontResource.getName(), font);
+                } else {
+                    LOG.warn("Could not load font resource from path: {0}.", fontResource.getPath());
+                }
+            }
+        }
+    }
 }

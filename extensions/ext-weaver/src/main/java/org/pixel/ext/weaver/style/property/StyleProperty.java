@@ -1,4 +1,4 @@
-package org.pixel.ext.weaver.style;
+package org.pixel.ext.weaver.style.property;
 
 public record StyleProperty<T>(String name, Class<T> type, T defaultValue) {
 

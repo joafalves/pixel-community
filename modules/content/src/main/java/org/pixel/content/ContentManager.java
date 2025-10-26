@@ -101,7 +101,7 @@ public class ContentManager implements Disposable {
      */
     private String getCacheReference(String filename, Class<?> type, ContentImporterSettings settings) {
         if (settings != null) {
-            return  type.getCanonicalName() + ":" + filename + ":" + settings.hashCode();
+            return type.getCanonicalName() + ":" + filename + ":" + settings.hashCode();
         }
         return type.getCanonicalName() + ":" + filename;
     }

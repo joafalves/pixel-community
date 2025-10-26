@@ -6,9 +6,8 @@ import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.ext.weaver.WeaverContext;
 import org.pixel.ext.weaver.style.parser.StyleSheetParser;
+import org.pixel.ext.weaver.style.property.StyleProperties;
 import org.pixel.ext.weaver.widget.Widget;
-
-import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -45,7 +44,7 @@ class StyleEngineTest {
         // Verify the properties were applied and parsed
         assertNotNull(style);
         assertColorEquals(Color.fromString("#FF0000"), style.get(StyleProperties.BACKGROUND_COLOR));
-        assertEquals(14.0f, style.<Float>get(StyleProperties.FONT_SIZE));
+        assertEquals(14.0f, style.get(StyleProperties.FONT_SIZE).value());
     }
 
     @Test
@@ -202,7 +201,7 @@ class StyleEngineTest {
         // color should be inherited from panel
         assertColorEquals(Color.fromString("#FF0000"), style.get(StyleProperties.COLOR));
         // font-size should be from more specific rule
-        assertEquals(14.0f, style.<Float>get(StyleProperties.FONT_SIZE));
+        assertEquals(14.0f, style.get(StyleProperties.FONT_SIZE).value());
     }
 
     @Test
@@ -230,7 +229,7 @@ class StyleEngineTest {
 
         // Button should inherit color from panel but have its own font-size
         assertColorEquals(Color.fromString("#F8F8F8"), buttonStyle.get(StyleProperties.COLOR));
-        assertEquals(14.0f, buttonStyle.<Float>get(StyleProperties.FONT_SIZE));
+        assertEquals(14.0f, buttonStyle.get(StyleProperties.FONT_SIZE).value());
     }
 
     @Test
@@ -434,7 +433,7 @@ class StyleEngineTest {
         // Second stylesheet should override background-color
         assertColorEquals(Color.fromString("#0000FF"), style.get(StyleProperties.BACKGROUND_COLOR));
         // But font-size from first stylesheet should remain
-        assertEquals(14.0f, style.<Float>get(StyleProperties.FONT_SIZE));
+        assertEquals(14.0f, style.get(StyleProperties.FONT_SIZE).value());
     }
 
     @Test

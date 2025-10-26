@@ -4,6 +4,11 @@ import org.pixel.commons.Color;
 import org.pixel.commons.data.Pair;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.ext.weaver.style.property.StyleProperties;
+import org.pixel.ext.weaver.style.property.model.Measurement;
+import org.pixel.ext.weaver.style.property.type.BoxSizingType;
+import org.pixel.ext.weaver.style.property.type.MeasurementType;
+import org.pixel.ext.weaver.style.property.type.PositionType;
 
 import java.util.*;
 
@@ -214,7 +219,7 @@ public class StyleEngine {
             return Color.fromString(value);
         }
 
-        // Dimension/size properties (with units like px, em, rem, %)
+        // Measurements (e.g., "10px", "50%")
         if (property.equals(StyleProperties.BORDER_RADIUS.name()) ||
             property.equals(StyleProperties.FONT_SIZE.name()) ||
             property.equals(StyleProperties.WIDTH.name()) ||
@@ -247,11 +252,8 @@ public class StyleEngine {
             property.equals(StyleProperties.TOP.name()) ||
             property.equals(StyleProperties.RIGHT.name()) ||
             property.equals(StyleProperties.BOTTOM.name()) ||
-            property.equals(StyleProperties.LEFT.name()) ||
-            property.equals(StyleProperties.GAP.name()) ||
-            property.equals(StyleProperties.ROW_GAP.name()) ||
-            property.equals(StyleProperties.COLUMN_GAP.name())) {
-            return parseCssNumber(value);
+            property.equals(StyleProperties.LEFT.name())) {
+            return parseCssMeasurement(value);
         }
 
         // Opacity (0-1 range, unitless)
@@ -269,29 +271,88 @@ public class StyleEngine {
             return parseFontWeight(value);
         }
 
+        // Position type (static, relative, absolute, fixed)
+        if (property.equals(StyleProperties.POSITION.name())) {
+            return PositionType.valueOf(value.toUpperCase());
+        }
+
+        // Box sizing (content-box, border-box)
+        if (property.equals(StyleProperties.BOX_SIZING.name())) {
+            return BoxSizingType.valueOf(value.toUpperCase().replace("-", "_"));
+        }
+
         // Keywords and other properties stay as String
         // (display, position, overflow, text-align, font-family, cursor, etc.)
         return value;
     }
 
-    /**
-     * Parses a CSS number value, stripping common units like px, em, rem, %, etc.
-     * For now, we just return the numeric value and ignore the unit.
-     */
-    private float parseCssNumber(String value) {
+    private float parseFloat(String value) {
         if (value == null || value.isEmpty()) {
             return 0f;
         }
 
-        // Strip common CSS units
-        String numericPart = value.replaceAll("(px|em|rem|%|pt|vh|vw)$", "").trim();
-
         try {
-            return Float.parseFloat(numericPart);
+            return Float.parseFloat(value.trim());
         } catch (NumberFormatException e) {
-            LOG.warn("Failed to parse CSS number from value {0}.", value, e);
+            LOG.warn("Failed to parse float from value {0}.", value, e);
             return 0f;
         }
+    }
+
+    /**
+     * Parses a CSS measurement (e.g., "10px", "50%")
+     */
+    private Measurement parseCssMeasurement(String value) {
+        if (value == null || value.isEmpty()) {
+            return Measurement.defaultValue();
+        }
+
+        String trimmed = value.trim();
+        if (trimmed.isEmpty()) {
+            return Measurement.defaultValue();
+        }
+
+        // Find the split point: the first character that isn't part of a number.
+        // This is much faster than regex.
+        int splitIndex = trimmed.length();
+        for (int i = 0; i < trimmed.length(); i++) {
+            char c = trimmed.charAt(i);
+
+            // Allow leading sign
+            if (i == 0 && (c == '+' || c == '-')) {
+                continue;
+            }
+
+            // Check if it's a digit or decimal point
+            if ((c >= '0' && c <= '9') || c == '.') {
+                continue;
+            }
+
+            // Not a number part. This is the start of the unit.
+            splitIndex = i;
+            break;
+        }
+
+        // Extract the two parts
+        String numberPart = trimmed.substring(0, splitIndex);
+        // Use toLowerCase() only on the small unit part
+        String unitPart = trimmed.substring(splitIndex).trim().toLowerCase();
+
+        float number;
+        try {
+            // This will fail on "auto" or malformed "1.2.3", which is good.
+            number = Float.parseFloat(numberPart);
+        } catch (NumberFormatException e) {
+            return Measurement.defaultValue();
+        }
+
+        // Corrected logic: Only "%" is PERCENT.
+        // Everything else ("px", "em", or no unit "") defaults to PIXEL.
+        MeasurementType type = "%".equals(unitPart)
+                ? MeasurementType.PERCENTAGE
+                : MeasurementType.PIXEL;
+
+        return new Measurement(number, type);
     }
 
     /**

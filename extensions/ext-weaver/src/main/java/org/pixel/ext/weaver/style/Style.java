@@ -1,5 +1,7 @@
 package org.pixel.ext.weaver.style;
 
+import org.pixel.ext.weaver.style.property.StyleProperty;
+
 import java.util.Map;
 
 /**

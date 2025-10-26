@@ -5,8 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.pixel.commons.DeltaTime;
 import org.pixel.ext.weaver.WeaverContext;
-import org.pixel.ext.weaver.style.StyleProperty;
+import org.pixel.ext.weaver.layout.BoxModel;
+import org.pixel.ext.weaver.style.property.StyleProperty;
 import org.pixel.ext.weaver.style.Styleable;
+import org.pixel.math.Vector2;
 
 import java.util.*;
 
@@ -15,7 +17,12 @@ public abstract class Widget implements Styleable {
     private final Map<String, Object> inlineStyleMap = new HashMap<>();
     private final Set<String> pseudoClasses = new HashSet<>();
     private final Set<String> classes = new HashSet<>();
+
+    @Getter
     private final List<Widget> children = new ArrayList<>();
+
+    @Getter
+    private final BoxModel boxModel = new BoxModel();
 
     @Setter
     @Getter

@@ -1,3 +1,7 @@
+:res {
+    font: roboto, __weaver__/font/roboto-regular.ttf, 32;
+}
+
 widget {
     background: #333;
 }

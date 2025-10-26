@@ -4,6 +4,8 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.ext.weaver.Weaver;
+import org.pixel.ext.weaver.widget.LabelWidget;
+import org.pixel.ext.weaver.widget.PanelWidget;
 
 public class WeaverDemo extends DemoGame {
 
@@ -17,17 +19,26 @@ public class WeaverDemo extends DemoGame {
     public void load() {
         ui = new Weaver(getViewportWidth(), getViewportHeight());
         ui.loadStyleSheetFromResources("css/weaver-demo-style.css");
+
+        var panel = new PanelWidget();
+
+        var label = new LabelWidget();
+        label.setText("Hello, Weaver!");
+
+        panel.addChild(label);
+
+        ui.setContent(panel);
     }
 
     @Override
     public void update(DeltaTime delta) {
-
+        ui.update(delta);
         super.update(delta);
     }
 
     @Override
     public void draw(DeltaTime delta) {
-
+        ui.draw(delta);
     }
 
     @Override
