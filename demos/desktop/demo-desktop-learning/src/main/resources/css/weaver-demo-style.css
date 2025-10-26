@@ -8,14 +8,21 @@ widget {
 }
 
 panel {
-    background: #666;
+    background-color: #666;
     overflow: hidden;
+
+    left: 25px;
+    top: 25px;
 
     width: 800px;
     height: 600px;
+
+    border-top-left-radius: 16px;
+    border-bottom-right-radius: 16px;
 }
 
 label {
+    top: 20px;
     left: 20px;
     font-size: 18px;
 
@@ -23,4 +30,6 @@ label {
     border-radius: 8px;
 
     color: #fff;
+
+    padding: 8px;
 }

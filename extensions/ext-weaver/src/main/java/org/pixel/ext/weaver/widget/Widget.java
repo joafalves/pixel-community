@@ -9,6 +9,7 @@ import org.pixel.ext.weaver.layout.BoxModel;
 import org.pixel.ext.weaver.style.property.StyleProperties;
 import org.pixel.ext.weaver.style.property.StyleProperty;
 import org.pixel.ext.weaver.style.Styleable;
+import org.pixel.ext.weaver.style.property.type.PositionType;
 
 import java.util.*;
 

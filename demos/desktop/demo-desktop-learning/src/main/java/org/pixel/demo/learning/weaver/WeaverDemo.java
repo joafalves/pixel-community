@@ -5,7 +5,7 @@ import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.ext.weaver.Weaver;
 import org.pixel.ext.weaver.widget.Label;
-import org.pixel.ext.weaver.widget.PanelWidget;
+import org.pixel.ext.weaver.widget.Panel;
 
 public class WeaverDemo extends DemoGame {
 
@@ -20,7 +20,7 @@ public class WeaverDemo extends DemoGame {
         ui = new Weaver(getViewportWidth(), getViewportHeight());
         ui.loadStyleSheetFromResources("css/weaver-demo-style.css");
 
-        var panel = new PanelWidget();
+        var panel = new Panel();
 
         var label = new Label();
         label.setText("Hello, Weaver!");

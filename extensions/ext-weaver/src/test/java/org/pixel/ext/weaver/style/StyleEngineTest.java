@@ -459,10 +459,12 @@ class StyleEngineTest {
         Style buttonStyle = styleEngine.getComputedStyle(button);
 
         // Button should inherit nothing from panel since no inheritance is defined for these properties
-        assertNull(buttonStyle.get(StyleProperties.BACKGROUND_COLOR), "Button should not inherit background-color from panel");
-        assertNull(buttonStyle.get(StyleProperties.WIDTH), "Button should not inherit width from panel");
-        assertNull(buttonStyle.get(StyleProperties.HEIGHT), "Button should not inherit height from panel");
+        assertNull(buttonStyle.getRaw(StyleProperties.BACKGROUND_COLOR.name()), "Button should not inherit background-color from panel");
+        assertNull(buttonStyle.getRaw(StyleProperties.WIDTH.name()), "Button should not inherit width from panel");
+        assertNull(buttonStyle.getRaw(StyleProperties.HEIGHT.name()), "Button should not inherit height from panel");
         // But button should have its own font-size
+        assertNotNull(buttonStyle.getRaw(StyleProperties.FONT_SIZE.name()), "Button should have font-size from button rule");
+        assertEquals(14.0f, buttonStyle.get(StyleProperties.FONT_SIZE).value());
     }
 
     @Test
@@ -496,7 +498,7 @@ class StyleEngineTest {
         assertEquals(expected.getAlpha(), actual.getAlpha(), 0.01f, "Alpha component mismatch");
     }
 
-    private static class TestWidget extends Widget {
+    static class TestWidget extends Widget {
 
         private final String styleType;
 

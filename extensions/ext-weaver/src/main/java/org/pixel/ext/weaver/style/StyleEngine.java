@@ -6,10 +6,7 @@ import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.ext.weaver.style.property.StyleProperties;
 import org.pixel.ext.weaver.style.property.model.Measurement;
-import org.pixel.ext.weaver.style.property.type.BoxSizingType;
-import org.pixel.ext.weaver.style.property.type.MeasurementType;
-import org.pixel.ext.weaver.style.property.type.OverflowType;
-import org.pixel.ext.weaver.style.property.type.PositionType;
+import org.pixel.ext.weaver.style.property.type.*;
 
 import java.util.*;
 
@@ -271,6 +268,10 @@ public class StyleEngine {
                 property.equals(StyleProperties.BORDER_RIGHT_WIDTH.name()) ||
                 property.equals(StyleProperties.BORDER_BOTTOM_WIDTH.name()) ||
                 property.equals(StyleProperties.BORDER_LEFT_WIDTH.name()) ||
+                property.equals(StyleProperties.BORDER_TOP_LEFT_RADIUS.name()) ||
+                property.equals(StyleProperties.BORDER_TOP_RIGHT_RADIUS.name()) ||
+                property.equals(StyleProperties.BORDER_BOTTOM_RIGHT_RADIUS.name()) ||
+                property.equals(StyleProperties.BORDER_BOTTOM_LEFT_RADIUS.name()) ||
                 property.equals(StyleProperties.OUTLINE_WIDTH.name()) ||
                 property.equals(StyleProperties.OUTLINE_OFFSET.name()) ||
                 property.equals(StyleProperties.PADDING.name()) ||
@@ -288,6 +289,11 @@ public class StyleEngine {
                 property.equals(StyleProperties.BOTTOM.name()) ||
                 property.equals(StyleProperties.LEFT.name())) {
             return parseCssMeasurement(value);
+        }
+
+        // Display
+        if (property.equals(StyleProperties.DISPLAY.name())) {
+            return DisplayType.valueOf(value.toUpperCase());
         }
 
         // Opacity (0-1 range, unitless)
@@ -463,6 +469,12 @@ public class StyleEngine {
         // Use regex to handle multiple consecutive spaces
         String[] parts = selector.trim().split("\\s+");
 
+        // For simple selectors (no spaces, single part), only match the widget itself
+        if (parts.length == 1) {
+            return partMatches(parts[0], widget);
+        }
+
+        // For descendant selectors (multiple parts), walk up the tree
         Styleable currentWidget = widget;
         int partIndex = parts.length - 1; // Start with the right-most part
 
@@ -472,15 +484,20 @@ public class StyleEngine {
             if (partMatches(part, currentWidget)) {
                 // Good, this part matches. Move to the next part on the left.
                 partIndex--;
+
+                // If we matched all parts, we're done
+                if (partIndex < 0) {
+                    return true;
+                }
             }
 
-            // Always move up the tree to check the ancestor.
+            // Move up the tree to check the ancestor.
             // This is what makes "panel button" work.
             currentWidget = currentWidget.getStyleableParent();
         }
 
-        // If we matched all parts, partIndex will be -1
-        return (partIndex < 0);
+        // If we didn't match all parts, return false
+        return false;
     }
 
     /**

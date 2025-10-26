@@ -4,6 +4,7 @@ import lombok.NoArgsConstructor;
 import org.pixel.commons.Color;
 import org.pixel.ext.weaver.style.property.model.Measurement;
 import org.pixel.ext.weaver.style.property.type.BoxSizingType;
+import org.pixel.ext.weaver.style.property.type.DisplayType;
 import org.pixel.ext.weaver.style.property.type.OverflowType;
 import org.pixel.ext.weaver.style.property.type.PositionType;
 
@@ -205,8 +206,8 @@ public final class StyleProperties {
             new StyleProperty<>("direction", String.class, "ltr");
 
     // ===== Display Properties =====
-    public static final StyleProperty<String> DISPLAY =
-            new StyleProperty<>("display", String.class, "block");
+    public static final StyleProperty<DisplayType> DISPLAY =
+            new StyleProperty<>("display", DisplayType.class, DisplayType.defaultValue());
 
     public static final StyleProperty<PositionType> POSITION =
             new StyleProperty<>("position", PositionType.class, PositionType.defaultValue());

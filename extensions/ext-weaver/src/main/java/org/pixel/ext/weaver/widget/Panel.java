@@ -3,7 +3,7 @@ package org.pixel.ext.weaver.widget;
 import org.pixel.commons.DeltaTime;
 import org.pixel.ext.weaver.WeaverContext;
 
-public class PanelWidget extends Widget {
+public class Panel extends Widget {
 
     private final static String STYLE_TYPE = "panel";
 
