@@ -2,16 +2,15 @@ package org.pixel.demo.learning.tween;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
+import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.ext.tween.Tween;
 import org.pixel.ext.tween.TweenEasingMode;
 import org.pixel.ext.tween.TweenLoopMode;
-import org.pixel.core.WindowSettings;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Vector2;
 
@@ -39,8 +38,8 @@ public class TweenDemo extends DemoGame {
 
     @Override
     public void load() {
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        contentManager = ServiceProvider.get(ContentManager.class);
+        spriteBatch = SpriteBatch.create();
+        contentManager = ContentManager.create();
 
         spriteTexture = contentManager.loadTexture("images/earth-48x48.png");
 

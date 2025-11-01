@@ -40,8 +40,8 @@ public class AnimatedSpriteDemo extends DemoGame {
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        content = ServiceProvider.get(ContentManager.class);
+        spriteBatch = SpriteBatch.create();
+        content = ContentManager.create();
 
         // load texture into memory
         spriteTex = content.load("images/char-anim-50x85.png", Texture.class);

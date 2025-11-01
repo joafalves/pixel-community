@@ -1,40 +1,28 @@
 package org.pixel.demo.concept.terragen;
 
-import static org.lwjgl.opengl.GL11C.GL_NEAREST;
-import static org.lwjgl.opengl.GL11C.GL_REPEAT;
-import static org.lwjgl.opengl.GL11C.GL_RGBA;
-import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MAG_FILTER;
-import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MIN_FILTER;
-import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_S;
-import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_T;
-import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_BYTE;
-import static org.lwjgl.opengl.GL11C.glBindTexture;
-import static org.lwjgl.opengl.GL11C.glGenTextures;
-import static org.lwjgl.opengl.GL11C.glTexImage2D;
-import static org.lwjgl.opengl.GL11C.glTexParameteri;
-import static org.lwjgl.system.libc.LibCStdlib.free;
-
-import java.nio.ByteBuffer;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 import org.lwjgl.BufferUtils;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.opengl.GLTexture;
-import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.core.Camera2D;
-import org.pixel.core.WindowSettings;
 import org.pixel.core.Game;
+import org.pixel.core.WindowSettings;
+import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.graphics.GraphicsBackend;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Rectangle;
+
+import java.nio.ByteBuffer;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+
+import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.system.libc.LibCStdlib.free;
 
 public class TerragenTextureGame extends Game {
 
@@ -73,7 +61,7 @@ public class TerragenTextureGame extends Game {
 
     @Override
     public void load() {
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
+        spriteBatch = SpriteBatch.create();
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
         fpsCounter = new FpsCounter(this, "Press R to reset seed");

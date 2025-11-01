@@ -13,7 +13,7 @@ public abstract class DesktopWindowManager implements WindowManager {
      * @param width  The width of the window.
      * @param height The height of the window.
      */
-    public abstract void setWindowDimensions(int width, int height);
+    public abstract void setWindowSize(int width, int height);
 
     /**
      * Set the window cursor mode.
@@ -75,5 +75,14 @@ public abstract class DesktopWindowManager implements WindowManager {
      */
     public int getWindowHeight() {
         return getWindowDimensions().getWindowHeight();
+    }
+
+    /**
+     * Request that the window be closed. Default implementations should
+     * forward to platform-specific behavior.
+     */
+    @Override
+    public void requestClose() {
+        // Default no-op, platform implementations may override for proper behavior
     }
 }

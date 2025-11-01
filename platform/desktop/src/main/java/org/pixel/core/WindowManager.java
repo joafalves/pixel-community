@@ -42,4 +42,11 @@ public interface WindowManager extends Initializable, Disposable {
      * @param enabled True if V-SYNC should be enabled, false otherwise.
      */
     void setVSync(boolean enabled);
+
+    /**
+     * Request the window be closed. Implementations should request a safe
+     * shutdown (for example by setting a flag) and perform actual teardown
+     * from the main loop to avoid calling native destruction from callbacks.
+     */
+    void requestClose();
 }

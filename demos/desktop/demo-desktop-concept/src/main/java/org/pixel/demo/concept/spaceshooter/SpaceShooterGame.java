@@ -53,8 +53,8 @@ public class SpaceShooterGame extends Game {
     @Override
     public void load() {
         fpsCounter = new FpsCounter(this);
-        var spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        var content = ServiceProvider.get(ContentManager.class);
+        var spriteBatch = SpriteBatch.create();
+        var content = ContentManager.create();
         gameCamera = new Camera2D(this);
         gameCamera.setOrigin(0);
 
@@ -74,9 +74,9 @@ public class SpaceShooterGame extends Game {
         backgroundTexture.setData(texturePack.getTexture(), texturePack.getFrames("bg-01", "bg-02", "bg-03", "bg-04"),
                 20, 15);
         var backgroundSprite = new BackgroundSprite("backgroundTexture", backgroundTexture,
-                new Rectangle(0, 0, getVirtualWidth(), getVirtualHeight()),
-                new Rectangle(0, 0, getVirtualWidth(), getVirtualHeight()));
-        backgroundSprite.getTransform().setScale(getVirtualWidth(), getVirtualHeight());
+                new Rectangle(0, 0, getViewportWidth(), getViewportHeight()),
+                new Rectangle(0, 0, getViewportWidth(), getViewportHeight()));
+        backgroundSprite.getTransform().setScale(getViewportWidth(), getViewportHeight());
         gameScene.addChild(backgroundSprite);
 
         var bulletContainer = new GameObject("BulletContainer");
@@ -85,7 +85,7 @@ public class SpaceShooterGame extends Game {
         var playerSprite = new PlayerSprite(texturePack.getFrame("player-ship"));
         playerSprite.getData().put(SpaceShooterAttribute.BULLET_CONTAINER, bulletContainer);
         playerSprite.getData().put(SpaceShooterAttribute.BULLET1_FRAME, texturePack.getFrame("bullet1"));
-        playerSprite.getTransform().setPosition(getVirtualWidth() / 2.f, getVirtualHeight() / 2.f);
+        playerSprite.getTransform().setPosition(getViewportWidth() / 2.f, getViewportHeight() / 2.f);
         playerSprite.getTransform().setRotation(-MathHelper.PIo2);
         playerSprite.addComponent(new PlayerInputComponent());
         playerSprite.addComponent(new ConstantVelocityComponent(new Vector2(0, 55.f)));
@@ -106,7 +106,7 @@ public class SpaceShooterGame extends Game {
         engineFireSprite.addComponent(engineFireAnimationComponent);
         engineFireAnimationComponent.play(true);
 
-        var enemyContainer = new EnemyContainer("EnemyContainer", new Rectangle(0, -100, getVirtualWidth(), 50),
+        var enemyContainer = new EnemyContainer("EnemyContainer", new Rectangle(0, -100, getViewportWidth(), 50),
                 texturePack.getFrame("enemy-ship1"), texturePack.getFrame("enemy-ship2"));
         gameScene.addChild(enemyContainer);
 

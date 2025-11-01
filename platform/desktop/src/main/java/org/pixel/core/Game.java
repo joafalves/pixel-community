@@ -4,15 +4,21 @@ import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;
 import org.pixel.audio.ALAudioPlayerFactory;
-import org.pixel.audio.AudioPlayer;
-import org.pixel.commons.service.ServiceProvider;
+import org.pixel.audio.AudioPlayerFactory;
+import org.pixel.commons.factory.FactoryProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.content.ContentManager;
+import org.pixel.content.ContentManagerFactory;
 import org.pixel.content.GLContentManagerFactory;
 import org.pixel.graphics.glfw.GLFWWindowManager;
 import org.pixel.graphics.opengl.GLGraphicsDevice;
-import org.pixel.graphics.render.SpriteBatch;
+import org.pixel.graphics.render.DirectRendererFactory;
+import org.pixel.graphics.render.SdfTextRendererFactory;
+import org.pixel.graphics.render.SpriteBatchFactory;
+import org.pixel.graphics.render.canvas.CanvasFactory;
+import org.pixel.graphics.render.canvas.GLCanvasServiceFactory;
+import org.pixel.graphics.render.canvas.text.GLSdfTextRendererServiceFactory;
+import org.pixel.graphics.render.opengl.GLDirectRendererServiceFactory;
 import org.pixel.graphics.render.opengl.GLSpriteBatchServiceFactory;
 
 import java.nio.ByteBuffer;
@@ -94,9 +100,13 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
 
         switch (this.settings.getGraphicsBackend()) {
             case OpenGL:
-                ServiceProvider.register(SpriteBatch.class, new GLSpriteBatchServiceFactory());
-                ServiceProvider.register(ContentManager.class, new GLContentManagerFactory());
-                ServiceProvider.register(AudioPlayer.class, new ALAudioPlayerFactory());
+                // Register all factories via FactoryProvider
+                FactoryProvider.register(SpriteBatchFactory.class, new GLSpriteBatchServiceFactory());
+                FactoryProvider.register(ContentManagerFactory.class, new GLContentManagerFactory());
+                FactoryProvider.register(CanvasFactory.class, new GLCanvasServiceFactory());
+                FactoryProvider.register(DirectRendererFactory.class, new GLDirectRendererServiceFactory());
+                FactoryProvider.register(SdfTextRendererFactory.class, new GLSdfTextRendererServiceFactory());
+                FactoryProvider.register(AudioPlayerFactory.class, new ALAudioPlayerFactory());
                 break;
             case Vulkan:
                 throw new UnsupportedOperationException("Vulkan is not supported yet.");
@@ -115,6 +125,43 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
         alcDestroyContext(audioContext);
 
         super.dispose();
+    }
+
+    /**
+     * Get the window virtual width.
+     *
+     * @return The window virtual width.
+     */
+    @Override
+    public int getViewportWidth() {
+        return this.graphicsDevice.getViewportWidth();
+    }
+
+    /**
+     * Get the window virtual height.
+     *
+     * @return The window virtual height.
+     */
+    @Override
+    public int getViewportHeight() {
+        return this.graphicsDevice.getViewportHeight();
+    }
+
+    @Override
+    public void onWindowSizeChange(int width, int height) {
+        syncViewportSize(); // By default, sync viewport size with window size on size change
+        super.onWindowSizeChange(width, height);
+    }
+
+    /**
+     * Sync viewport size with the window size.
+     */
+    public void syncViewportSize() {
+        if (graphicsDevice != null) {
+            int width = this.windowManager.getWindowWidth();
+            int height = this.windowManager.getWindowHeight();
+            graphicsDevice.updateViewport(width, height);
+        }
     }
 
     /**

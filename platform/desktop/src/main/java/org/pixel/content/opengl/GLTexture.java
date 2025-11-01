@@ -1,16 +1,21 @@
 package org.pixel.content.opengl;
 
-import static org.lwjgl.opengl.GL11C.glDeleteTextures;
-
 import lombok.Getter;
 import org.pixel.commons.lifecycle.State;
 import org.pixel.content.Texture;
+
+import static org.lwjgl.opengl.GL11C.glDeleteTextures;
+import static org.lwjgl.opengl.GL11C.glGenTextures;
 
 @Getter
 public class GLTexture extends Texture {
 
     private final int id;
     private State state = State.NEW;
+
+    public GLTexture(int width, int height) {
+        this(glGenTextures(), width, height);
+    }
 
     public GLTexture(int id, int width, int height) {
         super(width, height);

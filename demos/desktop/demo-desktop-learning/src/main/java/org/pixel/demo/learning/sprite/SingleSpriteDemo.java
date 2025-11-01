@@ -32,8 +32,8 @@ public class SingleSpriteDemo extends DemoGame {
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        content = ServiceProvider.get(ContentManager.class);
+        spriteBatch = SpriteBatch.create();
+        content = ContentManager.create();
 
         // load texture into memory
         spriteTex = content.load("images/screenshot-600x320.png", Texture.class);
@@ -68,7 +68,7 @@ public class SingleSpriteDemo extends DemoGame {
     public static void main(String[] args) {
         var settings = new WindowSettings(600, 320);
         settings.setWindowResizable(false);
-        settings.setMultisampling(2);
+        settings.setMultisampling(8);
         settings.setVsync(true);
         settings.setDevMode(true);
 

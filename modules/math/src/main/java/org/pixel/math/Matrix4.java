@@ -197,7 +197,7 @@ public class Matrix4 implements Serializable {
      * @param near   The coordinate for the near depth clipping pane.
      * @param far    The coordinate for the far depth clipping pane.
      */
-    public void setOrthographic(float left, float right, float bottom, float top, float near, float far) {
+    public Matrix4 setOrthographic(float left, float right, float bottom, float top, float near, float far) {
         setIdentity();
 
         m[0][0] = 2.0f / (right - left);
@@ -207,12 +207,14 @@ public class Matrix4 implements Serializable {
         m[3][1] = (bottom + top) / (bottom - top);
         m[3][2] = near / (near - far);
         m[3][3] = 1.0f;
+
+        return this;
     }
 
     /**
      * Sets the values to an identity matrix
      */
-    public void setIdentity() {
+    public Matrix4 setIdentity() {
         m[0][0] = 1.0f;
         m[1][1] = 1.0f;
         m[2][2] = 1.0f;
@@ -230,6 +232,8 @@ public class Matrix4 implements Serializable {
         m[3][0] = 0.0f;
         m[3][1] = 0.0f;
         m[3][2] = 0.0f;
+
+        return this;
     }
 
     /**
@@ -237,12 +241,14 @@ public class Matrix4 implements Serializable {
      *
      * @param matrix The matrix to add.
      */
-    public void add(Matrix4 matrix) {
+    public Matrix4 add(Matrix4 matrix) {
         for (int i = 0; i < m.length; ++i) {
             for (int j = 0; j < m[0].length; ++j) {
                 m[i][j] += matrix.m[i][j];
             }
         }
+
+        return this;
     }
 
     /**
@@ -250,12 +256,14 @@ public class Matrix4 implements Serializable {
      *
      * @param matrix The matrix to subtract.
      */
-    public void subtract(Matrix4 matrix) {
+    public Matrix4 subtract(Matrix4 matrix) {
         for (int i = 0; i < m.length; ++i) {
             for (int j = 0; j < m[0].length; ++j) {
                 m[i][j] -= matrix.m[i][j];
             }
         }
+
+        return this;
     }
 
     /**
@@ -263,7 +271,7 @@ public class Matrix4 implements Serializable {
      *
      * @param matrix The matrix to multiply.
      */
-    public void multiply(Matrix4 matrix) {
+    public Matrix4 multiply(Matrix4 matrix) {
         tmp[0][0] = m[0][0] * matrix.m[0][0] + m[0][1] * matrix.m[1][0] + m[0][2] * matrix.m[2][0] + m[0][3] * matrix.m[3][0];
         tmp[1][0] = m[1][0] * matrix.m[0][0] + m[1][1] * matrix.m[1][0] + m[1][2] * matrix.m[2][0] + m[1][3] * matrix.m[3][0];
         tmp[2][0] = m[2][0] * matrix.m[0][0] + m[2][1] * matrix.m[1][0] + m[2][2] * matrix.m[2][0] + m[2][3] * matrix.m[3][0];
@@ -285,6 +293,8 @@ public class Matrix4 implements Serializable {
         tmp[3][3] = m[3][0] * matrix.m[0][3] + m[3][1] * matrix.m[1][3] + m[3][2] * matrix.m[2][3] + m[3][3] * matrix.m[3][3];
 
         assignFromTmp();
+
+        return this;
     }
 
     /**
@@ -292,25 +302,28 @@ public class Matrix4 implements Serializable {
      *
      * @param scalar The scalar.
      */
-    public void multiply(float scalar) {
+    public Matrix4 multiply(float scalar) {
         for (int i = 0; i < m.length; ++i) {
             for (int j = 0; j < m[0].length; ++j) {
                 m[i][j] *= scalar;
             }
         }
+
+        return this;
     }
 
     /**
      * Multiples each value on the matrix by -1.
      */
-    public void negate() {
+    public Matrix4 negate() {
         multiply(-1.0f);
+        return this;
     }
 
     /**
      * Inverts the matrix.
      */
-    public void invert() {
+    public Matrix4 invert() {
         float num1 = m[0][0];
         float num2 = m[0][1];
         float num3 = m[0][2];
@@ -384,12 +397,14 @@ public class Matrix4 implements Serializable {
                 + (double) num4 * (double) num39) * num27;
         m[3][3] = (float) ((double) num1 * (double) num36 - (double) num2 * (double) num38
                 + (double) num3 * (double) num39) * num27;
+
+        return this;
     }
 
     /**
      * Transposes the matrix.
      */
-    public void transpose() {
+    public Matrix4 transpose() {
         tmp[0][0] = m[0][0];
         tmp[1][0] = m[0][1];
         tmp[2][0] = m[0][2];
@@ -411,6 +426,17 @@ public class Matrix4 implements Serializable {
         tmp[3][3] = m[3][3];
 
         assignFromTmp();
+
+        return this;
+    }
+    /**
+     * Translates matrix by a given vector.
+     *
+     * @param position The vector to translate by.
+     */
+    public Matrix4 translate(Vector2 position) {
+        this.translate(position.getX(), position.getY(), 0);
+        return this;
     }
 
     /**
@@ -418,8 +444,9 @@ public class Matrix4 implements Serializable {
      *
      * @param position The vector to translate by.
      */
-    public void translate(Vector3 position) {
+    public Matrix4 translate(Vector3 position) {
         this.translate(position.getX(), position.getY(), position.getZ());
+        return this;
     }
 
     /**
@@ -429,11 +456,12 @@ public class Matrix4 implements Serializable {
      * @param y The y coordinate.
      * @param z The z coordinate.
      */
-    public void translate(float x, float y, float z) {
+    public Matrix4 translate(float x, float y, float z) {
         m[3][0] = m[0][0] * x + m[1][0] * y + m[2][0] * z + m[3][0];
         m[3][1] = m[0][1] * x + m[1][1] * y + m[2][1] * z + m[3][1];
         m[3][2] = m[0][2] * x + m[1][2] * y + m[2][2] * z + m[3][2];
         m[3][3] = m[0][3] * x + m[1][3] * y + m[2][3] * z + m[3][3];
+        return this;
     }
 
     /**
@@ -442,9 +470,10 @@ public class Matrix4 implements Serializable {
      * @param angle The angle to rotate by.
      * @param axis  The axis to rotate along.
      */
-    public void rotate(float angle, Vector3 axis) {
+    public Matrix4 rotate(float angle, Vector3 axis) {
         // axis.normalize(); // should do this to prevent issues... but Math.sqrt is quite costly...
         this.rotate(angle, axis.getX(), axis.getY(), axis.getZ());
+        return this;
     }
 
     /**
@@ -455,7 +484,7 @@ public class Matrix4 implements Serializable {
      * @param y     The y coordinate magnitude (from 0 to 1)
      * @param z     The z coordinate magnitude (from 0 to 1)
      */
-    public void rotate(float angle, float x, float y, float z) {
+    public Matrix4 rotate(float angle, float x, float y, float z) {
         float c = MathHelper.cos(angle);
         float s = MathHelper.sin(-angle); // y-axis is inverted in Pixel
 
@@ -468,6 +497,8 @@ public class Matrix4 implements Serializable {
         m[0][2] = x * z * (1f - c) + y * s;
         m[1][2] = y * z * (1f - c) - x * s;
         m[2][2] = z * z * (1f - c) + c;
+
+        return this;
     }
 
     /**
@@ -475,8 +506,9 @@ public class Matrix4 implements Serializable {
      *
      * @param factor The vector to scale by.
      */
-    public void scale(Vector3 factor) {
+    public Matrix4 scale(Vector3 factor) {
         this.scale(factor.getX(), factor.getY(), factor.getZ());
+        return this;
     }
 
     /**
@@ -486,7 +518,7 @@ public class Matrix4 implements Serializable {
      * @param y The y coordinate scaling value.
      * @param z The z coordinate scaling value.
      */
-    public void scale(float x, float y, float z) {
+    public Matrix4 scale(float x, float y, float z) {
         m[0][0] *= x;
         m[0][1] *= x;
         m[0][2] *= x;
@@ -499,6 +531,8 @@ public class Matrix4 implements Serializable {
         m[2][1] *= z;
         m[2][2] *= z;
         m[2][3] *= z;
+
+        return this;
     }
 
     /**

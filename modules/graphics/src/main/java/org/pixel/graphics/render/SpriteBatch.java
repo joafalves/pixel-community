@@ -1,6 +1,7 @@
 package org.pixel.graphics.render;
 
 import org.pixel.commons.Color;
+import org.pixel.commons.factory.FactoryProvider;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.commons.lifecycle.Initializable;
 import org.pixel.math.Matrix4;
@@ -10,7 +11,78 @@ import org.pixel.content.Font;
 import org.pixel.content.Texture;
 import org.pixel.graphics.shader.Shader;
 
-public abstract class SpriteBatch implements Initializable, Disposable {
+public abstract class SpriteBatch implements BatchRenderer, Initializable, Disposable {
+
+    /**
+     * Create a platform-specific SpriteBatch instance with default settings.
+     *
+     * <p>This factory method delegates to the registered {@link SpriteBatchFactory} to create
+     * the appropriate platform-specific implementation (e.g., GLFastSpriteBatch on desktop).
+     *
+     * <p>Example usage:
+     * <pre>
+     * SpriteBatch batch = SpriteBatch.create();
+     * batch.begin(camera.getViewMatrix());
+     * batch.draw(texture, position);
+     * batch.end();
+     * batch.dispose();
+     * </pre>
+     *
+     * @return A new SpriteBatch instance appropriate for the current platform
+     */
+    public static SpriteBatch create() {
+        return FactoryProvider.get(SpriteBatchFactory.class).create();
+    }
+
+    /**
+     * Create a platform-specific SpriteBatch instance with a custom buffer size.
+     *
+     * <p>Larger buffer sizes reduce the number of draw calls but use more memory.
+     * Choose based on your typical sprite count per frame.
+     *
+     * <p>Example usage:
+     * <pre>
+     * SpriteBatch batch = SpriteBatch.create(16384); // Large buffer for many sprites
+     * </pre>
+     *
+     * @param bufferMaxSize The maximum number of sprites that can be batched before flushing
+     * @return A new SpriteBatch instance appropriate for the current platform
+     */
+    public static SpriteBatch create(int bufferMaxSize) {
+        return FactoryProvider.get(SpriteBatchFactory.class).create(bufferMaxSize);
+    }
+
+    /**
+     * Create a platform-specific SpriteBatch instance with custom buffer size and texture unit count.
+     *
+     * <p>Advanced configuration for fine-tuning batch performance and memory usage.
+     *
+     * @param bufferMaxSize      The maximum number of sprites that can be batched before flushing
+     * @param shaderTextureCount The number of texture units to use (0 for auto-detect)
+     * @return A new SpriteBatch instance appropriate for the current platform
+     */
+    public static SpriteBatch create(int bufferMaxSize, int shaderTextureCount) {
+        return FactoryProvider.get(SpriteBatchFactory.class).create(bufferMaxSize, shaderTextureCount);
+    }
+
+    /**
+     * Draws a sprite with a custom shader.
+     *
+     * @param texture  The texture to use.
+     * @param position The position of the sprite.
+     * @param source   The source rectangle of the sprite.
+     * @param color    The color overlay of the sprite.
+     * @param anchor   The anchor point of the sprite.
+     * @param scaleX   The scale of the sprite on the x-axis.
+     * @param scaleY   The scale of the sprite on the y-axis.
+     * @param rotation The rotation of the sprite.
+     * @param depth    The drawing depth of the sprite.
+     * @param shader   Custom shader to use (null for default shader).
+     * @param uniforms Custom shader uniforms (map of uniform name to value).
+     */
+    public abstract void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, 
+                             float scaleX, float scaleY, float rotation, int depth, Shader shader, 
+                             org.pixel.commons.data.DataMap uniforms);
 
     /**
      * Draws a sprite.
@@ -130,7 +202,9 @@ public abstract class SpriteBatch implements Initializable, Disposable {
      * @param depth    The drawing depth of the sprite (lower numbers are drawn
      *                 first).
      */
-    public abstract void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scaleX, float scaleY, float rotation, int depth);
+    public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scaleX, float scaleY, float rotation, int depth) {
+        draw(texture, position, source, color, anchor, scaleX, scaleY, rotation, depth, null, null);
+    }
 
     /**
      * Draws a sprite.

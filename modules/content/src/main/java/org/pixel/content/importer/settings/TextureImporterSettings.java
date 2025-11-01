@@ -6,15 +6,13 @@
 package org.pixel.content.importer.settings;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 public class TextureImporterSettings implements ContentImporterSettings {
     private int wrapSMode;
     private int wrapTMode;

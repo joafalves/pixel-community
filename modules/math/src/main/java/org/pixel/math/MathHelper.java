@@ -656,5 +656,205 @@ public class MathHelper {
         return new Vector2(xi, yi);
     }
 
+    /**
+     * Triangulates a simple polygon using the ear clipping algorithm.
+     * Works for any simple polygon (convex or concave), as long as it doesn't self-intersect.
+     * 
+     * <p>The algorithm repeatedly finds and removes "ears" (triangles formed by three consecutive 
+     * vertices that don't contain any other vertices) until only one triangle remains.
+     * 
+     * <p>Time complexity: O(n²) for n vertices, which is acceptable for typical UI polygons.
+     * 
+     * @param vertices The vertices of the polygon in order (clockwise or counter-clockwise).
+     *                 Must contain at least 3 vertices.
+     * @return A list of triangle indices (groups of 3), where each index refers to the original vertex list.
+     *         For example, [0, 1, 2, 0, 2, 3] represents two triangles: (v0,v1,v2) and (v0,v2,v3).
+     * @throws RuntimeException if the polygon has fewer than 3 vertices
+     */
+    public static List<Integer> triangulate(List<Vector2> vertices) {
+        int n = vertices.size();
+        if (n < 3) {
+            throw new RuntimeException("A polygon requires at least three vertices");
+        }
+        
+        // Pre-allocate result list to minimize GC
+        List<Integer> indices = new ArrayList<>((n - 2) * 3);
+        
+        // Simple case: triangle
+        if (n == 3) {
+            indices.add(0);
+            indices.add(1);
+            indices.add(2);
+            return indices;
+        }
+        
+        // Use array instead of ArrayList to minimize GC
+        int[] remaining = new int[n];
+        for (int i = 0; i < n; i++) {
+            remaining[i] = i;
+        }
+        int remainingCount = n;
+        
+        // Determine if polygon is clockwise or counter-clockwise
+        float area = calculateSignedArea(vertices);
+        
+        // Keep removing ears until we're left with a triangle
+        int attempts = 0;
+        int maxAttempts = remainingCount * 2; // Safety limit
+        
+        while (remainingCount > 3 && attempts < maxAttempts) {
+            boolean earFound = false;
+            
+            // Try to find an ear
+            for (int i = 0; i < remainingCount; i++) {
+                int prevIdx = (i == 0) ? remainingCount - 1 : i - 1;
+                int nextIdx = (i == remainingCount - 1) ? 0 : i + 1;
+                
+                int prev = remaining[prevIdx];
+                int curr = remaining[i];
+                int next = remaining[nextIdx];
+                
+                // Check if this is a valid ear
+                if (isEar(vertices, remaining, remainingCount, prev, curr, next, area)) {
+                    // Found an ear! Add the triangle in the same winding order as the polygon
+                    indices.add(prev);
+                    indices.add(curr);
+                    indices.add(next);
+                    
+                    // Remove the ear tip (current vertex) by shifting array
+                    for (int j = i; j < remainingCount - 1; j++) {
+                        remaining[j] = remaining[j + 1];
+                    }
+                    remainingCount--;
+                    earFound = true;
+                    attempts = 0; // Reset attempts counter
+                    break;
+                }
+            }
+            
+            if (!earFound) {
+                attempts++;
+                // If we've tried too many times without finding an ear, 
+                // fall back to triangle fan for remaining vertices
+                if (attempts >= maxAttempts) {
+                    int first = remaining[0];
+                    for (int i = 1; i < remainingCount - 1; i++) {
+                        indices.add(first);
+                        indices.add(remaining[i]);
+                        indices.add(remaining[i + 1]);
+                    }
+                    remainingCount = 0; // Force exit
+                    break;
+                }
+            }
+        }
+        
+        // Add the final triangle in the same winding order
+        if (remainingCount == 3) {
+            indices.add(remaining[0]);
+            indices.add(remaining[1]);
+            indices.add(remaining[2]);
+        }
+        
+        return indices;
+    }
+    
+    /**
+     * Calculates the signed area of a polygon using the shoelace formula.
+     * Positive area means counter-clockwise winding, negative means clockwise.
+     * Note: In screen coordinates (Y down), this is inverted.
+     * 
+     * @param vertices The polygon vertices
+     * @return The signed area (positive = CCW, negative = CW)
+     */
+    private static float calculateSignedArea(List<Vector2> vertices) {
+        float area = 0;
+        int n = vertices.size();
+        for (int i = 0; i < n; i++) {
+            Vector2 v1 = vertices.get(i);
+            Vector2 v2 = vertices.get((i + 1) % n);
+            // Shoelace formula: sum of (x1*y2 - x2*y1)
+            area += v1.getX() * v2.getY() - v2.getX() * v1.getY();
+        }
+        return area * 0.5f;
+    }
+    
+    /**
+     * Checks if three consecutive vertices form a valid ear.
+     * An ear is valid if:
+     * 1. The triangle has the correct winding order (matches polygon's winding)
+     * 2. No other vertices of the polygon lie inside the triangle
+     * 
+     * @param allVertices All vertices of the original polygon
+     * @param remaining Array of remaining vertex indices
+     * @param remainingCount Number of valid indices in the remaining array
+     * @param prevIdx Index of previous vertex
+     * @param currIdx Index of current vertex (the potential ear tip)
+     * @param nextIdx Index of next vertex
+     * @param polygonArea Signed area of the polygon (determines winding)
+     * @return true if this forms a valid ear
+     */
+    private static boolean isEar(List<Vector2> allVertices, int[] remaining, int remainingCount,
+                                  int prevIdx, int currIdx, int nextIdx, float polygonArea) {
+        Vector2 vPrev = allVertices.get(prevIdx);
+        Vector2 vCurr = allVertices.get(currIdx);
+        Vector2 vNext = allVertices.get(nextIdx);
+        
+        // Calculate cross product to check if this forms a convex angle
+        float cross = (vCurr.getX() - vPrev.getX()) * (vNext.getY() - vPrev.getY()) - 
+                      (vCurr.getY() - vPrev.getY()) * (vNext.getX() - vPrev.getX());
+        
+        // Only convex vertices can be ears (same winding direction as polygon)
+        // For CCW polygon (area > 0), cross should be > 0 (left turn)
+        // For CW polygon (area < 0), cross should be < 0 (right turn)
+        // Use <= and >= to handle degenerate/collinear cases
+        if (polygonArea > 0 && cross <= 0) return false; // Reflex or flat vertex in CCW polygon
+        if (polygonArea < 0 && cross >= 0) return false; // Reflex or flat vertex in CW polygon
+        
+        // Check if any other vertex is inside this triangle
+        for (int i = 0; i < remainingCount; i++) {
+            int idx = remaining[i];
+            if (idx == prevIdx || idx == currIdx || idx == nextIdx) {
+                continue;
+            }
+            
+            Vector2 v = allVertices.get(idx);
+            if (pointInTriangle(v, vPrev, vCurr, vNext)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Checks if a point is inside a triangle using barycentric coordinates.
+     * 
+     * @param p The point to test
+     * @param a First triangle vertex
+     * @param b Second triangle vertex
+     * @param c Third triangle vertex
+     * @return true if the point is inside the triangle
+     */
+    private static boolean pointInTriangle(Vector2 p, Vector2 a, Vector2 b, Vector2 c) {
+        float d1 = sign(p, a, b);
+        float d2 = sign(p, b, c);
+        float d3 = sign(p, c, a);
+        
+        boolean hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+        boolean hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+        
+        return !(hasNeg && hasPos);
+    }
+    
+    /**
+     * Helper for point-in-triangle test.
+     * Returns the sign of the area of triangle formed by three points.
+     */
+    private static float sign(Vector2 p1, Vector2 p2, Vector2 p3) {
+        return (p1.getX() - p3.getX()) * (p2.getY() - p3.getY()) - 
+               (p2.getX() - p3.getX()) * (p1.getY() - p3.getY());
+    }
+
     //endregion
 }

@@ -42,15 +42,15 @@ public class KeyboardInputDemo extends DemoGame {
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        content = ServiceProvider.get(ContentManager.class);
+        spriteBatch = SpriteBatch.create();
+        content = ContentManager.create();
 
         // load texture into memory
         spriteTex = content.load("images/earth-48x48.png", Texture.class);
 
         // related org.pixel.learning.sprite properties
         spriteAnchor = Vector2.half();
-        spritePos = new Vector2(getVirtualWidth() / 2f, getVirtualHeight() / 2f);
+        spritePos = new Vector2(getViewportWidth() / 2f, getViewportHeight() / 2f);
 
         // character listener example:
         Keyboard.addCharListener(System.out::print);

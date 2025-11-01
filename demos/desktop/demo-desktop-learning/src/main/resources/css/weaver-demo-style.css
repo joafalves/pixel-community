@@ -1,0 +1,38 @@
+:res {
+    font: roboto, __weaver__/font/roboto-regular.ttf, 32;
+}
+
+widget {
+    background: #333;
+    color: #FF0000;
+}
+
+panel {
+    background-color: #666;
+    overflow: hidden;
+
+    left: 20px;
+    top: 20px;
+
+    width: 800px;
+    height: 600px;
+
+    border-top-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+}
+
+label {
+    top: 20px;
+    left: 20px;
+    font-size: 16px;
+
+    background-color: #f90;
+    border-radius: 8px;
+    border-width: 4px;
+    border-color: #995;
+
+    color: #fff;
+
+    margin: 8px;
+    padding: 8px;
+}

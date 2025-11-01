@@ -6,11 +6,10 @@
 package org.pixel.demo.learning.audio;
 
 import org.pixel.audio.AudioPlayer;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Sound;
-import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.core.WindowSettings;
+import org.pixel.demo.learning.common.DemoGame;
 
 public class AudioDemo extends DemoGame {
 
@@ -25,8 +24,8 @@ public class AudioDemo extends DemoGame {
     @Override
     public void load() {
         // general game instances
-        contentManager = ServiceProvider.get(ContentManager.class);
-        audioPlayer = ServiceProvider.get(AudioPlayer.class);
+        contentManager = ContentManager.create();
+        audioPlayer = AudioPlayer.create();
 
         // load the audio source into memory
         sound = contentManager.load("audio/sfx_step_grass.ogg", Sound.class);

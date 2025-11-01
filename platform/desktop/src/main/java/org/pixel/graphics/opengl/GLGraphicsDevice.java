@@ -45,17 +45,26 @@ public class GLGraphicsDevice implements GraphicsDevice {
     private static final Logger log = LoggerFactory.getLogger(GLGraphicsDevice.class);
 
     private final DesktopWindowManager windowManager;
-    private final WindowSettings windowSettings;
 
     private State state;
     private Callback debugLocalCallback;
+
+    private final Color initialBackgroundColor;
+    private final boolean debugMode;
+    private int viewportWidth;
+    private int viewportHeight;
+    private int multisampling;
 
     /**
      * Constructor
      */
     public GLGraphicsDevice(DesktopWindowManager windowManager, WindowSettings windowSettings) {
         this.windowManager = windowManager;
-        this.windowSettings = windowSettings;
+        this.initialBackgroundColor = windowSettings.getBackgroundColor();
+        this.viewportWidth = windowSettings.getViewportWidth();
+        this.viewportHeight = windowSettings.getViewportHeight();
+        this.debugMode  = windowSettings.isGlfwDebugMode();
+        this.multisampling = windowSettings.getMultisampling();
         this.state = State.NEW;
     }
 
@@ -74,10 +83,9 @@ public class GLGraphicsDevice implements GraphicsDevice {
         // Update viewport dimensions
         var windowDimensions = this.windowManager.getWindowDimensions();
         glViewport(0, 0, windowDimensions.getWindowWidth(), windowDimensions.getWindowHeight());
-        // TODO: call glViewport when window is resized (sync with window manager)
 
         // Debug-specific initialization
-        if (this.windowSettings.isGlfwDebugMode()) {
+        if (this.debugMode) {
             this.debugLocalCallback = GLUtil.setupDebugMessageCallback(); // must be called after "createCapabilities()"
             Configuration.DISABLE_CHECKS.set(false);
         } else {
@@ -85,7 +93,7 @@ public class GLGraphicsDevice implements GraphicsDevice {
         }
 
         // Set base clear color:
-        setClearColor(windowSettings.getBackgroundColor());
+        setClearColor(initialBackgroundColor);
 
         // Show version information
         log.debug("OpenGL Vendor: {0}.", glGetString(GL_VENDOR));
@@ -138,6 +146,21 @@ public class GLGraphicsDevice implements GraphicsDevice {
         return data;
     }
 
+    public void updateViewport(int width, int height) {
+        viewportWidth = width;
+        viewportHeight = height;
+
+        glViewport(0, 0, viewportWidth, viewportHeight);
+    }
+
+    public int getViewportWidth() {
+        return viewportWidth;
+    }
+
+    public int getViewportHeight() {
+        return viewportHeight;
+    }
+
     private void initGLCapabilities() {
         // This line is critical for LWJGL's interoperation with GLFW's OpenGL context,
         // or any context that is managed
@@ -149,7 +172,7 @@ public class GLGraphicsDevice implements GraphicsDevice {
         glDisable(GL_CULL_FACE);
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
-        if (this.windowSettings.getMultisampling() > 0) {
+        if (multisampling > 0) {
             glEnable(GL_MULTISAMPLE);
 
         } else {

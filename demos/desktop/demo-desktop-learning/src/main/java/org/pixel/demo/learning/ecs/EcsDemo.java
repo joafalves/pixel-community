@@ -1,16 +1,15 @@
 package org.pixel.demo.learning.ecs;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ContentManager;
+import org.pixel.core.Camera2D;
+import org.pixel.core.Game;
+import org.pixel.core.WindowSettings;
 import org.pixel.ext.ecs.GameComponent;
 import org.pixel.ext.ecs.GameScene;
 import org.pixel.ext.ecs.Sprite;
-import org.pixel.core.Camera2D;
-import org.pixel.core.WindowSettings;
-import org.pixel.core.Game;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
@@ -31,8 +30,8 @@ public class EcsDemo extends Game {
 
     @Override
     public void load() {
-        var spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        contentManager = ServiceProvider.get(ContentManager.class);
+        var spriteBatch = SpriteBatch.create();
+        contentManager = ContentManager.create();
 
         Sprite sprite = new Sprite("earth", contentManager.loadTexture("images/earth-48x48.png"));
         sprite.setPivot(Vector2.half());

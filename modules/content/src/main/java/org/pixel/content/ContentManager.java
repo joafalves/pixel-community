@@ -6,6 +6,7 @@
 package org.pixel.content;
 
 import org.pixel.commons.annotation.Nullable;
+import org.pixel.commons.factory.FactoryProvider;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
@@ -25,6 +26,26 @@ public class ContentManager implements Disposable {
     private final ConcurrentHashMap<Class<?>, ContentImporter<?>> importers;
 
     private DataPipeline<byte[]> dataPipeline;
+
+    /**
+     * Create a platform-specific ContentManager instance.
+     *
+     * <p>This factory method delegates to the registered {@link ContentManagerFactory} to create
+     * a ContentManager with appropriate platform-specific importers (e.g., GLTextureImporter on desktop).
+     *
+     * <p>Example usage:
+     * <pre>
+     * ContentManager content = ContentManager.create();
+     * Texture texture = content.loadTexture("sprites/player.png");
+     * SdfFont font = content.loadFont("fonts/roboto.ttf");
+     * content.dispose();
+     * </pre>
+     *
+     * @return A new ContentManager instance with platform-specific importers
+     */
+    public static ContentManager create() {
+        return FactoryProvider.get(ContentManagerFactory.class).create();
+    }
 
     /**
      * Constructor. By default, includes all internal importers.
@@ -73,11 +94,15 @@ public class ContentManager implements Disposable {
     /**
      * Get a reference to the asset cache.
      *
-     * @param filename The filename of the asset.
-     * @param type     The type of the asset.
+     * @param filename  The filename of the asset.
+     * @param type      The type of the asset.
+     * @param settings  The importer settings.
      * @return A reference to the asset cache.
      */
-    private String getCacheReference(String filename, Class<?> type) {
+    private String getCacheReference(String filename, Class<?> type, ContentImporterSettings settings) {
+        if (settings != null) {
+            return type.getCanonicalName() + ":" + filename + ":" + settings.hashCode();
+        }
         return type.getCanonicalName() + ":" + filename;
     }
 
@@ -337,10 +362,14 @@ public class ContentManager implements Disposable {
      * @param useCache Determines whether to use the asset cache or not.
      * @param <T>      The type of the resource.
      * @return The loaded resource or null if the resource could not be loaded.
+     *
+     * @throws IllegalArgumentException If no importer is found for the given type.
+     * @throws RuntimeException         If the resource could not be loaded or if
+     *                                  there was an error during loading.
      */
     @SuppressWarnings("unchecked")
     public <T> T load(String filepath, Class<T> type, @Nullable ContentImporterSettings settings, boolean useCache) {
-        String assetRef = getCacheReference(filepath, type);
+        String assetRef = getCacheReference(filepath, type, settings);
         if (useCache && assetCache.containsKey(assetRef)) {
             Object o = assetCache.get(assetRef);
             if (type.isInstance(o)) {
@@ -351,7 +380,8 @@ public class ContentManager implements Disposable {
         ContentImporter<T> fileImporter = (ContentImporter<T>) this.importers.get(type);
         if (fileImporter == null) {
             log.warn("Unable to load asset due to unavailable importer for {0}.", type.getCanonicalName());
-            return null;
+            throw new IllegalArgumentException(
+                    "No importer found for type " + type.getCanonicalName());
         }
 
         byte[] resourceData;
@@ -359,11 +389,11 @@ public class ContentManager implements Disposable {
             resourceData = this.resourceLoader.load(filepath);
         } catch (IOException e) {
             log.warn("Unable to load asset {0}; exception found!", filepath, e);
-            return null;
+            throw new RuntimeException("Unable to load asset " + filepath, e);
         }
         if (resourceData == null) {
             log.warn("Unable to load asset {0}; target could not be found.", filepath);
-            return null;
+            throw new RuntimeException("Unable to load asset " + filepath + "; target could not be found.");
         }
 
         if (dataPipeline != null) {
@@ -372,7 +402,7 @@ public class ContentManager implements Disposable {
 
             } catch (InterruptedException | ExecutionException e) {
                 log.error("Unable to execute data pipeline on asset {0}.", filepath, e);
-                return null;
+                throw new RuntimeException("Unable to execute data pipeline on asset " + filepath, e);
             }
         }
 

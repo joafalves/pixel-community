@@ -53,7 +53,12 @@ include "extensions/ext-log4j2",
         "extensions/ext-ecs-extra",
         "extensions/ext-tween",
         "extensions/ext-decs",
-        "extensions/ext-network"
+        "extensions/ext-network",
+        "extensions/ext-flux",
+        "extensions/ext-flux-desktop",
+        "extensions/ext-rune",
+        "extensions/ext-rune-desktop",
+        "extensions/ext-weaver"
 
 // tools:
 include "tools/arkade"

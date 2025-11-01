@@ -40,6 +40,8 @@ public class GLFWWindowManager extends DesktopWindowManager {
     private long windowHandle;
     private long monitorHandle;
     private boolean isWindowFocused;
+    // Flag set by the GLFW close callback to request a clean shutdown from the main loop
+    private volatile boolean closeRequested = false;
 
     public GLFWWindowManager(WindowGameContainer<?, ?, ?> game) {
         this.game = game;
@@ -64,8 +66,8 @@ public class GLFWWindowManager extends DesktopWindowManager {
         this.windowDimensions = WindowDimensions.builder()
                 .windowWidth(this.windowSettings.getWindowWidth())
                 .windowHeight(this.windowSettings.getWindowHeight())
-                .virtualWidth(this.windowSettings.getVirtualWidth())
-                .virtualHeight(this.windowSettings.getVirtualHeight())
+                .viewportWidth(this.windowSettings.getViewportWidth())
+                .viewportHeight(this.windowSettings.getViewportHeight())
                 .pixelRatio(1f)
                 .build();
 
@@ -113,14 +115,27 @@ public class GLFWWindowManager extends DesktopWindowManager {
     }
 
     @Override
+    public void requestClose() {
+        // Mark that a close was requested. The actual disposal will happen
+        // later in endFrame() after glfwPollEvents()/glfwWaitEvents returns
+        this.closeRequested = true;
+        // Also mark the GLFW window as should-close so other checks observe it
+        if (this.windowHandle != 0) {
+            glfwSetWindowShouldClose(this.windowHandle, true);
+        }
+    }
+
+    @Override
     public void beginFrame() {
         // nothing to do here
     }
 
     @Override
     public void endFrame() {
-        // Clear single-frame mapped keys
+        // Clear single-frame mapped keys/buttons and mouse wheel delta
         Keyboard.clear();
+        Mouse.clear();
+        Mouse.resetWheelDelta();
 
         // NOTE: The following code, MUST be at the end of the render cycle:
         // Swap buffers and poll events
@@ -131,6 +146,16 @@ public class GLFWWindowManager extends DesktopWindowManager {
             glfwWaitEventsTimeout(.5); // Argument is in seconds
         } else {
             glfwPollEvents();
+        }
+
+        // If a close was requested from a GLFW callback, perform disposal here
+        // (outside of the native callback execution) to avoid crashing inside
+        // GLFW native code (glfwDestroyWindow/glfwTerminate must not be called
+        // from within event callbacks).
+        if (this.closeRequested) {
+            // reset flag to avoid re-entering dispose
+            this.closeRequested = false;
+            dispose();
         }
     }
 
@@ -145,7 +170,7 @@ public class GLFWWindowManager extends DesktopWindowManager {
     }
 
     @Override
-    public void setWindowDimensions(int width, int height) {
+    public void setWindowSize(int width, int height) {
         if (!this.state.hasInitialized()) {
             log.warn("Unable to set window dimensions, window manager is not initialized.");
             return;
@@ -157,6 +182,8 @@ public class GLFWWindowManager extends DesktopWindowManager {
         this.windowDimensions.setWindowWidth(width);
         this.windowDimensions.setWindowHeight(height);
         this.windowDimensions.setPixelRatio(width / (float) windowDimensions.getWindowWidth());
+
+        this.game.onWindowSizeChange(width, height);
     }
 
     @Override
@@ -400,6 +427,7 @@ public class GLFWWindowManager extends DesktopWindowManager {
         glfwSetCharCallback(windowHandle, new Keyboard.KeyboardCharacterHandler());
         glfwSetCursorPosCallback(windowHandle, new Mouse.CursorPositionHandler());
         glfwSetMouseButtonCallback(windowHandle, new Mouse.MouseButtonHandler());
+        glfwSetScrollCallback(windowHandle, new Mouse.MouseScrollHandler());
 
         // Window resize callback:
         glfwSetWindowSizeCallback(windowHandle, (window, width, height) -> {
@@ -409,12 +437,8 @@ public class GLFWWindowManager extends DesktopWindowManager {
                 glfwGetFramebufferSize(window, fbWidth, fbHeight);
                 int actualWidth = fbWidth.get(0);
                 int actualHeight = fbHeight.get(0);
-                this.windowSettings.setWindowWidth(actualWidth);
-                this.windowSettings.setWindowHeight(actualHeight);
-                this.windowDimensions.setPixelRatio(actualWidth / (float) windowDimensions.getVirtualWidth());
-                this.windowDimensions.setWindowWidth(actualWidth);
-                this.windowDimensions.setWindowHeight(actualHeight);
-                this.game.onViewportChanged(actualWidth, actualHeight);
+
+                setWindowSize(actualWidth, actualHeight);
             }
         });
 
@@ -426,7 +450,13 @@ public class GLFWWindowManager extends DesktopWindowManager {
 
         glfwSetWindowCloseCallback(windowHandle, (window) -> {
             log.debug("Close render window requested by user.");
-            dispose();
+            // Do not call dispose() from inside the GLFW event callback —
+            // callbacks run while glfwPollEvents()/glfwWaitEvents is executing
+            // and calling glfwDestroyWindow/glfwTerminate there can crash native code.
+            // Instead, set a flag and perform disposal after event polling completes
+            // in the main loop (see endFrame()).
+            this.closeRequested = true;
+            glfwSetWindowShouldClose(window, true);
         });
     }
 }

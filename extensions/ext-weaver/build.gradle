@@ -1,0 +1,9 @@
+apply plugin: 'java-library'
+
+dependencies {
+    // Pixel Framework dependencies
+    api project(':pixel-commons')
+    api project(':pixel-math')
+    api project(':pixel-graphics')
+    api project(':pixel-content')
+}

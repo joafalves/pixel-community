@@ -123,8 +123,8 @@ public class SimpleNetworkDemo extends DemoGame
         }
 
         // Complementary assets:
-        content = ServiceProvider.get(ContentManager.class);
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
+        content = ContentManager.create();
+        spriteBatch = SpriteBatch.create();
         gameCamera.setOrigin(Vector2.ZERO);
 
         debugFont = content.load("fonts/gidole-regular.ttf", Font.class, FontImporterSettings.builder()
@@ -221,8 +221,8 @@ public class SimpleNetworkDemo extends DemoGame
             // THE DATA DEFINED ABOVE IS ONLY AVAILABLE ON THE SERVER. YOU MUST HANDLE WHAT INFO YOU SHARE WITH YOUR
             // PLAYERS MANUALLY (via DataMessage or other means).
             var playerData = player.getData();
-            playerData.put("posX", ThreadLocalRandom.current().nextFloat(50, getVirtualWidth() - 50));
-            playerData.put("posY", ThreadLocalRandom.current().nextFloat(50, getVirtualHeight() - 50));
+            playerData.put("posX", ThreadLocalRandom.current().nextFloat(50, getViewportWidth() - 50));
+            playerData.put("posY", ThreadLocalRandom.current().nextFloat(50, getViewportHeight() - 50));
 
             // Broadcast all-players info to all players (a bit redundant, but this is a demo):
             for (var activePlayer : networkServer.getPlayers()) {

@@ -91,6 +91,7 @@ subprojects { project ->
             testImplementation "org.mockito:mockito-core:${rootProject.ext.dependencyMap["mockito"]}"
             testImplementation "org.junit.jupiter:junit-jupiter-api:${rootProject.ext.dependencyMap["junit"]}"
             testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${rootProject.ext.dependencyMap["junit"]}"
+            testRuntimeOnly "org.junit.platform:junit-platform-launcher"
         }
 
         java {

@@ -41,8 +41,8 @@ public class SingleSpriteDemo extends Game {
     @Override
     public void load() {
         // load up of resources and game utilities:
-        content = ServiceProvider.get(ContentManager.class);
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
+        content = ContentManager.create();
+        spriteBatch = SpriteBatch.create();
         gameCamera = new Camera2D(this);
 
         // example of loading a texture into memory:

@@ -1,10 +1,8 @@
 package org.pixel.audio;
 
-import org.pixel.commons.service.ServiceFactory;
-
-public class ALAudioPlayerFactory implements ServiceFactory<AudioPlayer> {
+public class ALAudioPlayerFactory implements AudioPlayerFactory {
     @Override
-    public AudioPlayer get() {
+    public AudioPlayer create() {
         return new ALAudioPlayer();
     }
 }

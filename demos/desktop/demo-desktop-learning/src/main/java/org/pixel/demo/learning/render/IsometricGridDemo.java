@@ -13,6 +13,7 @@ import org.pixel.input.mouse.Mouse;
 import org.pixel.input.mouse.MouseButton;
 import org.pixel.math.Vector2;
 
+@Deprecated
 public class IsometricGridDemo extends DemoGame {
 
     private static final Logger log = LoggerFactory.getLogger(IsometricGridDemo.class);
@@ -76,6 +77,8 @@ public class IsometricGridDemo extends DemoGame {
         float row = (localY / TILE_HEIGHT - localX / TILE_WIDTH) / 2;
 
         highlightedTile.set(Math.round(col), Math.round(row));
+
+        super.update(delta);
     }
 
     @Override

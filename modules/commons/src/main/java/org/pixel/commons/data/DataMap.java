@@ -48,7 +48,7 @@ public class DataMap implements Map<String, Object> {
      * {@code null} if there was no mapping for {@code key}.
      */
     public Object put(Object value) {
-        return put(value.getClass().getPackageName(), value);
+        return put(value.getClass().getCanonicalName(), value);
     }
 
     /**
@@ -59,7 +59,7 @@ public class DataMap implements Map<String, Object> {
      * @return The value or null if not found.
      */
     public <T> T get(Class<T> type) {
-        var value = get(type.getPackageName(), type);
+        var value = get(type.getCanonicalName(), type);
         if (value != null) {
             return value;
         }
@@ -71,6 +71,17 @@ public class DataMap implements Map<String, Object> {
             }
         }
         return null;
+    }
+
+    /**
+     * Get the value (first element) of the given type as an Optional.
+     * This function uses the class package-name as key (convention).
+     *
+     * @param type The type of the value.
+     * @return The value as an Optional.
+     */
+    public <T> Optional<T> optional(Class<T> type) {
+        return Optional.ofNullable(get(type));
     }
 
     /**
@@ -99,6 +110,17 @@ public class DataMap implements Map<String, Object> {
         }
 
         return defaultValue;
+    }
+
+    /**
+     * Get the value of the key as an Optional. If the key is not found, an empty Optional is returned.
+     *
+     * @param key  The key.
+     * @param type The type of the value.
+     * @return The value of the key as an Optional.
+     */
+    public <T> Optional<T> optional(String key, Class<T> type) {
+        return Optional.ofNullable(get(key, type, null));
     }
 
     /**
