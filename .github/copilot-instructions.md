@@ -293,4 +293,4 @@ Then run: `./gradlew :pixel-demo-desktop-learning:run`
 
 ## Other notes
 
-- Do not create summary / markdown files unless asked to.
+- (Important) Do not create summary / markdown files unless asked to.

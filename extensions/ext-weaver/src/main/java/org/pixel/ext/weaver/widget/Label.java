@@ -3,6 +3,7 @@ package org.pixel.ext.weaver.widget;
 import lombok.Getter;
 import lombok.Setter;
 import org.pixel.commons.DeltaTime;
+import org.pixel.ext.weaver.Widget;
 import org.pixel.ext.weaver.WeaverContext;
 import org.pixel.ext.weaver.style.property.StyleProperties;
 import org.pixel.graphics.render.canvas.TextAlign;

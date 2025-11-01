@@ -1,6 +1,7 @@
 package org.pixel.ext.weaver.widget;
 
 import org.pixel.commons.DeltaTime;
+import org.pixel.ext.weaver.Widget;
 import org.pixel.ext.weaver.WeaverContext;
 
 public class Panel extends Widget {

@@ -13,7 +13,6 @@ import org.pixel.ext.weaver.style.parser.StyleSheetParser;
 import org.pixel.ext.weaver.style.resource.FontResource;
 import org.pixel.ext.weaver.style.resource.Resource;
 import org.pixel.ext.weaver.style.resource.ResourceStore;
-import org.pixel.ext.weaver.widget.Widget;
 import org.pixel.graphics.render.canvas.Canvas;
 import org.pixel.graphics.render.canvas.text.SdfFont;
 import org.pixel.math.Rectangle;
@@ -83,6 +82,8 @@ public class Weaver implements Updatable, Drawable, Disposable {
         if (root != null) {
             this.root = root;
             this.root.detach(); // ensure root has no parent
+            this.root.setContext(this.context); // Set context on root
+            propagateContextToDescendants(this.root); // Propagate to all descendants
             this.context.getLayoutEngine().setRootWidget(root);
 
         } else {
@@ -90,6 +91,16 @@ public class Weaver implements Updatable, Drawable, Disposable {
         }
 
         return previousRoot;
+    }
+
+    /**
+     * Propagate context to all descendants recursively.
+     */
+    private void propagateContextToDescendants(Widget widget) {
+        for (Widget child : widget.getChildren()) {
+            child.setContext(this.context);
+            propagateContextToDescendants(child);
+        }
     }
 
     /**
@@ -153,7 +164,7 @@ public class Weaver implements Updatable, Drawable, Disposable {
      */
     public void setViewport(int width, int height) {
         context.setViewport(width, height);
-        // TODO: invalidate layout of widgets (?)
+        context.getLayoutEngine().markNeedsLayout(); // Trigger layout recalculation on viewport change
     }
 
     private void loadResources(List<Resource> resources) {

@@ -1,6 +1,7 @@
 package org.pixel.ext.weaver.layout;
 
 import lombok.Getter;
+import org.pixel.ext.weaver.Widget;
 import org.pixel.ext.weaver.WeaverContext;
 import org.pixel.ext.weaver.style.Style;
 import org.pixel.ext.weaver.style.property.StyleProperties;
@@ -9,15 +10,17 @@ import org.pixel.ext.weaver.style.property.model.Measurement;
 import org.pixel.ext.weaver.style.property.type.BoxSizingType;
 import org.pixel.ext.weaver.style.property.type.MeasurementType;
 import org.pixel.ext.weaver.style.property.type.PositionType;
-import org.pixel.ext.weaver.widget.Widget;
 import org.pixel.math.Rectangle;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class LayoutEngine {
 
     @Getter
     private Widget rootWidget;
 
-    private boolean needsLayout = true;
+    private final Set<Widget> dirtyWidgets = new HashSet<>();
 
     /**
      * Perform layouting if needed.
@@ -25,11 +28,14 @@ public class LayoutEngine {
      * @param ctx The weaver context.
      */
     public void layout(WeaverContext ctx) {
-        if (!needsLayout || rootWidget == null) {
+        if (dirtyWidgets.isEmpty() || rootWidget == null) {
             return;
         }
 
+        // Simple approach: any dirty widget causes full tree recalculation
+        // This handles all dependency cases correctly (child affecting parent, etc.)
         layoutWidget(rootWidget, ctx);
+        dirtyWidgets.clear();
     }
 
     private void layoutWidget(Widget widget, WeaverContext ctx) {
@@ -275,7 +281,7 @@ public class LayoutEngine {
     public void setRootWidget(Widget rootWidget) {
         this.rootWidget = rootWidget;
         if (rootWidget != null) {
-            this.needsLayout = true;
+            markNeedsLayout();
         }
     }
 
@@ -284,7 +290,67 @@ public class LayoutEngine {
      */
     public void clear() {
         this.rootWidget = null;
-        this.needsLayout = false; // there is nothing to layout
+        this.dirtyWidgets.clear();
+    }
+
+    /**
+     * Mark the entire tree for layout recalculation.
+     * Used when viewport changes or root widget changes.
+     */
+    public void markNeedsLayout() {
+        if (rootWidget != null) {
+            dirtyWidgets.add(rootWidget);
+        }
+    }
+
+    /**
+     * Mark a specific widget as needing layout recalculation.
+     * Called when widget properties change (styles, classes, etc.).
+     * Implements Level 2 optimization: propagates upward if parent depends on child size.
+     *
+     * @param widget The widget to mark dirty.
+     */
+    public void markDirty(Widget widget) {
+        if (widget == null || dirtyWidgets.contains(widget)) {
+            return; // Already dirty
+        }
+
+        dirtyWidgets.add(widget);
+
+        // Propagate upward if parent might be affected by this widget's size change
+        Widget parent = widget.getParent();
+        if (parent != null && widget.getContext() != null) {
+            WeaverContext context = widget.getContext();
+            Style parentStyle = context.getStyleEngine().getComputedStyle(parent);
+            Measurement parentWidth = parentStyle.get(StyleProperties.WIDTH);
+            Measurement parentHeight = parentStyle.get(StyleProperties.HEIGHT);
+
+            // Parent depends on children if it uses intrinsic sizing (AUTO)
+            boolean parentDependsOnChildren =
+                    parentWidth.type() == MeasurementType.AUTO ||
+                    parentHeight.type() == MeasurementType.AUTO;
+
+            if (parentDependsOnChildren) {
+                markDirty(parent); // Recursive upward propagation (will also mark parent's descendants)
+                return; // Don't mark descendants again - parent call will handle it
+            }
+        }
+
+        // Mark all descendants dirty (they depend on this widget's size/position)
+        // Only if we didn't propagate upward (to avoid duplicate work)
+        markDescendantsDirty(widget);
+    }
+
+    /**
+     * Mark all descendants of a widget as dirty recursively.
+     */
+    private void markDescendantsDirty(Widget widget) {
+        for (Widget child : widget.getChildren()) {
+            if (!dirtyWidgets.contains(child)) {
+                dirtyWidgets.add(child);
+                markDescendantsDirty(child);
+            }
+        }
     }
 
     private float resolveMeasurement(Measurement measurement, float parentSize) {
