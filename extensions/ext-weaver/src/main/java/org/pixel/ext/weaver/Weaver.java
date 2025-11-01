@@ -7,8 +7,6 @@ import org.pixel.commons.lifecycle.Updatable;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ContentManager;
-import org.pixel.ext.weaver.layout.LayoutEngine;
-import org.pixel.ext.weaver.style.StyleEngine;
 import org.pixel.ext.weaver.style.parser.StyleSheetParser;
 import org.pixel.ext.weaver.style.resource.FontResource;
 import org.pixel.ext.weaver.style.resource.Resource;

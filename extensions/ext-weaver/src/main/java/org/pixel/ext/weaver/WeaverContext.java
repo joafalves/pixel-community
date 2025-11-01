@@ -3,8 +3,6 @@ package org.pixel.ext.weaver;
 import lombok.Builder;
 import lombok.Getter;
 import org.pixel.commons.lifecycle.Disposable;
-import org.pixel.ext.weaver.layout.LayoutEngine;
-import org.pixel.ext.weaver.style.StyleEngine;
 import org.pixel.ext.weaver.style.resource.ResourceStore;
 import org.pixel.graphics.render.canvas.Canvas;
 import org.pixel.graphics.render.canvas.text.SdfFont;

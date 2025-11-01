@@ -1,9 +1,13 @@
-package org.pixel.ext.weaver.style;
+package org.pixel.ext.weaver;
 
 import org.pixel.commons.Color;
 import org.pixel.commons.data.Pair;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.ext.weaver.style.CssRule;
+import org.pixel.ext.weaver.style.Style;
+import org.pixel.ext.weaver.style.StyleSheet;
+import org.pixel.ext.weaver.style.Styleable;
 import org.pixel.ext.weaver.style.property.StyleProperties;
 import org.pixel.ext.weaver.style.property.model.Measurement;
 import org.pixel.ext.weaver.style.property.type.*;

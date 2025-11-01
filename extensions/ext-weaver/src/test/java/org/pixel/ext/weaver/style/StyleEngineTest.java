@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
+import org.pixel.ext.weaver.StyleEngine;
 import org.pixel.ext.weaver.WeaverContext;
 import org.pixel.ext.weaver.style.parser.StyleSheetParser;
 import org.pixel.ext.weaver.style.property.StyleProperties;

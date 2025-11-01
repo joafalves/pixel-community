@@ -1,8 +1,7 @@
-package org.pixel.ext.weaver.layout;
+package org.pixel.ext.weaver;
 
 import lombok.Getter;
-import org.pixel.ext.weaver.Widget;
-import org.pixel.ext.weaver.WeaverContext;
+import org.pixel.ext.weaver.layout.BoxModel;
 import org.pixel.ext.weaver.style.Style;
 import org.pixel.ext.weaver.style.property.StyleProperties;
 import org.pixel.ext.weaver.style.property.StyleProperty;
