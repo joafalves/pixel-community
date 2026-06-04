@@ -9,4 +9,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Service {
     String value() default ""; // Name of the instance to inject
+    String[] tags() default {}; // Tags for filtering
 }

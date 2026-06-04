@@ -5,9 +5,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.METHOD)
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Component {
-    String value() default ""; // Name of the instance to inject
-    String[] tags() default {}; // Tags for filtering
+public @interface Conditional {
+    Class<? extends Condition>[] value();
 }

@@ -9,4 +9,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Auto {
     String value() default ""; // Name of the instance to inject
+    String[] tags() default {}; // Tags for filtering (injects a collection when applied to List/Set/Collection fields)
 }

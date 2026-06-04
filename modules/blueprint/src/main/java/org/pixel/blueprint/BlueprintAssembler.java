@@ -1,7 +1,7 @@
 package org.pixel.blueprint;
 
-import org.pixel.blueprint.annotation.Auto;
 import org.pixel.blueprint.annotation.AfterAssembly;
+import org.pixel.blueprint.annotation.Auto;
 import org.pixel.blueprint.annotation.Scheduled;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
@@ -10,12 +10,15 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
 
 public class BlueprintAssembler {
 
@@ -46,7 +49,7 @@ public class BlueprintAssembler {
         try {
             // Find the most suitable constructor (we'll pick the one with the most parameters, if any)
             Constructor<?>[] constructors = clazz.getConstructors();
-            Constructor<?> constructor = Arrays.stream(constructors).max(Comparator.comparingInt(Constructor::getParameterCount)).orElseThrow(() -> new IllegalArgumentException("No public constructors available for " + clazz.getName()));
+            Constructor<?> constructor = Arrays.stream(constructors).max(Comparator.comparingInt(Constructor::getParameterCount)).orElseThrow(() -> new BlueprintException("No public constructors available for " + clazz.getName()));
 
             // Resolve constructor parameters
             Object[] params = BlueprintUtil.resolveParameters(repository, constructor.getParameters());
@@ -59,7 +62,7 @@ public class BlueprintAssembler {
 
             return instance;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create and assemble instance for " + clazz.getName(), e);
+            throw new BlueprintException("Failed to create and assemble instance for " + clazz.getName(), e);
         }
     }
 
@@ -92,21 +95,24 @@ public class BlueprintAssembler {
             if (field.isAnnotationPresent(Auto.class)) {
                 Auto autoAnnotation = field.getAnnotation(Auto.class);
                 String requiredName = autoAnnotation.value();
+                String[] tags = autoAnnotation.tags();
                 field.setAccessible(true);
 
                 try {
                     if (field.get(instance) == null) { // Only inject if field is null
                         Object dependency;
 
-                        if (!requiredName.isEmpty()) {
-                            // Get by name if a name is specified
+                        if (tags.length > 0) {
+                            // Tag-based injection
+                            dependency = resolveByTags(repository, field, tags);
+                        } else if (!requiredName.isEmpty()) {
+                            // Named injection
                             dependency = repository.uget(field.getType(), requiredName);
                         } else {
-                            // Does the field name match any named instance map?
+                            // Try field name first, then type-based
                             dependency = repository.uget(field.getType(), field.getName());
 
                             if (dependency == null) {
-                                // Otherwise, attempt to get by type
                                 dependency = repository.uget(field.getType());
                             }
                         }
@@ -118,7 +124,7 @@ public class BlueprintAssembler {
                         }
                     }
                 } catch (IllegalAccessException e) {
-                    throw new RuntimeException("Failed to inject instance for field: " + field.getName(), e);
+                    throw new BlueprintException("Failed to inject instance for field: " + field.getName(), e);
                 }
             }
         }
@@ -127,6 +133,45 @@ public class BlueprintAssembler {
         assembleMethodAnnotations(repository, instance);
 
         return allInjected;
+    }
+
+    /**
+     * Resolve a dependency by tags. Supports List&lt;T&gt;, Set&lt;T&gt;, and single instance injection.
+     *
+     * @param repository The component repository.
+     * @param field      The field to inject.
+     * @param tags       The tags to filter by.
+     * @return The resolved dependency (List, Set, or single instance).
+     */
+    @SuppressWarnings("unchecked")
+    private static Object resolveByTags(BlueprintRepository repository, Field field, String[] tags) {
+        Class<?> fieldType = field.getType();
+
+        if (List.class.isAssignableFrom(fieldType)) {
+            Type genericType = field.getGenericType();
+            if (genericType instanceof ParameterizedType) {
+                ParameterizedType paramType = (ParameterizedType) genericType;
+                Class<?> elementType = (Class<?>) paramType.getActualTypeArguments()[0];
+                return repository.getByTags(elementType, tags);
+            }
+        } else if (fieldType.isArray()) {
+            Class<?> elementType = fieldType.getComponentType();
+            List<?> result = repository.getByTags(elementType, tags);
+            // Convert List to array
+            Object array = java.lang.reflect.Array.newInstance(elementType, result.size());
+            for (int i = 0; i < result.size(); i++) {
+                java.lang.reflect.Array.set(array, i, result.get(i));
+            }
+            return array;
+        } else {
+            // Single instance: return the first match
+            List<?> result = repository.getByTags(fieldType, tags);
+            if (!result.isEmpty()) {
+                return result.get(0);
+            }
+        }
+
+        return null;
     }
 
     private static void assembleMethodAnnotations(BlueprintRepository repository, Object instance) {
@@ -142,7 +187,7 @@ public class BlueprintAssembler {
                         method.setAccessible(true); // Ensure the method can be accessed
                         method.invoke(instance);
                     } catch (Exception e) {
-                        log.error("Exception caught!", e);
+                        log.error("Exception caught in scheduled method!", e);
                     }
                 }, 0, interval, TimeUnit.MILLISECONDS);
             }
@@ -157,7 +202,7 @@ public class BlueprintAssembler {
                             try {
                                 method.invoke(instance);
                             } catch (IllegalAccessException | InvocationTargetException e) {
-                                log.error("Exception caught!", e);
+                                log.error("Exception caught in async after-assembly method!", e);
                             }
                         });
                     } else {
@@ -166,7 +211,7 @@ public class BlueprintAssembler {
                         );
                     }
                 } catch (IllegalAccessException | InvocationTargetException e) {
-                    log.error("Exception caught!", e);
+                    throw new BlueprintException("Failed to invoke after-assembly method: " + method.getName(), e);
                 }
             }
         }
