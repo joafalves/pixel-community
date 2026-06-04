@@ -21,9 +21,12 @@ import static org.lwjgl.opengl.GL20C.glUniform1iv;
 import static org.lwjgl.opengl.GL20C.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL20C.glUniformMatrix4fv;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
+
+import org.lwjgl.BufferUtils;
 
 import org.lwjgl.system.MemoryUtil;
 import org.pixel.commons.Color;
@@ -80,6 +83,7 @@ public class GLSpriteBatch extends SpriteBatch {
     private int lastTextureId;
     private int lastDepthLevel;
     private boolean hasDifferentDepthLevels;
+    private int dummyTextureId;
 
     /**
      * Constructor.
@@ -154,6 +158,28 @@ public class GLSpriteBatch extends SpriteBatch {
         }
         glUniform1iv(shader.getUniformLocation("uTextureImage"), textureRefArray);
 
+        // Create a dummy 1x1 white texture and bind it to all shader texture units.
+        // In OpenGL core profile, the default texture (0) is not a valid texture object
+        // and some implementations (notably macOS Metal translation layer) will report
+        // "GLD_TEXTURE_INDEX_2D is unloadable" when a sampler references a unit with no
+        // valid texture bound.
+        ByteBuffer whitePixel = BufferUtils.createByteBuffer(4);
+        whitePixel.put((byte) 255).put((byte) 255).put((byte) 255).put((byte) 255);
+        whitePixel.flip();
+        dummyTextureId = glGenTextures();
+        glBindTexture(GL_TEXTURE_2D, dummyTextureId);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, whitePixel);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        for (int i = 0; i < shaderTextureCount; i++) {
+            glActiveTexture(GL_TEXTURE0 + i);
+            glBindTexture(GL_TEXTURE_2D, dummyTextureId);
+        }
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
         // setup attributes:
         int aVertexPosition = this.shader.getAttributeLocation("aVertexPosition");
         int aTextureCoordinates = this.shader.getAttributeLocation("aTextureCoordinates");
@@ -186,6 +212,7 @@ public class GLSpriteBatch extends SpriteBatch {
         shader.dispose();
         vbo.dispose();
         vao.dispose();
+        glDeleteTextures(dummyTextureId);
         state = State.DISPOSED;
     }
 

@@ -103,7 +103,7 @@ public class GLFWWindowManager extends DesktopWindowManager {
         this.initWindowCallbacks();
 
         this.state = State.INITIALIZED;
-        this.setWindowIcon(DEFAULT_WINDOW_ICON_PATH_64, DEFAULT_WINDOW_ICON_PATH_32);
+        //this.setWindowIcon(DEFAULT_WINDOW_ICON_PATH_64, DEFAULT_WINDOW_ICON_PATH_32);
 
         return true;
     }
@@ -259,6 +259,7 @@ public class GLFWWindowManager extends DesktopWindowManager {
         }
 
         GLFWImage[] imageDataArray = new GLFWImage[iconPaths.length];
+        ImageData macIconData = null;
         for (int i = 0; i < iconPaths.length; i++) {
             ImageData imgData = FileUtils.loadImage(iconPaths[i]);
             if (imgData == null) {
@@ -266,9 +267,24 @@ public class GLFWWindowManager extends DesktopWindowManager {
                 return;
             }
 
+            if (macIconData == null) {
+                macIconData = imgData;
+            }
+
             GLFWImage glfwImage = GLFWImage.malloc();
             glfwImage.set(imgData.width(), imgData.height(), imgData.data());
             imageDataArray[i] = glfwImage;
+        }
+
+        if (OS.get() == OS.MACOS) {
+            // macOS does not support per-window icons via GLFW.
+            // Skipping AWT-based dock icon — initialising AWT on the main thread
+            // conflicts with GLFW's Cocoa event handling, breaking keyboard input
+            // and window controls. Set the dock icon via Info.plist instead.
+            for (GLFWImage img : imageDataArray) {
+                if (img != null) img.free();
+            }
+            return;
         }
 
         GLFWImage.Buffer buffer = GLFWImage.malloc(iconPaths.length);
