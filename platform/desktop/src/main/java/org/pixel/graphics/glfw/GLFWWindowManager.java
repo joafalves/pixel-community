@@ -60,20 +60,28 @@ public class GLFWWindowManager extends DesktopWindowManager {
             Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
         }
 
-        // Pre-calculate window dimensions
-        this.windowDimensions = WindowDimensions.builder()
-                .windowWidth(this.windowSettings.getWindowWidth())
-                .windowHeight(this.windowSettings.getWindowHeight())
-                .virtualWidth(this.windowSettings.getVirtualWidth())
-                .virtualHeight(this.windowSettings.getVirtualHeight())
-                .pixelRatio(1f)
-                .build();
-
         // Initialize GLFW & setup render window:
         this.initGLFW();
         this.windowHandle = this.createWindow();
+
+        // Query actual framebuffer size to account for HiDPI/Retina displays.
+        // On Retina, the framebuffer is larger than the window (e.g. 2x),
+        // and the viewport and rendering must use framebuffer coordinates.
+        try (MemoryStack stack = stackPush()) {
+            IntBuffer fbWidth = stack.mallocInt(1);
+            IntBuffer fbHeight = stack.mallocInt(1);
+            glfwGetFramebufferSize(windowHandle, fbWidth, fbHeight);
+
+            this.windowDimensions = WindowDimensions.builder()
+                    .windowWidth(fbWidth.get(0))
+                    .windowHeight(fbHeight.get(0))
+                    .virtualWidth(this.windowSettings.getVirtualWidth())
+                    .virtualHeight(this.windowSettings.getVirtualHeight())
+                    .pixelRatio(fbWidth.get(0) / (float) this.windowSettings.getVirtualWidth())
+                    .build();
+        }
+
         this.updateWindowMode();
-        this.centerWindow();
 
         // Make the OpenGL context current
         glfwMakeContextCurrent(windowHandle);
@@ -84,6 +92,12 @@ public class GLFWWindowManager extends DesktopWindowManager {
         // Make the window visible & set default icon
         glfwShowWindow(windowHandle);
         this.isWindowFocused = true;
+
+        // Center window after showing it, so macOS respects the position.
+        // On macOS, window positions set before glfwShowWindow may be overridden
+        // by the window manager, causing the window to appear at a default location
+        // (e.g., bottom-left) rather than centered.
+        this.centerWindow();
 
         // Setup window callbacks
         this.initWindowCallbacks();
@@ -153,10 +167,17 @@ public class GLFWWindowManager extends DesktopWindowManager {
 
         glfwSetWindowSize(windowHandle, width, height);
 
-        // Update window dimensions
-        this.windowDimensions.setWindowWidth(width);
-        this.windowDimensions.setWindowHeight(height);
-        this.windowDimensions.setPixelRatio(width / (float) windowDimensions.getWindowWidth());
+        // Query the actual framebuffer size to account for HiDPI/Retina scaling.
+        try (MemoryStack stack = stackPush()) {
+            IntBuffer fbWidth = stack.mallocInt(1);
+            IntBuffer fbHeight = stack.mallocInt(1);
+            glfwGetFramebufferSize(windowHandle, fbWidth, fbHeight);
+
+            this.windowDimensions.setWindowWidth(fbWidth.get(0));
+            this.windowDimensions.setWindowHeight(fbHeight.get(0));
+            this.windowDimensions.setPixelRatio(
+                    fbWidth.get(0) / (float) windowDimensions.getVirtualWidth());
+        }
     }
 
     @Override
@@ -373,24 +394,37 @@ public class GLFWWindowManager extends DesktopWindowManager {
             glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
         }
 
-        GLFWVidMode videoMode;
-        if (this.windowSettings.getWindowMode().equals(WindowMode.WINDOWED)) {
-            // Get the resolution of the monitor
-            videoMode = glfwGetVideoMode(monitorHandle);
-            // Set to windowed mode and center on the user screen:
-            assert videoMode != null;
-            glfwSetWindowMonitor(windowHandle, NULL,
-                    (videoMode.width() - this.windowSettings.getWindowWidth()) / 2,
-                    (videoMode.height() - this.windowSettings.getWindowHeight()) / 2,
-                    this.windowSettings.getWindowWidth(), this.windowSettings.getWindowHeight(), GLFW_DONT_CARE);
+        // Get the actual window size in screen coordinates.
+        // Do NOT use windowSettings.getWindowWidth() as it stores the framebuffer size,
+        // which differs from screen coordinates on HiDPI/Retina displays.
+        try (MemoryStack stack = stackPush()) {
+            IntBuffer winWidth = stack.mallocInt(1);
+            IntBuffer winHeight = stack.mallocInt(1);
+            glfwGetWindowSize(windowHandle, winWidth, winHeight);
 
-        } else if (this.windowSettings.getWindowMode().equals(WindowMode.WINDOWED_BORDERLESS)) {
-            videoMode = glfwGetVideoMode(monitorHandle);
-            // Set to windowed mode and center on the user screen:
-            assert videoMode != null;
-            glfwSetWindowMonitor(windowHandle, NULL, (videoMode.width() - this.windowSettings.getWindowWidth()) / 2,
-                    (videoMode.height() - this.windowSettings.getWindowHeight()) / 2,
-                    this.windowSettings.getWindowWidth(), this.windowSettings.getWindowHeight(), GLFW_DONT_CARE);
+            int windowWidth = winWidth.get(0);
+            int windowHeight = winHeight.get(0);
+
+            GLFWVidMode videoMode;
+            if (this.windowSettings.getWindowMode().equals(WindowMode.WINDOWED)) {
+                // Get the resolution of the monitor
+                videoMode = glfwGetVideoMode(monitorHandle);
+                // Set to windowed mode and center on the user screen:
+                assert videoMode != null;
+                glfwSetWindowMonitor(windowHandle, NULL,
+                        (videoMode.width() - windowWidth) / 2,
+                        (videoMode.height() - windowHeight) / 2,
+                        windowWidth, windowHeight, GLFW_DONT_CARE);
+
+            } else if (this.windowSettings.getWindowMode().equals(WindowMode.WINDOWED_BORDERLESS)) {
+                videoMode = glfwGetVideoMode(monitorHandle);
+                // Set to windowed mode and center on the user screen:
+                assert videoMode != null;
+                glfwSetWindowMonitor(windowHandle, NULL,
+                        (videoMode.width() - windowWidth) / 2,
+                        (videoMode.height() - windowHeight) / 2,
+                        windowWidth, windowHeight, GLFW_DONT_CARE);
+            }
         }
     }
 
