@@ -12,7 +12,4 @@ dependencies {
 
 application {
     mainClass = 'org.pixel.demo.imgui.ImGuiDemo'
-    if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
-        applicationDefaultJvmArgs = ["-XstartOnFirstThread"]
-    }
 }

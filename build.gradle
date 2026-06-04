@@ -2,6 +2,8 @@
  * This software is available under Apache License
  * Copyright (c) 2020
  */
+import org.jetbrains.gradle.ext.*
+
 // Pixel Version:
 group = "io.github.joafalves"
 version = System.properties["PIXEL_RELEASE"] ?: "DEV-${getGitCommitHash()}"
@@ -27,12 +29,31 @@ buildscript {
         mavenLocal()
         mavenCentral()
         google()
+        gradlePluginPortal()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         maven { url "https://s01.oss.sonatype.org/content/repositories/releases/" }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.9.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.gradle.plugin.idea-ext:org.jetbrains.gradle.plugin.idea-ext.gradle.plugin:1.4.1"
+    }
+}
+
+apply plugin: "idea"
+apply plugin: "org.jetbrains.gradle.plugin.idea-ext"
+
+idea {
+    project {
+        settings {
+            runConfigurations {
+                defaults(Application) {
+                    if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
+                        jvmArgs = "-XstartOnFirstThread"
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -189,6 +210,21 @@ subprojects { project ->
                             username sonatypeUsername
                             password sonatypePassword
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    // Add -XstartOnFirstThread to any subproject that uses the 'application' plugin on macOS.
+    // This is required by LWJGL on macOS to run on the main thread.
+    project.plugins.withId("application") {
+        project.afterEvaluate {
+            if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
+                application {
+                    def current = applicationDefaultJvmArgs ?: []
+                    if (!current.contains("-XstartOnFirstThread")) {
+                        applicationDefaultJvmArgs = current + "-XstartOnFirstThread"
                     }
                 }
             }
