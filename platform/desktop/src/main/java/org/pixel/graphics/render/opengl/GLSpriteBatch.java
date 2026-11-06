@@ -40,6 +40,7 @@ import org.pixel.content.Texture;
 import org.pixel.content.opengl.GLFont;
 import org.pixel.content.opengl.GLTexture;
 import org.pixel.graphics.render.BlendMode;
+import org.pixel.graphics.RenderStats;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.graphics.shader.Shader;
 import org.pixel.graphics.shader.opengl.GLVertexArrayObject;
@@ -76,6 +77,7 @@ public class GLSpriteBatch extends SpriteBatch {
     private State state = State.NEW;
 
     private final int shaderTextureCount;
+    private final RenderStats stats;
 
     private FloatBuffer dataBuffer;
     private SpriteData[] spriteData;
@@ -89,24 +91,28 @@ public class GLSpriteBatch extends SpriteBatch {
 
     /**
      * Constructor.
+     *
+     * @param stats The device render statistics this batch records its GPU work into.
      */
-    public GLSpriteBatch() {
-        this(BUFFER_UNIT_LENGTH);
+    public GLSpriteBatch(RenderStats stats) {
+        this(stats, BUFFER_UNIT_LENGTH);
     }
 
     /**
      * Constructor.
      *
+     * @param stats         The device render statistics this batch records its GPU work into.
      * @param bufferMaxSize The maximum number of sprites that can be drawn in a
      *                      single batch.
      */
-    public GLSpriteBatch(int bufferMaxSize) {
-        this(bufferMaxSize, 0);
+    public GLSpriteBatch(RenderStats stats, int bufferMaxSize) {
+        this(stats, bufferMaxSize, 0);
     }
 
     /**
      * Constructor.
      *
+     * @param stats              The device render statistics this batch records its GPU work into.
      * @param bufferMaxSize      The maximum number of sprites that can be drawn in
      *                           a single batch.
      * @param shaderTextureCount The number of textures to be used by the shader (if
@@ -114,11 +120,15 @@ public class GLSpriteBatch extends SpriteBatch {
      *                           value will be set based on the device maximum
      *                           capacity - recommended).
      */
-    public GLSpriteBatch(int bufferMaxSize, int shaderTextureCount) {
+    public GLSpriteBatch(RenderStats stats, int bufferMaxSize, int shaderTextureCount) {
+        if (stats == null) {
+            throw new IllegalArgumentException("Render stats cannot be null.");
+        }
         if (bufferMaxSize <= 0) {
             throw new RuntimeException("Invalid buffer size, must be greater than zero");
         }
 
+        this.stats = stats;
         this.bufferMaxSize = bufferMaxSize;
         this.matrixBuffer = MemoryUtil.memAllocFloat(4 * 4);
         this.vbo = new GLVertexBufferObject();
@@ -410,13 +420,19 @@ public class GLSpriteBatch extends SpriteBatch {
         int offset = shaderTextureMap.size();
         glActiveTexture(GL_TEXTURE0 + offset);
         glBindTexture(GL_TEXTURE_2D, spriteData.textureId);
+        stats.recordTextureBind();
         shaderTextureMap.put(spriteData.textureId, offset);
     }
 
     private void flushBatch(int count) {
+        if (count == 0) {
+            return; // nothing queued (e.g. end() right after a full flush): skip the empty upload/draw call
+        }
         dataBuffer.flip();
+        stats.recordUpload((long) dataBuffer.remaining() * Float.BYTES);
         vbo.uploadData(GL_ARRAY_BUFFER, dataBuffer, GL_STREAM_DRAW);
         glDrawArrays(GL_TRIANGLES, 0, 6 * count);
+        stats.recordDrawCall(count, 6L * count);
     }
 
     private void flush() {

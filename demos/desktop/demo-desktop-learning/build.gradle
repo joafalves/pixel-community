@@ -17,3 +17,20 @@ dependencies {
 application {
     mainClass.set('org.pixel.demo.learning.sprite.SingleSpriteDemo')
 }
+
+// Render benchmark (URP v2 baseline). Opens a window for ~1 minute and writes a CSV to build/benchmarks/.
+// Options: -Dbench.scale=1.0 -Dbench.warmup=2 -Dbench.measure=8 -Dbench.only=<scenario>
+tasks.register('renderBenchmark', JavaExec) {
+    group = 'benchmark'
+    description = 'Runs the render benchmark and writes results to build/benchmarks/.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.pixel.demo.learning.benchmark.RenderBenchmark'
+    workingDir = projectDir
+    systemProperties System.properties.findAll { it.key.toString().startsWith('bench.') }
+    if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
+        jvmArgs '-XstartOnFirstThread'
+    }
+    if (JavaVersion.current() >= JavaVersion.VERSION_22) {
+        jvmArgs '--enable-native-access=ALL-UNNAMED' // LWJGL uses native access (JDK 22+ warns otherwise)
+    }
+}

@@ -39,6 +39,7 @@ import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.core.DesktopWindowManager;
 import org.pixel.core.WindowSettings;
 import org.pixel.graphics.GraphicsDevice;
+import org.pixel.graphics.RenderStats;
 
 public class GLGraphicsDevice implements GraphicsDevice {
 
@@ -46,6 +47,8 @@ public class GLGraphicsDevice implements GraphicsDevice {
 
     private final DesktopWindowManager windowManager;
     private final WindowSettings windowSettings;
+
+    private final RenderStats stats = new RenderStats();
 
     private State state;
     private Callback debugLocalCallback;
@@ -95,6 +98,16 @@ public class GLGraphicsDevice implements GraphicsDevice {
 
         this.state = State.INITIALIZED;
         return true;
+    }
+
+    @Override
+    public RenderStats getStats() {
+        return stats;
+    }
+
+    @Override
+    public void endFrame() {
+        stats.endFrame();
     }
 
     @Override

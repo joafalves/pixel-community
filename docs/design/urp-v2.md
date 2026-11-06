@@ -1,0 +1,515 @@
+# URP v2 — Unified Render Pipeline
+
+| | |
+|---|---|
+| **Status** | Draft for review |
+| **Branch** | `task/urp-v2` (based on `task/devel-hardening`; rebase onto `devel` once that is merged) |
+| **Replaces** | `task/urp` (kept for reference only; not merged) |
+| **Scope** | Rendering only. GUI and editor come later. Mobile is a design requirement, but its backend is a follow-up (§5.8). |
+
+---
+
+## 1. Why a v2
+
+`task/urp` tried to unify rendering by adding a dispatcher on top of many independent renderers:
+`RenderPipeline` picked a renderer by the `Renderable`'s class. Each of the ~8 renderers (`SpriteBatch`, `DirectRenderer`,
+`SdfShapeRenderer`, `SdfTextRenderer`, `GLCanvasRenderer`, …) had its own shader, buffers and `begin`/`end`. The results:
+
+- The batch was flushed whenever the renderer type changed, so mixing sprites, shapes and text was slow. The
+  `groupByRenderer` option "fixed" that by breaking depth order.
+- `Canvas` (which the GUIs needed for clipping, text and shapes) could not live inside the pipeline. All three GUI
+  attempts (Flux, Rune, Weaver) therefore drew through a private `Canvas` and bypassed the URP.
+- Scissor clipping ignored transforms and the Retina pixel ratio, and every clip change flushed the batch.
+
+The one genuinely unified piece was the SDF uber-shader behind `Canvas`, which draws shapes, text glyphs and images in
+one draw call. **v2 makes that the foundation.** Instead of unifying many renderers at the top, there is one draw list
+and one batcher at the bottom, with several front-ends on top.
+
+## 2. Goals and non-goals
+
+**Goals**
+1. One rendering path for game world, HUD and (later) GUI, with correct ordering and few draw calls.
+2. Existing games keep working: the `SpriteBatch` API stays and becomes a front-end.
+3. Correct on HiDPI/Retina: logical units everywhere, pixels only inside the backend.
+4. Clipping, transforms, custom shaders, render targets and post-processing are first-class.
+5. Zero allocations per frame in steady state.
+6. Testable without a GPU: recording, sorting, batching decisions and text layout run in unit tests.
+7. Editor-ready (§9): several pipelines per process, inspectable frames, picking. No static state.
+
+**Non-goals (for this branch)**
+- GUI framework (Flux/Rune/Weaver successor). It comes later on its own branch and builds on `Canvas`.
+- Editor, game-loop decoupling, scene serialization.
+- *Implementing* the Android/GLES backend. **Mobile is supported by design** (§5.8): everything above the backend is
+  platform-free, and the GL backend and shaders only use what GLES 3.0 also has. Building and testing
+  `GLES30RenderBackend` is the next step after this branch, not a redesign.
+- Vulkan/Metal backends. The backend SPI (§5.7) keeps that door open but nothing is implemented.
+- 3D, lighting, normal maps.
+
+## 3. Architecture
+
+```
+ Front-ends (what to draw)   SpriteBatch (compat) · Canvas (shapes / images / text / paths) · [GUI later]
+                                        │ record commands (plain data, no GL)
+ Draw list                  per layer: command arrays + sort keys + clip table + pick ids
+                                        │ sort (sorted layers) / keep order (ordered layers), then merge into batches
+ Pipeline (passes)          LayerPass(view, target) → PostPass(effects) → LayerPass(UI) → …
+                                        │ batches: (material, texture slots, vertex range)
+ Backend SPI                RenderBackend  ── implemented by ──►  GLRenderBackend (platform/desktop)
+```
+
+Everything above the backend line lives in `modules/graphics` and contains **no GL calls**.
+
+## 4. Core concepts
+
+### 4.1 Layer
+A named bucket of draw commands that is consumed by one pass. Each layer declares a mode:
+
+| Mode | Ordering | Batching | Used for |
+|---|---|---|---|
+| `ORDERED` | submission order (painter's) | consecutive compatible commands merge | HUD, GUI, overlays |
+| `SORTED` | by depth (float); **equal depth keeps submission order** | consecutive compatible commands merge after the sort | game world, y-sorting, `SpriteBatch` compat |
+| `SORTED` + `batchByMaterial()` (opt-in) | by depth; **within equal depth, grouped by material and texture** (order among them unspecified) | maximal | tiles, particles, anything where same-depth items don't overlap or their overlap order doesn't matter |
+
+"Compatible" means same material and the texture fits in the batch's texture slots (§5.3). Mixing these behaviours in
+one queue is what broke `task/urp`. Here it is a property of the layer.
+
+The opt-in mode exists because keeping submission order and grouping by texture conflict at equal depth: if two
+overlapping sprites share a depth, regrouping can change which one is on top. That is never done silently. Today's
+`SpriteBatch` keeps submission order at equal depth, so its compat path uses plain `SORTED`.
+
+### 4.2 Draw command
+Almost everything is a **quad command**: position/size or 4 corners, UVs, colour, a *shape type* (textured, SDF rect,
+round rect, circle, line, point, glyph), shape parameters, a material, a texture and a clip index. Path fills
+(triangulated polygons) are **geometry commands** that reference a vertex range in the same buffer.
+
+Commands are stored struct-of-arrays in reusable primitive arrays, and the arrays grow but never shrink. No object is
+allocated per command.
+
+### 4.3 Sort key (sorted layers)
+- `SORTED`: the key is the depth only (float → order-preserving 32-bit int). A **stable** sort over command indices
+  keeps submission order within equal depth.
+- `SORTED` + `batchByMaterial()`: 64-bit key `[ depth : 32 | material : 16 | texture : 16 ]`, also stable. Material
+  and texture ids are dense, frame-local ids assigned on first use.
+- `ORDERED`: no sort.
+
+In all modes, batching then walks the commands in their final order and merges consecutive compatible commands.
+
+### 4.4 Material (how multiple shaders work)
+`Material` = shader program + blend mode + uniform values + bound textures. There are three kinds of shader, from
+most to least common:
+
+| Kind | What the user writes | What they get for free | Batching |
+|---|---|---|---|
+| **Built-in** (default) | nothing | sprites, SDF shapes, SDF text, clipping, all in one program | everything batches together |
+| **Effect material** | one GLSL function: `vec4 effect(vec4 color, vec2 uv, Fragment f)` | same vertex format, texture slots, clipping and SDF coverage; the snippet is injected into the uber-shader template and compiled as a *variant* | batches with other commands using the same material + uniform values |
+| **Raw material** | full vertex + fragment shader | a documented vertex layout and uniforms | always its own batch |
+
+Effect materials cover most real cases (water, dissolve, flash-on-hit, palette swap, outline-by-texture) without the
+user re-implementing clipping, texture slots or AA. Example:
+
+```glsl
+// shaders/dissolve.effect.glsl
+uniform sampler2D uNoise;
+uniform float uProgress;
+vec4 effect(vec4 color, vec2 uv, Fragment f) {
+    if (texture(uNoise, uv).r < uProgress) discard;
+    return color;
+}
+```
+```java
+Material dissolve = Material.effect(content.loadText("shaders/dissolve.effect.glsl"))
+                            .texture("uNoise", noise);
+world.image(atlas, enemy.frame(), enemy.position()).material(dissolve.with("uProgress", t));
+```
+
+Compiled programs are cached per (template, variant, snippet). In sorted layers the sort key groups commands by
+material, so N enemies with the same dissolve material and progress value still produce one batch. Changing a
+uniform value creates a new material *instance*, which batches only with commands that share it (frame stats show
+why a batch broke, §6.3). This replaces `DirectRenderer`. Post effects (§5.6) are a separate, full-screen kind of
+material.
+
+### 4.5 Clipping
+Each command carries a 16-bit **clip index** into a per-layer clip table of rectangles in layer space. The vertex
+shader passes the clip rect through, and the fragment shader discards fragments outside it. Consequences:
+- Clip changes do **not** flush the batch, so nested scroll panes cost nothing extra.
+- Clip rects are transformed on the CPU with the current transform, so translated and scaled content clips
+  correctly. Rotated clips are an open question (§12).
+- No `glScissor` and no viewport readback, so Retina is correct by construction.
+
+### 4.6 View
+`View` provides the projection·view matrix and the visible bounds of a pass (for culling). `Camera2D` implements it.
+`ScreenSpace.logical()` is a view in logical window units, used for HUD/UI.
+
+### 4.7 Pass and pipeline
+A `RenderPipeline` is an ordered list of passes, built once:
+
+- `LayerPass(layers…, view, target, clear?)`: draws the batches of one or more layers.
+- `PostPass(source, effects…, destination)`: full-screen effects (bloom, vignette, the existing sepia/pixeler/…).
+- `CustomPass(callback)`: escape hatch with direct backend access.
+
+Output is the screen or any `RenderTarget`. Several pipelines can exist at once, which is what the editor needs.
+
+### 4.8 Front-ends
+- **Canvas**: the main API. Shapes, images, nine-patch, text, paths, a transform stack and a clip stack. Records into
+  one layer. Fluent builder:
+  `canvas.rect(x, y, w, h).fill(c).stroke(2, c2).radius(8).depth(d)`.
+  Builder rule: the builder is one reused cursor object. The command is committed when the next command starts or
+  when the layer is rendered, so setters can be called in any order and nothing is allocated. Don't keep builder
+  references.
+- **SpriteBatch (compatibility)**: the current abstract API, unchanged. A new implementation records into an internal
+  single-layer pipeline and renders at `end()`, which matches today's behaviour. It is registered in place of
+  `GLSpriteBatch` once parity is proven (Phase 1).
+- **GUI**: later. It will paint through `Canvas` into an `ORDERED` layer, or a `SORTED` one for world-space UI.
+
+### 4.9 Text
+
+Text quality is a first-class requirement, not a by-product of the shape shader.
+
+**Glyph atlas format: MTSDF.** This is multi-channel signed distance fields with a true SDF in the alpha channel,
+using Chlumsky's msdfgen algorithm.
+- The **RGB channels (MSDF)** keep corners sharp at any scale. Plain single-channel SDF, which is what
+  `stbtt_GetGlyphSDF` produces and what `task/urp` used, rounds corners when text is drawn much larger than the atlas
+  size.
+- The **alpha channel (true SDF)** gives accurate distances away from the edge. Wide outlines, glows and soft shadows
+  need this, and the MSDF median alone produces artifacts there.
+
+**Generation (two sources, one runtime format)**
+1. **Runtime, desktop:** LWJGL 3.3.6 ships `lwjgl-msdfgen` (msdfgen with `msdf_generate_mtsdf` and FreeType glyph
+   loading and kerning through `msdfgen-ext`). Importing a `.ttf`/`.otf` generates the atlas on first load and caches
+   it on disk.
+2. **Offline, any platform including mobile:** atlases pre-baked with `msdf-atlas-gen` (PNG + JSON metrics),
+   imported as is. This is how shipped and mobile builds avoid native generation at runtime.
+
+Both produce the same `SdfFont` (atlas texture + glyph metrics + kerning + `distanceRange`). Import settings: glyph
+size in the atlas (default 48 px), distance range (default 8 px), character sets.
+
+**Rendering (in the uber-shader, glyph shape type)**
+- **Screen-space anti-aliasing:** `screenPxRange = distanceRange × (on-screen glyph size ÷ atlas glyph size)`,
+  computed with derivatives (`fwidth`) and clamped to ≥ 1. Edges stay one pixel soft at any zoom, rotation or Retina
+  ratio. This is the method recommended by msdfgen.
+- **Effects, all in one pass per glyph** and composited back-to-front in premultiplied alpha:
+
+| Effect | Parameters | Uses |
+|---|---|---|
+| Fill | colour or per-vertex gradient | MSDF median |
+| Stroke / outline | width (px), colour, alignment (outside / centre / inside) | MSDF for the inner edge, true SDF for the outer edge |
+| Shadow / glow | offset, softness, colour | true SDF (alpha) |
+| Weight | bold/thin via threshold shift | MSDF median |
+
+- **Limit (documented):** outline, glow and weight can only extend as far as the distance range encoded in the atlas.
+  With the defaults (8 px range at 48 px), an outline can be about 4 px wide when text is drawn at 48 px. The font
+  import settings raise the range when bigger effects are needed. The API clamps and warns instead of rendering
+  artifacts.
+- **Small text:** distance fields get soft below about 12 px. For pixel-art and very small UI text, bitmap fonts
+  (`Font`/`GLFont`) remain supported and render as plain textured quads in the same batch.
+
+**Layout and measurement** (`TextLayout`, `TextMeasurer`, GL-free and unit-tested): kerning, line breaking,
+alignment, letter and line spacing, and max width with ellipsis. The future GUI layout depends on them.
+**Out of scope:** complex shaping (ligatures, right-to-left, Indic scripts). LWJGL ships `lwjgl-harfbuzz` for that
+later, and the layout API is shaped so it can be added behind `TextLayout`.
+
+### 4.10 Shapes and their effects
+Shapes use the same distance-field idea, with **exact analytic distance functions** instead of an atlas: rect, round
+rect (with per-corner radii), circle, ellipse, line/capsule, point, and arc/ring. Because every shape is a distance
+field, shapes and text share the same effect vocabulary and the same anti-aliasing code:
+
+- **fill**: solid, linear or radial gradient
+- **stroke**: width, alignment (outside / centre / inside), optional dash pattern on lines/rects
+- **soft shadow / glow**: offset, blur, spread. Rounded-rect shadows use the closed-form Gaussian approximation
+  (one quad, no blur pass).
+- **combined fill + stroke + shadow in one command**, as the HUD and GUI will need
+
+Arbitrary paths (polygons, curves) are triangulated on the CPU. Their strokes are expanded into geometry with joins
+and caps and anti-aliased with a 1 px edge fade. This is the one place without an exact distance field, so dashing
+and soft shadows on arbitrary paths are not in v2.
+
+## 5. GPU side (backend)
+
+### 5.1 One uber-shader (plus variants)
+One template program handles textured quads, SDF shapes (§4.10), MTSDF glyphs (§4.9) and raw triangles. Branching is
+by a flat per-vertex shape type. All fragments of a quad take the same branch, so the cost is low. The template has
+two injection points used to build **variants**: the effect snippet of an effect material (§4.4) and compile-time
+feature flags. An example flag is a sprites-only variant with no SDF code, which is used automatically for layers that
+contain only images, if the benchmark shows it matters.
+
+The SDF shape math is ported from `task/urp`'s `sdf_batch.*.glsl`. The glyph path is rewritten for MTSDF. Changes:
+- Texture sampling keeps the **switch-over-constant-indices** approach (as in `multiTexture.frag.glsl`; the branch
+  shader already does this). Indexing a sampler array with a non-constant value is invalid GLSL and fails on
+  Intel/AMD and GLES.
+- There is no special font-atlas unit: an atlas is just a texture in a slot.
+- A per-vertex clip test is added.
+
+### 5.2 Vertex format (initial proposal; the spike decides)
+Indexed quads: 4 vertices plus a shared static index buffer.
+
+| attribute | type | bytes |
+|---|---|---|
+| position | 2 × f32 | 8 |
+| uv | 2 × f32 | 8 |
+| colour | 4 × u8 normalized | 4 |
+| local coords (for SDF) | 2 × f32 | 8 |
+| shape params (radius, stroke width, …) | 4 × f32 | 16 |
+| shape type · texture slot · clip index | u8 · u8 · u16 | 4 |
+| style index | u16 (+ u16 padding) | 4 |
+| **total** | | **52 B/vertex, 208 B/quad** |
+
+For comparison, `task/urp`'s SDF batch used 76 B/vertex with 6 vertices per quad, which is 456 B/quad. But today's
+`GLSpriteBatch` uses only **216 B per sprite** (6 × 36 B, measured in the baseline). So this full format is no win
+for plain sprites, which are the most common primitive. Phase 1 therefore uses **two vertex layouts** from the start:
+
+| layout | attributes | bytes/vertex | bytes/quad |
+|---|---|---|---|
+| **sprite** (textured quads, glyphs of bitmap fonts) | position 2×f32 · uv 2×u16 norm · colour 4×u8 · slot u8 + clip u16 (+pad) | 20 | 80 |
+| **full** (SDF shapes, MTSDF text, effects) | as in the table above | 52 | 208 |
+
+Each batch uses one layout, and a layout switch counts as a batch break. A layer full of sprites therefore uploads
+about 2.7× less than today. The shader is the same template compiled in two variants (§5.1). UVs as normalized u16
+give 1/65535 texture precision, which is exact for textures up to 64k texels wide.
+
+**Style table.** Effects need more data than fits in a vertex: stroke colour and alignment, shadow offset, blur and
+colour, gradient stops, dash pattern, text weight. These go into a per-batch **style table** in a UBO, indexed by the
+style index. Identical styles are de-duplicated, so a paragraph of outlined text uses one entry. Like the clip table,
+it is sized to stay within GLES 3.0's 16 KB UBO minimum (about 256 styles per batch). A full table closes the batch
+and is recorded as a break reason. Plain sprites use style 0 and never touch the table.
+
+### 5.3 Texture slots
+Each batch binds up to `min(GL_MAX_TEXTURE_IMAGE_UNITS, 16)` textures. A new texture that does not fit closes the
+batch (recorded as a break reason).
+
+### 5.4 Streaming
+Vertices are written to a persistent CPU buffer and uploaded once per pass with buffer orphaning
+(`glBufferData(null)` then `glBufferSubData`). The instanced path from `GLFastSpriteBatch` is kept as a benchmark
+reference. Instancing for plain sprites is an optimisation for later, if the numbers ask for it.
+
+### 5.5 Render targets
+`RenderTarget` is an FBO with a colour texture and an optional stencil. It is sized in logical units and allocated at
+the pixel ratio. It is ported from `task/urp`'s `GLRenderTarget`.
+
+### 5.6 Post effects
+`PostEffect` is a full-screen material that ping-pongs between two targets. The existing effect shaders (border,
+noise, overlay, pixeler, sepia) are ported as effects.
+
+### 5.7 Backend SPI (in `graphics`, implemented by the platform)
+
+```java
+public interface RenderBackend extends Disposable {
+    BackendCapabilities capabilities();                    // max texture slots, max target size, …
+    RenderTarget createTarget(int width, int height, TargetOptions options);
+    MaterialHandle compile(Material material);             // cached per material
+    void beginPass(PassState state);                       // target, viewport, clear, view matrix
+    void submit(VertexStream vertices, BatchList batches); // batches = material + slots + index range
+    void endPass();
+}
+```
+
+This is the only interface that touches GL. Unit tests use a recording fake backend, so batching decisions can be
+asserted without a GPU.
+
+### 5.8 Mobile / GLES portability rules
+Mobile is supported by design. These rules keep the desktop GL 3.3 backend portable to a GLES 3.0 backend (Android,
+and iOS through ANGLE/MoltenGL if ever needed):
+
+- **Shaders** are written once in a common GLSL subset. A small preamble selects `#version 330 core` or
+  `#version 300 es` and adds `precision highp float;`, because SDF math needs highp in the fragment shader on mobile.
+- **Allowed:** VAOs, UBOs, instancing, FBOs, MRT, `texelFetch`, integer vertex attributes, `flat` varyings. All of
+  these are in GLES 3.0.
+- **Not used:** geometry shaders, texture buffer objects, persistent mapped buffers, multi-draw indirect, `GL_QUADS`,
+  dynamic sampler-array indexing.
+- **Clip table:** a UBO (fits GLES 3.0's minimum 16 KB, about 1000 rects), with one table per batch.
+- **Fonts on mobile:** pre-baked MTSDF atlases (§4.9 source 2), since LWJGL's msdfgen natives are desktop-only.
+- **Texture slots:** capped by `capabilities()`. GLES 3.0 guarantees 16 fragment units.
+
+The existing `platform/android` (`GLES30SpriteBatch`) is not touched in this branch. The follow-up replaces it with a
+`GLES30RenderBackend` that shares the shaders.
+
+## 6. API sketch
+
+### 6.1 Setup and frame
+
+```java
+public class DungeonGame extends Game {
+    static final Layer WORLD = Layer.sorted("world");
+    static final Layer UI    = Layer.ordered("ui");
+
+    private RenderPipeline pipeline;
+    private Canvas world, hud;
+
+    @Override
+    public void load() {
+        var scene = RenderTarget.create(getGraphicsDevice(), getVirtualWidth(), getVirtualHeight());
+        pipeline = RenderPipeline.builder(getGraphicsDevice())   // no static access
+                .pass(WORLD, camera, scene)
+                .post(scene, Effects.bloom(0.6f), Effects.vignette(0.3f))
+                .pass(UI, ScreenSpace.logical())
+                .build();
+        world = pipeline.canvas(WORLD);
+        hud   = pipeline.canvas(UI);
+    }
+
+    @Override
+    public void draw(DeltaTime delta) {
+        world.image(atlas, player.frame(), player.position()).anchor(0.5f, 1f).depth(player.y());
+        world.image(atlas, Sprites.WATER, waterArea).material(water.with("uTime", delta.getTotalElapsed()));
+
+        hud.roundRect(16, 16, 220, 64, 8).fill(PANEL_BG);
+        hud.text(font, "HP " + player.hp(), 32, 40).size(20).fill(Color.WHITE);
+        hud.clip(16, 96, 220, 160, () -> drawLog(hud));
+
+        pipeline.render();   // sort, batch, run passes; layers are cleared for the next frame
+    }
+
+    @Override
+    public void dispose() {
+        pipeline.dispose();  // owns its targets, buffers and compiled materials
+        super.dispose();
+    }
+}
+```
+
+### 6.2 Compatibility (unchanged game code)
+
+```java
+spriteBatch.begin(camera.getViewMatrix());
+spriteBatch.draw(texture, position, Color.WHITE, Vector2.HALF, 2f);
+spriteBatch.end();   // now: record → sort → batch → draw, same visual result
+```
+
+### 6.3 Frame inspection (editor and debugging)
+
+Two levels of statistics, one source of truth:
+
+- **Device counters** (exist since Phase 0): `getGraphicsDevice().getStats().lastFrame()` gives draw calls,
+  primitives, vertices, uploaded bytes and texture binds of the last completed frame. Whatever talks to the GPU
+  records into them (today `GLSpriteBatch`, from Phase 1 `GLRenderBackend`), and the game loop publishes them at
+  the end of each frame. They are per device, not per front-end, because several front-ends share draw calls.
+- **Pipeline frame stats** (Phase 3) add *why* on top: per pass and layer breakdown, commands, batches and break
+  reasons. They're built from the same backend submissions, not counted separately.
+
+```java
+RenderStats.Frame gpu = getGraphicsDevice().getStats().lastFrame();   // draw calls, uploads, binds (device-wide)
+FrameStats stats = pipeline.lastFrame().stats();   // commands, batches, draw calls, per-pass timings
+stats.batchBreaks();                               // e.g. "material changed: water", "texture slots full"
+pipeline.lastFrame().pick(worldPos, WORLD);        // top-most command with a pick id at that point
+```
+
+## 7. Module changes
+
+No new modules. `graphics` already is the rendering abstraction module, and adding a module would only move
+churn around.
+
+| Module | Change |
+|---|---|
+| `modules/commons` | None. |
+| `modules/math` | None (an order-preserving float→int helper goes in `graphics`). |
+| `modules/content` | None required. `Texture` stays the texture abstraction. The `SdfFont` importers are registered by the platform like the other importers. |
+| `modules/graphics` | **New packages** (all GL-free):<br>• `org.pixel.graphics.draw`: `DrawList`, `Layer`, `LayerMode`, `SortKey`, `ClipTable`, `Material`, `FrameSnapshot`, `FrameStats`<br>• `org.pixel.graphics.canvas`: `Canvas`, command builders, `Paint`, `Path` + triangulation, `NinePatch`<br>• `org.pixel.graphics.text`: `SdfFont`, `SdfGlyph`, `TextLayout`, `TextMeasurer`<br>• `org.pixel.graphics.pass`: `RenderPipeline` + builder, `View`, `ScreenSpace`, `RenderTarget`, `PostEffect`, `Effects`<br>• `org.pixel.graphics.backend`: `RenderBackend` SPI, `BatchList`, `VertexStream`, `PassState`, `BackendCapabilities`<br>**Changed:** `SpriteBatch` gets a draw-list implementation (`DrawListSpriteBatch`). `GraphicsDevice` exposes `backend()`.<br>**Since Phase 0:** `org.pixel.graphics.RenderStats` (device-level per-frame GPU counters); `GraphicsDevice.getStats()` and `GraphicsDevice.endFrame()` (called by the game loop).<br>**Deprecated (removed before merge, §8 Phase 4):** `RenderEngine`, `StatefulRenderEngine`, `RenderEngine2D`, `DrawBatch`. **Deleted:** `PostProcessor` (unused). |
+| `modules/core` | `Camera2D implements View`. No game-loop changes. |
+| `platform/desktop` | **New** `org.pixel.graphics.opengl.render`: `GLRenderBackend`, `GLBatchRenderer`, `GLRenderTarget`, `GLMaterialCompiler`, `GLTextureSlots`.<br>**New** shaders in `engine/shader/opengl/urp/` (uber, post effects).<br>**New** `GLSdfFontImporter`: MTSDF generation through `lwjgl-msdfgen` + `lwjgl-freetype`, plus an importer for
+pre-baked `msdf-atlas-gen` atlases. **New dependencies:** `org.lwjgl:lwjgl-msdfgen` and `org.lwjgl:lwjgl-freetype`
+(+ natives), same LWJGL version (3.4.3).<br>**Changed:** `GLGraphicsDevice` creates the backend. `GLContentManagerFactory` registers the SDF font importer. The `SpriteBatch` service switches to `DrawListSpriteBatch` after parity.<br>**Deprecated → removed before merge:** `GLSpriteBatch`, `NvgRenderEngine` (and the `lwjgl-nanovg` dependency), the `GL*EffectShader` classes (replaced by effects). |
+| `platform/android` | Untouched and not built. The design stays within GLES 3.0. |
+| `extensions/*` | Unchanged. `ext-ecs` keeps using `SpriteBatch` through the compat path. |
+| `demos` | New `learning/urp/*` demos per phase. The 4 NanoVG-based demos (`RoadCarGame`, `CelestialGravitationGame`, `IsometricGridDemo`, `PrimitivesRenderDemo`) are ported to `Canvas`. A sprite benchmark demo is added. |
+
+## 8. Plan (all on `task/urp-v2`)
+
+Each phase ends green (`./gradlew build`) and is reviewable on its own.
+
+**Phase 0: foundations** ✅ (see [urp-v2-baseline.md](urp-v2-baseline.md))
+- This document (reviewed).
+- LWJGL upgraded 3.3.6 → 3.4.3 (no API changes needed). The new font bindings (§4.9) use the same version.
+- `RenderStats` on the **graphics device** (`getStats().lastFrame()`: draw calls, primitives, vertices, uploaded
+  bytes, texture binds), published by the game loop through `GraphicsDevice.endFrame()`. `GLSpriteBatch` receives the
+  device's stats through its factory and records into them. The Phase 1 backend does the same, so nothing moves
+  later.
+- Render benchmark demo (`./gradlew :pixel-demo-desktop-learning:renderBenchmark`) with 6 scenarios. It reports CPU
+  time, GPU time (timer queries), frame-time percentiles and draw calls, and writes a CSV.
+- Baseline recorded. It found that today's depth sorting is only correct within 256 sprites, and that texture-slot
+  overflow costs 951 draw calls per frame.
+
+**Phase 1: draw list, batcher and compat sprites**
+- `DrawList`, sort keys, stable sort, batch merging, frame stats.
+- The `RenderBackend` SPI, `GLRenderBackend` and the uber-shader with only the textured-quad path at first.
+- `DrawListSpriteBatch`.
+- Tests: sorting, merging and break reasons against a fake backend, plus a zero-allocation test (measured with
+  `ThreadMXBean` thread allocation counters).
+- **Gate:** the numeric gates in [urp-v2-baseline.md](urp-v2-baseline.md#phase-1-gates-derived-from-this-baseline)
+  (CPU/GPU time no worse than baseline, ≤ 4 draw calls in the main scenarios, globally correct depth order), plus
+  visual parity on the sprite demos. Then the service registration switches over.
+
+**Phase 2: Canvas and text**
+- SDF shapes, images, nine-patch, paths (triangulation), transform stack, clip stack (per-vertex).
+- Shapes with fill, stroke, gradients and soft shadows (§4.10).
+- MTSDF fonts: runtime generation (msdfgen) with a disk cache, the pre-baked atlas importer, the glyph shader with
+  fill/stroke/shadow/weight, and `TextLayout`/`TextMeasurer` (GL-free, tested). A text quality demo covers sizes
+  8–200 px, zoom and rotation, Retina, and outlines at the range limit.
+- Port the NanoVG demos to `Canvas`. The Retina check covers clipping and text sharpness.
+
+**Phase 3: pipeline**
+- Layers, passes, views, `RenderTarget`, post effects (port the 5 existing effects plus bloom and vignette),
+  custom materials, culling.
+- Pick ids, last-frame snapshot, `pick()`.
+- Tests: pass ordering and target routing (fake backend), picking.
+
+**Phase 4: merge readiness**
+- Remove `GLSpriteBatch`, NanoVG and the old effect shaders. Update docs and `AGENTS.md`.
+- Rebase onto `devel`, then open the PR.
+
+## 9. Editor-readiness constraints
+
+These shape the design now so an editor can be built later without reworking the pipeline:
+
+1. **No static state** in the pipeline, backend or front-ends. Everything is reached from the `GraphicsDevice`
+   instance.
+2. **Any output**: screen or `RenderTarget`, with several pipelines alive at once (scene view, game view, previews).
+3. **Layers can be added from outside**, so an editor can append an `EDITOR_OVERLAY` pass (grid, gizmos, selection)
+   to a game's pipeline.
+4. **Pick ids**: any command can carry an optional `int` pick id. The last frame's commands stay queryable.
+5. **Frame introspection**: the command, batch and break-reason lists of the last frame (the basis of a frame
+   debugger).
+6. **Hot reload**: materials and fonts can be recompiled or reloaded by handle without rebuilding the pipeline.
+
+Not in this branch, but required for an editor later: decoupling the game from the window loop, per-instance input
+(no static `Mouse`/`Keyboard`), and serializable scenes with stable asset ids.
+
+## 10. What happens to `task/urp`
+
+`task/urp` is **not merged and not rebased**. It stays as a read-only reference. Specific low-level pieces are ported
+by hand, with review:
+
+| Ported (adapted) | Not carried over |
+|---|---|
+| `sdf_batch.vert/frag.glsl`: SDF shape and glyph math | `RenderPipeline` / `Renderable<R>` / `Renderer` registry |
+| `SdfFont`/`SdfGlyph` API shape (reference). The glyph *generation* is replaced: stb single-channel SDF → msdfgen MTSDF | `DirectRenderer`, `SdfShapeRenderer`, `SdfTextRenderer`, `GLShapeRenderer`, `GLCanvasRenderer`, `GLSdfBatchRenderer` (rewritten as `GLBatchRenderer`) |
+| `GLRenderTarget` | `FactoryProvider` and the factory re-plumbing (static, against §9) |
+| `Canvas` API surface and `NinePatch` (as reference for the new `Canvas`) | `GameContainer`/`Game` API renames (`getVirtualWidth` → `getViewportWidth`) |
+| `GLFastSpriteBatch` + `instanced_multitex.*` (benchmark reference only) | **All GUI work: `ext-flux`, `ext-rune`, `ext-weaver`, their desktop modules and demos** |
+| | `CLAUDE.md`, `.github/copilot-instructions.md`, ext-decs renames, unrelated demo changes |
+
+**GUI:** none of the three attempts carries over here. When the GUI branch starts (after v2 merges), it will be
+designed on top of `Canvas`/`TextMeasurer`. From `task/urp` it will consider Weaver's CSS parser and `StyleEngine`
+(which has tests), and Rune's measure/layout contract and input interface. That is a separate review.
+
+## 11. Testing strategy
+
+- **GL-free unit tests** (the bulk): draw list recording, sort keys and stability, batch merge and break rules, clip
+  table transforms, canvas command generation, path triangulation, text layout and measurement, compat
+  `SpriteBatch` → commands, pass routing. All of these run against a recording fake `RenderBackend`.
+- **Allocation tests**: record a typical frame N times and assert zero bytes allocated after warm-up.
+- **Visual checks** (manual, macOS + one other OS): learning demos per phase, Retina and non-Retina, resize.
+- **Benchmark demo**: frame time and draw calls compared with the Phase 0 baseline.
+
+## 12. Open questions (for review)
+
+1. **Performance target.** Proposal: the Phase 1 gates in the baseline doc (no slower than today, ≤ 4 draw calls in
+   the main scenarios), and ≤ 6 draw calls for the example frame in §6.1. The baseline does 20k sprites at ~158 fps
+   on an M5 with 79 draw calls. Is there an absolute target you want (e.g. 100k sprites at 60 fps)?
+2. **Rotated clipping.** Proposal: axis-aligned clips only in v2. A rotated clip falls back to the bounding rectangle
+   with a logged warning, and a stencil can be added later. OK?
+3. **Depth type.** Proposal: `float` depth (natural for y-sorting) in a 32-bit key slot. The alternative is `int`
+   like today's `SpriteBatch`, and the compat path maps `int` → `float` either way.
+4. **NanoVG removal.** Proposal: removed in Phase 4 once the 4 demos are ported. Keep it longer?
+5. **Bitmap fonts.** Proposal: keep them, for pixel-art and very small text (§4.9). OK?
+7. **Font atlas defaults.** 48 px glyphs, 8 px distance range, ASCII + Latin-1 by default; other sets are opt-in per
+   import. OK as defaults?
+6. **Package names.** `draw` / `canvas` / `text` / `pass` / `backend` under `org.pixel.graphics`. Fine?

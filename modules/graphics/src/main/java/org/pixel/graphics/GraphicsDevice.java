@@ -29,4 +29,17 @@ public interface GraphicsDevice extends Initializable, Disposable {
      * @return The pixels (RGBA chunk format).
      */
     byte[] readPixels(int x, int y, int width, int height, boolean opaque);
+
+    /**
+     * Get the rendering counters of this device. Renderers record into the frame in progress; read the last completed
+     * frame with {@code getStats().lastFrame()}.
+     *
+     * @return The render statistics of this device.
+     */
+    RenderStats getStats();
+
+    /**
+     * Mark the end of a frame (called by the game loop after the frame has been drawn).
+     */
+    void endFrame();
 }

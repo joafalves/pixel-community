@@ -94,7 +94,7 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
 
         switch (this.settings.getGraphicsBackend()) {
             case OpenGL:
-                ServiceProvider.register(SpriteBatch.class, new GLSpriteBatchServiceFactory());
+                ServiceProvider.register(SpriteBatch.class, new GLSpriteBatchServiceFactory(this.graphicsDevice.getStats()));
                 ServiceProvider.register(ContentManager.class, new GLContentManagerFactory());
                 ServiceProvider.register(AudioPlayer.class, new ALAudioPlayerFactory());
                 break;

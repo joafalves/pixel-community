@@ -10,8 +10,11 @@ import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.core.Game;
 import org.pixel.graphics.GraphicsDevice;
+import org.pixel.graphics.RenderStats;
 
 public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevice {
+
+    private final RenderStats stats = new RenderStats();
 
     private static final Logger log = LoggerFactory.getLogger(GLES30GraphicsDevice.class);
 
@@ -60,6 +63,7 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
                     clear();
                 }
                 game.draw(delta);
+                stats.endFrame();
             }
 
             @Override
@@ -77,6 +81,16 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
         this.state = State.INITIALIZED;
 
         return true;
+    }
+
+    @Override
+    public RenderStats getStats() {
+        return stats;
+    }
+
+    @Override
+    public void endFrame() {
+        stats.endFrame();
     }
 
     @Override

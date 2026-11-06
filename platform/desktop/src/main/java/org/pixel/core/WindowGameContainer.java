@@ -169,6 +169,7 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
                 this.clear();
             }
             draw(delta);
+            this.graphicsDevice.endFrame();
 
             this.windowManager.endFrame();
 
