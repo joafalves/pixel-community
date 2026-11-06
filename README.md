@@ -84,7 +84,6 @@ The framework functionality is divided into multiple modules which can be import
 
 ##### Root directory structure #####
 
-    .build/                         # Bundle .jar files (run 'bundle' gradle task)
     .demos/                         # Feature showroom and learning examples
     .extensions/                    # Extensions for the framework (optional)
         ├── ext-ecs                 # Entity component system extension
@@ -126,8 +125,8 @@ The framework functionality is divided into multiple modules which can be import
 
 ### Development requirements ###
 
-- (All Runtime requirements)
-- Gradle 8.x+ (gradle wrapper available)
+- JDK 17 or newer to run the build (the libraries are always compiled for Java 17)
+- Gradle 9.x — use the included wrapper (`./gradlew`), no local install needed
 
 ### Runtime OS compatibility ###
 

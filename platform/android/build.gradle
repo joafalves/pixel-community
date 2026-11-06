@@ -1,3 +1,15 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        // Only resolved when the Android build is enabled in settings.gradle.
+        // NOTE: Gradle 9 requires a recent AGP; bump this when re-enabling Android.
+        classpath 'com.android.tools.build:gradle:8.9.2'
+    }
+}
+
 apply plugin: 'com.android.library'
 
 android {

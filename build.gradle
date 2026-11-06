@@ -6,14 +6,14 @@ import org.jetbrains.gradle.ext.*
 
 // Pixel Version:
 group = "io.github.joafalves"
-version = System.properties["PIXEL_RELEASE"] ?: "DEV-${getGitCommitHash()}"
+version = System.properties["PIXEL_RELEASE"] ?: "DEV-${gitCommitHash()}"
 
 ext {
     dependencyMap = [
             lwjgl  : "3.3.6",
             lombok : "1.18.42",
             junit  : "5.14.0",
-            mockito: "5.3.1"
+            mockito: "5.20.0"
     ]
 }
 
@@ -22,20 +22,12 @@ println("Project Group: ${group}")
 println("Project Version: ${version}")
 
 buildscript {
-    ext {
-        kotlin_version = '1.9.25'
-    }
     repositories {
-        mavenLocal()
         mavenCentral()
-        google()
         gradlePluginPortal()
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-        maven { url "https://s01.oss.sonatype.org/content/repositories/releases/" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.9.2'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        // Android Gradle Plugin / Kotlin are declared in the Android modules themselves (only built when enabled).
         classpath "org.jetbrains.gradle.plugin.idea-ext:org.jetbrains.gradle.plugin.idea-ext.gradle.plugin:1.4.1"
     }
 }
@@ -63,11 +55,12 @@ allprojects {
         namespace = "org.pixel"
     }
     repositories {
-        mavenLocal()
         mavenCentral()
         google()
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-        maven { url "https://s01.oss.sonatype.org/content/repositories/releases/" }
+        // opt-in only, so stale local artifacts never shadow real ones: ./gradlew build -PuseMavenLocal
+        if (rootProject.hasProperty("useMavenLocal")) {
+            mavenLocal()
+        }
     }
 }
 
@@ -91,7 +84,7 @@ subprojects { project ->
 
     tasks.withType(Javadoc).tap {
         configureEach {
-            failOnError false
+            failOnError = false
             options.addStringOption("Xdoclint:none", "-quiet")
             options.addStringOption("encoding", "UTF-8")
             options.addStringOption("charSet", "UTF-8")
@@ -109,14 +102,15 @@ subprojects { project ->
             annotationProcessor "org.projectlombok:lombok:${rootProject.ext.dependencyMap["lombok"]}"
 
             // test
+            testImplementation platform("org.junit:junit-bom:${rootProject.ext.dependencyMap["junit"]}")
+            testImplementation "org.junit.jupiter:junit-jupiter"
             testImplementation "org.mockito:mockito-core:${rootProject.ext.dependencyMap["mockito"]}"
-            testImplementation "org.junit.jupiter:junit-jupiter-api:${rootProject.ext.dependencyMap["junit"]}"
-            testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${rootProject.ext.dependencyMap["junit"]}"
+            testRuntimeOnly "org.junit.platform:junit-platform-launcher"
         }
 
-        java {
-            sourceCompatibility = JavaVersion.VERSION_17
-            targetCompatibility = JavaVersion.VERSION_17
+        // Compile against the Java 17 API/bytecode regardless of which (newer) JDK runs the build.
+        tasks.withType(JavaCompile).configureEach {
+            options.release = 17
         }
 
         test {
@@ -148,10 +142,8 @@ subprojects { project ->
             it.enabled = (project.ext.has("mavenPublish") && project.ext.get("mavenPublish"))
         }
 
-        artifacts {
-            archives jar
-            archives sourceJar
-            archives javadocJar
+        tasks.named("assemble") {
+            dependsOn sourceJar, javadocJar
         }
 
         signing {
@@ -232,8 +224,13 @@ subprojects { project ->
     }
 }
 
-static def getGitCommitHash() {
-    def process = "git rev-parse --short HEAD".execute()
-    def gitHash = process.text.trim()
-    return gitHash
+def gitCommitHash() {
+    try {
+        return providers.exec {
+            commandLine "git", "rev-parse", "--short", "HEAD"
+            ignoreExitValue = true
+        }.standardOutput.asText.get().trim() ?: "unknown"
+    } catch (Exception ignored) {
+        return "unknown" // e.g. building from a source archive without git
+    }
 }

@@ -18,20 +18,20 @@ dependencies {
     api project(":${rootProject.name}-graphics")
     api project(":${rootProject.name}-core")
 
-    api group: "org.lwjgl", name: "lwjgl", version: rootProject.ext.dependencyMap["lwjgl"]
-    api group: "org.lwjgl", name: "lwjgl-glfw", version: rootProject.ext.dependencyMap["lwjgl"]
-    api group: "org.lwjgl", name: "lwjgl-opengl", version: rootProject.ext.dependencyMap["lwjgl"]
-    api group: "org.lwjgl", name: "lwjgl-openal", version: rootProject.ext.dependencyMap["lwjgl"]
-    api group: "org.lwjgl", name: "lwjgl-stb", version: rootProject.ext.dependencyMap["lwjgl"]
-    api group: "org.lwjgl", name: "lwjgl-nanovg", version: rootProject.ext.dependencyMap["lwjgl"]
+    api "org.lwjgl:lwjgl:${rootProject.ext.dependencyMap["lwjgl"]}"
+    api "org.lwjgl:lwjgl-glfw:${rootProject.ext.dependencyMap["lwjgl"]}"
+    api "org.lwjgl:lwjgl-opengl:${rootProject.ext.dependencyMap["lwjgl"]}"
+    api "org.lwjgl:lwjgl-openal:${rootProject.ext.dependencyMap["lwjgl"]}"
+    api "org.lwjgl:lwjgl-stb:${rootProject.ext.dependencyMap["lwjgl"]}"
+    api "org.lwjgl:lwjgl-nanovg:${rootProject.ext.dependencyMap["lwjgl"]}"
 
     project.ext.buildTargetList.forEach { classifier ->
-        runtimeOnly group: "org.lwjgl", name: "lwjgl", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
-        runtimeOnly group: "org.lwjgl", name: "lwjgl-opengl", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
-        runtimeOnly group: "org.lwjgl", name: "lwjgl-openal", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
-        runtimeOnly group: "org.lwjgl", name: "lwjgl-glfw", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
-        runtimeOnly group: "org.lwjgl", name: "lwjgl-stb", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
-        runtimeOnly group: "org.lwjgl", name: "lwjgl-nanovg", version: rootProject.ext.dependencyMap["lwjgl"], classifier: "$classifier"
+        runtimeOnly "org.lwjgl:lwjgl:${rootProject.ext.dependencyMap["lwjgl"]}:$classifier"
+        runtimeOnly "org.lwjgl:lwjgl-opengl:${rootProject.ext.dependencyMap["lwjgl"]}:$classifier"
+        runtimeOnly "org.lwjgl:lwjgl-openal:${rootProject.ext.dependencyMap["lwjgl"]}:$classifier"
+        runtimeOnly "org.lwjgl:lwjgl-glfw:${rootProject.ext.dependencyMap["lwjgl"]}:$classifier"
+        runtimeOnly "org.lwjgl:lwjgl-stb:${rootProject.ext.dependencyMap["lwjgl"]}:$classifier"
+        runtimeOnly "org.lwjgl:lwjgl-nanovg:${rootProject.ext.dependencyMap["lwjgl"]}:$classifier"
     }
 }
 
