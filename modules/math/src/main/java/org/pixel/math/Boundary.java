@@ -332,6 +332,11 @@ public class Boundary implements Serializable {
     }
 
     @Override
+    public int hashCode() {
+        return java.util.Objects.hash(topLeft, topRight, bottomLeft, bottomRight);
+    }
+
+    @Override
     public String toString() {
         return String.format("%s: [topLeft: '%s', topRight: '%s', bottomLeft: '%s', bottomRight: '%s']",
                 this.getClass().getSimpleName(), this.topLeft, this.topRight, this.bottomLeft, this.bottomRight);

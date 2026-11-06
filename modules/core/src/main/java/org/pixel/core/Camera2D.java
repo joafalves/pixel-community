@@ -101,7 +101,7 @@ public class Camera2D implements Camera, Serializable {
         this.height = height;
         this.zoom = zoom;
         this.dirty = true;
-        this.origin = origin;
+        this.origin = new Vector2(origin); // copy: origin is mutated by setOrigin()
     }
 
     //endregion
@@ -152,6 +152,10 @@ public class Camera2D implements Camera, Serializable {
 
     /**
      * Transforms a given screen position to virtual coordinates.
+     * <p>
+     * The screen position must be expressed in the camera's viewport space (0..width, 0..height), e.g. the
+     * mouse position from {@code Mouse.getVirtualPosition()} — not raw window coordinates, which differ when the
+     * window is resized or scaled by the OS.
      *
      * @param screenX The screen x position.
      * @param screenY The screen y position.

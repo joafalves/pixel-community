@@ -89,7 +89,7 @@ public class PerformanceGame extends Game {
         }
 
         if (Keyboard.isKeyPressed(KeyboardKey.ESCAPE)) {
-            dispose();
+            exit();
         }
     }
 

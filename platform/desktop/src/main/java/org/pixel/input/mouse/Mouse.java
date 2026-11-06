@@ -19,6 +19,7 @@ public class Mouse {
     static {
         buttons = new HashMap<>();
         position = new Vector2();
+        virtualPosition = new Vector2();
         positionBox = new Rectangle();
     }
 
@@ -28,6 +29,9 @@ public class Mouse {
 
     private static final HashMap<Integer, Integer> buttons;
     private static final Vector2 position;
+    private static final Vector2 virtualPosition;
+    private static volatile float virtualScaleX = 1f;
+    private static volatile float virtualScaleY = 1f;
     private static final Rectangle positionBox;
 
     //endregion
@@ -123,6 +127,57 @@ public class Mouse {
      *
      * @return The current mouse position box.
      */
+    /**
+     * Get the current mouse position in virtual (game resolution) coordinates, i.e. the same space used by the
+     * camera and sprites regardless of the actual window size or display DPI. Use this with
+     * {@code Camera2D.screenToVirtualCoordinates}.
+     *
+     * @return A copy of the mouse position in virtual coordinates.
+     */
+    public static Vector2 getVirtualPosition() {
+        return new Vector2(virtualPosition);
+    }
+
+    /**
+     * Copy the current mouse position in virtual (game resolution) coordinates to the given vector.
+     *
+     * @param destination The destination vector.
+     */
+    public static void getVirtualPosition(Vector2 destination) {
+        destination.set(virtualPosition);
+    }
+
+    /**
+     * Get the current mouse position X in virtual (game resolution) coordinates.
+     *
+     * @return The mouse position X in virtual coordinates.
+     */
+    public static float getVirtualX() {
+        return virtualPosition.getX();
+    }
+
+    /**
+     * Get the current mouse position Y in virtual (game resolution) coordinates.
+     *
+     * @return The mouse position Y in virtual coordinates.
+     */
+    public static float getVirtualY() {
+        return virtualPosition.getY();
+    }
+
+    /**
+     * Set the factor between window (screen) coordinates and virtual coordinates. Called by the window manager
+     * whenever the window size changes; not meant to be called by game code.
+     *
+     * @param scaleX virtualWidth / windowWidth (in screen coordinates).
+     * @param scaleY virtualHeight / windowHeight (in screen coordinates).
+     */
+    public static void setVirtualScale(float scaleX, float scaleY) {
+        virtualScaleX = scaleX;
+        virtualScaleY = scaleY;
+        virtualPosition.set(position.getX() * scaleX, position.getY() * scaleY);
+    }
+
     public static Rectangle getPositionBox() {
         return new Rectangle(positionBox);
     }
@@ -148,6 +203,7 @@ public class Mouse {
         @Override
         public void invoke(long window, double x, double y) {
             position.set((float) x, (float) y);
+            virtualPosition.set((float) x * virtualScaleX, (float) y * virtualScaleY);
             positionBox.set((float) x, (float) y, 1, 1);
         }
     }

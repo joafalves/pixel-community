@@ -24,6 +24,7 @@ import static org.lwjgl.opengl.GL20C.glUniformMatrix4fv;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 
 import org.lwjgl.BufferUtils;
@@ -52,13 +53,14 @@ import org.pixel.math.Vector2;
 public class GLSpriteBatch extends SpriteBatch {
 
     private static final Logger log = LoggerFactory.getLogger(GLSpriteBatch.class);
+    private static final Comparator<SpriteData> DEPTH_COMPARATOR = Comparator.comparingInt(s -> s.depth);
 
     private static final int BUFFER_UNIT_LENGTH = 256; // maximum sprites per batch
     private static final int SPRITE_UNIT_LENGTH = 54; // number of attribute information units per sprite
     // (uploadBufferData * each inner put)
     private static final int ATTRIBUTE_STRIDE = 36; // attribute stride (bytes) between each vertex info
 
-    private static final Matrix4 spriteViewMatrix = new Matrix4();
+    private final Matrix4 spriteViewMatrix = new Matrix4();
     private final Vector2 tTopLeft = new Vector2();
     private final Vector2 tTopRight = new Vector2();
     private final Vector2 tBottomRight = new Vector2();
@@ -209,20 +211,34 @@ public class GLSpriteBatch extends SpriteBatch {
 
     @Override
     public void dispose() {
-        shader.dispose();
+        if (state.isDisposed()) {
+            return;
+        }
+        state = State.DISPOSING;
+
+        if (shader != null) {
+            shader.dispose();
+        }
         vbo.dispose();
         vao.dispose();
-        glDeleteTextures(dummyTextureId);
+        if (dummyTextureId != 0) {
+            glDeleteTextures(dummyTextureId);
+            dummyTextureId = 0;
+        }
+
+        // native (off-heap) buffers are not garbage collected
+        MemoryUtil.memFree(matrixBuffer);
+        if (dataBuffer != null) {
+            MemoryUtil.memFree(dataBuffer);
+            dataBuffer = null;
+        }
+
         state = State.DISPOSED;
     }
 
     @Override
     public void draw(Texture texture, Vector2 position, Rectangle source, Color color, Vector2 anchor, float scaleX,
                      float scaleY, float rotation, int depth) {
-        if (lastDepthLevel >= 0 && depth != lastDepthLevel) {
-            hasDifferentDepthLevels = true;
-        }
-
         SpriteData spriteData = getNextSpriteDataObject();
         spriteData.active = true;
         spriteData.textureId = ((GLTexture) texture).getId();
@@ -234,13 +250,11 @@ public class GLSpriteBatch extends SpriteBatch {
                 * (source != null ? source.getWidth() / texture.getWidth() * scaleX : scaleX);
         spriteData.height = texture.getHeight()
                 * (source != null ? source.getHeight() / texture.getHeight() * scaleY : scaleY);
-        spriteData.anchor = anchor;
-        spriteData.color = color;
-        spriteData.source = source;
+        spriteData.setAnchor(anchor);
+        spriteData.setColor(color);
+        spriteData.setSource(source);
         spriteData.rotation = rotation;
         spriteData.depth = depth;
-
-        lastDepthLevel = depth;
 
         spriteDataAdded();
     }
@@ -248,10 +262,6 @@ public class GLSpriteBatch extends SpriteBatch {
     @Override
     public void draw(Texture texture, Rectangle displayArea, Rectangle source, Color color, Vector2 anchor,
                      float rotation, int depth) {
-        if (lastDepthLevel >= 0 && depth != lastDepthLevel) {
-            hasDifferentDepthLevels = true;
-        }
-
         SpriteData spriteData = getNextSpriteDataObject();
         spriteData.active = true;
         spriteData.textureId = ((GLTexture) texture).getId();
@@ -261,13 +271,11 @@ public class GLSpriteBatch extends SpriteBatch {
         spriteData.y = displayArea.getY();
         spriteData.width = displayArea.getWidth();
         spriteData.height = displayArea.getHeight();
-        spriteData.anchor = anchor;
-        spriteData.source = source;
-        spriteData.color = color;
+        spriteData.setAnchor(anchor);
+        spriteData.setSource(source);
+        spriteData.setColor(color);
         spriteData.rotation = rotation;
         spriteData.depth = depth;
-
-        lastDepthLevel = depth;
 
         spriteDataAdded();
     }
@@ -300,10 +308,11 @@ public class GLSpriteBatch extends SpriteBatch {
             spriteData.y = y + glyph.getYOffset() * scale;
             spriteData.width = glyph.getWidth() * computedScale;
             spriteData.height = glyph.getHeight() * computedScale;
-            spriteData.source = new Rectangle(glyph.getX(), glyph.getY(), glyph.getWidth(), glyph.getHeight());
-            spriteData.anchor = Vector2.zero();
-            spriteData.color = color;
+            spriteData.setSource(glyph.getX(), glyph.getY(), glyph.getWidth(), glyph.getHeight());
+            spriteData.setAnchor(0, 0);
+            spriteData.setColor(color);
             spriteData.rotation = 0f;
+            spriteData.depth = 0; // text is drawn at the default depth (was left stale from a reused slot)
 
             x += (int) (glyph.getXAdvance() * scale + font.getHorizontalSpacing());
 
@@ -391,6 +400,9 @@ public class GLSpriteBatch extends SpriteBatch {
     }
 
     private SpriteData getNextSpriteDataObject() {
+        if (!state.isActive()) {
+            throw new IllegalStateException("SpriteBatch is not initialized or has been disposed.");
+        }
         return this.spriteData[this.bufferWriteIndex++];
     }
 
@@ -409,12 +421,8 @@ public class GLSpriteBatch extends SpriteBatch {
 
     private void flush() {
         if (hasDifferentDepthLevels) {
-            Arrays.sort(this.spriteData, (o1, o2) -> {
-                if (!o1.active || !o2.active) {
-                    return Boolean.compare(o2.active, o1.active);
-                }
-                return o1.depth - o2.depth;
-            });
+            // only the written range is active; the sort is stable so submission order is kept within a depth
+            Arrays.sort(this.spriteData, 0, bufferWriteIndex, DEPTH_COMPARATOR);
         }
 
         // draw the sprite data...
@@ -484,7 +492,7 @@ public class GLSpriteBatch extends SpriteBatch {
         tTopRight.set(1, 0);
         tBottomRight.set(1);
         tBottomLeft.set(0, 1);
-        if (sprite.source != null) {
+        if (sprite.hasSource) {
             // use has defined custom source area; the org.pixel.input is relative to the
             // real width and height of
             // the source texture, therefore we need to convert into space area
@@ -528,6 +536,12 @@ public class GLSpriteBatch extends SpriteBatch {
     }
 
     private void spriteDataAdded() {
+        int depth = this.spriteData[bufferWriteIndex - 1].depth;
+        if (lastDepthLevel >= 0 && depth != lastDepthLevel) {
+            hasDifferentDepthLevels = true;
+        }
+        lastDepthLevel = depth;
+
         if (bufferWriteIndex >= bufferMaxSize) {
             flush();
         }
@@ -538,16 +552,16 @@ public class GLSpriteBatch extends SpriteBatch {
         spriteViewMatrix.setIdentity();
 
         // position:
-        spriteViewMatrix.translate(spriteData.x - spriteData.width * spriteData.anchor.getX(),
-                spriteData.y - spriteData.height * spriteData.anchor.getY(), 0);
+        spriteViewMatrix.translate(spriteData.x - spriteData.width * spriteData.anchorX,
+                spriteData.y - spriteData.height * spriteData.anchorY, 0);
 
         // rotation:
         if (spriteData.rotation != 0) {
-            spriteViewMatrix.translate(spriteData.width * spriteData.anchor.getX(),
-                    spriteData.height * spriteData.anchor.getY(), 0);
+            spriteViewMatrix.translate(spriteData.width * spriteData.anchorX,
+                    spriteData.height * spriteData.anchorY, 0);
             spriteViewMatrix.rotate(spriteData.rotation, 0f, 0f, 1.0f);
-            spriteViewMatrix.translate(-spriteData.width * spriteData.anchor.getX(),
-                    -spriteData.height * spriteData.anchor.getY(), 0);
+            spriteViewMatrix.translate(-spriteData.width * spriteData.anchorX,
+                    -spriteData.height * spriteData.anchorY, 0);
         }
 
         // scale:
@@ -570,9 +584,39 @@ public class GLSpriteBatch extends SpriteBatch {
         float y;
         float width;
         float height;
-        Color color;
-        Vector2 anchor;
-        Rectangle source; // texture source area
+        // NOTE: values are copied (not referenced) so callers can reuse/mutate their objects right after draw();
+        // the data is only consumed in flush().
+        final Color color = new Color();
+        float anchorX;
+        float anchorY;
+        final Rectangle source = new Rectangle(0, 0, 0, 0); // texture source area (valid when hasSource)
+        boolean hasSource;
+
+        void setColor(Color c) {
+            color.set(c != null ? c : Color.WHITE);
+        }
+
+        void setAnchor(Vector2 anchor) {
+            setAnchor(anchor != null ? anchor.getX() : 0f, anchor != null ? anchor.getY() : 0f);
+        }
+
+        void setAnchor(float x, float y) {
+            anchorX = x;
+            anchorY = y;
+        }
+
+        void setSource(Rectangle src) {
+            if (src == null) {
+                hasSource = false;
+            } else {
+                setSource(src.getX(), src.getY(), src.getWidth(), src.getHeight());
+            }
+        }
+
+        void setSource(float x, float y, float width, float height) {
+            source.set(x, y, width, height);
+            hasSource = true;
+        }
     }
 
     // endregion

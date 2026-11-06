@@ -74,7 +74,7 @@ public class GLGraphicsDevice implements GraphicsDevice {
         // Update viewport dimensions
         var windowDimensions = this.windowManager.getWindowDimensions();
         glViewport(0, 0, windowDimensions.getWindowWidth(), windowDimensions.getWindowHeight());
-        // TODO: call glViewport when window is resized (sync with window manager)
+        // NOTE: on resize / DPI change the viewport is updated by the window manager's framebuffer-size callback.
 
         // Debug-specific initialization
         if (this.windowSettings.isGlfwDebugMode()) {

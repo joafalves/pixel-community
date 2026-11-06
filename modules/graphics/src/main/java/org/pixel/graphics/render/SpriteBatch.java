@@ -30,7 +30,7 @@ public abstract class SpriteBatch implements Initializable, Disposable {
      * @param color    The color overlay of the sprite.
      */
     public void draw(Texture texture, Vector2 position, Color color) {
-        draw(texture, position, color, new Vector2(0, 0));
+        draw(texture, position, color, Vector2.ZERO);
     }
 
     /**
@@ -70,7 +70,8 @@ public abstract class SpriteBatch implements Initializable, Disposable {
      * @param rotation The rotation of the sprite.
      */
     public void draw(Texture texture, Vector2 position, Color color, Vector2 anchor, float scaleX, float scaleY, float rotation) {
-        draw(texture, position, new Rectangle(0, 0, texture.getWidth(), texture.getHeight()), color, anchor, scaleX, scaleY, rotation);
+        // a null source means "the whole texture" (avoids allocating a Rectangle per draw call)
+        draw(texture, position, null, color, anchor, scaleX, scaleY, rotation);
     }
 
     /**

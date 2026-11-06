@@ -3,6 +3,7 @@ package org.pixel.graphics.glfw;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11C.GL_TRUE;
+import static org.lwjgl.opengl.GL11C.glViewport;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -40,6 +41,8 @@ public class GLFWWindowManager extends DesktopWindowManager {
     private long windowHandle;
     private long monitorHandle;
     private boolean isWindowFocused;
+    private long cursorHandle = NULL;
+    private WindowCursorType cursorType;
 
     public GLFWWindowManager(WindowGameContainer<?, ?, ?> game) {
         this.game = game;
@@ -101,6 +104,7 @@ public class GLFWWindowManager extends DesktopWindowManager {
 
         // Setup window callbacks
         this.initWindowCallbacks();
+        this.updateMouseVirtualScale();
 
         this.state = State.INITIALIZED;
         //this.setWindowIcon(DEFAULT_WINDOW_ICON_PATH_64, DEFAULT_WINDOW_ICON_PATH_32);
@@ -119,11 +123,28 @@ public class GLFWWindowManager extends DesktopWindowManager {
 
         glfwSetWindowShouldClose(windowHandle, true);
 
+        if (this.cursorHandle != NULL) {
+            glfwDestroyCursor(this.cursorHandle);
+            this.cursorHandle = NULL;
+        }
+
         glfwFreeCallbacks(windowHandle);
         glfwDestroyWindow(windowHandle);
         glfwTerminate();
 
+        GLFWErrorCallback previousErrorCallback = glfwSetErrorCallback(null);
+        if (previousErrorCallback != null) {
+            previousErrorCallback.free();
+        }
+
         this.state = State.DISPOSED;
+    }
+
+    @Override
+    public void requestClose() {
+        if (this.state.isActive()) {
+            glfwSetWindowShouldClose(windowHandle, true);
+        }
     }
 
     @Override
@@ -228,7 +249,18 @@ public class GLFWWindowManager extends DesktopWindowManager {
             default -> GLFW_ARROW_CURSOR;
         };
 
-        glfwSetCursor(windowHandle, glfwCreateStandardCursor(glfwType));
+        if (type == this.cursorType && this.cursorHandle != NULL) {
+            return; // already active (demos call this every frame)
+        }
+
+        // Standard cursors are native objects: release the previous one, otherwise every call leaks a cursor.
+        long newCursor = glfwCreateStandardCursor(glfwType);
+        glfwSetCursor(windowHandle, newCursor);
+        if (this.cursorHandle != NULL) {
+            glfwDestroyCursor(this.cursorHandle);
+        }
+        this.cursorHandle = newCursor;
+        this.cursorType = type;
     }
 
     @Override
@@ -392,6 +424,22 @@ public class GLFWWindowManager extends DesktopWindowManager {
         }
     }
 
+    /**
+     * Mouse events arrive in window (screen) coordinates; keep the factor to convert them into virtual coordinates
+     * up to date (differs from 1 when the window is resized or the OS scales the window, e.g. on Windows high DPI).
+     */
+    private void updateMouseVirtualScale() {
+        try (MemoryStack stack = stackPush()) {
+            IntBuffer winWidth = stack.mallocInt(1);
+            IntBuffer winHeight = stack.mallocInt(1);
+            glfwGetWindowSize(windowHandle, winWidth, winHeight);
+            if (winWidth.get(0) > 0 && winHeight.get(0) > 0) {
+                Mouse.setVirtualScale(windowDimensions.getVirtualWidth() / (float) winWidth.get(0),
+                        windowDimensions.getVirtualHeight() / (float) winHeight.get(0));
+            }
+        }
+    }
+
     private Pair<Float, Float> getMonitorContentScale() {
         // Note: On Linux this function may return unexpected values for fractional scaling as it depends on the
         // window manager and compositor. For example, a fractional scaling of 125% might return 2.0f.
@@ -451,21 +499,22 @@ public class GLFWWindowManager extends DesktopWindowManager {
         glfwSetCursorPosCallback(windowHandle, new Mouse.CursorPositionHandler());
         glfwSetMouseButtonCallback(windowHandle, new Mouse.MouseButtonHandler());
 
-        // Window resize callback:
-        glfwSetWindowSizeCallback(windowHandle, (window, width, height) -> {
-            try (MemoryStack stack = stackPush()) {
-                IntBuffer fbWidth = stack.mallocInt(1);
-                IntBuffer fbHeight = stack.mallocInt(1);
-                glfwGetFramebufferSize(window, fbWidth, fbHeight);
-                int actualWidth = fbWidth.get(0);
-                int actualHeight = fbHeight.get(0);
-                this.windowSettings.setWindowWidth(actualWidth);
-                this.windowSettings.setWindowHeight(actualHeight);
-                this.windowDimensions.setPixelRatio(actualWidth / (float) windowDimensions.getVirtualWidth());
-                this.windowDimensions.setWindowWidth(actualWidth);
-                this.windowDimensions.setWindowHeight(actualHeight);
-                this.game.onViewportChanged(actualWidth, actualHeight);
+        // Framebuffer resize callback (in pixels). Unlike the window-size callback, this also fires when the
+        // window moves between monitors with a different DPI scale.
+        glfwSetFramebufferSizeCallback(windowHandle, (window, fbWidth, fbHeight) -> {
+            if (fbWidth <= 0 || fbHeight <= 0) {
+                return; // minimized
             }
+            this.windowSettings.setWindowWidth(fbWidth);
+            this.windowSettings.setWindowHeight(fbHeight);
+            this.windowDimensions.setPixelRatio(fbWidth / (float) windowDimensions.getVirtualWidth());
+            this.windowDimensions.setWindowWidth(fbWidth);
+            this.windowDimensions.setWindowHeight(fbHeight);
+            if (this.windowSettings.getGraphicsBackend() == GraphicsBackend.OpenGL) {
+                glViewport(0, 0, fbWidth, fbHeight);
+            }
+            this.updateMouseVirtualScale();
+            this.game.onViewportChanged(fbWidth, fbHeight);
         });
 
         // Window focus callback:
@@ -475,8 +524,9 @@ public class GLFWWindowManager extends DesktopWindowManager {
         }));
 
         glfwSetWindowCloseCallback(windowHandle, (window) -> {
+            // NOTE: never tear down GLFW from inside one of its own callbacks (we are inside glfwPollEvents here).
+            // GLFW has already set the "should close" flag; the game loop ends and disposes everything in order.
             log.debug("Close render window requested by user.");
-            dispose();
         });
     }
 }

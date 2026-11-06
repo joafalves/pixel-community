@@ -61,12 +61,17 @@ public class ALVorbisAudioImporter implements ContentImporter<Sound> {
         }
 
         // assign the correct format:
-        int format = -1;
+        int format;
         if (channels == 1) {
             format = AL_FORMAT_MONO16;
 
         } else if (channels == 2) {
             format = AL_FORMAT_STEREO16;
+
+        } else {
+            log.error("Unsupported number of audio channels ({0}) in {1}.", channels, ctx.getFilepath());
+            free(rawAudioBuffer);
+            return null;
         }
 
         // request space for buffer:
@@ -82,6 +87,6 @@ public class ALVorbisAudioImporter implements ContentImporter<Sound> {
         int sourcePointer = alGenSources();
         alSourcei(sourcePointer, AL_BUFFER, bufferPointer);
 
-        return new ALSound(sourcePointer);
+        return new ALSound(sourcePointer, bufferPointer);
     }
 }

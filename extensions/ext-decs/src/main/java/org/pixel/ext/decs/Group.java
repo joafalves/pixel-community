@@ -12,6 +12,8 @@ public class Group implements Iterable<Entity> {
 
     private final Set<Class<?>> componentTypes;
     private final Set<Entity> entities;
+    private Entity[] snapshot = new Entity[0];
+    private boolean snapshotDirty;
 
     /**
      * Constructor.
@@ -29,7 +31,7 @@ public class Group implements Iterable<Entity> {
      * @return The collection of entities.
      */
     public Collection<Entity> getEntities() {
-        return entities;
+        return java.util.Collections.unmodifiableSet(entities);
     }
 
     /**
@@ -57,7 +59,9 @@ public class Group implements Iterable<Entity> {
      * @param entity The entity to add.
      */
     void add(Entity entity) {
-        entities.add(entity);
+        if (entities.add(entity)) {
+            snapshotDirty = true;
+        }
     }
 
     /**
@@ -66,11 +70,42 @@ public class Group implements Iterable<Entity> {
      * @param entity The entity to remove.
      */
     void remove(Entity entity) {
-        entities.remove(entity);
+        if (entities.remove(entity)) {
+            snapshotDirty = true;
+        }
     }
 
+    /**
+     * Iterates a snapshot of the group, so systems may create/destroy entities or add/remove components while
+     * iterating (previously a ConcurrentModificationException). Entities removed from the group during the
+     * iteration are skipped; entities added during the iteration are visited on the next one.
+     */
     @Override
     public Iterator<Entity> iterator() {
-        return entities.iterator();
+        if (snapshotDirty) {
+            snapshot = entities.toArray(new Entity[0]);
+            snapshotDirty = false;
+        }
+        final Entity[] current = snapshot;
+        return new Iterator<>() {
+            private int index;
+
+            @Override
+            public boolean hasNext() {
+                // skip lazily, so removals done by the loop body are honoured
+                while (index < current.length && !entities.contains(current[index])) {
+                    index++;
+                }
+                return index < current.length;
+            }
+
+            @Override
+            public Entity next() {
+                if (!hasNext()) {
+                    throw new java.util.NoSuchElementException();
+                }
+                return current[index++];
+            }
+        };
     }
 }

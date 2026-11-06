@@ -343,6 +343,15 @@ public class Vector3 implements Serializable {
         return false;
     }
 
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + Float.floatToIntBits(x + 0.0f);
+        result = 31 * result + Float.floatToIntBits(y + 0.0f);
+        result = 31 * result + Float.floatToIntBits(z + 0.0f);
+        return result;
+    }
+
     //endregion
 
     //region public static methods

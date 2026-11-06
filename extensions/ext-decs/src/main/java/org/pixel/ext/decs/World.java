@@ -234,10 +234,15 @@ public class World implements Initializable, Loadable, Updatable, Drawable, Disp
      */
     public void removeComponent(Entity entity, Class<?> componentType) {
         var entityComponents = componentStore.get(entity.getId());
-        if (entityComponents == null || !entityComponents.containsKey(componentType)) return;
+        if (entityComponents == null) return;
+
+        // resolve the stored type (exact match first, then subclasses - same rule as getComponent/hasComponent)
+        Class<?> storedType = resolveComponentType(entityComponents, componentType);
+        if (storedType == null) return;
+        entityComponents.remove(storedType);
 
         // Use the index to efficiently update only relevant groups for all parent types
-        Set<Class<?>> allTypes = getAllTypes(componentType);
+        Set<Class<?>> allTypes = getAllTypes(storedType);
         if (allTypes == null) return;
 
         Set<Group> processedGroups = new HashSet<>();
@@ -247,20 +252,19 @@ public class World implements Initializable, Loadable, Updatable, Drawable, Disp
                 for (Group group : affectedGroups) {
                     // Process each affected group only once
                     if (processedGroups.add(group)) {
-                        // If the entity was in the group, its match is now invalid because we are removing a component.
-                        if (group.contains(entity)) {
+                        // The entity may still match through another component (e.g. a different subclass).
+                        if (group.contains(entity) && !matches(entity, group.getComponentTypes())) {
                             group.remove(entity);
                         }
                     }
                 }
             }
         }
-
-        entityComponents.remove(componentType);
     }
 
     /**
-     * Gets a component from an entity. Note: This performs an exact type match.
+     * Gets a component from an entity. An exact type match is preferred; otherwise the first component that is a
+     * subclass of the given type is returned (consistent with {@link #hasComponent} and group matching).
      *
      * @param entity        The entity.
      * @param componentType The component type.
@@ -270,7 +274,23 @@ public class World implements Initializable, Loadable, Updatable, Drawable, Disp
     @SuppressWarnings("unchecked")
     public <T extends Component> T getComponent(Entity entity, Class<T> componentType) {
         var components = componentStore.get(entity.getId());
-        return components != null ? (T) components.get(componentType) : null;
+        if (components == null) return null;
+
+        Component exact = components.get(componentType);
+        if (exact != null) return (T) exact;
+
+        Class<?> storedType = resolveComponentType(components, componentType);
+        return storedType != null ? (T) components.get(storedType) : null;
+    }
+
+    private static Class<?> resolveComponentType(Map<Class<?>, Component> components, Class<?> componentType) {
+        if (components.containsKey(componentType)) return componentType;
+        for (Class<?> actualType : components.keySet()) {
+            if (componentType.isAssignableFrom(actualType)) {
+                return actualType;
+            }
+        }
+        return null;
     }
 
     /**

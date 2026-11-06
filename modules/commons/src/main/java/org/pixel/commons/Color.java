@@ -12,40 +12,40 @@ public class Color implements Serializable {
     //region <static>
 
     // Predefined colors
-    public static final Color RED = new Color(0xff0000ff);
-    public static final Color GREEN = new Color(0x00ff00ff);
-    public static final Color BLUE = new Color(0x0000ffff);
-    public static final Color WHITE = new Color(0xffffffff);
-    public static final Color BLACK = new Color(0x000000ff);
-    public static final Color ROYAL = new Color(0x4169e1ff);
-    public static final Color SLATE = new Color(0x708090ff);
-    public static final Color SKY = new Color(0x87ceebff);
-    public static final Color CORNFLOWER_BLUE = new Color(0x6495edff);
-    public static final Color CHARTREUSE = new Color(0x7fff00ff);
-    public static final Color YELLOW = new Color(0xffff00ff);
-    public static final Color GOLD = new Color(0xffd700ff);
-    public static final Color GOLDENROD = new Color(0xdaa520ff);
-    public static final Color ORANGE = new Color(0xffa500ff);
-    public static final Color LIME = new Color(0x32cd32ff);
-    public static final Color FOREST = new Color(0x228b22ff);
-    public static final Color OLIVE = new Color(0x6b8e23ff);
-    public static final Color SCARLET = new Color(0xff341cff);
-    public static final Color CORAL = new Color(0xff7f50ff);
-    public static final Color SALMON = new Color(0xfa8072ff);
-    public static final Color PINK = new Color(0xff69b4ff);
-    public static final Color MAGENTA = new Color(0xff00ffff);
-    public static final Color PURPLE = new Color(0xa020f0ff);
-    public static final Color VIOLET = new Color(0xee82eeff);
-    public static final Color MAROON = new Color(0xb03060ff);
-    public static final Color CRIMSON = new Color(0xdc143cff);
-    public static final Color INDIGO = new Color(0x4b0082ff);
-    public static final Color TRANSPARENT = new Color(0x00000000);
+    public static final Color RED = new ReadOnlyColor(0xff0000ff);
+    public static final Color GREEN = new ReadOnlyColor(0x00ff00ff);
+    public static final Color BLUE = new ReadOnlyColor(0x0000ffff);
+    public static final Color WHITE = new ReadOnlyColor(0xffffffff);
+    public static final Color BLACK = new ReadOnlyColor(0x000000ff);
+    public static final Color ROYAL = new ReadOnlyColor(0x4169e1ff);
+    public static final Color SLATE = new ReadOnlyColor(0x708090ff);
+    public static final Color SKY = new ReadOnlyColor(0x87ceebff);
+    public static final Color CORNFLOWER_BLUE = new ReadOnlyColor(0x6495edff);
+    public static final Color CHARTREUSE = new ReadOnlyColor(0x7fff00ff);
+    public static final Color YELLOW = new ReadOnlyColor(0xffff00ff);
+    public static final Color GOLD = new ReadOnlyColor(0xffd700ff);
+    public static final Color GOLDENROD = new ReadOnlyColor(0xdaa520ff);
+    public static final Color ORANGE = new ReadOnlyColor(0xffa500ff);
+    public static final Color LIME = new ReadOnlyColor(0x32cd32ff);
+    public static final Color FOREST = new ReadOnlyColor(0x228b22ff);
+    public static final Color OLIVE = new ReadOnlyColor(0x6b8e23ff);
+    public static final Color SCARLET = new ReadOnlyColor(0xff341cff);
+    public static final Color CORAL = new ReadOnlyColor(0xff7f50ff);
+    public static final Color SALMON = new ReadOnlyColor(0xfa8072ff);
+    public static final Color PINK = new ReadOnlyColor(0xff69b4ff);
+    public static final Color MAGENTA = new ReadOnlyColor(0xff00ffff);
+    public static final Color PURPLE = new ReadOnlyColor(0xa020f0ff);
+    public static final Color VIOLET = new ReadOnlyColor(0xee82eeff);
+    public static final Color MAROON = new ReadOnlyColor(0xb03060ff);
+    public static final Color CRIMSON = new ReadOnlyColor(0xdc143cff);
+    public static final Color INDIGO = new ReadOnlyColor(0x4b0082ff);
+    public static final Color TRANSPARENT = new ReadOnlyColor(0x00000000);
 
     // Gray colors
-    public static final Color GRAY = new Color(0x808080ff);
-    public static final Color LIGHT_GRAY = new Color(0xd3d3d3ff);
-    public static final Color DARK_GRAY = new Color(0xa9a9a9ff);
-    public static final Color SILVER = new Color(0xc0c0c0ff);
+    public static final Color GRAY = new ReadOnlyColor(0x808080ff);
+    public static final Color LIGHT_GRAY = new ReadOnlyColor(0xd3d3d3ff);
+    public static final Color DARK_GRAY = new ReadOnlyColor(0xa9a9a9ff);
+    public static final Color SILVER = new ReadOnlyColor(0xc0c0c0ff);
 
     //endregion
 
@@ -395,4 +395,77 @@ public class Color implements Serializable {
     }
 
     //endregion
+
+    /**
+     * Immutable color used for the shared constants (WHITE, BLACK, ...). Mutating them used to silently change the
+     * value for every user of the constant.
+     */
+    private static final class ReadOnlyColor extends Color {
+
+        private final transient boolean sealed;
+
+        private ReadOnlyColor(int rgba8888) {
+            super(rgba8888);
+            this.sealed = true;
+        }
+
+        private void checkWritable() {
+            if (sealed) {
+                throw new UnsupportedOperationException(
+                        "Color constants are read-only; use new Color(constant) for a mutable copy.");
+            }
+        }
+
+        private Object writeReplace() {
+            return new Color(this); // serialize as a plain (mutable) Color
+        }
+
+        @Override
+        public void set(Color color) {
+            checkWritable();
+            super.set(color);
+        }
+
+        @Override
+        public void set(float r, float g, float b) {
+            checkWritable();
+            super.set(r, g, b);
+        }
+
+        @Override
+        public void set(float r, float g, float b, float a) {
+            checkWritable();
+            super.set(r, g, b, a);
+        }
+
+        @Override
+        public void setRed(float value) {
+            checkWritable();
+            super.setRed(value);
+        }
+
+        @Override
+        public void setGreen(float value) {
+            checkWritable();
+            super.setGreen(value);
+        }
+
+        @Override
+        public void setBlue(float value) {
+            checkWritable();
+            super.setBlue(value);
+        }
+
+        @Override
+        public void setAlpha(float value) {
+            checkWritable();
+            super.setAlpha(value);
+        }
+
+        @Override
+        public void set(int rgba8888) {
+            checkWritable();
+            super.set(rgba8888);
+        }
+    }
 }

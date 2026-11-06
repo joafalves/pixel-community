@@ -79,7 +79,7 @@ public class BlueprintAdvancedDemo extends Game {
         super.update(delta);
 
         if (Keyboard.isKeyPressed(KeyboardKey.ESCAPE)) {
-            dispose();
+            exit();
         }
 
         for (VisualEffect effect : allEffects) {

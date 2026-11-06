@@ -86,6 +86,11 @@ public class Polygon implements Serializable {
         return false;
     }
 
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hashCode(vertices);
+    }
+
     //endregion
 
     //region public static methods

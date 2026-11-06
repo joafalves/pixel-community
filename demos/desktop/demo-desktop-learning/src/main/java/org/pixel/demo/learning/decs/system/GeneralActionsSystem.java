@@ -20,7 +20,7 @@ public class GeneralActionsSystem extends System {
     @Override
     public void update(DeltaTime delta) {
         if (Keyboard.isKeyPressed(KeyboardKey.ESCAPE)) {
-            world.getProperties().get(Game.class).dispose();
+            world.getProperties().get(Game.class).exit();
         }
     }
 }

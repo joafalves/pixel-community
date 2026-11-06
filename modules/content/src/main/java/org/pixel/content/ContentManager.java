@@ -21,7 +21,7 @@ public class ContentManager implements Disposable {
     private static final Logger log = LoggerFactory.getLogger(ContentManager.class);
 
     private final ResourceLoader resourceLoader;
-    private final ConcurrentHashMap<String, Object> assetCache;
+    private final ConcurrentHashMap<CacheKey, Object> assetCache;
     private final ConcurrentHashMap<Class<?>, ContentImporter<?>> importers;
 
     private DataPipeline<byte[]> dataPipeline;
@@ -68,17 +68,16 @@ public class ContentManager implements Disposable {
                 ((Disposable) importer).dispose();
             }
         });
+
+        // never hand out disposed assets if the manager is (incorrectly) used after dispose
+        assetCache.clear();
     }
 
     /**
-     * Get a reference to the asset cache.
-     *
-     * @param filename The filename of the asset.
-     * @param type     The type of the asset.
-     * @return A reference to the asset cache.
+     * Asset cache key. The importer settings are part of the key: loading the same file with different settings
+     * (e.g. two font sizes) must produce different assets. Settings classes use value equality (Lombok @Data).
      */
-    private String getCacheReference(String filename, Class<?> type) {
-        return type.getCanonicalName() + ":" + filename;
+    private record CacheKey(String filename, Class<?> type, ContentImporterSettings settings) {
     }
 
     /**
@@ -90,8 +89,9 @@ public class ContentManager implements Disposable {
         for (ContentImporter<?> importer : importers) {
             var importerDetails = importer.getClass().getAnnotation(ContentImporterInfo.class);
             if (importerDetails == null) {
-                log.warn("Unable to add content importer without ContentImporter annotation.");
-                return;
+                log.warn("Unable to add content importer {0} without ContentImporterInfo annotation.",
+                        importer.getClass().getName());
+                continue; // keep registering the remaining importers
             }
 
             log.trace("Adding content importer {0}.", importer.getClass().getSimpleName());
@@ -340,11 +340,11 @@ public class ContentManager implements Disposable {
      */
     @SuppressWarnings("unchecked")
     public <T> T load(String filepath, Class<T> type, @Nullable ContentImporterSettings settings, boolean useCache) {
-        String assetRef = getCacheReference(filepath, type);
-        if (useCache && assetCache.containsKey(assetRef)) {
-            Object o = assetCache.get(assetRef);
-            if (type.isInstance(o)) {
-                return (T) assetCache.get(assetRef);
+        CacheKey assetRef = new CacheKey(filepath, type, settings);
+        if (useCache) {
+            Object cached = assetCache.get(assetRef);
+            if (type.isInstance(cached)) {
+                return (T) cached;
             }
         }
 

@@ -30,6 +30,12 @@ public interface WindowManager extends Initializable, Disposable {
     boolean isWindowActive();
 
     /**
+     * Request the window to close. The game loop finishes the current frame and then disposes the game.
+     * Safe to call from any game callback (update, draw, event listeners).
+     */
+    void requestClose();
+
+    /**
      * Determine if the window is focused.
      * 
      * @return True if the window is focused, false otherwise.

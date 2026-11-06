@@ -64,15 +64,43 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
         super.start();
 
         if (this.state.hasInitialized()) {
-            this.gameLoop();
-            this.dispose();
+            try {
+                this.gameLoop();
+            } finally {
+                // Always release native resources, even if the game loop threw. Skip if the game already
+                // disposed itself (e.g. legacy code calling dispose() from update()).
+                if (!this.state.isDisposed()) {
+                    this.dispose();
+                }
+            }
+        }
+    }
+
+    /**
+     * Request the game to exit. The current frame completes, the loop ends and {@link #dispose()} is called
+     * once, while the graphics context is still valid. Prefer this over calling {@link #dispose()} directly
+     * from game code.
+     */
+    public void exit() {
+        if (this.windowManager != null) {
+            this.windowManager.requestClose();
         }
     }
 
     @Override
     public void dispose() {
-        windowManager.dispose();
+        if (this.state.isDisposed()) {
+            return;
+        }
+        this.state = State.DISPOSING;
+
+        // Release graphics resources first: they need the GL context, which dies with the window.
         super.dispose();
+        if (windowManager != null) {
+            windowManager.dispose();
+        }
+
+        this.state = State.DISPOSED;
     }
 
     /**
@@ -106,7 +134,12 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
                 double currentTime = glfwGetTime();
                 double targetFrameDuration = 1.0 / settings.getTargetFps(); // e.g., 16.67ms for 60 FPS
 
-                // Calculate the next frame's target time
+                // Calculate the next frame's target time. If we have no reference yet (first frame) or we fell
+                // behind by more than a frame (hitch, debugger, window drag), re-anchor to "now" instead of running
+                // uncapped until the reference catches up with real time.
+                if (targetFpsTimeRef <= 0 || currentTime - targetFpsTimeRef > targetFrameDuration) {
+                    targetFpsTimeRef = currentTime;
+                }
                 double nextFrameTime = targetFpsTimeRef + targetFrameDuration;
 
                 // Sleep if there's still time until the next frame

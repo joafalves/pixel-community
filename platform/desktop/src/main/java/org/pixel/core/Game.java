@@ -110,9 +110,20 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
 
     @Override
     public void dispose() {
-        // dispose audio context
-        alcCloseDevice(audioDevice);
-        alcDestroyContext(audioContext);
+        if (this.state.isDisposed()) {
+            return;
+        }
+
+        // dispose audio context (the context must be released before its device is closed)
+        if (audioContext != 0L) {
+            alcMakeContextCurrent(0L);
+            alcDestroyContext(audioContext);
+            audioContext = 0L;
+        }
+        if (audioDevice != 0L) {
+            alcCloseDevice(audioDevice);
+            audioDevice = 0L;
+        }
 
         super.dispose();
     }

@@ -117,7 +117,9 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
     @Override
     public void dispose() {
         // dispose graphics device and window manager
-        graphicsDevice.dispose();
+        if (graphicsDevice != null) {
+            graphicsDevice.dispose();
+        }
     }
 
     /**
