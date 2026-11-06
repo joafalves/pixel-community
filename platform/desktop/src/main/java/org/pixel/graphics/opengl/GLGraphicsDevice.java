@@ -21,6 +21,8 @@ import static org.lwjgl.opengl.GL11C.glDisable;
 import static org.lwjgl.opengl.GL11C.glEnable;
 import static org.lwjgl.opengl.GL11C.glGetString;
 import static org.lwjgl.opengl.GL11C.glReadPixels;
+import static org.lwjgl.opengl.GL11C.glPixelStorei;
+import static org.lwjgl.opengl.GL11C.GL_PACK_ALIGNMENT;
 import static org.lwjgl.opengl.GL11C.glViewport;
 import static org.lwjgl.opengl.GL13C.GL_MULTISAMPLE;
 import static org.lwjgl.system.MemoryUtil.memAlloc;
@@ -40,6 +42,7 @@ import org.pixel.core.DesktopWindowManager;
 import org.pixel.core.WindowSettings;
 import org.pixel.graphics.GraphicsDevice;
 import org.pixel.graphics.RenderStats;
+import org.pixel.graphics.opengl.render.GLRenderBackend;
 
 public class GLGraphicsDevice implements GraphicsDevice {
 
@@ -49,6 +52,7 @@ public class GLGraphicsDevice implements GraphicsDevice {
     private final WindowSettings windowSettings;
 
     private final RenderStats stats = new RenderStats();
+    private GLRenderBackend renderBackend;
 
     private State state;
     private Callback debugLocalCallback;
@@ -87,6 +91,9 @@ public class GLGraphicsDevice implements GraphicsDevice {
             Configuration.DISABLE_CHECKS.set(true);
         }
 
+        // URP v2 render backend (needs the GL context created above)
+        this.renderBackend = new GLRenderBackend(stats);
+
         // Set base clear color:
         setClearColor(windowSettings.getBackgroundColor());
 
@@ -98,6 +105,18 @@ public class GLGraphicsDevice implements GraphicsDevice {
 
         this.state = State.INITIALIZED;
         return true;
+    }
+
+    /**
+     * Get the URP v2 render backend of this device (all GPU work of draw-list based renderers goes through it).
+     *
+     * @return The render backend.
+     */
+    public GLRenderBackend getRenderBackend() {
+        if (renderBackend == null) {
+            throw new IllegalStateException("Graphics device is not initialized.");
+        }
+        return renderBackend;
     }
 
     @Override
@@ -112,6 +131,10 @@ public class GLGraphicsDevice implements GraphicsDevice {
 
     @Override
     public void dispose() {
+        if (this.renderBackend != null) {
+            this.renderBackend.dispose();
+            this.renderBackend = null;
+        }
         if (this.debugLocalCallback != null) {
             this.debugLocalCallback.free();
         }
@@ -131,24 +154,23 @@ public class GLGraphicsDevice implements GraphicsDevice {
 
     @Override
     public byte[] readPixels(int sx, int sy, int width, int height, boolean opaque) {
-        final int stride = width * 4;
-
+        // NOTE: (sx, sy) is in framebuffer pixels with the OpenGL origin (bottom-left); rows are returned bottom-up.
         ByteBuffer imageBuffer = memAlloc(width * height * 4);
-        glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, imageBuffer);
+        try {
+            glPixelStorei(GL_PACK_ALIGNMENT, 1);
+            glReadPixels(sx, sy, width, height, GL_RGBA, GL_UNSIGNED_BYTE, imageBuffer);
 
-        if (opaque) {
-            for (int y = 0, x; y < height; y++) {
-                int row = y * stride;
-                for (x = 0; x < width; x++) {
-                    imageBuffer.put(row + x * 4 + 3, (byte) 255);
+            byte[] data = new byte[width * height * 4];
+            imageBuffer.get(0, data); // direct buffers have no backing array
+            if (opaque) {
+                for (int i = 3; i < data.length; i += 4) {
+                    data[i] = (byte) 255;
                 }
             }
+            return data;
+        } finally {
+            memFree(imageBuffer);
         }
-
-        var data = imageBuffer.array();
-        memFree(imageBuffer);
-
-        return data;
     }
 
     private void initGLCapabilities() {

@@ -232,9 +232,14 @@ public abstract class SpriteBatch implements Initializable, Disposable {
     /**
      * Get the active shader.
      *
-     * @return The active shader.
+     * @return The active shader, or {@code null} if the implementation does not expose one.
+     * @deprecated renderers built on the draw list don't expose their GPU program; custom shaders become materials
+     * (see docs/design/urp-v2.md §4.4).
      */
-    public abstract Shader getShader();
+    @Deprecated
+    public Shader getShader() {
+        return null;
+    }
 
     /**
      * Begin drawing phase.
@@ -257,7 +262,8 @@ public abstract class SpriteBatch implements Initializable, Disposable {
     public abstract void end();
 
     /**
-     * Resize the buffer batch size. This will reset the buffer write index - make sure to call outside of the drawing loop.
+     * Resize the buffer batch size (or, for draw-list implementations, pre-size the command storage so the given
+     * number of sprites per begin/end never needs to grow). Call outside of the drawing loop.
      *
      * @param newSize The new size.
      */

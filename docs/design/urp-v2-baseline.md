@@ -53,9 +53,9 @@ on `sprites-1-texture`, 391 vs 509 fps on `text`). Gates use CPU/GPU time with a
 
 1. **The batch size is the main cost.** With one texture, 20k sprites still take 79 draw calls, because the default
    buffer holds 256 sprites. Every flush also re-uploads its vertices (`glBufferData`, 6 non-indexed vertices ×
-   36 B per sprite). The GPU spends about 3.9 ms on 20k small quads, which points to per-draw and upload overhead
-   rather than fill rate. This is a hypothesis: macOS implements OpenGL on top of Metal on Apple Silicon, which
-   likely makes per-draw costs higher, but it hasn't been profiled.
+   36 B per sprite). The GPU spends about 3.9 ms on 20k quads. *Phase 1 showed this is fill rate, not per-draw
+   overhead:* going from 79 to 2 draw calls left GPU time unchanged (3.89 → 3.85 ms). 20k blended sprites at 2×
+   Retina scale are about 80 million fragments per frame. Draw-call reduction pays off on the CPU side.
 2. **Texture-slot overflow is very expensive.** With 32 textures in random order, draw calls jump to **951** per
    frame, texture binds to **14,031**, and CPU time is about 4× higher. The batch can only bind 16 textures, so it flushes whenever the run of sprites
    needs a 17th. Keeping submission order (which `SpriteBatch` semantics require) cannot avoid this. v2 helps in two
@@ -87,3 +87,42 @@ For every scenario, measured on the same machine:
   must reach ≤ 4.
 - **Correctness:** `sprites-depth-sorted` is globally depth-ordered (checked by a GL-free unit test on the sorted
   command order, since the benchmark itself does not check pixels).
+
+## Phase 1 results
+
+Same machine and session for both renderers (`./gradlew :pixel-demo-desktop-learning:renderBenchmark`):
+
+| scenario | renderer | fps | cpu ms | gpu ms | draws/f | binds/f | upload KB/f |
+|---|---|---:|---:|---:|---:|---:|---:|
+| sprites-1-texture | legacy | 159.9 | 1.079 | 3.888 | 79 | 1 | 4218.8 |
+| | **drawlist** | 167.4 | **0.869** | 3.850 | **2** | 17 | **1875.0** |
+| sprites-32-textures | legacy | 79.4 | 5.190 | 6.206 | 951 | 14031 | 4218.8 |
+| | **drawlist** | 100.9 | **3.213** | 5.902 | 877 | 13637 | **1875.3** |
+| sprites-depth-sorted | legacy | 120.1 | 1.905 | 4.820 | 79 | 4 | 4218.8 |
+| | **drawlist** | 149.5 | **0.968** | 4.622 | **2** | 23 | **1875.0** |
+| sprites-rotated | legacy | 118.0 | 2.407 | 5.017 | 79 | 4 | 4218.8 |
+| | **drawlist** | 126.0 | **1.194** | 4.647 | **2** | 22 | **1875.0** |
+| text | legacy | 271.4 | 1.499 | 0.924 | 55 | 1 | 2929.9 |
+| | **drawlist** | 394.3 | **1.130** | 0.786 | **1** | 17 | **1302.2** |
+| interleaved-sprite-text | legacy | 409.7 | 0.702 | 1.144 | 43 | 5 | 2297.1 |
+| | **drawlist** | 470.9 | **0.618** | 0.987 | **1** | 21 | **1020.9** |
+
+**Gates**
+
+| gate | result |
+|---|---|
+| CPU and GPU time no worse than baseline | ✅ better in every scenario (CPU −12% to −50%, GPU −1% to −15%) |
+| Upload ≤ 50% of baseline for sprites | ✅ 44% (1,875 vs 4,219 KB) |
+| ≤ 4 draw calls (1-texture, depth, rotated, text, interleaved) | ✅ 2, 2, 2, 1, 1 |
+| `sprites-32-textures` no more draw calls than baseline | ✅ 877 vs 951 |
+| Global, stable depth order | ✅ unit tests (`DrawListTest`, `DrawListSpriteBatchTest`) |
+| Visual parity | ✅ `renderParity`: 7 scenes, no mismatches; 3 pixels in total are one-pixel edge shifts on rotated sprites (different but equivalent trigonometry) |
+
+**Notes**
+- `binds/f` is higher for the draw list (about 17 vs 1). Each pass first binds a 1×1 white texture to all 16 units,
+  since the backend can't know what other renderers left bound, and some drivers (macOS) complain about samplers on
+  invalid units. This is 16 cheap binds per pass and is visible in the stats on purpose.
+- `MathHelper.sin/cos` delegate to `StrictMath`, whose pure-Java fdlibm port allocates 32 B per call during argument
+  reduction. The draw list uses `Math.sin/cos` (no allocation, faster). The classic batch, and any game code using
+  `MathHelper` per frame, still pays this. *Open decision:* switch `MathHelper` to `Math`, unless strict
+  cross-platform determinism (e.g. lockstep networking) is a requirement.

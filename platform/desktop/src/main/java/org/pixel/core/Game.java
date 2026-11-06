@@ -13,7 +13,7 @@ import org.pixel.content.GLContentManagerFactory;
 import org.pixel.graphics.glfw.GLFWWindowManager;
 import org.pixel.graphics.opengl.GLGraphicsDevice;
 import org.pixel.graphics.render.SpriteBatch;
-import org.pixel.graphics.render.opengl.GLSpriteBatchServiceFactory;
+import org.pixel.graphics.render.DrawListSpriteBatchServiceFactory;
 
 import java.nio.ByteBuffer;
 
@@ -94,7 +94,9 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
 
         switch (this.settings.getGraphicsBackend()) {
             case OpenGL:
-                ServiceProvider.register(SpriteBatch.class, new GLSpriteBatchServiceFactory(this.graphicsDevice.getStats()));
+                // URP v2: the draw-list sprite batch passed the Phase 1 gates (docs/design/urp-v2-baseline.md)
+                ServiceProvider.register(SpriteBatch.class,
+                        new DrawListSpriteBatchServiceFactory(this.graphicsDevice.getRenderBackend()));
                 ServiceProvider.register(ContentManager.class, new GLContentManagerFactory());
                 ServiceProvider.register(AudioPlayer.class, new ALAudioPlayerFactory());
                 break;

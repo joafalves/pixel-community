@@ -70,6 +70,14 @@ public abstract class Font implements Disposable {
     }
 
     /**
+     * Get the texture (atlas) holding the glyph images. Glyph coordinates ({@link FontGlyph#getX()}, ...) are in
+     * pixels of this texture. Owned by the font: disposing the font disposes the texture.
+     *
+     * @return The glyph atlas texture.
+     */
+    public abstract Texture getTexture();
+
+    /**
      * Get glyph data for a given character.
      *
      * @param ch The character to get glyph data for.

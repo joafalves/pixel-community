@@ -34,3 +34,19 @@ tasks.register('renderBenchmark', JavaExec) {
         jvmArgs '--enable-native-access=ALL-UNNAMED' // LWJGL uses native access (JDK 22+ warns otherwise)
     }
 }
+
+// Render parity check (URP v2): renders the same scenes with the classic and the draw-list sprite batch and compares
+// the pixels. Writes images to build/parity/ and logs "PARITY OK" or "PARITY FAILED".
+tasks.register('renderParity', JavaExec) {
+    group = 'benchmark'
+    description = 'Compares the classic and draw-list sprite batches pixel by pixel.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.pixel.demo.learning.benchmark.RenderParityCheck'
+    workingDir = projectDir
+    if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
+        jvmArgs '-XstartOnFirstThread'
+    }
+    if (JavaVersion.current() >= JavaVersion.VERSION_22) {
+        jvmArgs '--enable-native-access=ALL-UNNAMED'
+    }
+}

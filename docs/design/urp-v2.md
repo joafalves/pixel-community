@@ -259,12 +259,13 @@ for plain sprites, which are the most common primitive. Phase 1 therefore uses *
 
 | layout | attributes | bytes/vertex | bytes/quad |
 |---|---|---|---|
-| **sprite** (textured quads, glyphs of bitmap fonts) | position 2×f32 · uv 2×u16 norm · colour 4×u8 · slot u8 + clip u16 (+pad) | 20 | 80 |
+| **sprite** (textured quads, glyphs of bitmap fonts) | position 2×f32 · uv 2×f32 · colour 4×u8 · slot u8 + 3 reserved bytes (clip index from Phase 2) | 24 | 96 |
 | **full** (SDF shapes, MTSDF text, effects) | as in the table above | 52 | 208 |
 
-Each batch uses one layout, and a layout switch counts as a batch break. A layer full of sprites therefore uploads
-about 2.7× less than today. The shader is the same template compiled in two variants (§5.1). UVs as normalized u16
-give 1/65535 texture precision, which is exact for textures up to 64k texels wide.
+Each batch uses one layout, and a layout switch counts as a batch break. A layer full of sprites uploads about 2.25×
+less than today (measured: 1,875 KB vs 4,219 KB per frame for 20k sprites). **Phase 1 decision:** UVs stay `f32`
+instead of normalized `u16`. The 4 bytes saved per vertex weren't worth the risk of texel-edge sampling differences
+on large atlases, and the upload gate (≤ 50% of baseline) is met either way.
 
 **Style table.** Effects need more data than fits in a vertex: stroke colour and alignment, shadow offset, blur and
 colour, gradient stops, dash pattern, text weight. These go into a per-batch **style table** in a UBO, indexed by the
@@ -427,15 +428,27 @@ Each phase ends green (`./gradlew build`) and is reviewable on its own.
 - Baseline recorded. It found that today's depth sorting is only correct within 256 sprites, and that texture-slot
   overflow costs 951 draw calls per frame.
 
-**Phase 1: draw list, batcher and compat sprites**
-- `DrawList`, sort keys, stable sort, batch merging, frame stats.
-- The `RenderBackend` SPI, `GLRenderBackend` and the uber-shader with only the textured-quad path at first.
-- `DrawListSpriteBatch`.
-- Tests: sorting, merging and break reasons against a fake backend, plus a zero-allocation test (measured with
-  `ThreadMXBean` thread allocation counters).
-- **Gate:** the numeric gates in [urp-v2-baseline.md](urp-v2-baseline.md#phase-1-gates-derived-from-this-baseline)
-  (CPU/GPU time no worse than baseline, ≤ 4 draw calls in the main scenarios, globally correct depth order), plus
-  visual parity on the sprite demos. Then the service registration switches over.
+**Phase 1: draw list, batcher and compat sprites** ✅ (results in
+[urp-v2-baseline.md](urp-v2-baseline.md#phase-1-results))
+- `org.pixel.graphics.draw`: `DrawList` (struct-of-arrays, `ORDERED`/`SORTED`), `SortKeys`, `Colors`, `Batcher`.
+  The `SORTED` order is a stable LSD radix sort on the depth part of the key: O(n) and allocation-free, where
+  `Arrays.sort(long[])` may allocate a merge buffer.
+- `org.pixel.graphics.backend`: `RenderBackend` (`capabilities`, `beginPass`, `submit`, `endPass`; targets and
+  materials join in Phase 3), `BackendCapabilities`, `PassState`, `VertexLayout.SPRITE`, `VertexStream`, `BatchList`.
+- `DrawListSpriteBatch` + `DrawListSpriteBatchServiceFactory`: the default `SpriteBatch` service since the gates
+  passed. `GLSpriteBatch` remains only for the benchmark and parity check until Phase 4.
+- `platform/desktop`: `GLRenderBackend` (indexed quads from a static 16-bit index buffer, at most 16,384 quads per
+  draw, chunked uploads by address with index offsets so no base-vertex call is needed and it stays GLES 3.0
+  compatible) and the sprite program (`engine/shader/opengl/urp/sprite.*.glsl`, version preamble added in code).
+  `GLGraphicsDevice` owns the backend.
+- `Font.getTexture()`: bitmap fonts expose their atlas as a `Texture`, so text batches with sprites.
+- Behaviour changes: global stable depth order (it was per 256-sprite chunk), `'\n'` in `drawText` starts a new line
+  (it used to be ignored unless the font had a glyph for it), and `SpriteBatch.getShader()` is deprecated.
+- Tests (GL-free, fake backend): stable/global sort, batching rules, vertex contents, geometry identical to the
+  classic `Matrix4` math on 500 random sprites, text placement, begin/end contract, and **0 bytes allocated** for 20
+  frames of 20k sprites plus text.
+- GPU checks: `renderParity` (7 scenes, classic vs draw list, pixel comparison: no mismatches) and `renderBenchmark`
+  (both renderers in one session). All gates passed.
 
 **Phase 2: Canvas and text**
 - SDF shapes, images, nine-patch, paths (triangulation), transform stack, clip stack (per-vertex).
