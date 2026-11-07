@@ -1,5 +1,6 @@
 package org.pixel.graphics.opengl.render;
 
+import org.pixel.graphics.backend.BatchList;
 import org.pixel.graphics.shader.opengl.GLShader;
 
 import java.util.List;
@@ -25,7 +26,7 @@ final class GLShapeProgram extends GLShader {
                 GLSpriteProgram.DESKTOP_PREAMBLE + GLSpriteProgram.require(FRAGMENT_PATH)
                         .replace("/*$numTextures*/", String.valueOf(textureSlots))
                         .replace("/*$maxClips*/", String.valueOf(maxClips))
-                        .replace("/*$maxStyleVec4*/", String.valueOf(maxStyles * 2))
+                        .replace("/*$maxStyleVec4*/", String.valueOf(maxStyles * BatchList.STYLE_FLOATS / 4))
                         .replace("/*$textureSwitchCase*/", GLSpriteProgram.textureSwitch(textureSlots)),
                 List.of(), List.of(GLSpriteProgram.U_MATRIX, GLSpriteProgram.U_TEXTURES));
         init();

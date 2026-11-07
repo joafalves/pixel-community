@@ -1,16 +1,17 @@
 // URP v2 shape fragment shader (VertexLayout.FULL). No #version: the backend prepends the GL / GLES preamble.
 // Shapes are signed distance fields (negative inside) in shape-local units; coverage uses fwidth, so edges stay
-// one pixel soft at any scale or rotation. Shape type codes match org.pixel.graphics.draw.ShapeType.
+// one pixel soft at any scale or rotation. Shape type codes match org.pixel.graphics.draw.ShapeType; the style
+// record layout matches org.pixel.graphics.draw.StyleTable.
 
 in vec2 vTexCoord;   // texture coordinates (TEXTURED) or shape dimensions (SDF shapes)
-in vec4 vColor;      // fill color (or tint)
+in vec4 vColor;      // fill color, gradient start color, or tint
 in vec2 vLocal;      // shape-local position
 in vec4 vParams;     // shape parameters
 in vec2 vLayerPos;   // position in layer space (for clipping)
 flat in int vType;
 flat in int vSlot;
 flat in int vClip;   // 1-based index into uClips, 0 = none
-flat in int vStyle;  // 1-based index into uStyles (2 vec4 each), 0 = none
+flat in int vStyle;  // 1-based style index (7 vec4 each), 0 = plain fill
 
 uniform sampler2D uTextures[/*$numTextures*/];
 
@@ -19,20 +20,32 @@ layout(std140) uniform ClipBlock {
 };
 
 layout(std140) uniform StyleBlock {
-    vec4 uStyles[/*$maxStyleVec4*/]; // [2i] stroke color, [2i+1] (stroke width, stroke offset, 0, 0)
+    vec4 uStyles[/*$maxStyleVec4*/]; // 7 vec4 per style (see StyleTable)
 };
 
 out vec4 oFragColor;
+
+const int TEXTURED = 0;
+const int RECT = 1;
+const int ELLIPSE = 2;
+const int SEGMENT = 3;
+
+// ---------------------------------------------------------------------------------------------------------------
+// distance functions
 
 float sdBox(vec2 p, vec2 b) {
     vec2 q = abs(p) - b;
     return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0);
 }
 
-// radii: x = top-left, y = top-right, z = bottom-right, w = bottom-left (y axis points down)
-float sdRoundRect(vec2 p, vec2 halfSize, vec4 radii) {
+// radius of the quadrant of p: x = top-left, y = top-right, z = bottom-right, w = bottom-left (y axis points down)
+float cornerRadius(vec2 p, vec2 halfSize, vec4 radii) {
     float r = p.x < 0.0 ? (p.y < 0.0 ? radii.x : radii.w) : (p.y < 0.0 ? radii.y : radii.z);
-    r = min(r, min(halfSize.x, halfSize.y));
+    return min(r, min(halfSize.x, halfSize.y));
+}
+
+float sdRoundRect(vec2 p, vec2 halfSize, vec4 radii) {
+    float r = cornerRadius(p, halfSize, radii);
     vec2 q = abs(p) - halfSize + r;
     return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
 }
@@ -55,9 +68,84 @@ float sdSegment(vec2 p, vec2 dims, float cap) {
     return sdBox(p, vec2(dims.x + (cap > 1.5 ? dims.y : 0.0), dims.y));
 }
 
+float shapeDistance(vec2 p) {
+    if (vType == RECT) {
+        return sdRoundRect(p, vTexCoord, vParams);
+    } else if (vType == ELLIPSE) {
+        return sdEllipse(p, vTexCoord);
+    }
+    return sdSegment(p, vTexCoord, vParams.x);
+}
+
 float coverage(float distance, float pixel) {
     return clamp(0.5 - distance / pixel, 0.0, 1.0);
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// soft shadows
+
+vec2 erf2(vec2 x) { // error function approximation (Abramowitz & Stegun 7.1.27)
+    vec2 s = sign(x), a = abs(x);
+    x = 1.0 + (0.278393 + (0.230389 + 0.078108 * (a * a)) * a) * a;
+    x *= x;
+    return s - s / (x * x);
+}
+
+float gaussian(float x, float sigma) {
+    return exp(-(x * x) / (2.0 * sigma * sigma)) / (2.50662827463 * sigma);
+}
+
+// Gaussian-blurred rounded box (closed form along x, 4 samples along y). After Evan Wallace,
+// "Fast Rounded Rectangle Shadows" (2016).
+float roundedBoxShadowX(float x, float y, float sigma, float corner, vec2 halfSize) {
+    float delta = min(halfSize.y - corner - abs(y), 0.0);
+    float curved = halfSize.x - corner + sqrt(max(0.0, corner * corner - delta * delta));
+    vec2 integral = 0.5 + 0.5 * erf2((x + vec2(-curved, curved)) * (0.70710678 / sigma));
+    return integral.y - integral.x;
+}
+
+float roundedBoxShadow(vec2 p, vec2 halfSize, float sigma, float corner) {
+    float low = p.y - halfSize.y;
+    float high = p.y + halfSize.y;
+    float start = clamp(-3.0 * sigma, low, high);
+    float end = clamp(3.0 * sigma, low, high);
+    float step = (end - start) / 4.0;
+    float y = start + step * 0.5;
+    float value = 0.0;
+    for (int i = 0; i < 4; i++) {
+        value += roundedBoxShadowX(p.x, p.y - y, sigma, corner, halfSize) * gaussian(y, sigma) * step;
+        y += step;
+    }
+    return value;
+}
+
+float shadowAlpha(vec2 p, float blur, float spread, float pixel) {
+    float sigma = blur * 0.5;
+    if (sigma < 0.25) {
+        return coverage(shapeDistance(p) - spread, pixel); // hard shadow
+    }
+    if (vType == RECT) {
+        vec2 halfSize = max(vTexCoord + spread, vec2(0.0));
+        float corner = min(max(cornerRadius(p, vTexCoord, vParams) + spread, 0.0), min(halfSize.x, halfSize.y));
+        return roundedBoxShadow(p, halfSize, sigma, corner);
+    }
+    // other shapes: Gaussian across the edge distance (exact for straight edges, close for convex curves)
+    float d = shapeDistance(p) - spread;
+    return 0.5 - 0.5 * erf2(vec2(d * 0.70710678 / sigma, 0.0)).x;
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// dashes
+
+// 1 inside a dash, 0 in a gap, anti-aliased over one pixel; s is the arc length along the outline
+float dashMask(float s, float dashLength, float gap, float pixel) {
+    float period = dashLength + gap;
+    float x = mod(s, period);
+    float d = x <= dashLength ? min(x, dashLength - x) : -min(x - dashLength, period - x);
+    return clamp(d / pixel + 0.5, 0.0, 1.0);
+}
+
+// ---------------------------------------------------------------------------------------------------------------
 
 void main() {
     float clipMask = 1.0;
@@ -69,30 +157,72 @@ void main() {
     }
 
     vec4 color;
-    if (vType == 0) {
+    if (vType == TEXTURED) {
         color = vColor;
         switch (vSlot) {
 /*$textureSwitchCase*/
         }
     } else {
-        float d;
-        if (vType == 1) {
-            d = sdRoundRect(vLocal, vTexCoord, vParams);
-        } else if (vType == 2) {
-            d = sdEllipse(vLocal, vTexCoord);
-        } else {
-            d = sdSegment(vLocal, vTexCoord, vParams.x);
-        }
+        float d = shapeDistance(vLocal);
         float pixel = max(fwidth(d), 1e-4);
+        float fillCoverage = coverage(d, pixel);
+        vec4 fill = vColor;
 
-        float fillAlpha = vColor.a * coverage(d, pixel);
-        vec4 result = vec4(vColor.rgb * fillAlpha, fillAlpha); // premultiplied
+        vec4 strokeColor = vec4(0.0);
+        float strokeCoverage = 0.0;
+        vec4 result;
         if (vStyle > 0) {
-            vec4 strokeColor = uStyles[(vStyle - 1) * 2];
-            vec4 stroke = uStyles[(vStyle - 1) * 2 + 1];
-            float strokeAlpha = strokeColor.a * coverage(abs(d - stroke.y) - 0.5 * stroke.x, pixel);
-            result = vec4(strokeColor.rgb * strokeAlpha, strokeAlpha) + result * (1.0 - strokeAlpha);
+            int base = (vStyle - 1) * 7;
+            vec4 stroke = uStyles[base + 1];       // width, offset, dash length, dash gap
+            vec4 gradient = uStyles[base + 2];     // linear (x0, y0, x1, y1) / radial (cx, cy, r, -)
+            vec4 shadowColor = uStyles[base + 4];
+            vec4 shadow = uStyles[base + 5];       // offset x, offset y, blur, spread
+            vec4 flags = uStyles[base + 6];        // paint type, dash phase
+
+            // paint
+            if (flags.x > 0.5) {
+                float t;
+                if (flags.x < 1.5) {
+                    vec2 axis = gradient.zw - gradient.xy;
+                    t = dot(vLocal - gradient.xy, axis) / max(dot(axis, axis), 1e-6);
+                } else {
+                    t = length(vLocal - gradient.xy) / gradient.z;
+                }
+                fill = mix(vColor, uStyles[base + 3], clamp(t, 0.0, 1.0));
+            }
+
+            // stroke
+            strokeColor = uStyles[base];
+            if (strokeColor.a > 0.0) {
+                strokeCoverage = coverage(abs(d - stroke.y) - 0.5 * stroke.x, pixel);
+            }
+
+            // dashes: the line body for segments, the stroke for ellipses
+            if (stroke.z > 0.0) {
+                if (vType == SEGMENT) {
+                    fillCoverage *= dashMask(vLocal.x + vTexCoord.x + flags.y, stroke.z, stroke.w, pixel);
+                } else if (vType == ELLIPSE) {
+                    float meanRadius = 0.5 * (vTexCoord.x + vTexCoord.y);
+                    float s = (atan(vLocal.y, vLocal.x) + 3.14159265) * meanRadius + flags.y;
+                    strokeCoverage *= dashMask(s, stroke.z, stroke.w, pixel);
+                }
+            }
+
+            // shadow below everything
+            result = vec4(0.0);
+            if (shadowColor.a > 0.0) {
+                float sa = shadowColor.a * shadowAlpha(vLocal - shadow.xy, shadow.z, shadow.w, pixel);
+                result = vec4(shadowColor.rgb * sa, sa);
+            }
+        } else {
+            result = vec4(0.0);
         }
+
+        // premultiplied: shadow, then fill over it, then stroke over both
+        float fa = fill.a * fillCoverage;
+        result = vec4(fill.rgb * fa, fa) + result * (1.0 - fa);
+        float sa = strokeColor.a * strokeCoverage;
+        result = vec4(strokeColor.rgb * sa, sa) + result * (1.0 - sa);
         color = result.a > 0.0 ? vec4(result.rgb / result.a, result.a) : vec4(0.0);
     }
 

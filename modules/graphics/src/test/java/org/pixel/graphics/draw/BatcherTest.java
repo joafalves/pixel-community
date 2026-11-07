@@ -31,6 +31,18 @@ class BatcherTest {
                 styleId, clipId, 0);
     }
 
+    /** A style record with only a stroke (color as r, g, b), width and offset set. */
+    private static float[] stroke(float r, float g, float b, float width, float offset) {
+        float[] record = new float[StyleTable.FLOATS];
+        record[StyleTable.STROKE_COLOR] = r;
+        record[StyleTable.STROKE_COLOR + 1] = g;
+        record[StyleTable.STROKE_COLOR + 2] = b;
+        record[StyleTable.STROKE_COLOR + 3] = 1f;
+        record[StyleTable.STROKE_WIDTH] = width;
+        record[StyleTable.STROKE_OFFSET] = offset;
+        return record;
+    }
+
     private static RenderData build(DrawList list) {
         RenderData data = new RenderData(CAPS.maxTextureSlots());
         list.prepare();
@@ -127,9 +139,9 @@ class BatcherTest {
     @Test
     void stylesAndClipsAreRemappedPerBatchAndAligned() {
         DrawList list = new DrawList(LayerMode.ORDERED);
-        int s1 = list.styles().intern(0xFF00FF00, 2f, 0f);
-        int s2 = list.styles().intern(0xFF0000FF, 3f, -1.5f);
-        int s3 = list.styles().intern(0xFFFF0000, 4f, 2f);
+        int s1 = list.styles().intern(stroke(0, 1, 0, 2f, 0f));
+        int s2 = list.styles().intern(stroke(1, 0, 0, 3f, -1.5f));
+        int s3 = list.styles().intern(stroke(0, 0, 1, 4f, 2f));
         int c1 = list.clips().add(0, 0, 10, 10);
         shape(list, s1, c1);
         shape(list, s2, c1);
@@ -156,11 +168,11 @@ class BatcherTest {
         assertEquals(1, v.getShort(8 * stride + 48) & 0xFFFF);  // quad 2: style 1 again
         assertEquals(1, v.getShort(12 * stride + 48) & 0xFFFF); // quad 3: style 1 of batch 2
 
-        int o = batches.styleOffset(0) + BatchList.STYLE_FLOATS; // style 2 of batch 0 (packed 0xFF0000FF = red)
-        assertEquals(1f, batches.styleData()[o]);
-        assertEquals(0f, batches.styleData()[o + 1]);
-        assertEquals(3f, batches.styleData()[o + 4]);
-        assertEquals(-1.5f, batches.styleData()[o + 5]);
+        int o = batches.styleOffset(0) + BatchList.STYLE_FLOATS; // style 2 of batch 0 (red, width 3, offset -1.5)
+        assertEquals(1f, batches.styleData()[o + StyleTable.STROKE_COLOR]);
+        assertEquals(0f, batches.styleData()[o + StyleTable.STROKE_COLOR + 1]);
+        assertEquals(3f, batches.styleData()[o + StyleTable.STROKE_WIDTH]);
+        assertEquals(-1.5f, batches.styleData()[o + StyleTable.STROKE_OFFSET]);
         int c = batches.clipOffset(1);
         assertArrayEquals(new float[]{0, 0, 10, 10}, java.util.Arrays.copyOfRange(batches.clipData(), c, c + 4));
     }
@@ -168,9 +180,9 @@ class BatcherTest {
     @Test
     void aFullStyleTableStartsANewBatch() {
         DrawList list = new DrawList(LayerMode.ORDERED);
-        int s1 = list.styles().intern(1, 1f, 0f);
-        int s2 = list.styles().intern(2, 1f, 0f);
-        int s3 = list.styles().intern(3, 1f, 0f);
+        int s1 = list.styles().intern(stroke(1, 0, 0, 1f, 0f));
+        int s2 = list.styles().intern(stroke(0, 1, 0, 1f, 0f));
+        int s3 = list.styles().intern(stroke(0, 0, 1, 1f, 0f));
         shape(list, s1, 0);
         shape(list, s2, 0);
         shape(list, s3, 0);

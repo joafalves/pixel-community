@@ -7,6 +7,7 @@ import org.pixel.content.Texture;
 import org.pixel.graphics.draw.Colors;
 import org.pixel.graphics.draw.DrawList;
 import org.pixel.graphics.draw.ShapeType;
+import org.pixel.graphics.draw.StyleTable;
 import org.pixel.math.Rectangle;
 
 import java.util.Arrays;
@@ -42,6 +43,7 @@ public final class Canvas {
     private final Ellipse ellipse = new Ellipse();
     private final Line line = new Line();
     private final Image image = new Image();
+    private final NinePatch ninePatch = new NinePatch();
     private Command pending;
     private boolean warnedRotatedClip;
 
@@ -267,6 +269,20 @@ public final class Canvas {
         return image;
     }
 
+    /**
+     * Start a nine-patch image: the texture is split by {@link NinePatch#insets} into 3x3 parts; corners keep their
+     * size, edges stretch along one axis and the center stretches both ways (panels, buttons, frames).
+     */
+    public NinePatch ninePatch(Texture texture, float x, float y, float width, float height) {
+        if (texture == null) {
+            throw new IllegalArgumentException("Texture cannot be null.");
+        }
+        flush();
+        ninePatch.reset(texture, x, y, width, height);
+        pending = ninePatch;
+        return ninePatch;
+    }
+
     // endregion
 
     private float aaMargin() {
@@ -296,7 +312,10 @@ public final class Canvas {
     }
 
     /**
-     * Fill/stroke/depth settings shared by all shapes.
+     * Paint, stroke, shadow and depth settings shared by all shapes.
+     * <p>
+     * Coordinates of gradients are in the same space as the shape's own coordinates (before the canvas transform);
+     * shadow offsets and blur are in that space too.
      *
      * @param <T> The concrete builder (for fluent chaining).
      */
@@ -307,12 +326,27 @@ public final class Canvas {
         float strokeWidth;
         StrokeAlign strokeAlign;
         float depthValue;
+        // gradient
+        float paintType;
+        float gx0, gy0, gx1, gy1, gRadius;
+        int gradientEndRgba;
+        // shadow
+        boolean hasShadow;
+        int shadowRgba;
+        float shadowX, shadowY, shadowBlur, shadowSpread;
+        // dash (exposed by the shapes that support it)
+        float dashLength, dashGap, dashPhase;
 
         void resetStyle() {
             fillRgba = Colors.pack(1f, 1f, 1f, 1f);
             hasStroke = false;
             strokeAlign = StrokeAlign.CENTER;
             depthValue = 0f;
+            paintType = StyleTable.PAINT_SOLID;
+            hasShadow = false;
+            dashLength = 0f;
+            dashGap = 0f;
+            dashPhase = 0f;
         }
 
         @SuppressWarnings("unchecked")
@@ -321,18 +355,47 @@ public final class Canvas {
         }
 
         /**
-         * Fill color ({@code null} = no fill).
+         * Solid fill color ({@code null} = no fill).
          */
         public T fill(Color color) {
             fillRgba = color != null ? Colors.pack(color) : 0;
+            paintType = StyleTable.PAINT_SOLID;
             return self();
         }
 
         /**
-         * No fill (stroke only).
+         * No fill (stroke and/or shadow only).
          */
         public T noFill() {
             fillRgba = 0;
+            paintType = StyleTable.PAINT_SOLID;
+            return self();
+        }
+
+        /**
+         * Linear gradient fill from (x0, y0) to (x1, y1); colors are clamped beyond the end points.
+         */
+        public T fillLinear(float x0, float y0, Color start, float x1, float y1, Color end) {
+            fillRgba = Colors.pack(start != null ? start : Color.WHITE);
+            gradientEndRgba = Colors.pack(end != null ? end : Color.WHITE);
+            gx0 = x0;
+            gy0 = y0;
+            gx1 = x1;
+            gy1 = y1;
+            paintType = StyleTable.PAINT_LINEAR;
+            return self();
+        }
+
+        /**
+         * Radial gradient fill: {@code center} color at (cx, cy), {@code edge} color at {@code radius} and beyond.
+         */
+        public T fillRadial(float cx, float cy, float radius, Color center, Color edge) {
+            fillRgba = Colors.pack(center != null ? center : Color.WHITE);
+            gradientEndRgba = Colors.pack(edge != null ? edge : Color.WHITE);
+            gx0 = cx;
+            gy0 = cy;
+            gRadius = Math.max(radius, 1e-4f);
+            paintType = StyleTable.PAINT_RADIAL;
             return self();
         }
 
@@ -360,6 +423,39 @@ public final class Canvas {
         }
 
         /**
+         * Soft drop shadow drawn below the shape (like CSS {@code box-shadow}).
+         *
+         * @param offsetX Horizontal offset.
+         * @param offsetY Vertical offset.
+         * @param blur    Blur radius (0 = hard shadow); the Gaussian sigma is half of it.
+         * @param color   Shadow color ({@code null} = no shadow).
+         */
+        public T shadow(float offsetX, float offsetY, float blur, Color color) {
+            return shadow(offsetX, offsetY, blur, 0f, color);
+        }
+
+        /**
+         * Soft drop shadow drawn below the shape (like CSS {@code box-shadow}).
+         *
+         * @param offsetX Horizontal offset.
+         * @param offsetY Vertical offset.
+         * @param blur    Blur radius (0 = hard shadow); the Gaussian sigma is half of it.
+         * @param spread  Grows (positive) or shrinks (negative) the shadow shape.
+         * @param color   Shadow color ({@code null} = no shadow).
+         */
+        public T shadow(float offsetX, float offsetY, float blur, float spread, Color color) {
+            hasShadow = color != null;
+            if (hasShadow) {
+                shadowRgba = Colors.pack(color);
+                shadowX = offsetX;
+                shadowY = offsetY;
+                shadowBlur = Math.max(0f, blur);
+                shadowSpread = spread;
+            }
+            return self();
+        }
+
+        /**
          * Depth (only meaningful in a sorted layer).
          */
         public T depth(float depth) {
@@ -367,13 +463,85 @@ public final class Canvas {
             return self();
         }
 
-        int styleId() {
-            return hasStroke ? list.styles().intern(strokeRgba, strokeWidth, strokeAlign.offset(strokeWidth)) : 0;
+        boolean isVisible() {
+            return (fillRgba >>> 24) != 0 || (paintType != StyleTable.PAINT_SOLID && (gradientEndRgba >>> 24) != 0)
+                    || hasStroke || hasShadow;
         }
 
+        /**
+         * Quad margin around the shape: the larger of the outside stroke and the shadow's reach.
+         */
         float outsideExtent() {
-            return hasStroke ? strokeAlign.outsideExtent(strokeWidth) : 0f;
+            float extent = hasStroke ? strokeAlign.outsideExtent(strokeWidth) : 0f;
+            if (hasShadow) {
+                float reach = Math.max(Math.abs(shadowX), Math.abs(shadowY)) + Math.max(0f, shadowSpread)
+                        + 1.5f * shadowBlur; // ~3 sigma
+                extent = Math.max(extent, reach);
+            }
+            return extent;
         }
+
+        /**
+         * Build and intern the style record. Gradient points and the shadow offset are converted into the shape's
+         * local frame: origin (cx, cy), x axis (ux, uy).
+         *
+         * @return The style id, or 0 for a plain fill.
+         */
+        int styleId(float cx, float cy, float ux, float uy) {
+            boolean dashed = dashLength > 0f;
+            if (!hasStroke && !hasShadow && !dashed && paintType == StyleTable.PAINT_SOLID) {
+                return 0;
+            }
+            float[] r = styleRecord;
+            java.util.Arrays.fill(r, 0f);
+            if (hasStroke) {
+                unpack(strokeRgba, r, StyleTable.STROKE_COLOR);
+                r[StyleTable.STROKE_WIDTH] = strokeWidth;
+                r[StyleTable.STROKE_OFFSET] = strokeAlign.offset(strokeWidth);
+            }
+            if (dashed) {
+                r[StyleTable.DASH_LENGTH] = dashLength;
+                r[StyleTable.DASH_GAP] = dashGap;
+                r[StyleTable.DASH_PHASE] = dashPhase;
+            }
+            r[StyleTable.PAINT_TYPE] = paintType;
+            if (paintType != StyleTable.PAINT_SOLID) {
+                r[StyleTable.GRADIENT_GEOMETRY] = localX(gx0 - cx, gy0 - cy, ux, uy);
+                r[StyleTable.GRADIENT_GEOMETRY + 1] = localY(gx0 - cx, gy0 - cy, ux, uy);
+                if (paintType == StyleTable.PAINT_LINEAR) {
+                    r[StyleTable.GRADIENT_GEOMETRY + 2] = localX(gx1 - cx, gy1 - cy, ux, uy);
+                    r[StyleTable.GRADIENT_GEOMETRY + 3] = localY(gx1 - cx, gy1 - cy, ux, uy);
+                } else {
+                    r[StyleTable.GRADIENT_GEOMETRY + 2] = gRadius;
+                }
+                unpack(gradientEndRgba, r, StyleTable.GRADIENT_END_COLOR);
+            }
+            if (hasShadow) {
+                unpack(shadowRgba, r, StyleTable.SHADOW_COLOR);
+                r[StyleTable.SHADOW_OFFSET_X] = localX(shadowX, shadowY, ux, uy);
+                r[StyleTable.SHADOW_OFFSET_Y] = localY(shadowX, shadowY, ux, uy);
+                r[StyleTable.SHADOW_BLUR] = shadowBlur;
+                r[StyleTable.SHADOW_SPREAD] = shadowSpread;
+            }
+            return list.styles().intern(r);
+        }
+    }
+
+    private final float[] styleRecord = new float[StyleTable.FLOATS];
+
+    private static float localX(float dx, float dy, float ux, float uy) {
+        return dx * ux + dy * uy;
+    }
+
+    private static float localY(float dx, float dy, float ux, float uy) {
+        return -dx * uy + dy * ux;
+    }
+
+    private static void unpack(int rgba, float[] dest, int offset) {
+        dest[offset] = (rgba & 0xFF) / 255f;
+        dest[offset + 1] = ((rgba >>> 8) & 0xFF) / 255f;
+        dest[offset + 2] = ((rgba >>> 16) & 0xFF) / 255f;
+        dest[offset + 3] = ((rgba >>> 24) & 0xFF) / 255f;
     }
 
     /**
@@ -412,13 +580,14 @@ public final class Canvas {
 
         @Override
         void commit() {
-            if (width == 0f || height == 0f || (fillRgba >>> 24 == 0 && !hasStroke)) {
+            if (width == 0f || height == 0f || !isVisible()) {
                 return;
             }
             float pad = outsideExtent() + aaMargin();
             float hw = width * 0.5f, hh = height * 0.5f;
-            addShapeQuad(ShapeType.RECT, x + hw, y + hh, 1f, 0f, hw + pad, hh + pad, hw, hh,
-                    rTopLeft, rTopRight, rBottomRight, rBottomLeft, fillRgba, styleId(), depthValue);
+            float cx = x + hw, cy = y + hh;
+            addShapeQuad(ShapeType.RECT, cx, cy, 1f, 0f, hw + pad, hh + pad, hw, hh,
+                    rTopLeft, rTopRight, rBottomRight, rBottomLeft, fillRgba, styleId(cx, cy, 1f, 0f), depthValue);
         }
     }
 
@@ -436,14 +605,32 @@ public final class Canvas {
             this.ry = ry;
         }
 
+        /**
+         * Dash the stroke: {@code length} drawn, {@code gap} skipped, measured along the outline (exact for
+         * circles, approximated with the mean radius for ellipses). Requires a stroke.
+         */
+        public Ellipse dash(float length, float gap) {
+            dashLength = Math.max(0f, length);
+            dashGap = Math.max(0f, gap);
+            return this;
+        }
+
+        /**
+         * Shift the dash pattern along the outline (animate it for "marching ants").
+         */
+        public Ellipse dashPhase(float phase) {
+            dashPhase = phase;
+            return this;
+        }
+
         @Override
         void commit() {
-            if (rx == 0f || ry == 0f || (fillRgba >>> 24 == 0 && !hasStroke)) {
+            if (rx == 0f || ry == 0f || !isVisible()) {
                 return;
             }
             float pad = outsideExtent() + aaMargin();
             addShapeQuad(ShapeType.ELLIPSE, cx, cy, 1f, 0f, rx + pad, ry + pad, rx, ry, 0, 0, 0, 0,
-                    fillRgba, styleId(), depthValue);
+                    fillRgba, styleId(cx, cy, 1f, 0f), depthValue);
         }
     }
 
@@ -482,9 +669,26 @@ public final class Canvas {
             return this;
         }
 
+        /**
+         * Dashed line: {@code length} drawn, {@code gap} skipped, starting at the first point. Dash ends are flat.
+         */
+        public Line dash(float length, float gap) {
+            dashLength = Math.max(0f, length);
+            dashGap = Math.max(0f, gap);
+            return this;
+        }
+
+        /**
+         * Shift the dash pattern along the line (animate it for "marching ants").
+         */
+        public Line dashPhase(float phase) {
+            dashPhase = phase;
+            return this;
+        }
+
         @Override
         void commit() {
-            if (width == 0f || (fillRgba >>> 24 == 0 && !hasStroke)) {
+            if (width == 0f || !isVisible()) {
                 return;
             }
             float dx = x2 - x1, dy = y2 - y1;
@@ -495,9 +699,10 @@ public final class Canvas {
             float halfWidth = width * 0.5f;
             float capExtent = cap == LineCap.BUTT ? 0f : halfWidth;
             float pad = outsideExtent() + aaMargin();
-            addShapeQuad(ShapeType.SEGMENT, (x1 + x2) * 0.5f, (y1 + y2) * 0.5f, ux, uy,
+            float cx = (x1 + x2) * 0.5f, cy = (y1 + y2) * 0.5f;
+            addShapeQuad(ShapeType.SEGMENT, cx, cy, ux, uy,
                     halfLength + capExtent + pad, halfWidth + pad, halfLength, halfWidth, cap.code(), 0, 0, 0,
-                    fillRgba, styleId(), depthValue);
+                    fillRgba, styleId(cx, cy, ux, uy), depthValue);
         }
     }
 
@@ -597,6 +802,97 @@ public final class Canvas {
             list.addShape(ShapeType.TEXTURED, t,
                     m.mapX(left, top), m.mapY(left, top), m.mapX(right, top), m.mapY(right, top),
                     m.mapX(right, bottom), m.mapY(right, bottom), m.mapX(left, bottom), m.mapY(left, bottom),
+                    u0, v0, u1, v1, 0f, 0f, 0f, 0f, 0f, 0f, tintRgba, 0, clipId, depthValue);
+        }
+    }
+
+    /**
+     * Nine-patch builder (see {@link #ninePatch}).
+     */
+    public final class NinePatch extends Command {
+        private Texture texture;
+        private float x, y, width, height;
+        private float left, top, right, bottom;
+        private int tintRgba;
+        private float depthValue;
+        private final float[] xs = new float[4], ys = new float[4], us = new float[4], vs = new float[4];
+
+        void reset(Texture texture, float x, float y, float width, float height) {
+            this.texture = texture;
+            this.x = width < 0 ? x + width : x;
+            this.y = height < 0 ? y + height : y;
+            this.width = Math.abs(width);
+            this.height = Math.abs(height);
+            left = top = right = bottom = 0f;
+            tintRgba = Colors.pack(1f, 1f, 1f, 1f);
+            depthValue = 0f;
+        }
+
+        /**
+         * Size of the fixed borders, in texture pixels.
+         */
+        public NinePatch insets(float left, float top, float right, float bottom) {
+            this.left = Math.max(0f, left);
+            this.top = Math.max(0f, top);
+            this.right = Math.max(0f, right);
+            this.bottom = Math.max(0f, bottom);
+            return this;
+        }
+
+        /**
+         * Same border size on every side, in texture pixels.
+         */
+        public NinePatch insets(float all) {
+            return insets(all, all, all, all);
+        }
+
+        public NinePatch tint(Color color) {
+            tintRgba = Colors.pack(color != null ? color : Color.WHITE);
+            return this;
+        }
+
+        public NinePatch depth(float depth) {
+            depthValue = depth;
+            return this;
+        }
+
+        @Override
+        void commit() {
+            Texture t = texture;
+            texture = null;
+            if (width == 0f || height == 0f || (tintRgba >>> 24) == 0) {
+                return;
+            }
+            float tw = t.getWidth(), th = t.getHeight();
+            // corners shrink proportionally when the destination is smaller than the borders
+            float sx = left + right > width ? width / (left + right) : 1f;
+            float sy = top + bottom > height ? height / (top + bottom) : 1f;
+            set4(xs, x, x + left * sx, x + width - right * sx, x + width);
+            set4(ys, y, y + top * sy, y + height - bottom * sy, y + height);
+            set4(us, 0f, left / tw, 1f - right / tw, 1f);
+            set4(vs, 0f, top / th, 1f - bottom / th, 1f);
+            for (int row = 0; row < 3; row++) {
+                for (int col = 0; col < 3; col++) {
+                    patch(t, xs[col], ys[row], xs[col + 1], ys[row + 1], us[col], vs[row], us[col + 1], vs[row + 1]);
+                }
+            }
+        }
+
+        private void set4(float[] a, float v0, float v1, float v2, float v3) {
+            a[0] = v0;
+            a[1] = v1;
+            a[2] = v2;
+            a[3] = v3;
+        }
+
+        private void patch(Texture t, float l, float tp, float r, float b, float u0, float v0, float u1, float v1) {
+            if (r - l <= 0f || b - tp <= 0f) {
+                return; // empty part (zero inset)
+            }
+            Affine m = transform;
+            list.addShape(ShapeType.TEXTURED, t,
+                    m.mapX(l, tp), m.mapY(l, tp), m.mapX(r, tp), m.mapY(r, tp),
+                    m.mapX(r, b), m.mapY(r, b), m.mapX(l, b), m.mapY(l, b),
                     u0, v0, u1, v1, 0f, 0f, 0f, 0f, 0f, 0f, tintRgba, 0, clipId, depthValue);
         }
     }

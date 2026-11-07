@@ -49,7 +49,7 @@ public final class GLRenderBackend implements RenderBackend {
     public static final int MAX_QUADS_PER_BATCH = 16384;
     private static final int MAX_TEXTURE_SLOTS = 16;
     private static final int MAX_CLIPS = 256;   // 4 KB uniform block
-    private static final int MAX_STYLES = 256;  // 8 KB uniform block
+    private static final int MAX_STYLES = 128;  // 14 KB uniform block (7 vec4 per style; GLES 3.0 guarantees 16 KB)
 
     private final RenderStats stats;
     private final BackendCapabilities capabilities;

@@ -481,7 +481,22 @@ Each phase ends green (`./gradlew build`) and is reviewable on its own.
 - Demo: `urp/CanvasShapesDemo`. Its 53-shape frame (strokes, radii, lines, rotation, a clipped scrolling panel with
   images and nested clips) is **1 draw call**. Sprite parity and benchmark unchanged.
 
-*2b:* gradients (linear/radial), soft shadows (closed-form rounded-rect Gaussian), dashed strokes, nine-patch.
+*2b: paints and effects* ✅
+- Style record widened to 7 vec4 (`StyleTable`): stroke, dash, gradient geometry and end color, shadow color and
+  geometry, paint type. Styles are de-duplicated per frame (50 identically styled cards = 1 entry). A batch holds 128
+  styles (14 KB block, within GLES 3.0's 16 KB guarantee).
+- `fillLinear(...)` / `fillRadial(...)` on every shape. Gradient points are given in the shape's coordinate space and
+  converted to its local frame, so they follow transforms and line directions.
+- `shadow(offsetX, offsetY, blur[, spread], color)`: closed-form Gaussian for rounded rectangles (Evan Wallace's
+  method, 4 samples), a Gaussian across the edge distance for ellipses and lines, and a hard shadow when blur is 0.
+  With no offset it doubles as a glow. The shadow, fill and stroke of a shape are one quad.
+- `dash(length, gap)` / `dashPhase(phase)` on lines (the line body) and ellipses (the stroke; exact for circles,
+  mean-radius approximation for ellipses). Dash ends are flat. **Not yet:** dashed rectangle strokes, which need
+  an arc-length parameter along a rounded rectangle.
+- `ninePatch(texture, x, y, w, h).insets(...)`: 9 textured quads. Corners shrink proportionally when the target is
+  smaller than the borders.
+- Tests: local-frame gradient conversion, shadow reach and padding, dash records, style sharing, nine-patch
+  geometry, and still 0 bytes allocated per frame. Demo: `urp/CanvasPaintDemo`, all effects in 1 draw call.
 
 *2c:* paths: polygon fill (triangulation), stroke expansion with joins and caps.
 

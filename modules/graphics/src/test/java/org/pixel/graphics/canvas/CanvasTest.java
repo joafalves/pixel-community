@@ -6,6 +6,7 @@ import org.pixel.content.Texture;
 import org.pixel.graphics.draw.Colors;
 import org.pixel.graphics.draw.LayerMode;
 import org.pixel.graphics.draw.ShapeType;
+import org.pixel.graphics.draw.StyleTable;
 import org.pixel.graphics.testing.RecordingBackend;
 import org.pixel.graphics.testing.RecordingBackend.Batch;
 import org.pixel.graphics.testing.RecordingBackend.FullVertex;
@@ -80,8 +81,116 @@ class CanvasTest {
 
         Batch batch = pass.batches().get(0);
         assertEquals(2, batch.styles().size());
-        assertArrayEquals(new float[]{0, 1, 0, 1, 4, 2, 0, 0}, batch.styles().get(0), EPS);
-        assertArrayEquals(new float[]{0, 0, 1, 1, 2, -1, 0, 0}, batch.styles().get(1), EPS);
+        float[] green = batch.styles().get(0);
+        assertArrayEquals(new float[]{0, 1, 0, 1}, java.util.Arrays.copyOfRange(green, 0, 4), EPS);
+        assertEquals(4f, green[StyleTable.STROKE_WIDTH], EPS);
+        assertEquals(2f, green[StyleTable.STROKE_OFFSET], EPS);
+        float[] blue = batch.styles().get(1);
+        assertArrayEquals(new float[]{0, 0, 1, 1}, java.util.Arrays.copyOfRange(blue, 0, 4), EPS);
+        assertEquals(-1f, blue[StyleTable.STROKE_OFFSET], EPS);
+    }
+
+    @Test
+    void gradientsAreStoredInShapeLocalCoordinates() {
+        RecordingBackend.Pass pass = draw(c -> {
+            c.rect(100, 100, 200, 50).fillLinear(100, 100, Color.RED, 300, 100, Color.BLUE);
+            c.circle(50, 50, 10).fillRadial(55, 50, 20, Color.WHITE, Color.BLACK);
+            c.line(0, 0, 0, 10).width(2).fillLinear(0, 0, Color.RED, 0, 10, Color.BLUE); // vertical line
+        });
+        List<float[]> styles = pass.batches().get(0).styles();
+        float[] linear = styles.get(0);
+        assertEquals(StyleTable.PAINT_LINEAR, linear[StyleTable.PAINT_TYPE]);
+        // rect center (200, 125): (100, 100) -> (-100, -25), (300, 100) -> (100, -25)
+        assertArrayEquals(new float[]{-100, -25, 100, -25},
+                java.util.Arrays.copyOfRange(linear, StyleTable.GRADIENT_GEOMETRY, StyleTable.GRADIENT_GEOMETRY + 4), EPS);
+        assertArrayEquals(new float[]{0, 0, 1, 1},
+                java.util.Arrays.copyOfRange(linear, StyleTable.GRADIENT_END_COLOR, StyleTable.GRADIENT_END_COLOR + 4), EPS);
+        assertEquals(Colors.pack(Color.RED), pass.shapes().get(0).rgba()); // start color is the fill color
+
+        float[] radial = styles.get(1);
+        assertEquals(StyleTable.PAINT_RADIAL, radial[StyleTable.PAINT_TYPE]);
+        assertArrayEquals(new float[]{5, 0, 20},
+                java.util.Arrays.copyOfRange(radial, StyleTable.GRADIENT_GEOMETRY, StyleTable.GRADIENT_GEOMETRY + 3), EPS);
+
+        float[] alongLine = styles.get(2); // local x runs along the line (+y in user space)
+        assertArrayEquals(new float[]{-5, 0, 5, 0},
+                java.util.Arrays.copyOfRange(alongLine, StyleTable.GRADIENT_GEOMETRY, StyleTable.GRADIENT_GEOMETRY + 4), EPS);
+    }
+
+    @Test
+    void shadowsGrowTheQuadAndAreStoredInTheStyle() {
+        RecordingBackend.Pass pass = draw(c -> c.roundRect(0, 0, 100, 40, 8).fill(Color.WHITE)
+                .shadow(6, 10, 12, 2, Color.BLACK));
+        // reach = max(|6|, |10|) + spread 2 + 1.5 * blur 12 = 30
+        assertCorner(pass.shapes().get(0), -30 - AA, -30 - AA);
+        float[] style = pass.batches().get(0).styles().get(0);
+        assertEquals(1f, style[StyleTable.SHADOW_COLOR + 3], EPS);
+        assertEquals(6f, style[StyleTable.SHADOW_OFFSET_X], EPS);
+        assertEquals(10f, style[StyleTable.SHADOW_OFFSET_Y], EPS);
+        assertEquals(12f, style[StyleTable.SHADOW_BLUR], EPS);
+        assertEquals(2f, style[StyleTable.SHADOW_SPREAD], EPS);
+        assertEquals(0f, style[StyleTable.STROKE_COLOR + 3], EPS); // no stroke
+    }
+
+    @Test
+    void shadowOnlyShapesAreDrawnAndPlainFillsNeedNoStyle() {
+        RecordingBackend.Pass pass = draw(c -> {
+            c.rect(0, 0, 10, 10).noFill().shadow(0, 2, 4, Color.BLACK);
+            c.rect(0, 0, 10, 10).fill(Color.RED);
+        });
+        assertEquals(8, pass.shapes().size());
+        assertEquals(1, pass.shapes().get(0).style());
+        assertEquals(0, pass.shapes().get(4).style());
+    }
+
+    @Test
+    void dashesAreStoredForLinesAndEllipses() {
+        RecordingBackend.Pass pass = draw(c -> {
+            c.line(0, 0, 100, 0).width(3).dash(10, 5).dashPhase(2);
+            c.circle(0, 0, 20).noFill().stroke(2, Color.WHITE).dash(4, 4);
+        });
+        List<float[]> styles = pass.batches().get(0).styles();
+        assertEquals(10f, styles.get(0)[StyleTable.DASH_LENGTH], EPS);
+        assertEquals(5f, styles.get(0)[StyleTable.DASH_GAP], EPS);
+        assertEquals(2f, styles.get(0)[StyleTable.DASH_PHASE], EPS);
+        assertEquals(4f, styles.get(1)[StyleTable.DASH_LENGTH], EPS);
+    }
+
+    @Test
+    void identicalStylesAreShared() {
+        RecordingBackend.Pass pass = draw(c -> {
+            for (int i = 0; i < 50; i++) {
+                c.roundRect(i, 0, 10, 10, 2).fill(Color.WHITE).stroke(1, Color.BLACK).shadow(0, 2, 4, Color.BLACK);
+            }
+        });
+        assertEquals(1, pass.batches().get(0).styles().size());
+    }
+
+    @Test
+    void ninePatchSplitsIntoNineQuads() {
+        Texture texture = new TestTexture(30, 30);
+        List<FullVertex> v = draw(c -> c.ninePatch(texture, 0, 0, 100, 60).insets(10)).shapes();
+
+        assertEquals(36, v.size());
+        // top-left corner keeps its 10x10 texture pixels
+        assertCorner(v.get(0), 0, 0);
+        assertCorner(v.get(2), 10, 10);
+        assertEquals(1 / 3f, v.get(2).u(), EPS);
+        // center stretches from (10, 10) to (90, 50)
+        assertCorner(v.get(16), 10, 10);
+        assertCorner(v.get(18), 90, 50);
+        assertEquals(2 / 3f, v.get(18).u(), EPS);
+        // bottom-right corner
+        assertCorner(v.get(34), 100, 60);
+    }
+
+    @Test
+    void ninePatchCornersShrinkWhenTheTargetIsSmall() {
+        Texture texture = new TestTexture(30, 30);
+        List<FullVertex> v = draw(c -> c.ninePatch(texture, 0, 0, 10, 10).insets(10)).shapes();
+        // 10 px for two 10 px borders: corners scale to 5 px; the empty middle row/column is skipped
+        assertEquals(16, v.size());
+        assertCorner(v.get(2), 5, 5);
     }
 
     @Test
@@ -227,6 +336,9 @@ class CanvasTest {
                 c.circle(5, 5, 4).fill(Color.RED);
                 c.line(0, 0, 10, 10).width(2).cap(LineCap.ROUND);
                 c.image(texture, 0, 0).anchor(0.5f, 0.5f);
+                c.roundRect(0, 0, 30, 12, 4).fillLinear(0, 0, fill, 30, 0, Color.WHITE).shadow(0, 3, 6, Color.BLACK);
+                c.circle(0, 0, 9).noFill().stroke(2, Color.WHITE).dash(3, 2).dashPhase(i);
+                c.ninePatch(texture, 0, 0, 40, 20).insets(4);
                 c.restore();
             }
             batch.end();
@@ -243,6 +355,6 @@ class CanvasTest {
         }
         long allocated = threads.getThreadAllocatedBytes(thread) - before;
 
-        assertEquals(0, allocated, "bytes allocated by 20 frames of 8000 canvas commands");
+        assertEquals(0, allocated, "bytes allocated by 20 frames of 14000 canvas commands");
     }
 }

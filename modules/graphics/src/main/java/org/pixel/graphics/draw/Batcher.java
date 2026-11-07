@@ -131,11 +131,9 @@ public final class Batcher {
             return 0;
         }
         if (styleStamp[id] != batchSerial) {
-            StyleTable styles = list.styles();
-            int rgba = styles.rgba(id);
-            styleLocal[id] = batches.addStyle((rgba & 0xFF) / 255f, ((rgba >>> 8) & 0xFF) / 255f,
-                    ((rgba >>> 16) & 0xFF) / 255f, ((rgba >>> 24) & 0xFF) / 255f,
-                    styles.width(id), styles.offset(id));
+            int offset = batches.reserveStyle();
+            list.styles().copy(id, batches.styleData(), offset);
+            styleLocal[id] = batches.currentStyleCount();
             styleStamp[id] = batchSerial;
         }
         return styleLocal[id];

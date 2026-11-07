@@ -10,7 +10,7 @@ import java.util.Arrays;
  * <ul>
  *   <li>the textures it binds (slot i = texture unit i);</li>
  *   <li>for {@link VertexLayout#FULL} batches, its slice of the pass-wide <b>clip table</b> (1 vec4 per clip:
- *   x0, y0, x1, y1) and <b>style table</b> (2 vec4 per style). Each slice starts at an offset aligned to the
+ *   x0, y0, x1, y1) and <b>style table</b> (7 vec4 per style). Each slice starts at an offset aligned to the
  *   backend's uniform buffer alignment, so a backend can bind it directly as a uniform range.</li>
  * </ul>
  * Grows, never shrinks.
@@ -22,9 +22,9 @@ public final class BatchList {
      */
     public static final int CLIP_FLOATS = 4;
     /**
-     * Floats per style table entry (two vec4: stroke color, then stroke width / offset / reserved).
+     * Floats per style table entry (7 vec4, see {@code org.pixel.graphics.draw.StyleTable}).
      */
-    public static final int STYLE_FLOATS = 8;
+    public static final int STYLE_FLOATS = 28;
 
     private final int maxTextureSlots;
 
@@ -151,23 +151,17 @@ public final class BatchList {
     }
 
     /**
-     * Append a style to the current (last) batch's style table.
+     * Reserve a style entry in the current (last) batch's style table; the caller writes {@link #STYLE_FLOATS}
+     * floats into {@link #styleData()} at the returned offset.
      *
-     * @return The batch-local, 1-based style index.
+     * @return The float offset of the new entry in {@link #styleData()}.
      */
-    public int addStyle(float r, float g, float b, float a, float strokeWidth, float strokeOffset) {
+    public int reserveStyle() {
         ensureStyleData(styleDataSize + STYLE_FLOATS);
-        int i = styleDataSize;
-        styleData[i] = r;
-        styleData[i + 1] = g;
-        styleData[i + 2] = b;
-        styleData[i + 3] = a;
-        styleData[i + 4] = strokeWidth;
-        styleData[i + 5] = strokeOffset;
-        styleData[i + 6] = 0f;
-        styleData[i + 7] = 0f;
+        int offset = styleDataSize;
         styleDataSize += STYLE_FLOATS;
-        return ++styleCount[size - 1];
+        styleCount[size - 1]++;
+        return offset;
     }
 
     /**
