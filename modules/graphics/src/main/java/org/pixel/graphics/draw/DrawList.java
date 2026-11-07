@@ -124,7 +124,7 @@ public final class DrawList {
      * Record a shape or canvas quad ({@link VertexLayout#FULL}).
      *
      * @param type      The shape type.
-     * @param texture   The texture ({@link ShapeType#TEXTURED} only, otherwise {@code null}).
+     * @param texture   The texture (types where {@link ShapeType#isTextured()}, otherwise {@code null}).
      * @param x0        Top-left x (layer space, transform already applied).
      * @param y0        Top-left y.
      * @param x1        Top-right x.
@@ -152,7 +152,7 @@ public final class DrawList {
                          float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3,
                          float u0, float v0, float u1, float v1, float extentX, float extentY,
                          float p0, float p1, float p2, float p3, int rgba, int styleId, int clipId, float depth) {
-        if ((type == ShapeType.TEXTURED) != (texture != null)) {
+        if (type.isTextured() != (texture != null)) {
             throw new IllegalArgumentException("A texture is required for (and only for) textured shapes.");
         }
         int i = append(texture, x0, y0, x1, y1, x2, y2, x3, y3, u0, v0, u1, v1, rgba, depth);
@@ -204,7 +204,21 @@ public final class DrawList {
     public void addShapeCorners(ShapeType type, float[] positions, float[] uv, float[] local,
                                 float p0, float p1, float p2, float p3, int rgba, int styleId, int clipId,
                                 float depth) {
-        int i = append(null, positions[0], positions[1], positions[2], positions[3], positions[4], positions[5],
+        addShapeCorners(type, null, positions, uv, local, p0, p1, p2, p3, rgba, styleId, clipId, depth);
+    }
+
+    /**
+     * Record a {@link VertexLayout#FULL} quad with arbitrary per-corner data, sampling {@code texture} (glyphs).
+     *
+     * @see #addShapeCorners(ShapeType, float[], float[], float[], float, float, float, float, int, int, int, float)
+     */
+    public void addShapeCorners(ShapeType type, Texture texture, float[] positions, float[] uv, float[] local,
+                                float p0, float p1, float p2, float p3, int rgba, int styleId, int clipId,
+                                float depth) {
+        if (type.isTextured() != (texture != null)) {
+            throw new IllegalArgumentException("A texture is required for (and only for) textured shapes.");
+        }
+        int i = append(texture, positions[0], positions[1], positions[2], positions[3], positions[4], positions[5],
                 positions[6], positions[7], 0f, 0f, 0f, 0f, rgba, depth);
         layouts[i] = VertexLayout.FULL;
         shapeTypes[i] = (byte) type.code();

@@ -10,7 +10,12 @@ import org.pixel.graphics.draw.StyleTable;
 import org.pixel.graphics.testing.RecordingBackend;
 import org.pixel.graphics.testing.RecordingBackend.Batch;
 import org.pixel.graphics.testing.RecordingBackend.FullVertex;
+import org.pixel.graphics.testing.TestFonts;
 import org.pixel.graphics.testing.TestTexture;
+import org.pixel.graphics.text.SdfFont;
+import org.pixel.graphics.text.TextAlign;
+import org.pixel.graphics.text.TextBaseline;
+import org.pixel.graphics.text.TextLayout;
 import org.pixel.math.Matrix4;
 
 import java.lang.management.ManagementFactory;
@@ -410,6 +415,7 @@ class CanvasTest {
         RecordingBackend counting = new RecordingBackend(16, 16384, false);
         CanvasBatch batch = new CanvasBatch(counting);
         Texture texture = new TestTexture(32, 32);
+        SdfFont font = TestFonts.mono();
         Matrix4 view = new Matrix4();
         Color fill = new Color(0.2f, 0.4f, 0.8f, 1f);
 
@@ -429,6 +435,10 @@ class CanvasTest {
                 c.roundRect(0, 0, 30, 12, 4).fillLinear(0, 0, fill, 30, 0, Color.WHITE).shadow(0, 3, 6, Color.BLACK);
                 c.circle(0, 0, 9).noFill().stroke(2, Color.WHITE).dash(3, 2).dashPhase(i);
                 c.ninePatch(texture, 0, 0, 40, 20).insets(4);
+                if (i % 10 == 0) {
+                    c.text(font, "Score 1234", 0, 0).size(24).fill(fill).stroke(2, Color.BLACK)
+                            .shadow(1, 2, 2, Color.BLACK).maxWidth(80);
+                }
                 if (i % 20 == 0) {
                     c.path().moveTo(0, 0).lineTo(20, 0).quadTo(30, 10, 20, 20).cubicTo(10, 30, 0, 30, 0, 20).close()
                             .fill(fill).stroke(2, Color.WHITE).join(LineJoin.ROUND);
@@ -451,4 +461,129 @@ class CanvasTest {
 
         assertEquals(0, allocated, "bytes allocated by 20 frames of 14000 canvas commands");
     }
+
+    // region text
+
+    private final SdfFont font = TestFonts.mono(); // 0.5 em advance, quad (0.05, -0.7)-(0.45, 0.1), 8 px range at 32
+
+    @Test
+    void textEmitsOneGlyphQuadPerVisibleCharacter() {
+        RecordingBackend.Pass pass = draw(c -> c.text(font, "ab c", 100, 50).size(20).fill(Color.RED));
+
+        List<FullVertex> v = pass.shapes();
+        assertEquals(12, v.size()); // 3 visible glyphs (the space has no quad)
+        assertEquals(1, pass.batches().size());
+        assertSame(font.getAtlas(), pass.batches().get(0).textures().get(0));
+        // "a": pen at (100, 50 + ascender 16), quad from (pen + 1, baseline - 14) to (pen + 9, baseline + 2)
+        assertCorner(v.get(0), 101, 52);
+        assertCorner(v.get(2), 109, 68);
+        assertCorner(v.get(8), 131, 52); // "c" after 3 advances of 10 ("a", "b", space)
+        int a = font.glyph('a');
+        for (int k = 0; k < 4; k++) {
+            FullVertex vertex = v.get(k);
+            assertEquals(ShapeType.GLYPH.code(), vertex.type());
+            assertEquals(vertex.x(), vertex.localX(), EPS); // text coordinates (no transform)
+            assertEquals(5f, vertex.p0(), EPS);  // distance range at 20 px: 8 * 20 / 32
+            assertEquals(0f, vertex.p1(), EPS);  // weight
+            assertEquals(0f, vertex.p2(), EPS);  // fill layer
+            assertEquals(1f, vertex.p3(), EPS);  // true distance
+            assertEquals(0, vertex.style());
+            assertEquals(Colors.pack(Color.RED), vertex.rgba());
+        }
+        assertEquals(font.u0(a), v.get(0).u(), EPS);
+        assertEquals(font.v0(a), v.get(0).v(), EPS);
+        assertEquals(font.u1(a), v.get(2).u(), EPS);
+        assertEquals(font.v1(a), v.get(2).v(), EPS);
+    }
+
+    @Test
+    void textLayersAreShadowsThenOutlinesThenFills() {
+        RecordingBackend.Pass pass = draw(c -> c.text(font, "ab", 0, 0).size(32).fill(Color.WHITE)
+                .stroke(2, Color.BLACK).shadow(3, 4, 1, Color.BLUE));
+
+        List<FullVertex> v = pass.shapes();
+        assertEquals(24, v.size());
+        float[] layers = {2, 2, 1, 1, 0, 0};
+        for (int q = 0; q < 6; q++) {
+            assertEquals(layers[q], v.get(q * 4).p2(), EPS, "layer of quad " + q);
+            assertEquals(1, v.get(q * 4).style());
+        }
+        assertEquals(v.get(16).x() + 3, v.get(0).x(), EPS); // shadow quads are offset
+        assertEquals(v.get(16).y() + 4, v.get(0).y(), EPS);
+        assertEquals(v.get(16).x(), v.get(8).x(), EPS);
+
+        float[] style = pass.batches().get(0).styles().get(0);
+        assertEquals(2f, style[StyleTable.STROKE_WIDTH], EPS);
+        assertEquals(1f, style[StyleTable.STROKE_OFFSET], EPS); // text outlines sit outside by default
+        assertEquals(1f, style[StyleTable.SHADOW_BLUR], EPS); // fits: 2 outline + 1.5 blur reach < 4
+    }
+
+    @Test
+    void outlinedTextWithoutFillStillHasAFillLayer() {
+        // the fill layer owns the pixels on and inside the glyph edge (stroke composited there), even without fill
+        List<FullVertex> v = draw(c -> c.text(font, "a", 0, 0).noFill().stroke(1, Color.WHITE)).shapes();
+        assertEquals(8, v.size());
+        assertEquals(1f, v.get(0).p2(), EPS);
+        assertEquals(0f, v.get(4).p2(), EPS);
+        assertEquals(0, v.get(4).rgba() >>> 24);
+        List<FullVertex> invisible = draw(c -> {
+            c.text(font, "a", 0, 0).noFill(); // nothing to draw
+            c.rect(0, 0, 1, 1);
+        }).shapes();
+        assertEquals(4, invisible.size());
+        assertEquals(ShapeType.RECT.code(), invisible.get(0).type());
+    }
+
+    @Test
+    void textEffectsAreClampedToTheDistanceRange() {
+        // at 32 px the range is 8: distances reach (8 - 1) / 2 = 3.5 beyond the edge (half an atlas pixel kept for
+        // pre-baked atlases); weight and outlines get 90% of it
+        RecordingBackend.Pass pass = draw(c -> c.text(font, "a", 0, 0).size(32).stroke(30, Color.BLACK)
+                .weight(10).shadow(0, 0, 40, Color.BLACK));
+
+        FullVertex fill = pass.shapes().get(8);
+        assertEquals(3.15f, fill.p1(), EPS); // weight clamped
+        float[] style = pass.batches().get(0).styles().get(0);
+        assertEquals(0f, style[StyleTable.STROKE_WIDTH], EPS); // no room left for an outline
+        assertEquals(0.35f / 1.5f, style[StyleTable.SHADOW_BLUR], EPS); // 3.5 - 3.15 left for ~3 sigma
+
+        pass = draw(c -> c.text(font, "a", 0, 0).size(32).stroke(30, Color.BLACK).strokeAlign(StrokeAlign.CENTER));
+        style = pass.batches().get(0).styles().get(0);
+        assertEquals(6.3f, style[StyleTable.STROKE_WIDTH], EPS); // centered: half of it outside
+        assertEquals(0f, style[StyleTable.STROKE_OFFSET], EPS);
+    }
+
+    @Test
+    void alignmentAndBaselineMoveTheAnchor() {
+        // "abcd" at 10 px: 20 wide, 10 tall (ascender 8 + descender 2)
+        float left = draw(c -> c.text(font, "abcd", 100, 0).size(10).align(TextAlign.CENTER)).shapes().get(0).x();
+        assertEquals(90f + 0.5f, left, EPS);
+        left = draw(c -> c.text(font, "abcd", 100, 0).size(10).align(TextAlign.RIGHT)).shapes().get(0).x();
+        assertEquals(80f + 0.5f, left, EPS);
+
+        float top = draw(c -> c.text(font, "a", 0, 50).size(10).baseline(TextBaseline.BASELINE)).shapes().get(0).y();
+        assertEquals(50f - 7f, top, EPS); // baseline at y; glyph top 0.7 em above it
+        top = draw(c -> c.text(font, "a", 0, 50).size(10).baseline(TextBaseline.BOTTOM)).shapes().get(0).y();
+        assertEquals(40f + 1f, top, EPS);
+        top = draw(c -> c.text(font, "a", 0, 50).size(10).baseline(TextBaseline.MIDDLE)).shapes().get(0).y();
+        assertEquals(45f + 1f, top, EPS);
+    }
+
+    @Test
+    void preparedLayoutsAndTransforms() {
+        TextLayout layout = new TextLayout().align(TextAlign.RIGHT).layout(font, "ab\nabcd", 10);
+        List<FullVertex> v = draw(c -> {
+            c.translate(5, 7);
+            c.scale(2);
+            c.text(layout, 100, 0).fill(Color.WHITE);
+        }).shapes();
+
+        assertEquals(24, v.size());
+        // right aligned: x is the right edge of the 20 wide box; "ab" starts 10 in; scaled by 2, translated
+        assertEquals(5 + 2 * (80 + 10 + 0.5f), v.get(0).x(), EPS);
+        assertEquals(80 + 10 + 0.5f, v.get(0).localX(), EPS); // local stays in text coordinates
+        assertEquals(2.5f, v.get(0).p0(), EPS); // range in text units (8 * 10 / 32), whatever the transform
+    }
+
+    // endregion
 }

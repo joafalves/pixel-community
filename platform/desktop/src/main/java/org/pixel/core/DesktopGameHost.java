@@ -12,6 +12,7 @@ import org.pixel.content.DesktopResourceLoader;
 import org.pixel.content.importer.ALVorbisAudioImporter;
 import org.pixel.content.importer.ByteBufferImporter;
 import org.pixel.content.importer.GLFontImporter;
+import org.pixel.content.importer.GLSdfFontImporter;
 import org.pixel.content.importer.GLTextureImporter;
 import org.pixel.content.importer.TextImporter;
 import org.pixel.content.importer.TexturePackImporter;
@@ -100,6 +101,7 @@ public final class DesktopGameHost extends WindowGameContainer<DesktopWindowMana
                 // desktop specific importers
                 new GLTextureImporter(),
                 new GLFontImporter(),
+                new GLSdfFontImporter(),
                 new ALVorbisAudioImporter(),
                 // common importers
                 new TextImporter(),

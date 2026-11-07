@@ -27,11 +27,20 @@ final class GLShapeProgram extends GLShader {
                         .replace("/*$numTextures*/", String.valueOf(textureSlots))
                         .replace("/*$maxClips*/", String.valueOf(maxClips))
                         .replace("/*$maxStyleVec4*/", String.valueOf(maxStyles * BatchList.STYLE_FLOATS / 4))
-                        .replace("/*$textureSwitchCase*/", GLSpriteProgram.textureSwitch(textureSlots)),
+                        .replace("/*$sampleSwitchCase*/", sampleSwitch(textureSlots)),
                 List.of(), List.of(GLSpriteProgram.U_MATRIX, GLSpriteProgram.U_TEXTURES));
         init();
         bindBlock("ClipBlock", CLIP_BINDING);
         bindBlock("StyleBlock", STYLE_BINDING);
+    }
+
+    /** {@code case i: return texture(uTextures[i], uv);} per slot (sampler arrays need constant indices). */
+    private static String sampleSwitch(int slots) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < slots; i++) {
+            sb.append("        case ").append(i).append(": return texture(uTextures[").append(i).append("], uv);\n");
+        }
+        return sb.toString();
     }
 
     private void bindBlock(String name, int binding) {

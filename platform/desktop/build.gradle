@@ -24,6 +24,8 @@ dependencies {
     api "org.lwjgl:lwjgl-openal:${rootProject.ext.dependencyMap["lwjgl"]}"
     api "org.lwjgl:lwjgl-stb:${rootProject.ext.dependencyMap["lwjgl"]}"
     api "org.lwjgl:lwjgl-nanovg:${rootProject.ext.dependencyMap["lwjgl"]}"
+    api "org.lwjgl:lwjgl-freetype:${rootProject.ext.dependencyMap["lwjgl"]}"
+    api "org.lwjgl:lwjgl-msdfgen:${rootProject.ext.dependencyMap["lwjgl"]}"
 
     project.ext.buildTargetList.forEach { classifier ->
         runtimeOnly "org.lwjgl:lwjgl:${rootProject.ext.dependencyMap["lwjgl"]}:$classifier"
@@ -32,6 +34,8 @@ dependencies {
         runtimeOnly "org.lwjgl:lwjgl-glfw:${rootProject.ext.dependencyMap["lwjgl"]}:$classifier"
         runtimeOnly "org.lwjgl:lwjgl-stb:${rootProject.ext.dependencyMap["lwjgl"]}:$classifier"
         runtimeOnly "org.lwjgl:lwjgl-nanovg:${rootProject.ext.dependencyMap["lwjgl"]}:$classifier"
+        runtimeOnly "org.lwjgl:lwjgl-freetype:${rootProject.ext.dependencyMap["lwjgl"]}:$classifier"
+        runtimeOnly "org.lwjgl:lwjgl-msdfgen:${rootProject.ext.dependencyMap["lwjgl"]}:$classifier"
     }
 }
 

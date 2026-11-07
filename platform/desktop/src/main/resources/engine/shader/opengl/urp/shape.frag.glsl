@@ -3,7 +3,7 @@
 // one pixel soft at any scale or rotation. Shape type codes match org.pixel.graphics.draw.ShapeType; the style
 // record layout matches org.pixel.graphics.draw.StyleTable.
 
-in vec2 vTexCoord;   // texture coordinates (TEXTURED) or shape dimensions (SDF shapes)
+in vec2 vTexCoord;   // texture coordinates (TEXTURED, GLYPH) or shape dimensions (SDF shapes)
 in vec4 vColor;      // fill color, gradient start color, or tint
 in vec2 vLocal;      // shape-local position
 in vec4 vParams;     // shape parameters
@@ -31,6 +31,14 @@ const int ELLIPSE = 2;
 const int SEGMENT = 3;
 const int PATH_FILL = 4;   // local x = coverage, uv = path coordinates
 const int PATH_STROKE = 5; // local y = distance across the line, uv.x = half width
+const int GLYPH = 6;       // MTSDF atlas glyph: params = (range, weight, layer, has true distance)
+
+vec4 sampleSlot(int slot, vec2 uv) {
+    switch (slot) {
+/*$sampleSwitchCase*/
+    }
+    return vec4(1.0);
+}
 
 // ---------------------------------------------------------------------------------------------------------------
 // distance functions
@@ -137,6 +145,32 @@ float shadowAlpha(vec2 p, float blur, float spread, float pixel) {
 }
 
 // ---------------------------------------------------------------------------------------------------------------
+// fill and stroke
+
+// Premultiplied fill plus stroke band. The interior inside the band, the band over the shape and the band outside
+// the shape are disjoint regions, so their coverages add up exactly where they meet: an outside stroke meets the
+// fill without a seam (plain "stroke over fill" leaves that edge pixel partly transparent) and nothing blends twice.
+//   cf     fill coverage (shape edge at d = 0)
+//   d      signed distance to the shape edge; dOuter: the distance used for the band's outer edge
+//   inner  band start relative to the edge (<= 0); outer: band end (>= 0)
+//   mask   dash mask of the stroke (1 = solid)
+vec4 fillAndStroke(vec4 fill, vec4 stroke, float cf, float d, float dOuter, float inner, float outer, float mask,
+                   float pixel) {
+    vec4 f = vec4(fill.rgb * fill.a, fill.a);
+    if (stroke.a <= 0.0) {
+        return f * cf;
+    }
+    vec4 s = vec4(stroke.rgb * stroke.a, stroke.a) * mask;
+    float ci = min(coverage(d - inner, pixel), cf);      // inside the band's inner edge
+    float co = max(coverage(dOuter - outer, pixel), cf); // inside the band's outer edge
+    return f * ci + (s + f * (1.0 - s.a)) * (cf - ci) + s * (co - cf);
+}
+
+vec4 unpremultiply(vec4 c) {
+    return c.a > 0.0 ? vec4(c.rgb / c.a, c.a) : vec4(0.0);
+}
+
+// ---------------------------------------------------------------------------------------------------------------
 // dashes
 
 // 1 inside a dash, 0 in a gap, anti-aliased over one pixel; s is the arc length along the outline
@@ -145,6 +179,69 @@ float dashMask(float s, float dashLength, float gap, float pixel) {
     float x = mod(s, period);
     float d = x <= dashLength ? min(x, dashLength - x) : -min(x - dashLength, period - x);
     return clamp(d / pixel + 0.5, 0.0, 1.0);
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// distance-field text (msdfgen MTSDF atlases)
+
+float median(vec3 v) {
+    return max(min(v.r, v.g), min(max(v.r, v.g), v.b));
+}
+
+// One layer of a glyph. Text draws all shadows, then all strokes, then all fills, so a glyph's outline or shadow
+// never covers a neighbouring glyph. Distances are in text units (negative inside), like the other shapes.
+vec4 glyphColor() {
+    vec4 field = sampleSlot(vSlot, vTexCoord);
+    float range = vParams.x;
+    float weight = vParams.y;
+    int layer = int(vParams.z + 0.5);
+    // text units per screen pixel (rotation invariant); at least one pixel's worth of range, as msdfgen advises
+    vec2 dx = dFdx(vLocal), dy = dFdy(vLocal);
+    float pixel = clamp(sqrt(0.5 * (dot(dx, dx) + dot(dy, dy))), 1e-5, range);
+    float dEdge = (0.5 - median(field.rgb)) * range - weight; // MSDF: sharp corners, exact near the edge
+    float dTrue = vParams.w > 0.5 ? (0.5 - field.a) * range - weight : dEdge; // true SDF: valid farther out
+
+    vec4 fill = vColor;
+    vec4 strokeColor = vec4(0.0);
+    float strokeInner = 0.0, strokeOuter = 0.0;
+    if (vStyle > 0) {
+        int base = (vStyle - 1) * 7;
+        vec4 stroke = uStyles[base + 1];
+        vec4 flags = uStyles[base + 6];
+        if (flags.x > 0.5) {
+            vec4 gradient = uStyles[base + 2];
+            float t;
+            if (flags.x < 1.5) {
+                vec2 axis = gradient.zw - gradient.xy;
+                t = dot(vLocal - gradient.xy, axis) / max(dot(axis, axis), 1e-6);
+            } else {
+                t = length(vLocal - gradient.xy) / gradient.z;
+            }
+            fill = mix(vColor, uStyles[base + 3], clamp(t, 0.0, 1.0));
+        }
+        strokeColor = uStyles[base];
+        strokeInner = stroke.y - 0.5 * stroke.x;
+        strokeOuter = stroke.y + 0.5 * stroke.x;
+
+        if (layer == 2) {
+            vec4 shadowColor = uStyles[base + 4];
+            vec4 shadow = uStyles[base + 5]; // offset (applied to the quad), blur, spread
+            float d = dTrue - (strokeColor.a > 0.0 ? max(strokeOuter, 0.0) : 0.0) - shadow.w;
+            float sigma = shadow.z * 0.5;
+            float a = sigma < 0.25 ? coverage(d, pixel) : 0.5 - 0.5 * erf2(vec2(d * 0.70710678 / sigma, 0.0)).x;
+            return vec4(shadowColor.rgb, shadowColor.a * a);
+        }
+    }
+
+    // Both layers compute the same fill + outline; each pixel belongs to exactly one of them: the fill layer owns
+    // the pixels the glyph covers (drawn after every outline, so neighbouring outlines stay below the fills), the
+    // outline layer the pixels outside the glyph.
+    float cf = coverage(dEdge, pixel);
+    if (layer == 1 ? cf > 0.0 : cf <= 0.0) {
+        return vec4(0.0);
+    }
+    return unpremultiply(fillAndStroke(fill, strokeColor, cf, dEdge, strokeOuter > 0.0 ? dTrue : dEdge,
+                                       strokeInner, strokeOuter, 1.0, pixel));
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -160,10 +257,9 @@ void main() {
 
     vec4 color;
     if (vType == TEXTURED) {
-        color = vColor;
-        switch (vSlot) {
-/*$textureSwitchCase*/
-        }
+        color = vColor * sampleSlot(vSlot, vTexCoord);
+    } else if (vType == GLYPH) {
+        color = glyphColor();
     } else {
         float d;
         float pixel;
@@ -184,8 +280,8 @@ void main() {
         vec4 fill = vColor;
 
         vec4 strokeColor = vec4(0.0);
-        float strokeCoverage = 0.0;
-        vec4 result;
+        float strokeInner = 0.0, strokeOuter = 0.0, strokeMask = 1.0;
+        vec4 shadowResult = vec4(0.0);
         if (vStyle > 0) {
             int base = (vStyle - 1) * 7;
             vec4 stroke = uStyles[base + 1];       // width, offset, dash length, dash gap
@@ -207,16 +303,15 @@ void main() {
                 fill = mix(vColor, uStyles[base + 3], clamp(t, 0.0, 1.0));
             }
 
-            // stroke
+            // stroke band, relative to the edge
             strokeColor = uStyles[base];
-            if (strokeColor.a > 0.0) {
-                strokeCoverage = coverage(abs(d - stroke.y) - 0.5 * stroke.x, pixel);
-            }
+            strokeInner = stroke.y - 0.5 * stroke.x;
+            strokeOuter = stroke.y + 0.5 * stroke.x;
 
             // dashes: the line body for segments, the stroke for ellipses
             if (stroke.z > 0.0) {
                 if (vType == SEGMENT) {
-                    fillCoverage *= dashMask(vLocal.x + vTexCoord.x + flags.y, stroke.z, stroke.w, pixel);
+                    fill.a *= dashMask(vLocal.x + vTexCoord.x + flags.y, stroke.z, stroke.w, pixel);
                 } else if (vType == ELLIPSE) {
                     float meanRadius = 0.5 * (vTexCoord.x + vTexCoord.y);
                     float s = (atan(vLocal.y, vLocal.x) + 3.14159265) * meanRadius + flags.y;
@@ -224,26 +319,20 @@ void main() {
                     float circumference = 6.28318531 * meanRadius;
                     float period = stroke.z + stroke.w;
                     float fit = circumference / (max(1.0, floor(circumference / period + 0.5)) * period);
-                    strokeCoverage *= dashMask(s, stroke.z * fit, stroke.w * fit, pixel);
+                    strokeMask = dashMask(s, stroke.z * fit, stroke.w * fit, pixel);
                 }
             }
 
             // shadow below everything
-            result = vec4(0.0);
             if (shadowColor.a > 0.0) {
                 float sa = shadowColor.a * shadowAlpha(vLocal - shadow.xy, shadow.z, shadow.w, pixel);
-                result = vec4(shadowColor.rgb * sa, sa);
+                shadowResult = vec4(shadowColor.rgb * sa, sa);
             }
-        } else {
-            result = vec4(0.0);
         }
 
-        // premultiplied: shadow, then fill over it, then stroke over both
-        float fa = fill.a * fillCoverage;
-        result = vec4(fill.rgb * fa, fa) + result * (1.0 - fa);
-        float sa = strokeColor.a * strokeCoverage;
-        result = vec4(strokeColor.rgb * sa, sa) + result * (1.0 - sa);
-        color = result.a > 0.0 ? vec4(result.rgb / result.a, result.a) : vec4(0.0);
+        // premultiplied: fill and stroke, over the shadow
+        vec4 shape = fillAndStroke(fill, strokeColor, fillCoverage, d, d, strokeInner, strokeOuter, strokeMask, pixel);
+        color = unpremultiply(shape + shadowResult * (1.0 - shape.a));
     }
 
     if (clipMask == 0.0 || color.a <= 0.0) {

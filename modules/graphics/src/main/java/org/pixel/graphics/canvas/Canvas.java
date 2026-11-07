@@ -8,6 +8,10 @@ import org.pixel.graphics.draw.Colors;
 import org.pixel.graphics.draw.DrawList;
 import org.pixel.graphics.draw.ShapeType;
 import org.pixel.graphics.draw.StyleTable;
+import org.pixel.graphics.text.SdfFont;
+import org.pixel.graphics.text.TextAlign;
+import org.pixel.graphics.text.TextBaseline;
+import org.pixel.graphics.text.TextLayout;
 import org.pixel.math.Rectangle;
 
 import java.util.Arrays;
@@ -45,11 +49,14 @@ public final class Canvas {
     private final Image image = new Image();
     private final NinePatch ninePatch = new NinePatch();
     private final Path path = new Path();
+    private final Text text = new Text();
+    private final TextLayout textLayout = new TextLayout();
     private final PathTessellator tessellator = new PathTessellator();
     private final float[] cornerPos = new float[8], cornerLayer = new float[8], cornerUv = new float[8],
             cornerLocal = new float[8];
     private Command pending;
     private boolean warnedRotatedClip;
+    private boolean warnedTextRange;
 
     /**
      * Constructor.
@@ -282,6 +289,39 @@ public final class Canvas {
         path.reset();
         pending = path;
         return path;
+    }
+
+    /**
+     * Start a text command with a distance-field font: {@code canvas.text(font, "Score", 20, 20).size(32)}. The
+     * text is laid out when the command is committed, so the character sequence must not change before that.
+     * <p>
+     * By default (x, y) is the top-left of the text block; {@link Text#align} and {@link Text#baseline} move the
+     * anchor. Effects: fill (solid or gradient, in canvas coordinates), outline ({@link Text#stroke}, outside the
+     * glyph edge by default), soft shadow or glow ({@link Text#shadow}) and {@link Text#weight}.
+     */
+    public Text text(SdfFont font, CharSequence string, float x, float y) {
+        if (font == null || string == null) {
+            throw new IllegalArgumentException("Font and text cannot be null.");
+        }
+        flush();
+        text.reset(font, string, null, x, y);
+        pending = text;
+        return text;
+    }
+
+    /**
+     * Start a text command for an already laid out block (its font, size, wrapping and alignment are used; the
+     * layout settings of the returned builder are ignored). (x, y) is placed according to the layout's alignment
+     * and {@link Text#baseline}. The layout must not change before the command is committed.
+     */
+    public Text text(TextLayout layout, float x, float y) {
+        if (layout == null || layout.font() == null) {
+            throw new IllegalArgumentException("The layout must have been laid out with a font.");
+        }
+        flush();
+        text.reset(layout.font(), null, layout, x, y);
+        pending = text;
+        return text;
     }
 
     /**
@@ -1417,6 +1457,279 @@ public final class Canvas {
                     m.mapX(l, tp), m.mapY(l, tp), m.mapX(r, tp), m.mapY(r, tp),
                     m.mapX(r, b), m.mapY(r, b), m.mapX(l, b), m.mapY(l, b),
                     u0, v0, u1, v1, 0f, 0f, 0f, 0f, 0f, 0f, tintRgba, 0, clipId, depthValue);
+        }
+    }
+
+    /**
+     * Text builder (see {@link #text(SdfFont, CharSequence, float, float)}).
+     * <p>
+     * Glyphs are drawn in layers: all shadows, then all outlines, then all fills, so an outline never covers the
+     * neighbouring glyph. Outlines, glows, shadows and weight can only extend as far as the distance range stored
+     * in the atlas ({@link SdfFont#distanceRange(float)}: about half of it beyond the glyph edge); larger values are
+     * clamped, with a warning. Raise {@code SdfFontSettings.distanceRange} for wider effects.
+     */
+    public final class Text extends Shape<Text> {
+        private SdfFont font;
+        private CharSequence string;
+        private TextLayout prepared;
+        private float x, y, size, maxWidth, letterSpacing, lineSpacing, weight;
+        private TextAlign align;
+        private TextBaseline baseline;
+        private boolean wrap, ellipsis;
+        private int maxLines;
+        // effective (clamped) effect values for the current commit
+        private float clampedStroke, clampedBlur, clampedSpread;
+
+        void reset(SdfFont font, CharSequence string, TextLayout prepared, float x, float y) {
+            resetStyle();
+            strokeAlign = StrokeAlign.OUTSIDE;
+            this.font = font;
+            this.string = string;
+            this.prepared = prepared;
+            this.x = x;
+            this.y = y;
+            size = prepared != null ? prepared.size() : 16f;
+            maxWidth = 0f;
+            wrap = true;
+            maxLines = 0;
+            ellipsis = false;
+            letterSpacing = 0f;
+            lineSpacing = 1f;
+            weight = 0f;
+            align = prepared != null ? prepared.alignment() : TextAlign.LEFT;
+            baseline = TextBaseline.TOP;
+        }
+
+        /** Font size: height of one em in canvas units (default 16). */
+        public Text size(float size) {
+            this.size = Math.max(0f, size);
+            return this;
+        }
+
+        /** Horizontal alignment; also which point of the block sits at x (left edge, center or right edge). */
+        public Text align(TextAlign align) {
+            this.align = align != null ? align : TextAlign.LEFT;
+            return this;
+        }
+
+        /** Which vertical point of the block sits at y (default {@link TextBaseline#TOP}). */
+        public Text baseline(TextBaseline baseline) {
+            this.baseline = baseline != null ? baseline : TextBaseline.TOP;
+            return this;
+        }
+
+        /** Maximum line width (see {@link TextLayout#maxWidth}). */
+        public Text maxWidth(float maxWidth) {
+            this.maxWidth = maxWidth;
+            return this;
+        }
+
+        /** Whether long lines wrap at the maximum width (default true). */
+        public Text wrap(boolean wrap) {
+            this.wrap = wrap;
+            return this;
+        }
+
+        /** Maximum number of lines (0 = unlimited). */
+        public Text maxLines(int maxLines) {
+            this.maxLines = maxLines;
+            return this;
+        }
+
+        /** End cut text with an ellipsis. */
+        public Text ellipsis(boolean ellipsis) {
+            this.ellipsis = ellipsis;
+            return this;
+        }
+
+        /** Extra space after every character. */
+        public Text letterSpacing(float letterSpacing) {
+            this.letterSpacing = letterSpacing;
+            return this;
+        }
+
+        /** Line height multiplier (default 1). */
+        public Text lineSpacing(float lineSpacing) {
+            this.lineSpacing = lineSpacing;
+            return this;
+        }
+
+        /**
+         * Grow (positive, bolder) or shrink (negative, thinner) the glyphs by this distance in canvas units.
+         */
+        public Text weight(float weight) {
+            this.weight = weight;
+            return this;
+        }
+
+        /**
+         * Outline the glyphs. The outline sits outside the glyph edge unless {@link #strokeAlign} says otherwise.
+         */
+        @Override
+        public Text stroke(float width, Color color) {
+            return super.stroke(width, color);
+        }
+
+        @Override
+        void commit() {
+            SdfFont f = font;
+            CharSequence s = string;
+            TextLayout l = prepared;
+            font = null; // don't keep these reachable after the command is committed
+            string = null;
+            prepared = null;
+            if (l == null) {
+                l = textLayout.reset().maxWidth(maxWidth).wrap(wrap).maxLines(maxLines).ellipsis(ellipsis)
+                        .align(align).letterSpacing(letterSpacing).lineSpacing(lineSpacing).layout(f, s, size);
+            }
+            float textSize = l.size();
+            if (!isVisible() || l.glyphCount() == 0 || textSize <= 0f) {
+                return;
+            }
+            float range = f.distanceRange(textSize);
+            // distances reach half the range beyond the edge; minus half an atlas pixel, since pre-baked atlases
+            // inset glyph quads by that much
+            float w = clampEffects(Math.max(0f, f.getDistanceRange() - 1f) * 0.5f * textSize / f.getGlyphSize());
+            float left = x - l.boxWidth() * align.factor();
+            float top = y - switch (baseline) {
+                case TOP -> 0f;
+                case MIDDLE -> l.height() * 0.5f;
+                case BASELINE -> f.getAscender() * textSize;
+                case BOTTOM -> l.height();
+            };
+            int styleId = textStyle();
+            float trueDistance = f.hasTrueDistance() ? 1f : 0f;
+            if (hasShadow) {
+                emitGlyphs(f, l, left + shadowX, top + shadowY, 2f, range, w, trueDistance, styleId);
+            }
+            if (hasStroke) {
+                emitGlyphs(f, l, left, top, 1f, range, w, trueDistance, styleId);
+            }
+            // the fill layer also draws the stroke on and inside the glyph edge, so it is needed with a stroke too
+            if (hasStroke || (fillRgba >>> 24) != 0
+                    || (paintType != StyleTable.PAINT_SOLID && (gradientEndRgba >>> 24) != 0)) {
+                emitGlyphs(f, l, left, top, 0f, range, w, trueDistance, styleId);
+            }
+        }
+
+        /**
+         * Clamp weight, outline and shadow to what the atlas range can represent.
+         *
+         * @param reach How far beyond the glyph edge distances are stored (canvas units).
+         * @return The weight to use.
+         */
+        private float clampEffects(float reach) {
+            boolean clamped = false;
+            float budget = reach * 0.9f;
+            float w = weight;
+            if (Math.abs(w) > budget) {
+                w = Math.copySign(budget, w);
+                clamped = true;
+            }
+            clampedStroke = strokeWidth;
+            float outer = 0f;
+            if (hasStroke) {
+                outer = strokeAlign.outsideExtent(strokeWidth);
+                float available = budget - Math.max(w, 0f);
+                if (outer > available) {
+                    float scale = Math.max(available, 0f) / outer;
+                    clampedStroke = strokeWidth * scale;
+                    outer = available;
+                    clamped = true;
+                }
+            }
+            clampedBlur = shadowBlur;
+            clampedSpread = shadowSpread;
+            if (hasShadow) {
+                float available = reach - Math.max(w, 0f) - Math.max(outer, 0f);
+                if (clampedSpread > available) {
+                    clampedSpread = Math.max(available, 0f);
+                    clamped = true;
+                }
+                float blurReach = available - Math.max(clampedSpread, 0f);
+                if (1.5f * clampedBlur > blurReach) { // ~3 sigma must fit
+                    clampedBlur = Math.max(blurReach, 0f) / 1.5f;
+                    clamped = true;
+                }
+            }
+            if (clamped && !warnedTextRange) {
+                warnedTextRange = true;
+                log.warn("Text weight, outline or shadow exceeds the font's distance range ({0} canvas units beyond "
+                        + "the edge at this size) and was clamped; raise SdfFontSettings.distanceRange.", reach);
+            }
+            return w;
+        }
+
+        private int textStyle() {
+            if (!hasStroke && !hasShadow && paintType == StyleTable.PAINT_SOLID) {
+                return 0;
+            }
+            float[] r = styleRecord;
+            Arrays.fill(r, 0f);
+            if (hasStroke) {
+                unpack(strokeRgba, r, StyleTable.STROKE_COLOR);
+                r[StyleTable.STROKE_WIDTH] = clampedStroke;
+                r[StyleTable.STROKE_OFFSET] = strokeAlign.offset(clampedStroke);
+            }
+            r[StyleTable.PAINT_TYPE] = paintType;
+            if (paintType != StyleTable.PAINT_SOLID) { // gradients in canvas coordinates
+                r[StyleTable.GRADIENT_GEOMETRY] = gx0;
+                r[StyleTable.GRADIENT_GEOMETRY + 1] = gy0;
+                if (paintType == StyleTable.PAINT_LINEAR) {
+                    r[StyleTable.GRADIENT_GEOMETRY + 2] = gx1;
+                    r[StyleTable.GRADIENT_GEOMETRY + 3] = gy1;
+                } else {
+                    r[StyleTable.GRADIENT_GEOMETRY + 2] = gRadius;
+                }
+                unpack(gradientEndRgba, r, StyleTable.GRADIENT_END_COLOR);
+            }
+            if (hasShadow) {
+                unpack(shadowRgba, r, StyleTable.SHADOW_COLOR);
+                r[StyleTable.SHADOW_OFFSET_X] = shadowX; // applied to the quads; kept so styles stay distinct
+                r[StyleTable.SHADOW_OFFSET_Y] = shadowY;
+                r[StyleTable.SHADOW_BLUR] = clampedBlur;
+                r[StyleTable.SHADOW_SPREAD] = clampedSpread;
+            }
+            return list.styles().intern(r);
+        }
+
+        private void emitGlyphs(SdfFont f, TextLayout l, float left, float top, float layer, float range,
+                                float weight, float trueDistance, int styleId) {
+            float s = l.size();
+            Texture atlas = f.getAtlas();
+            Affine m = transform;
+            for (int i = 0, n = l.glyphCount(); i < n; i++) {
+                int g = l.glyph(i);
+                if (!f.isVisible(g)) {
+                    continue;
+                }
+                float penX = left + l.x(i), penY = top + l.y(i);
+                float x0 = penX + f.left(g) * s, y0 = penY + f.top(g) * s;
+                float x1 = penX + f.right(g) * s, y1 = penY + f.bottom(g) * s;
+                cornerLocal[0] = x0;
+                cornerLocal[1] = y0;
+                cornerLocal[2] = x1;
+                cornerLocal[3] = y0;
+                cornerLocal[4] = x1;
+                cornerLocal[5] = y1;
+                cornerLocal[6] = x0;
+                cornerLocal[7] = y1;
+                for (int k = 0; k < 8; k += 2) {
+                    cornerLayer[k] = m.mapX(cornerLocal[k], cornerLocal[k + 1]);
+                    cornerLayer[k + 1] = m.mapY(cornerLocal[k], cornerLocal[k + 1]);
+                }
+                float u0 = f.u0(g), v0 = f.v0(g), u1 = f.u1(g), v1 = f.v1(g);
+                cornerUv[0] = u0;
+                cornerUv[1] = v0;
+                cornerUv[2] = u1;
+                cornerUv[3] = v0;
+                cornerUv[4] = u1;
+                cornerUv[5] = v1;
+                cornerUv[6] = u0;
+                cornerUv[7] = v1;
+                list.addShapeCorners(ShapeType.GLYPH, atlas, cornerLayer, cornerUv, cornerLocal, range, weight,
+                        layer, trueDistance, fillRgba, styleId, clipId, depthValue);
+            }
         }
     }
 }

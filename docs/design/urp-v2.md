@@ -179,9 +179,10 @@ using Chlumsky's msdfgen algorithm.
   need this, and the MSDF median alone produces artifacts there.
 
 **Generation (two sources, one runtime format)**
-1. **Runtime, desktop:** LWJGL 3.3.6 ships `lwjgl-msdfgen` (msdfgen with `msdf_generate_mtsdf` and FreeType glyph
-   loading and kerning through `msdfgen-ext`). Importing a `.ttf`/`.otf` generates the atlas on first load and caches
-   it on disk.
+1. **Runtime, desktop:** LWJGL ships `lwjgl-msdfgen` (msdfgen with `msdf_generate_mtsdf`, glyph shapes loaded through
+   FreeType by `msdfgen-ext`). Importing a `.ttf`/`.otf` generates the atlas at load time (about 50 ms for 192
+   glyphs, rendered in parallel). Caching it on disk is opt-in (`SdfFontSettings.cacheDirectory`); the cache is
+   written in the pre-baked format below, so cached atlases can be shipped as is.
 2. **Offline, any platform including mobile:** atlases pre-baked with `msdf-atlas-gen` (PNG + JSON metrics),
    imported as is. This is how shipped and mobile builds avoid native generation at runtime.
 
@@ -208,7 +209,7 @@ size in the atlas (default 48 px), distance range (default 8 px), character sets
 - **Small text:** distance fields get soft below about 12 px. For pixel-art and very small UI text, bitmap fonts
   (`Font`/`GLFont`) remain supported and render as plain textured quads in the same batch.
 
-**Layout and measurement** (`TextLayout`, `TextMeasurer`, GL-free and unit-tested): kerning, line breaking,
+**Layout and measurement** (`TextLayout` and `SdfFont.measure`, GL-free and unit-tested): kerning, line breaking,
 alignment, letter and line spacing, and max width with ellipsis. The future GUI layout depends on them.
 **Out of scope:** complex shaping (ligatures, right-to-left, Indic scripts). LWJGL ships `lwjgl-harfbuzz` for that
 later, and the layout API is shaped so it can be added behind `TextLayout`.
@@ -408,11 +409,11 @@ churn around.
 | `modules/commons` | None. |
 | `modules/math` | None (an order-preserving float→int helper goes in `graphics`). |
 | `modules/content` | None required. `Texture` stays the texture abstraction. The `SdfFont` importers are registered by the platform like the other importers. |
-| `modules/graphics` | **New packages** (all GL-free):<br>• `org.pixel.graphics.draw`: `DrawList`, `Layer`, `LayerMode`, `SortKey`, `ClipTable`, `Material`, `FrameSnapshot`, `FrameStats`<br>• `org.pixel.graphics.canvas`: `Canvas`, command builders, `Paint`, `Path` + triangulation, `NinePatch`<br>• `org.pixel.graphics.text`: `SdfFont`, `SdfGlyph`, `TextLayout`, `TextMeasurer`<br>• `org.pixel.graphics.pass`: `RenderPipeline` + builder, `View`, `ScreenSpace`, `RenderTarget`, `PostEffect`, `Effects`<br>• `org.pixel.graphics.backend`: `RenderBackend` SPI, `BatchList`, `VertexStream`, `PassState`, `BackendCapabilities`<br>**Changed:** `SpriteBatch` gets a draw-list implementation (`DrawListSpriteBatch`). `GraphicsDevice` exposes `backend()`.<br>**Since Phase 0:** `org.pixel.graphics.RenderStats` (device-level per-frame GPU counters); `GraphicsDevice.getStats()` and `GraphicsDevice.endFrame()` (called by the game loop).<br>**Deprecated (removed before merge, §8 Phase 4):** `RenderEngine`, `StatefulRenderEngine`, `RenderEngine2D`, `DrawBatch`. **Deleted:** `PostProcessor` (unused). |
+| `modules/graphics` | **New packages** (all GL-free):<br>• `org.pixel.graphics.draw`: `DrawList`, `Layer`, `LayerMode`, `SortKey`, `ClipTable`, `Material`, `FrameSnapshot`, `FrameStats`<br>• `org.pixel.graphics.canvas`: `Canvas`, command builders, `Paint`, `Path` + triangulation, `NinePatch`<br>• `org.pixel.graphics.text`: `SdfFont`, `SdfFontData`, `SdfFontSettings`, `TextLayout`, `TextAlign`, `TextBaseline`, `GlyphPacker`<br>• `org.pixel.graphics.pass`: `RenderPipeline` + builder, `View`, `ScreenSpace`, `RenderTarget`, `PostEffect`, `Effects`<br>• `org.pixel.graphics.backend`: `RenderBackend` SPI, `BatchList`, `VertexStream`, `PassState`, `BackendCapabilities`<br>**Changed:** `SpriteBatch` gets a draw-list implementation (`DrawListSpriteBatch`). `GraphicsDevice` exposes `backend()`.<br>**Since Phase 0:** `org.pixel.graphics.RenderStats` (device-level per-frame GPU counters); `GraphicsDevice.getStats()` and `GraphicsDevice.endFrame()` (called by the game loop).<br>**Deprecated (removed before merge, §8 Phase 4):** `RenderEngine`, `StatefulRenderEngine`, `RenderEngine2D`, `DrawBatch`. **Deleted:** `PostProcessor` (unused). |
 | `modules/core` | **Since Phase 3.0:** `GameApp`, `GameContext`, `GameWindow`; `GameContainer` is the platform host base (no longer extended by games); `Camera2D(GameContext)`. Blueprint dependency removed. **Phase 3:** `Camera2D implements View`. |
 | `modules/blueprint` | **Removed in Phase 3.0.** |
 | `modules/commons` (service package) | **Removed in Phase 3.0:** `ServiceProvider`, `ServiceFactory`, `ServiceRegistrar`, ... |
-| `platform/desktop` | **New** `org.pixel.graphics.opengl.render`: `GLRenderBackend`, `GLBatchRenderer`, `GLRenderTarget`, `GLMaterialCompiler`, `GLTextureSlots`.<br>**New** shaders in `engine/shader/opengl/urp/` (uber, post effects).<br>**New** `GLSdfFontImporter`: MTSDF generation through `lwjgl-msdfgen` + `lwjgl-freetype`, plus an importer for
+| `platform/desktop` | **New** `org.pixel.graphics.opengl.render`: `GLRenderBackend`, `GLBatchRenderer`, `GLRenderTarget`, `GLMaterialCompiler`, `GLTextureSlots`.<br>**New** shaders in `engine/shader/opengl/urp/` (uber, post effects).<br>**New** `GLSdfFontImporter`: MTSDF generation through `lwjgl-msdfgen` + `lwjgl-freetype` (`MsdfAtlasGenerator`), plus
 pre-baked `msdf-atlas-gen` atlases. **New dependencies:** `org.lwjgl:lwjgl-msdfgen` and `org.lwjgl:lwjgl-freetype`
 (+ natives), same LWJGL version (3.4.3).<br>**Changed:** `GLGraphicsDevice` creates the backend. `GLContentManagerFactory` registers the SDF font importer. The `SpriteBatch` service switches to `DrawListSpriteBatch` after parity.<br>**Deprecated → removed before merge:** `GLSpriteBatch`, `NvgRenderEngine` (and the `lwjgl-nanovg` dependency), the `GL*EffectShader` classes (replaced by effects). |
 | `platform/android` | Untouched and not built. The design stays within GLES 3.0. |
@@ -518,9 +519,49 @@ Each phase ends green (`./gradlew build`) and is reviewable on its own.
   fringe coverage, join/cap geometry, miter-limit fallback, closed strokes, path gradients, and zero allocations.
   Demo: `urp/CanvasPathDemo` (1 draw call).
 
-*2d:* MTSDF fonts: runtime generation (msdfgen) with a disk cache, the pre-baked atlas importer, the glyph shader
-with fill/stroke/shadow/weight, and `TextLayout`/`TextMeasurer` (GL-free, tested). A text quality demo covers sizes
-8–200 px, zoom and rotation, Retina, and outlines at the range limit.
+*2d: MTSDF text* ✅
+- `SdfFont` (atlas texture + glyph metrics + kerning, em units, allocation-free lookups) loaded with
+  `content().load(path, SdfFont.class, settings)`:
+  - `.ttf`/`.otf`: generated with msdfgen (`lwjgl-msdfgen` + `lwjgl-freetype`). Shapes are normalized and edge-colored
+    (msdfgen's simple coloring), each glyph cell is padded by half the distance range, glyphs are rendered in
+    parallel and shelf-packed into a power-of-two atlas. Vertical metrics and kerning come from stb_truetype, which
+    also reads GPOS pair kerning (FreeType's `FT_Get_Kerning` only reads the old `kern` table).
+    `SdfFontSettings`: glyph size (48 px per em), distance range (8 px), characters (ASCII + Latin-1 + "…" + "�"),
+    optional cache directory.
+  - `.json` + `.png`: pre-baked msdf-atlas-gen atlases (either y origin, any `emSize`; MTSDF, MSDF or SDF). The
+    disk cache uses the same format (`SdfFontData.toJson()`), so atlases generated on desktop can be shipped to
+    platforms without msdfgen.
+- `canvas.text(font, string, x, y)`: `size`, `align` (also the x anchor), `baseline` (top / middle / baseline /
+  bottom), `maxWidth`, `wrap`, `maxLines`, `ellipsis`, `letterSpacing`, `lineSpacing`, `weight`, plus the shared
+  `fill`/`fillLinear`/`fillRadial`/`stroke`/`strokeAlign`/`shadow`/`depth`. `canvas.text(layout, x, y)` draws a block
+  laid out beforehand (GUI measuring).
+- Shader (`GLYPH` shape type): fill and the inner edge of outlines use the MSDF median (sharp corners); the outer
+  edge of outlines and shadows/glows use the true distance in the alpha channel. Anti-aliasing uses the screen
+  scale from derivatives, clamped so at least one pixel of range is used (msdfgen's recommendation), so text stays
+  one pixel soft under any zoom, rotation or pixel ratio.
+- Glyphs are drawn in layers: all shadows, then all outlines, then all fills. A thick outline never covers the
+  neighbouring glyph, which per-glyph compositing gets wrong on tight pairs like "AV". The outline and fill layers
+  compute the same fill + outline, and each pixel belongs to one of them (fill layer: pixels the glyph covers;
+  outline layer: pixels outside it), so nothing blends twice.
+- Fill + stroke compositing (all shapes, not only text) treats the interior, the stroke over the shape and the
+  stroke outside the shape as disjoint regions whose coverages add up. Before, "stroke over fill" left the edge
+  pixel between an outside stroke and the fill only 75% opaque: a faint ring of background.
+- Effects can only reach as far as the encoded range (half of `(distanceRange - 1) × size / glyphSize` beyond the
+  edge; the half atlas pixel covers the inset quads of msdf-atlas-gen atlases. 3.5 px at 48 px with the defaults). Weight, outline and shadow are clamped to it, with a one-time warning;
+  fonts loaded with a larger range allow wider effects.
+- `TextLayout`: kerning, explicit and automatic line breaks (after spaces; long words break between characters),
+  trailing spaces ignored, tabs as four spaces, alignment, letter and line spacing, maximum lines, ellipsis ("…" or
+  "..."), missing characters drawn as "�" or "?". Zero allocations once warmed up.
+- Tests: layout (kerning, wrapping, word breaks including a moved word that still overflows, trailing newlines
+  with line limits, alignment, max lines, ellipsis with and without wrapping, tabs,
+  fallbacks, surrogates, zero allocations), JSON parsing of msdf-atlas-gen output and round trips, packing (no
+  overlaps, spacing, size limit), canvas text (quads, uv/local/params, layer order, shadow offset, clamping,
+  anchors, prepared layouts under transforms, zero allocations).
+- Demo: `urp/CanvasTextDemo`: sizes 8 to 220 px, outline, glow, drop shadow, weight, inner outline, gradients,
+  wrapping, ellipsis, rotation and zoom, on a Retina display. The whole frame is **1 draw call**.
+- Limitations: no complex shaping (ligatures, right-to-left), no hinting (text below ~10 px is soft; bitmap fonts
+  stay available for pixel-art UI), no runtime generation on Android yet (pre-baked atlases are the path there;
+  the Android importer comes with the Android backend work).
 
 *2e:* port the NanoVG demos to `Canvas`, with a Retina check of clipping and text sharpness.
 
@@ -593,7 +634,7 @@ by hand, with review:
 | | `CLAUDE.md`, `.github/copilot-instructions.md`, ext-decs renames, unrelated demo changes |
 
 **GUI:** none of the three attempts carries over here. When the GUI branch starts (after v2 merges), it will be
-designed on top of `Canvas`/`TextMeasurer`. From `task/urp` it will consider Weaver's CSS parser and `StyleEngine`
+designed on top of `Canvas`/`TextLayout`. From `task/urp` it will consider Weaver's CSS parser and `StyleEngine`
 (which has tests), and Rune's measure/layout contract and input interface. That is a separate review.
 
 ## 11. Testing strategy
