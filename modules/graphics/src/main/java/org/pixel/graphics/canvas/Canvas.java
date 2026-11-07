@@ -44,6 +44,10 @@ public final class Canvas {
     private final Line line = new Line();
     private final Image image = new Image();
     private final NinePatch ninePatch = new NinePatch();
+    private final Path path = new Path();
+    private final PathTessellator tessellator = new PathTessellator();
+    private final float[] cornerPos = new float[8], cornerLayer = new float[8], cornerUv = new float[8],
+            cornerLocal = new float[8];
     private Command pending;
     private boolean warnedRotatedClip;
 
@@ -267,6 +271,17 @@ public final class Canvas {
         image.reset(texture, x, y);
         pending = image;
         return image;
+    }
+
+    /**
+     * Start a path (polygons, curves, arcs) to fill and/or stroke. Default: no fill, no stroke; call
+     * {@link Path#fill(Color)} and/or {@link Path#stroke(float, Color)}.
+     */
+    public Path path() {
+        flush();
+        path.reset();
+        pending = path;
+        return path;
     }
 
     /**
@@ -803,6 +818,514 @@ public final class Canvas {
                     m.mapX(left, top), m.mapY(left, top), m.mapX(right, top), m.mapY(right, top),
                     m.mapX(right, bottom), m.mapY(right, bottom), m.mapX(left, bottom), m.mapY(left, bottom),
                     u0, v0, u1, v1, 0f, 0f, 0f, 0f, 0f, 0f, tintRgba, 0, clipId, depthValue);
+        }
+    }
+
+    // region path emission (user space in, layer space out)
+
+    /**
+     * Emit a {@link ShapeType#PATH_FILL} or {@link ShapeType#PATH_STROKE} quad from {@link #cornerPos} (user
+     * space), {@link #cornerUv} and {@link #cornerLocal}.
+     */
+    private void emitCorners(ShapeType type, int rgba, int styleId, float depthValue) {
+        Affine m = transform;
+        for (int k = 0; k < 8; k += 2) {
+            cornerLayer[k] = m.mapX(cornerPos[k], cornerPos[k + 1]);
+            cornerLayer[k + 1] = m.mapY(cornerPos[k], cornerPos[k + 1]);
+        }
+        list.addShapeCorners(type, cornerLayer, cornerUv, cornerLocal, 0f, 0f, 0f, 0f, rgba, styleId, clipId,
+                depthValue);
+    }
+
+    private void setCorner(int k, float x, float y, float coverage) {
+        cornerPos[k * 2] = x;
+        cornerPos[k * 2 + 1] = y;
+        cornerUv[k * 2] = x; // path coordinates, used by gradients
+        cornerUv[k * 2 + 1] = y;
+        cornerLocal[k * 2] = coverage;
+        cornerLocal[k * 2 + 1] = 0f;
+    }
+
+    /** Solid triangle (coverage 1 everywhere), emitted as a quad whose last corner repeats the first. */
+    private void fillTriangle(float ax, float ay, float bx, float by, float cx, float cy, int rgba, int styleId,
+                              float depthValue) {
+        setCorner(0, ax, ay, 1f);
+        setCorner(1, bx, by, 1f);
+        setCorner(2, cx, cy, 1f);
+        setCorner(3, ax, ay, 1f);
+        emitCorners(ShapeType.PATH_FILL, rgba, styleId, depthValue);
+    }
+
+    /** Anti-aliasing fringe outside edge a-b: coverage fades from 1 on the edge to 0 at (offset ox, oy). */
+    private void fringe(float ax, float ay, float bx, float by, float ox, float oy, int rgba, int styleId,
+                        float depthValue) {
+        setCorner(0, ax, ay, 1f);
+        setCorner(1, bx, by, 1f);
+        setCorner(2, bx + ox, by + oy, 0f);
+        setCorner(3, ax + ox, ay + oy, 0f);
+        emitCorners(ShapeType.PATH_FILL, rgba, styleId, depthValue);
+    }
+
+    /** Fringe wedge at a convex corner v between the offsets of its two edges. */
+    private void fringeWedge(float vx, float vy, float o1x, float o1y, float o2x, float o2y, int rgba, int styleId,
+                             float depthValue) {
+        setCorner(0, vx, vy, 1f);
+        setCorner(1, vx + o1x, vy + o1y, 0f);
+        setCorner(2, vx + o2x, vy + o2y, 0f);
+        setCorner(3, vx, vy, 1f);
+        emitCorners(ShapeType.PATH_FILL, rgba, styleId, depthValue);
+    }
+
+    /**
+     * Stroke body from a to b (extended by extA before a and extB after b): a distance field across the line, so
+     * both long edges are anti-aliased at any width.
+     */
+    private void strokeSegment(float ax, float ay, float bx, float by, float halfWidth, float extA, float extB,
+                               float aa, int rgba, float depthValue) {
+        float dx = bx - ax, dy = by - ay;
+        float length = (float) Math.sqrt(dx * dx + dy * dy);
+        if (length < 1e-6f) {
+            return;
+        }
+        float ux = dx / length, uy = dy / length;
+        float nx = -uy, ny = ux;
+        float h = halfWidth + aa;
+        float sx = ax - ux * extA, sy = ay - uy * extA;
+        float ex = bx + ux * extB, ey = by + uy * extB;
+        cornerPos[0] = sx - nx * h;
+        cornerPos[1] = sy - ny * h;
+        cornerPos[2] = ex - nx * h;
+        cornerPos[3] = ey - ny * h;
+        cornerPos[4] = ex + nx * h;
+        cornerPos[5] = ey + ny * h;
+        cornerPos[6] = sx + nx * h;
+        cornerPos[7] = sy + ny * h;
+        for (int k = 0; k < 4; k++) {
+            cornerUv[k * 2] = halfWidth;
+            cornerUv[k * 2 + 1] = 0f;
+            cornerLocal[k * 2] = 0f;
+            cornerLocal[k * 2 + 1] = k < 2 ? -h : h; // signed distance across the line
+        }
+        emitCorners(ShapeType.PATH_STROKE, rgba, 0, depthValue);
+    }
+
+    // endregion
+
+    /**
+     * Path builder (see {@link #path()}): {@code moveTo/lineTo/quadTo/cubicTo/arc/close}, then fill and/or stroke.
+     * <p>
+     * Curves are flattened to within a quarter pixel. Fills support any simple polygon per sub-path (convex or
+     * concave); sub-paths are filled independently (no holes, no self-intersections). Strokes use one
+     * anti-aliased quad per segment plus joins and caps; overlapping parts of translucent strokes blend twice.
+     */
+    public final class Path extends Command {
+        private float[] points = new float[256];   // x, y pairs of all sub-paths
+        private int pointCount;
+        private int[] subStart = new int[16];
+        private boolean[] subClosed = new boolean[16];
+        private int subCount;
+        private boolean open; // a sub-path is in progress
+
+        private int fillRgba;
+        private boolean hasFill;
+        private float paintType;
+        private float gx0, gy0, gx1, gy1, gRadius;
+        private int gradientEndRgba;
+        private boolean hasStroke;
+        private int strokeRgba;
+        private float strokeWidth;
+        private LineJoin join;
+        private LineCap cap;
+        private float miterLimit;
+        private float depthValue;
+
+        void reset() {
+            pointCount = 0;
+            subCount = 0;
+            open = false;
+            hasFill = false;
+            paintType = StyleTable.PAINT_SOLID;
+            hasStroke = false;
+            join = LineJoin.MITER;
+            cap = LineCap.BUTT;
+            miterLimit = 4f;
+            depthValue = 0f;
+        }
+
+        // region geometry
+
+        /**
+         * Start a new sub-path at (x, y).
+         */
+        public Path moveTo(float x, float y) {
+            if (subCount == subStart.length) {
+                subStart = java.util.Arrays.copyOf(subStart, subCount * 2);
+                subClosed = java.util.Arrays.copyOf(subClosed, subCount * 2);
+            }
+            subStart[subCount] = pointCount;
+            subClosed[subCount] = false;
+            subCount++;
+            open = true;
+            addPoint(x, y, true);
+            return this;
+        }
+
+        public Path lineTo(float x, float y) {
+            ensureOpen(x, y);
+            addPoint(x, y, false);
+            return this;
+        }
+
+        /**
+         * Quadratic Bezier from the current point through control (cx, cy) to (x, y).
+         */
+        public Path quadTo(float cx, float cy, float x, float y) {
+            ensureOpen(cx, cy);
+            float x0 = lastX(), y0 = lastY();
+            int n = PathTessellator.quadSegments(x0, y0, cx, cy, x, y, tolerance());
+            for (int i = 1; i <= n; i++) {
+                float t = i / (float) n, mt = 1 - t;
+                addPoint(mt * mt * x0 + 2 * mt * t * cx + t * t * x, mt * mt * y0 + 2 * mt * t * cy + t * t * y, false);
+            }
+            return this;
+        }
+
+        /**
+         * Cubic Bezier from the current point through controls (c1x, c1y), (c2x, c2y) to (x, y).
+         */
+        public Path cubicTo(float c1x, float c1y, float c2x, float c2y, float x, float y) {
+            ensureOpen(c1x, c1y);
+            float x0 = lastX(), y0 = lastY();
+            int n = PathTessellator.cubicSegments(x0, y0, c1x, c1y, c2x, c2y, x, y, tolerance());
+            for (int i = 1; i <= n; i++) {
+                float t = i / (float) n, mt = 1 - t;
+                float a = mt * mt * mt, b = 3 * mt * mt * t, c = 3 * mt * t * t, d = t * t * t;
+                addPoint(a * x0 + b * c1x + c * c2x + d * x, a * y0 + b * c1y + c * c2y + d * y, false);
+            }
+            return this;
+        }
+
+        /**
+         * Circular arc around (cx, cy) from {@code startAngle} to {@code endAngle} (radians, clockwise on screen
+         * for increasing angles). Connects from the current point with a line, or starts a sub-path.
+         */
+        public Path arc(float cx, float cy, float radius, float startAngle, float endAngle) {
+            float sweep = endAngle - startAngle;
+            int n = PathTessellator.arcSegments(Math.abs(radius), sweep, tolerance());
+            for (int i = 0; i <= n; i++) {
+                float a = startAngle + sweep * i / n;
+                float x = cx + (float) Math.cos(a) * radius, y = cy + (float) Math.sin(a) * radius;
+                if (i == 0 && !open) {
+                    moveTo(x, y);
+                } else {
+                    addPoint(x, y, false);
+                }
+            }
+            return this;
+        }
+
+        /**
+         * Close the current sub-path (a stroke joins back to its first point).
+         */
+        public Path close() {
+            if (open) {
+                int start = subStart[subCount - 1];
+                // drop a final point that repeats the first one
+                if (pointCount - start > 1 && points[(pointCount - 1) * 2] == points[start * 2]
+                        && points[(pointCount - 1) * 2 + 1] == points[start * 2 + 1]) {
+                    pointCount--;
+                }
+                subClosed[subCount - 1] = true;
+                open = false;
+            }
+            return this;
+        }
+
+        private void ensureOpen(float x, float y) {
+            if (!open) {
+                if (subCount > 0 && subClosed[subCount - 1]) {
+                    // continue from the closed sub-path's first point, like Canvas2D
+                    int start = subStart[subCount - 1];
+                    moveTo(points[start * 2], points[start * 2 + 1]);
+                } else {
+                    moveTo(x, y);
+                }
+            }
+        }
+
+        private void addPoint(float x, float y, boolean first) {
+            if (!first && pointCount > subStart[subCount - 1] && lastX() == x && lastY() == y) {
+                return; // skip zero-length segments
+            }
+            if ((pointCount + 1) * 2 > points.length) {
+                points = java.util.Arrays.copyOf(points, points.length * 2);
+            }
+            points[pointCount * 2] = x;
+            points[pointCount * 2 + 1] = y;
+            pointCount++;
+        }
+
+        private float lastX() {
+            return points[(pointCount - 1) * 2];
+        }
+
+        private float lastY() {
+            return points[(pointCount - 1) * 2 + 1];
+        }
+
+        private float tolerance() {
+            float scale = transform.minScale();
+            return 0.25f / (scale > 1e-6f ? scale : 1f); // a quarter pixel
+        }
+
+        // endregion
+
+        // region style
+
+        public Path fill(Color color) {
+            hasFill = color != null;
+            if (hasFill) {
+                fillRgba = Colors.pack(color);
+            }
+            paintType = StyleTable.PAINT_SOLID;
+            return this;
+        }
+
+        public Path noFill() {
+            hasFill = false;
+            return this;
+        }
+
+        /**
+         * Linear gradient fill from (x0, y0) to (x1, y1), in path coordinates.
+         */
+        public Path fillLinear(float x0, float y0, Color start, float x1, float y1, Color end) {
+            fill(start != null ? start : Color.WHITE);
+            gradientEndRgba = Colors.pack(end != null ? end : Color.WHITE);
+            gx0 = x0;
+            gy0 = y0;
+            gx1 = x1;
+            gy1 = y1;
+            paintType = StyleTable.PAINT_LINEAR;
+            return this;
+        }
+
+        /**
+         * Radial gradient fill, in path coordinates.
+         */
+        public Path fillRadial(float cx, float cy, float radius, Color center, Color edge) {
+            fill(center != null ? center : Color.WHITE);
+            gradientEndRgba = Colors.pack(edge != null ? edge : Color.WHITE);
+            gx0 = cx;
+            gy0 = cy;
+            gRadius = Math.max(radius, 1e-4f);
+            paintType = StyleTable.PAINT_RADIAL;
+            return this;
+        }
+
+        /**
+         * Stroke the path (centered on it).
+         */
+        public Path stroke(float width, Color color) {
+            hasStroke = color != null && width > 0f;
+            if (hasStroke) {
+                strokeWidth = width;
+                strokeRgba = Colors.pack(color);
+            }
+            return this;
+        }
+
+        public Path join(LineJoin join) {
+            this.join = join != null ? join : LineJoin.MITER;
+            return this;
+        }
+
+        public Path cap(LineCap cap) {
+            this.cap = cap != null ? cap : LineCap.BUTT;
+            return this;
+        }
+
+        /**
+         * Longest miter, as a multiple of half the stroke width, before a miter join becomes a bevel (default 4).
+         */
+        public Path miterLimit(float limit) {
+            miterLimit = Math.max(1f, limit);
+            return this;
+        }
+
+        public Path depth(float depth) {
+            depthValue = depth;
+            return this;
+        }
+
+        // endregion
+
+        @Override
+        void commit() {
+            open = false;
+            float aa = aaMargin() * 0.5f; // ~1 pixel fringe
+            if (hasFill) {
+                int styleId = paintStyle();
+                for (int s = 0; s < subCount; s++) {
+                    fillSubPath(subStart[s], subEnd(s), styleId, aa);
+                }
+            }
+            if (hasStroke) {
+                for (int s = 0; s < subCount; s++) {
+                    strokeSubPath(subStart[s], subEnd(s), subClosed[s], aa);
+                }
+            }
+        }
+
+        private int subEnd(int s) {
+            return s + 1 < subCount ? subStart[s + 1] : pointCount;
+        }
+
+        private int paintStyle() {
+            if (paintType == StyleTable.PAINT_SOLID) {
+                return 0;
+            }
+            float[] r = styleRecord;
+            java.util.Arrays.fill(r, 0f);
+            r[StyleTable.PAINT_TYPE] = paintType;
+            r[StyleTable.GRADIENT_GEOMETRY] = gx0;
+            r[StyleTable.GRADIENT_GEOMETRY + 1] = gy0;
+            if (paintType == StyleTable.PAINT_LINEAR) {
+                r[StyleTable.GRADIENT_GEOMETRY + 2] = gx1;
+                r[StyleTable.GRADIENT_GEOMETRY + 3] = gy1;
+            } else {
+                r[StyleTable.GRADIENT_GEOMETRY + 2] = gRadius;
+            }
+            unpack(gradientEndRgba, r, StyleTable.GRADIENT_END_COLOR);
+            return list.styles().intern(r);
+        }
+
+        private void fillSubPath(int start, int end, int styleId, float aa) {
+            int count = end - start;
+            if (count < 3) {
+                return;
+            }
+            float[] p = points;
+            int triangles = tessellator.triangulate(p, start, count);
+            for (int t = 0; t < triangles; t++) {
+                int a = start + tessellator.triangle(t, 0);
+                int b = start + tessellator.triangle(t, 1);
+                int c = start + tessellator.triangle(t, 2);
+                fillTriangle(p[a * 2], p[a * 2 + 1], p[b * 2], p[b * 2 + 1], p[c * 2], p[c * 2 + 1],
+                        fillRgba, styleId, depthValue);
+            }
+
+            // anti-aliasing fringe: outside every edge, plus wedges at convex corners
+            float orientation = PathTessellator.signedArea(p, start, count) > 0 ? 1f : -1f;
+            for (int i = 0; i < count; i++) {
+                int a = start + i, b = start + (i + 1) % count, c = start + (i + 2) % count;
+                float ax = p[a * 2], ay = p[a * 2 + 1], bx = p[b * 2], by = p[b * 2 + 1];
+                float cx = p[c * 2], cy = p[c * 2 + 1];
+                float o1x = 0, o1y = 0, o2x = 0, o2y = 0;
+                float l1 = (float) Math.hypot(bx - ax, by - ay), l2 = (float) Math.hypot(cx - bx, cy - by);
+                if (l1 > 1e-6f) {
+                    o1x = orientation * (by - ay) / l1 * aa;
+                    o1y = -orientation * (bx - ax) / l1 * aa;
+                    fringe(ax, ay, bx, by, o1x, o1y, fillRgba, styleId, depthValue);
+                }
+                if (l1 > 1e-6f && l2 > 1e-6f) {
+                    o2x = orientation * (cy - by) / l2 * aa;
+                    o2y = -orientation * (cx - bx) / l2 * aa;
+                    float turn = (bx - ax) * (cy - by) - (by - ay) * (cx - bx);
+                    if (turn * orientation > 0) { // convex corner at b
+                        fringeWedge(bx, by, o1x, o1y, o2x, o2y, fillRgba, styleId, depthValue);
+                    }
+                }
+            }
+        }
+
+        private void strokeSubPath(int start, int end, boolean closed, float aa) {
+            int count = end - start;
+            if (count < 2) {
+                return;
+            }
+            float[] p = points;
+            float w = strokeWidth * 0.5f;
+            int segments = closed ? count : count - 1;
+            for (int i = 0; i < segments; i++) {
+                int a = start + i, b = start + (i + 1) % count;
+                float extA = 0f, extB = 0f;
+                if (!closed && cap == LineCap.SQUARE) {
+                    extA = i == 0 ? w : 0f;
+                    extB = i == segments - 1 ? w : 0f;
+                }
+                strokeSegment(p[a * 2], p[a * 2 + 1], p[b * 2], p[b * 2 + 1], w, extA, extB, aa, strokeRgba,
+                        depthValue);
+            }
+
+            // joins
+            int firstJoin = closed ? 0 : 1, lastJoin = closed ? count - 1 : count - 2;
+            for (int i = firstJoin; i <= lastJoin; i++) {
+                int prev = start + (i - 1 + count) % count, v = start + i, nxt = start + (i + 1) % count;
+                strokeJoin(p[prev * 2], p[prev * 2 + 1], p[v * 2], p[v * 2 + 1], p[nxt * 2], p[nxt * 2 + 1], w, aa);
+            }
+
+            // round caps
+            if (!closed && cap == LineCap.ROUND) {
+                roundDot(p[start * 2], p[start * 2 + 1], w);
+                roundDot(p[(end - 1) * 2], p[(end - 1) * 2 + 1], w);
+            }
+        }
+
+        private void strokeJoin(float ax, float ay, float vx, float vy, float bx, float by, float w, float aa) {
+            float l1 = (float) Math.hypot(vx - ax, vy - ay), l2 = (float) Math.hypot(bx - vx, by - vy);
+            if (l1 < 1e-6f || l2 < 1e-6f) {
+                return;
+            }
+            float u1x = (vx - ax) / l1, u1y = (vy - ay) / l1;
+            float u2x = (bx - vx) / l2, u2y = (by - vy) / l2;
+            float cross = u1x * u2y - u1y * u2x;
+            if (Math.abs(cross) < 1e-4f && u1x * u2x + u1y * u2y > 0) {
+                return; // straight continuation
+            }
+            if (join == LineJoin.ROUND) {
+                roundDot(vx, vy, w);
+                return;
+            }
+            float side = cross > 0 ? -1f : 1f; // outer side of the turn
+            float n1x = -u1y * side, n1y = u1x * side; // outward normals
+            float n2x = -u2y * side, n2y = u2x * side;
+            float pax = vx + n1x * w, pay = vy + n1y * w; // outer corner of the incoming segment
+            float pbx = vx + n2x * w, pby = vy + n2y * w; // outer corner of the outgoing segment
+
+            float mx = n1x + n2x, my = n1y + n2y;
+            float ml = (float) Math.hypot(mx, my);
+            float cosHalf = ml > 1e-6f ? (mx * n1x + my * n1y) / ml : 0f;
+            if (join == LineJoin.MITER && cosHalf > 1e-4f && 1f / cosHalf <= miterLimit) {
+                float tipX = vx + mx / ml * (w / cosHalf), tipY = vy + my / ml * (w / cosHalf);
+                fillTriangle(vx, vy, pax, pay, tipX, tipY, strokeRgba, 0, depthValue);
+                fillTriangle(vx, vy, tipX, tipY, pbx, pby, strokeRgba, 0, depthValue);
+                edgeFringe(pax, pay, tipX, tipY, vx, vy, aa);
+                edgeFringe(tipX, tipY, pbx, pby, vx, vy, aa);
+            } else { // bevel (or a miter beyond its limit)
+                fillTriangle(vx, vy, pax, pay, pbx, pby, strokeRgba, 0, depthValue);
+                edgeFringe(pax, pay, pbx, pby, vx, vy, aa);
+            }
+        }
+
+        /** Fringe on edge a-b, on the side away from (awayX, awayY). */
+        private void edgeFringe(float ax, float ay, float bx, float by, float awayX, float awayY, float aa) {
+            float l = (float) Math.hypot(bx - ax, by - ay);
+            if (l < 1e-6f) {
+                return;
+            }
+            float nx = (by - ay) / l, ny = -(bx - ax) / l;
+            if ((awayX - ax) * nx + (awayY - ay) * ny > 0) {
+                nx = -nx;
+                ny = -ny;
+            }
+            fringe(ax, ay, bx, by, nx * aa, ny * aa, strokeRgba, 0, depthValue);
+        }
+
+        private void roundDot(float x, float y, float radius) {
+            float pad = aaMargin();
+            addShapeQuad(ShapeType.ELLIPSE, x, y, 1f, 0f, radius + pad, radius + pad, radius, radius, 0, 0, 0, 0,
+                    strokeRgba, 0, depthValue);
         }
     }
 

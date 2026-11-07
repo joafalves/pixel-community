@@ -10,7 +10,8 @@ import java.util.Arrays;
  * <p>
  * Every command is a quad: either a textured sprite quad ({@link VertexLayout#SPRITE}, see
  * {@link #addQuad}) or a shape/canvas quad ({@link VertexLayout#FULL}, see {@link #addShape}) that also carries a
- * {@link ShapeType}, shape-local extents, shape parameters and ids into this list's {@link StyleTable} and
+ * {@link ShapeType}, per-corner texture/shape coordinates and local coordinates, shape parameters and ids into this
+ * list's {@link StyleTable} and
  * {@link ClipTable}. Commands are stored struct-of-arrays in primitive arrays that grow but never shrink. After
  * {@link #prepare()}, {@link #orderedIndex(int)} gives the commands in final draw order (see {@link LayerMode}).
  * Front-ends (SpriteBatch, Canvas, ...) record here; a {@link Batcher} turns the result into GPU batches.
@@ -28,7 +29,8 @@ public final class DrawList {
     private int[] colors;      // packed RGBA8 (see Colors)
     private VertexLayout[] layouts;
     private byte[] shapeTypes;
-    private float[] extents;   // 2 per quad: shape-local half extents (FULL only)
+    private float[] cornerUv;    // 8 per quad: texture coordinates or shape dimensions per corner (FULL only)
+    private float[] cornerLocal; // 8 per quad: shape-local coordinates per corner (FULL only)
     private float[] params;    // 4 per quad (FULL only)
     private int[] styleIds;    // StyleTable id, 0 = none (FULL only)
     private int[] clipIds;     // ClipTable id, 0 = none (FULL only)
@@ -156,8 +158,58 @@ public final class DrawList {
         int i = append(texture, x0, y0, x1, y1, x2, y2, x3, y3, u0, v0, u1, v1, rgba, depth);
         layouts[i] = VertexLayout.FULL;
         shapeTypes[i] = (byte) type.code();
-        extents[i * 2] = extentX;
-        extents[i * 2 + 1] = extentY;
+        int c = i * 8; // corners: top-left, top-right, bottom-right, bottom-left
+        cornerUv[c] = u0;
+        cornerUv[c + 1] = v0;
+        cornerUv[c + 2] = u1;
+        cornerUv[c + 3] = v0;
+        cornerUv[c + 4] = u1;
+        cornerUv[c + 5] = v1;
+        cornerUv[c + 6] = u0;
+        cornerUv[c + 7] = v1;
+        cornerLocal[c] = -extentX;
+        cornerLocal[c + 1] = -extentY;
+        cornerLocal[c + 2] = extentX;
+        cornerLocal[c + 3] = -extentY;
+        cornerLocal[c + 4] = extentX;
+        cornerLocal[c + 5] = extentY;
+        cornerLocal[c + 6] = -extentX;
+        cornerLocal[c + 7] = extentY;
+        int p = i * 4;
+        params[p] = p0;
+        params[p + 1] = p1;
+        params[p + 2] = p2;
+        params[p + 3] = p3;
+        styleIds[i] = styleId;
+        clipIds[i] = clipId;
+    }
+
+    /**
+     * Record a {@link VertexLayout#FULL} quad with arbitrary per-corner data (path geometry). Triangles are quads
+     * whose last corner repeats the first one.
+     *
+     * @param type      The shape type.
+     * @param positions 8 floats: x, y of the 4 corners (layer space), in quad order.
+     * @param uv        8 floats: per-corner texture coordinates / shape data.
+     * @param local     8 floats: per-corner local coordinates.
+     * @param p0        Shape parameter 0.
+     * @param p1        Shape parameter 1.
+     * @param p2        Shape parameter 2.
+     * @param p3        Shape parameter 3.
+     * @param rgba      Packed fill color.
+     * @param styleId   Id in {@link #styles()} (0 = no style).
+     * @param clipId    Id in {@link #clips()} (0 = no clip).
+     * @param depth     The depth (only used by {@link LayerMode#SORTED}).
+     */
+    public void addShapeCorners(ShapeType type, float[] positions, float[] uv, float[] local,
+                                float p0, float p1, float p2, float p3, int rgba, int styleId, int clipId,
+                                float depth) {
+        int i = append(null, positions[0], positions[1], positions[2], positions[3], positions[4], positions[5],
+                positions[6], positions[7], 0f, 0f, 0f, 0f, rgba, depth);
+        layouts[i] = VertexLayout.FULL;
+        shapeTypes[i] = (byte) type.code();
+        System.arraycopy(uv, 0, cornerUv, i * 8, 8);
+        System.arraycopy(local, 0, cornerLocal, i * 8, 8);
         int p = i * 4;
         params[p] = p0;
         params[p + 1] = p1;
@@ -288,12 +340,30 @@ public final class DrawList {
         return shapeTypes[index];
     }
 
-    public float extentX(int index) {
-        return extents[index * 2];
+    /**
+     * @param index  The command index ({@link VertexLayout#FULL}).
+     * @param corner 0 = top-left, 1 = top-right, 2 = bottom-right, 3 = bottom-left.
+     * @return The u (texture coordinate or shape data) of that corner.
+     */
+    public float cornerU(int index, int corner) {
+        return cornerUv[index * 8 + corner * 2];
     }
 
-    public float extentY(int index) {
-        return extents[index * 2 + 1];
+    public float cornerV(int index, int corner) {
+        return cornerUv[index * 8 + corner * 2 + 1];
+    }
+
+    /**
+     * @param index  The command index ({@link VertexLayout#FULL}).
+     * @param corner 0 = top-left, 1 = top-right, 2 = bottom-right, 3 = bottom-left.
+     * @return The local x of that corner.
+     */
+    public float localX(int index, int corner) {
+        return cornerLocal[index * 8 + corner * 2];
+    }
+
+    public float localY(int index, int corner) {
+        return cornerLocal[index * 8 + corner * 2 + 1];
     }
 
     /**
@@ -374,7 +444,8 @@ public final class DrawList {
         colors = new int[capacity];
         layouts = new VertexLayout[capacity];
         shapeTypes = new byte[capacity];
-        extents = new float[capacity * 2];
+        cornerUv = new float[capacity * 8];
+        cornerLocal = new float[capacity * 8];
         params = new float[capacity * 4];
         styleIds = new int[capacity];
         clipIds = new int[capacity];
@@ -389,7 +460,8 @@ public final class DrawList {
         colors = Arrays.copyOf(colors, capacity);
         layouts = Arrays.copyOf(layouts, capacity);
         shapeTypes = Arrays.copyOf(shapeTypes, capacity);
-        extents = Arrays.copyOf(extents, capacity * 2);
+        cornerUv = Arrays.copyOf(cornerUv, capacity * 8);
+        cornerLocal = Arrays.copyOf(cornerLocal, capacity * 8);
         params = Arrays.copyOf(params, capacity * 4);
         styleIds = Arrays.copyOf(styleIds, capacity);
         clipIds = Arrays.copyOf(clipIds, capacity);

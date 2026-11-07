@@ -29,6 +29,8 @@ const int TEXTURED = 0;
 const int RECT = 1;
 const int ELLIPSE = 2;
 const int SEGMENT = 3;
+const int PATH_FILL = 4;   // local x = coverage, uv = path coordinates
+const int PATH_STROKE = 5; // local y = distance across the line, uv.x = half width
 
 // ---------------------------------------------------------------------------------------------------------------
 // distance functions
@@ -163,9 +165,22 @@ void main() {
 /*$textureSwitchCase*/
         }
     } else {
-        float d = shapeDistance(vLocal);
-        float pixel = max(fwidth(d), 1e-4);
-        float fillCoverage = coverage(d, pixel);
+        float d;
+        float pixel;
+        float fillCoverage;
+        if (vType == PATH_FILL) {
+            d = 0.0;
+            pixel = 1.0;
+            fillCoverage = clamp(vLocal.x, 0.0, 1.0); // interpolated across the anti-aliasing fringe
+        } else if (vType == PATH_STROKE) {
+            d = abs(vLocal.y) - vTexCoord.x;
+            pixel = max(fwidth(d), 1e-4);
+            fillCoverage = coverage(d, pixel);
+        } else {
+            d = shapeDistance(vLocal);
+            pixel = max(fwidth(d), 1e-4);
+            fillCoverage = coverage(d, pixel);
+        }
         vec4 fill = vColor;
 
         vec4 strokeColor = vec4(0.0);
@@ -181,12 +196,13 @@ void main() {
 
             // paint
             if (flags.x > 0.5) {
+                vec2 gp = vType == PATH_FILL ? vTexCoord : vLocal; // paths: gradients in path coordinates
                 float t;
                 if (flags.x < 1.5) {
                     vec2 axis = gradient.zw - gradient.xy;
-                    t = dot(vLocal - gradient.xy, axis) / max(dot(axis, axis), 1e-6);
+                    t = dot(gp - gradient.xy, axis) / max(dot(axis, axis), 1e-6);
                 } else {
-                    t = length(vLocal - gradient.xy) / gradient.z;
+                    t = length(gp - gradient.xy) / gradient.z;
                 }
                 fill = mix(vColor, uStyles[base + 3], clamp(t, 0.0, 1.0));
             }
@@ -204,7 +220,11 @@ void main() {
                 } else if (vType == ELLIPSE) {
                     float meanRadius = 0.5 * (vTexCoord.x + vTexCoord.y);
                     float s = (atan(vLocal.y, vLocal.x) + 3.14159265) * meanRadius + flags.y;
-                    strokeCoverage *= dashMask(s, stroke.z, stroke.w, pixel);
+                    // stretch the pattern so a whole number of periods fits the outline: no seam where it wraps
+                    float circumference = 6.28318531 * meanRadius;
+                    float period = stroke.z + stroke.w;
+                    float fit = circumference / (max(1.0, floor(circumference / period + 0.5)) * period);
+                    strokeCoverage *= dashMask(s, stroke.z * fit, stroke.w * fit, pixel);
                 }
             }
 

@@ -150,19 +150,14 @@ public final class Batcher {
 
     private static void writeFull(DrawList list, int index, int slot, int clip, int style, VertexStream vertices) {
         int rgba = list.color(index);
-        float u0 = list.u0(index), v0 = list.v0(index), u1 = list.u1(index), v1 = list.v1(index);
-        float ex = list.extentX(index), ey = list.extentY(index);
         float p0 = list.param(index, 0), p1 = list.param(index, 1), p2 = list.param(index, 2);
         float p3 = list.param(index, 3);
         int type = list.shapeType(index);
-        vertices.putFullVertex(list.x(index, 0), list.y(index, 0), u0, v0, rgba, -ex, -ey, p0, p1, p2, p3,
-                type, slot, clip, style);
-        vertices.putFullVertex(list.x(index, 1), list.y(index, 1), u1, v0, rgba, ex, -ey, p0, p1, p2, p3,
-                type, slot, clip, style);
-        vertices.putFullVertex(list.x(index, 2), list.y(index, 2), u1, v1, rgba, ex, ey, p0, p1, p2, p3,
-                type, slot, clip, style);
-        vertices.putFullVertex(list.x(index, 3), list.y(index, 3), u0, v1, rgba, -ex, ey, p0, p1, p2, p3,
-                type, slot, clip, style);
+        for (int corner = 0; corner < 4; corner++) {
+            vertices.putFullVertex(list.x(index, corner), list.y(index, corner),
+                    list.cornerU(index, corner), list.cornerV(index, corner), rgba,
+                    list.localX(index, corner), list.localY(index, corner), p0, p1, p2, p3, type, slot, clip, style);
+        }
     }
 
     private void ensureScratch(int clips, int styles) {

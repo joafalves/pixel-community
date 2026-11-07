@@ -310,6 +310,96 @@ class CanvasTest {
         assertEquals(3 - 1 - AA, v.get(8).x(), EPS);
     }
 
+    private static long count(List<FullVertex> v, ShapeType type) {
+        return v.stream().filter(x -> x.type() == type.code()).count() / 4;
+    }
+
+    @Test
+    void pathFillTrianglesPlusFringe() {
+        List<FullVertex> v = draw(c -> c.path().moveTo(0, 0).lineTo(100, 0).lineTo(100, 50).lineTo(0, 50).close()
+                .fill(Color.RED)).shapes();
+        // 2 triangles + 4 edge fringes + 4 convex corner wedges
+        assertEquals(10, count(v, ShapeType.PATH_FILL));
+        assertEquals(1f, v.get(0).localX(), EPS); // triangles: full coverage
+        assertEquals(Colors.pack(Color.RED), v.get(0).rgba());
+        // a fringe quad: coverage 1 on the edge, 0 one pixel outside
+        FullVertex inner = v.get(8), outer = v.get(10);
+        assertEquals(1f, inner.localX(), EPS);
+        assertEquals(0f, outer.localX(), EPS);
+        assertEquals(1f, Math.hypot(outer.x() - v.get(9).x(), outer.y() - v.get(9).y()), EPS);
+    }
+
+    @Test
+    void concaveCornersGetNoWedge() {
+        List<FullVertex> v = draw(c -> c.path().moveTo(0, 0).lineTo(10, 0).lineTo(10, 20).lineTo(20, 20)
+                .lineTo(20, 30).lineTo(0, 30).close().fill(Color.WHITE)).shapes();
+        // L shape: 4 triangles + 6 fringes + 5 convex corners (1 reflex)
+        assertEquals(4 + 6 + 5, count(v, ShapeType.PATH_FILL));
+    }
+
+    @Test
+    void openStrokeSegmentsJoinsAndCaps() {
+        RecordingBackend.Pass miter = draw(c -> c.path().moveTo(0, 0).lineTo(50, 0).lineTo(50, 50)
+                .stroke(10, Color.WHITE));
+        assertEquals(2, count(miter.shapes(), ShapeType.PATH_STROKE));
+        // miter join: 2 triangles + 2 fringes
+        assertEquals(4, count(miter.shapes(), ShapeType.PATH_FILL));
+        FullVertex stroke = miter.shapes().get(0);
+        assertEquals(5f, stroke.u(), EPS); // half width
+        assertEquals(-(5 + 1f), stroke.localY(), EPS); // distance across, with the 1 px fringe
+
+        RecordingBackend.Pass bevel = draw(c -> c.path().moveTo(0, 0).lineTo(50, 0).lineTo(50, 50)
+                .stroke(10, Color.WHITE).join(LineJoin.BEVEL));
+        assertEquals(2, count(bevel.shapes(), ShapeType.PATH_FILL)); // 1 triangle + 1 fringe
+
+        RecordingBackend.Pass round = draw(c -> c.path().moveTo(0, 0).lineTo(50, 0).lineTo(50, 50)
+                .stroke(10, Color.WHITE).join(LineJoin.ROUND).cap(LineCap.ROUND));
+        assertEquals(3, count(round.shapes(), ShapeType.ELLIPSE)); // join + 2 caps
+    }
+
+    @Test
+    void sharpAnglesFallBackToBevelBeyondTheMiterLimit() {
+        RecordingBackend.Pass pass = draw(c -> c.path().moveTo(0, 0).lineTo(100, 0).lineTo(0, 5)
+                .stroke(10, Color.WHITE).miterLimit(4));
+        assertEquals(2, count(pass.shapes(), ShapeType.PATH_FILL)); // bevel: 1 triangle + 1 fringe
+    }
+
+    @Test
+    void closedStrokesJoinEveryCorner() {
+        RecordingBackend.Pass pass = draw(c -> c.path().moveTo(0, 0).lineTo(10, 0).lineTo(10, 10).lineTo(0, 10)
+                .lineTo(0, 0).close().stroke(2, Color.WHITE));
+        assertEquals(4, count(pass.shapes(), ShapeType.PATH_STROKE)); // duplicate closing point dropped
+        assertEquals(4 * 4, count(pass.shapes(), ShapeType.PATH_FILL)); // 4 miter joins
+    }
+
+    @Test
+    void squareCapsExtendTheEnds() {
+        List<FullVertex> v = draw(c -> c.path().moveTo(0, 0).lineTo(10, 0).stroke(4, Color.WHITE)
+                .cap(LineCap.SQUARE)).shapes();
+        assertEquals(-2f, v.get(0).x(), EPS); // extended by half the width
+        assertEquals(12f, v.get(1).x(), EPS);
+    }
+
+    @Test
+    void curvesAreFlattenedInUserSpace() {
+        List<FullVertex> v = draw(c -> c.path().moveTo(0, 0).quadTo(50, 100, 100, 0).stroke(2, Color.WHITE))
+                .shapes();
+        assertTrue(count(v, ShapeType.PATH_STROKE) > 4);
+    }
+
+    @Test
+    void pathGradientsUsePathCoordinates() {
+        RecordingBackend.Pass pass = draw(c -> c.path().moveTo(10, 10).lineTo(110, 10).lineTo(60, 80).close()
+                .fillLinear(10, 10, Color.RED, 110, 10, Color.BLUE));
+        float[] style = pass.batches().get(0).styles().get(0);
+        assertArrayEquals(new float[]{10, 10, 110, 10},
+                java.util.Arrays.copyOfRange(style, StyleTable.GRADIENT_GEOMETRY, StyleTable.GRADIENT_GEOMETRY + 4), EPS);
+        for (FullVertex vertex : pass.shapes()) { // uv carries the path position (identity transform)
+            assertEquals(vertex.x(), vertex.u(), EPS);
+            assertEquals(vertex.y(), vertex.v(), EPS);
+        }
+    }
+
     @Test
     void restoreWithoutSaveFails() {
         assertThrows(IllegalStateException.class, () -> draw(Canvas::restore));
@@ -339,6 +429,10 @@ class CanvasTest {
                 c.roundRect(0, 0, 30, 12, 4).fillLinear(0, 0, fill, 30, 0, Color.WHITE).shadow(0, 3, 6, Color.BLACK);
                 c.circle(0, 0, 9).noFill().stroke(2, Color.WHITE).dash(3, 2).dashPhase(i);
                 c.ninePatch(texture, 0, 0, 40, 20).insets(4);
+                if (i % 20 == 0) {
+                    c.path().moveTo(0, 0).lineTo(20, 0).quadTo(30, 10, 20, 20).cubicTo(10, 30, 0, 30, 0, 20).close()
+                            .fill(fill).stroke(2, Color.WHITE).join(LineJoin.ROUND);
+                }
                 c.restore();
             }
             batch.end();

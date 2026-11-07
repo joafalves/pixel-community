@@ -491,14 +491,32 @@ Each phase ends green (`./gradlew build`) and is reviewable on its own.
   method, 4 samples), a Gaussian across the edge distance for ellipses and lines, and a hard shadow when blur is 0.
   With no offset it doubles as a glow. The shadow, fill and stroke of a shape are one quad.
 - `dash(length, gap)` / `dashPhase(phase)` on lines (the line body) and ellipses (the stroke; exact for circles,
-  mean-radius approximation for ellipses). Dash ends are flat. **Not yet:** dashed rectangle strokes, which need
+  mean-radius approximation for ellipses). On ellipses the pattern is stretched slightly so a whole number of
+  dashes fits the outline, which avoids a seam where it wraps. Dash ends are flat. **Not yet:** dashed rectangle strokes, which need
   an arc-length parameter along a rounded rectangle.
 - `ninePatch(texture, x, y, w, h).insets(...)`: 9 textured quads. Corners shrink proportionally when the target is
   smaller than the borders.
 - Tests: local-frame gradient conversion, shadow reach and padding, dash records, style sharing, nine-patch
   geometry, and still 0 bytes allocated per frame. Demo: `urp/CanvasPaintDemo`, all effects in 1 draw call.
 
-*2c:* paths: polygon fill (triangulation), stroke expansion with joins and caps.
+*2c: paths* ✅
+- `canvas.path()`: `moveTo/lineTo/quadTo/cubicTo/arc/close`, then `fill`/`fillLinear`/`fillRadial` and/or
+  `stroke(width, color)` with `join(MITER|BEVEL|ROUND)`, `miterLimit`, `cap(BUTT|SQUARE|ROUND)`.
+- Curves are flattened in path space to a quarter-pixel tolerance, using Wang's formula for Béziers and chord error
+  for arcs.
+- Fills: ear-clipping triangulation (convex or concave, either winding) plus a one-pixel anti-aliasing fringe
+  (coverage interpolated across `PATH_FILL` quads) on every edge, with wedges at convex corners. Gradients work in
+  path coordinates.
+- Strokes: one `PATH_STROKE` quad per segment, with a distance field across the line so both long edges are
+  anti-aliased at any width. Miter and bevel joins are triangles plus fringe; round joins and caps are SDF circles.
+- Draw-list change: shape commands now store per-corner uv and local coordinates, so arbitrary geometry
+  (triangles = quads with a repeated corner) uses the same batching path.
+- Limitations (documented in the API): no holes or self-intersections in fills (sub-paths fill independently);
+  overlapping parts of *translucent* strokes (inner side of joins, caps) blend twice; butt ends of open strokes are
+  not anti-aliased along the line direction.
+- Tests: triangulation area and coverage (convex, concave, star, collinear, windings), flattening error bound,
+  fringe coverage, join/cap geometry, miter-limit fallback, closed strokes, path gradients, and zero allocations.
+  Demo: `urp/CanvasPathDemo` (1 draw call).
 
 *2d:* MTSDF fonts: runtime generation (msdfgen) with a disk cache, the pre-baked atlas importer, the glyph shader
 with fill/stroke/shadow/weight, and `TextLayout`/`TextMeasurer` (GL-free, tested). A text quality demo covers sizes

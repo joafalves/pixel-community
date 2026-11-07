@@ -25,7 +25,18 @@ public enum ShapeType {
      * Line segment along the local x axis: uv = (half length, half width), params[0] = cap
      * (see {@code LineCap#code()}).
      */
-    SEGMENT(3);
+    SEGMENT(3),
+
+    /**
+     * Path fill geometry (triangles and anti-aliasing fringes): local x = coverage (1 inside, 0 one pixel outside),
+     * uv = position in path coordinates (for gradients).
+     */
+    PATH_FILL(4),
+
+    /**
+     * Path stroke segment along the local x axis: local y = signed distance from the center line, uv.x = half width.
+     */
+    PATH_STROKE(5);
 
     private final int code;
 
