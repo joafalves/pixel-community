@@ -5,9 +5,9 @@
 
 package org.pixel.demo.concept.performance;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.Timer;
 import org.pixel.commons.logger.ConsoleLogger;
 import org.pixel.commons.logger.LogLevel;
@@ -21,7 +21,7 @@ import org.pixel.ext.ecs.Sprite;
 import org.pixel.ext.ecs.component.ConstantRotationComponent;
 import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
-import org.pixel.core.Game;
+import org.pixel.core.GameApp;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
@@ -29,7 +29,7 @@ import org.pixel.math.Boundary;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
 
-public class PerformanceGame extends Game {
+public class PerformanceGame extends GameApp {
 
     private static final Logger log = LoggerFactory.getLogger(PerformanceGame.class);
 
@@ -43,15 +43,11 @@ public class PerformanceGame extends Game {
 
     private final Timer debugTimer = new Timer(1000);
 
-    public PerformanceGame(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        contentManager = ServiceProvider.get(ContentManager.class);
-        gameScene = new GameScene("GameScene01", new Camera2D(this, Vector2.zero()), spriteBatch);
+        spriteBatch = graphics().createSpriteBatch();
+        contentManager = content();
+        gameScene = new GameScene("GameScene01", new Camera2D(context(), Vector2.zero()), spriteBatch);
 
         var screenBoundary = new Boundary(0, 0, getVirtualWidth(), getVirtualHeight());
         var textureArray = new Texture[]{
@@ -101,7 +97,6 @@ public class PerformanceGame extends Game {
     @Override
     public void dispose() {
         spriteBatch.dispose();
-        contentManager.dispose();
         gameScene.dispose();
         super.dispose();
     }
@@ -114,7 +109,6 @@ public class PerformanceGame extends Game {
 
         ConsoleLogger.setLogLevel(LogLevel.TRACE);
 
-        var game = new PerformanceGame(settings);
-        game.start();
+        DesktopLauncher.run(new PerformanceGame(), settings);
     }
 }

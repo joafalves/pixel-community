@@ -5,7 +5,6 @@
 
 package org.pixel.demo.concept.spaceshooter.entity;
 
-import org.pixel.blueprint.annotation.AfterAssembly;
 import org.pixel.commons.event.EventManager;
 import org.pixel.content.TextureFrame;
 import org.pixel.demo.concept.spaceshooter.SpaceShooterAttribute;
@@ -28,9 +27,13 @@ public class PlayerSprite extends SpaceShipSprite {
         super("Player", textureFrame, 10);
     }
 
-    @AfterAssembly
-    private void init() {
-        subscribeEvents();
+    /**
+     * Start reacting to game events (shooting).
+     *
+     * @param events The game's event bus.
+     */
+    public void listen(EventManager events) {
+        events.subscribe(SHOOT, $ -> shoot());
     }
 
     private void shoot() {
@@ -53,8 +56,5 @@ public class PlayerSprite extends SpaceShipSprite {
         return bullet;
     }
 
-    private void subscribeEvents() {
-        getTopMostParent().getData().get(EventManager.class).subscribe(SHOOT, $ -> shoot());
-    }
 
 }

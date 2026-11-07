@@ -1,5 +1,6 @@
 package org.pixel.demo.concept.roadcar;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.LoggerFactory;
@@ -7,7 +8,7 @@ import org.pixel.demo.concept.roadcar.model.RoadSegment;
 import org.pixel.demo.concept.roadcar.model.Vehicle;
 import org.pixel.ext.log4j.Log4j2LoggerStrategy;
 import org.pixel.core.WindowSettings;
-import org.pixel.core.Game;
+import org.pixel.core.GameApp;
 import org.pixel.graphics.render.RenderEngine2D;
 import org.pixel.graphics.render.nanovg.NvgRenderEngine;
 import org.pixel.input.keyboard.Keyboard;
@@ -19,7 +20,7 @@ import org.pixel.math.Vector2;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RoadCarGame extends Game {
+public class RoadCarGame extends GameApp {
 
     static {
         LoggerFactory.setDefaultStrategy(new Log4j2LoggerStrategy());
@@ -36,17 +37,13 @@ public class RoadCarGame extends Game {
     private float cameraZoom;
     private float spawnElapsed = 0f;
 
-    public RoadCarGame(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
         super.load();
 
         cameraPosition = new Vector2(150, 150);
         cameraZoom = 0.75f;
-        renderEngine = new NvgRenderEngine(getSettings().getWindowWidth(), getSettings().getWindowHeight());
+        renderEngine = new NvgRenderEngine(window().getWidth(), window().getHeight());
 
         roadSegments.add(new RoadSegment(new Vector2(0, 0), true));
         roadSegments.add(new RoadSegment(new Vector2(200, 0)));
@@ -241,7 +238,6 @@ public class RoadCarGame extends Game {
         settings.setWindowWidth(width);
         settings.setWindowHeight(height);
 
-        var window = new RoadCarGame(settings);
-        window.start();
+        DesktopLauncher.run(new RoadCarGame(), settings);
     }
 }

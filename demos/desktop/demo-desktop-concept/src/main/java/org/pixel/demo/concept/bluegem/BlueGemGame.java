@@ -1,39 +1,46 @@
 package org.pixel.demo.concept.bluegem;
 
-import org.pixel.blueprint.annotation.Auto;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.Game;
+import org.pixel.core.Camera2D;
+import org.pixel.core.DesktopLauncher;
+import org.pixel.core.GameApp;
 import org.pixel.core.WindowSettings;
+import org.pixel.demo.concept.bluegem.scene.TitleGameScene;
 import org.pixel.ext.ecs.SceneManager;
+import org.pixel.graphics.render.SpriteBatch;
 
 import static org.pixel.demo.concept.bluegem.BlueGemConstants.VIRTUAL_HEIGHT;
 import static org.pixel.demo.concept.bluegem.BlueGemConstants.VIRTUAL_WIDTH;
 
-public class BlueGemGame extends Game {
+public class BlueGemGame extends GameApp {
 
-    @Auto
+    private SpriteBatch spriteBatch;
     private SceneManager sceneManager;
-
-    public BlueGemGame(WindowSettings settings) {
-        super(settings);
-    }
 
     @Override
     public void load() {
-        super.load();
+        // explicit wiring (this used to be assembled by blueprints)
+        spriteBatch = graphics().createSpriteBatch();
+        var mainCamera = new Camera2D(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
+        var titleScene = new TitleGameScene("TitleScene", mainCamera, spriteBatch, content());
+        sceneManager = new SceneManager(titleScene);
     }
 
     @Override
     public void update(DeltaTime delta) {
-        super.update(delta);
         sceneManager.update(delta);
     }
 
     @Override
     public void draw(DeltaTime delta) {
-        super.draw(delta);
         sceneManager.draw(delta);
+    }
+
+    @Override
+    public void dispose() {
+        sceneManager.dispose();
+        spriteBatch.dispose();
     }
 
     public static void main(String[] args) {
@@ -41,11 +48,7 @@ public class BlueGemGame extends Game {
         settings.setTitle("BlueGem");
         settings.setVsync(true);
         settings.setBackgroundColor(new Color(0xd1dbd3ff));
-        // Set the base-package entries for the blueprint assembler (this is so that the assembler can find the
-        // blueprint classes and the respective components):
-        settings.setBlueprintPackages(new String[]{"org.pixel.demo.concept.bluegem"});
 
-        var game = new BlueGemGame(settings);
-        game.start();
+        DesktopLauncher.run(new BlueGemGame(), settings);
     }
 }

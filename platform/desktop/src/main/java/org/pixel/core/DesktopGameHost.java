@@ -3,37 +3,43 @@ package org.pixel.core;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;
-import org.pixel.audio.ALAudioPlayerFactory;
+import org.pixel.audio.ALAudioPlayer;
 import org.pixel.audio.AudioPlayer;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ContentManager;
-import org.pixel.content.GLContentManagerFactory;
+import org.pixel.content.DesktopResourceLoader;
+import org.pixel.content.importer.ALVorbisAudioImporter;
+import org.pixel.content.importer.ByteBufferImporter;
+import org.pixel.content.importer.GLFontImporter;
+import org.pixel.content.importer.GLTextureImporter;
+import org.pixel.content.importer.TextImporter;
+import org.pixel.content.importer.TexturePackImporter;
 import org.pixel.graphics.glfw.GLFWWindowManager;
 import org.pixel.graphics.opengl.GLGraphicsDevice;
-import org.pixel.graphics.render.SpriteBatch;
-import org.pixel.graphics.render.DrawListSpriteBatchServiceFactory;
 
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.openal.ALC10.*;
 
-public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLGraphicsDevice, WindowSettings> {
+/**
+ * Desktop host (GLFW window, OpenGL, OpenAL) running a {@link GameApp}. Created by {@link DesktopLauncher}.
+ */
+public final class DesktopGameHost extends WindowGameContainer<DesktopWindowManager, GLGraphicsDevice, WindowSettings> {
 
-    private static final Logger log = LoggerFactory.getLogger(Game.class);
+    private static final Logger log = LoggerFactory.getLogger(DesktopGameHost.class);
 
     private final int[] audioAttributes = {0};
     private long audioDevice;
     private long audioContext;
 
-    /**
-     * Constructor
-     *
-     * @param settings The game settings.
-     */
-    public Game(WindowSettings settings) {
-        super(settings);
+    DesktopGameHost(GameApp app, WindowSettings settings) {
+        super(app, settings);
+    }
+
+    @Override
+    public DesktopWindowManager window() {
+        return windowManager;
     }
 
     @Override
@@ -89,34 +95,27 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
     }
 
     @Override
-    protected boolean initServices() {
-        log.debug("Initializing services.");
-
-        switch (this.settings.getGraphicsBackend()) {
-            case OpenGL:
-                // URP v2: the draw-list sprite batch passed the Phase 1 gates (docs/design/urp-v2-baseline.md)
-                ServiceProvider.register(SpriteBatch.class,
-                        new DrawListSpriteBatchServiceFactory(this.graphicsDevice.getRenderBackend()));
-                ServiceProvider.register(ContentManager.class, new GLContentManagerFactory());
-                ServiceProvider.register(AudioPlayer.class, new ALAudioPlayerFactory());
-                break;
-            case Vulkan:
-                throw new UnsupportedOperationException("Vulkan is not supported yet.");
-            default:
-                throw new UnsupportedOperationException(
-                        "Unsupported graphics backend: " + this.settings.getGraphicsBackend());
-        }
-
-        return true;
+    protected ContentManager createContentManager() {
+        return new ContentManager(new DesktopResourceLoader(),
+                // desktop specific importers
+                new GLTextureImporter(),
+                new GLFontImporter(),
+                new ALVorbisAudioImporter(),
+                // common importers
+                new TextImporter(),
+                new TexturePackImporter(),
+                new ByteBufferImporter()
+        );
     }
 
     @Override
-    public void dispose() {
-        if (this.state.isDisposed()) {
-            return;
-        }
+    protected AudioPlayer createAudioPlayer() {
+        return new ALAudioPlayer();
+    }
 
-        // dispose audio context (the context must be released before its device is closed)
+    @Override
+    protected void disposePlatformAudio() {
+        // the context must be released before its device is closed
         if (audioContext != 0L) {
             alcMakeContextCurrent(0L);
             alcDestroyContext(audioContext);
@@ -126,33 +125,5 @@ public abstract class Game extends WindowGameContainer<DesktopWindowManager, GLG
             alcCloseDevice(audioDevice);
             audioDevice = 0L;
         }
-
-        super.dispose();
-    }
-
-    /**
-     * Toggle fullscreen mode.
-     */
-    public void toggleFullscreen() {
-        this.windowManager.setWindowMode(
-                settings.getWindowMode() == WindowMode.WINDOWED ? WindowMode.FULLSCREEN : WindowMode.WINDOWED);
-    }
-
-    /**
-     * Set cursor mode.
-     *
-     * @param mode The cursor mode.
-     */
-    public void setCursorMode(WindowCursorMode mode) {
-        this.windowManager.setWindowCursorMode(mode);
-    }
-
-    /**
-     * Set window title.
-     *
-     * @param title The window title.
-     */
-    public void setWindowTitle(String title) {
-        this.windowManager.setWindowTitle(title);
     }
 }

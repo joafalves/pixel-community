@@ -1,8 +1,9 @@
 package org.pixel.demo.concept.physics;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.Game;
+import org.pixel.core.GameApp;
 import org.pixel.core.WindowSettings;
 import org.pixel.graphics.render.RenderEngine2D;
 import org.pixel.graphics.render.nanovg.NvgRenderEngine;
@@ -12,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CelestialGravitationGame extends Game {
+public class CelestialGravitationGame extends GameApp {
 
     // Gravitational constant G (N * m^2 / kg^2) - now using double for precision
     private static final double G = 6.67430e-11;
@@ -24,19 +25,10 @@ public class CelestialGravitationGame extends Game {
     private RenderEngine2D renderEngine;
     private float displayScale; // Pixels per meter for rendering (can remain float)
 
-    /**
-     * Constructor
-     *
-     * @param settings The game settings.
-     */
-    public CelestialGravitationGame(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
         // Initialize the game entities and components
-        renderEngine = new NvgRenderEngine(getSettings().getWindowWidth(), getSettings().getWindowHeight());
+        renderEngine = new NvgRenderEngine(window().getWidth(), window().getHeight());
 
         // Sun
         double sunMass = 1.989e30; // kg - now using double
@@ -121,8 +113,8 @@ public class CelestialGravitationGame extends Game {
         renderEngine.begin();
         // Translates the render engine to the center of the window, so that the origin (0,0) is at the center
         renderEngine.translate(
-                getSettings().getWindowWidth() / 2f,
-                getSettings().getWindowHeight() / 2f
+                window().getWidth() / 2f,
+                window().getHeight() / 2f
         );
 
         for (var body : bodies) {
@@ -182,7 +174,6 @@ public class CelestialGravitationGame extends Game {
         settings.setWindowHeight(screenHeight);
         settings.setBackgroundColor(Color.BLACK);
 
-        final var window = new CelestialGravitationGame(settings);
-        window.start();
+        DesktopLauncher.run(new CelestialGravitationGame(), settings);
     }
 }

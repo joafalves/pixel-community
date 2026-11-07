@@ -1,8 +1,8 @@
 package org.pixel.demo.learning.urp;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.core.WindowSettings;
@@ -39,15 +39,12 @@ public class CanvasShapesDemo extends DemoGame {
     private float time;
     private int frames;
 
-    public CanvasShapesDemo(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
+        super.load();
         gameCamera.setOrigin(Vector2.zero());
-        canvasBatch = new CanvasBatch(getGraphicsDevice().getRenderBackend());
-        content = ServiceProvider.get(ContentManager.class);
+        canvasBatch = new CanvasBatch(graphics().getRenderBackend());
+        content = content();
         earth = content.load("images/earth-48x48.png", Texture.class);
     }
 
@@ -122,9 +119,9 @@ public class CanvasShapesDemo extends DemoGame {
 
         if (screenshot != null && ++frames == 3) {
             try {
-                Screenshot.capture(this, Path.of(screenshot));
+                Screenshot.capture(context(), Path.of(screenshot));
                 log.info("Screenshot written to {0}", Path.of(screenshot).toAbsolutePath());
-                log.info("Previous frame: {0}", getGraphicsDevice().getStats().lastFrame());
+                log.info("Previous frame: {0}", graphics().getStats().lastFrame());
             } catch (IOException e) {
                 log.error("Unable to write screenshot.", e);
             }
@@ -135,7 +132,6 @@ public class CanvasShapesDemo extends DemoGame {
     @Override
     public void dispose() {
         canvasBatch.dispose();
-        content.dispose();
         super.dispose();
     }
 
@@ -145,6 +141,6 @@ public class CanvasShapesDemo extends DemoGame {
         settings.setMultisampling(0); // anti-aliasing comes from the distance fields, not MSAA
         settings.setVsync(true);
         settings.setBackgroundColor(new Color(0.08f, 0.09f, 0.12f, 1f));
-        new CanvasShapesDemo(settings).start();
+        DesktopLauncher.run(new CanvasShapesDemo(), settings);
     }
 }

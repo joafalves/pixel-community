@@ -38,8 +38,7 @@ include "modules/commons",
         "modules/graphics",
         "modules/content",
         "modules/core",
-        "modules/pipeline",
-        "modules/blueprint"
+        "modules/pipeline"
 
 // platform modules:
 include "platform/desktop"

@@ -3,7 +3,7 @@ package org.pixel.demo.android
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import org.pixel.commons.Color
-import org.pixel.core.Game
+import org.pixel.core.AndroidLauncher
 import org.pixel.core.MobileGameSettings
 
 
@@ -16,16 +16,11 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.hide()
         window.decorView.windowInsetsController?.hide(android.view.WindowInsets.Type.navigationBars())
 
-        val gameWindow: Game = AndroidDemoGame(
-            MobileGameSettings(resources.displayMetrics.widthPixels, resources.displayMetrics.heightPixels).apply {
-                title = "Pixel Engine Demo"
-                backgroundColor = Color.CORNFLOWER_BLUE
-            }, this
-        )
-
-        if (gameWindow.init()) {
-            setContentView(gameWindow.graphicsDevice)
+        val settings = MobileGameSettings(resources.displayMetrics.widthPixels, resources.displayMetrics.heightPixels).apply {
+            title = "Pixel Engine Demo"
+            backgroundColor = Color.CORNFLOWER_BLUE
         }
+        val host = AndroidLauncher.create(AndroidDemoGame(), settings, this)
+        setContentView(host.graphics())
     }
 }
-

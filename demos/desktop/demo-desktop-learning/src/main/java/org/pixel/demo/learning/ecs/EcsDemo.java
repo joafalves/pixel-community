@@ -1,7 +1,7 @@
 package org.pixel.demo.learning.ecs;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ContentManager;
@@ -10,7 +10,7 @@ import org.pixel.ext.ecs.GameScene;
 import org.pixel.ext.ecs.Sprite;
 import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
-import org.pixel.core.Game;
+import org.pixel.core.GameApp;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Vector2;
@@ -18,21 +18,17 @@ import org.pixel.math.Vector2;
 /**
  * Entity Component System demo.
  */
-public class EcsDemo extends Game {
+public class EcsDemo extends GameApp {
 
     private static final Logger log = LoggerFactory.getLogger(EcsDemo.class);
 
     private ContentManager contentManager;
     private GameScene gameScene;
 
-    public EcsDemo(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
-        var spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        contentManager = ServiceProvider.get(ContentManager.class);
+        var spriteBatch = graphics().createSpriteBatch();
+        contentManager = content();
 
         Sprite sprite = new Sprite("earth", contentManager.loadTexture("images/earth-48x48.png"));
         sprite.setPivot(Vector2.half());
@@ -40,7 +36,7 @@ public class EcsDemo extends Game {
         sprite.setGroup("someGroup");
         sprite.addComponent(new MovementComponent());
 
-        gameScene = new GameScene("SampleScene", new Camera2D(this, Vector2.half()), spriteBatch);
+        gameScene = new GameScene("SampleScene", new Camera2D(context(), Vector2.half()), spriteBatch);
         gameScene.addChild(sprite);
 
         // Example on how to use java streams to filter by group:
@@ -62,7 +58,6 @@ public class EcsDemo extends Game {
 
     @Override
     public void dispose() {
-        contentManager.dispose();
         super.dispose();
     }
 
@@ -85,7 +80,6 @@ public class EcsDemo extends Game {
         settings.setVsync(true);
         settings.setDevMode(false);
 
-        var window = new EcsDemo(settings);
-        window.start();
+        DesktopLauncher.run(new EcsDemo(), settings);
     }
 }

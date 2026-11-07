@@ -409,7 +409,9 @@ churn around.
 | `modules/math` | None (an order-preserving float→int helper goes in `graphics`). |
 | `modules/content` | None required. `Texture` stays the texture abstraction. The `SdfFont` importers are registered by the platform like the other importers. |
 | `modules/graphics` | **New packages** (all GL-free):<br>• `org.pixel.graphics.draw`: `DrawList`, `Layer`, `LayerMode`, `SortKey`, `ClipTable`, `Material`, `FrameSnapshot`, `FrameStats`<br>• `org.pixel.graphics.canvas`: `Canvas`, command builders, `Paint`, `Path` + triangulation, `NinePatch`<br>• `org.pixel.graphics.text`: `SdfFont`, `SdfGlyph`, `TextLayout`, `TextMeasurer`<br>• `org.pixel.graphics.pass`: `RenderPipeline` + builder, `View`, `ScreenSpace`, `RenderTarget`, `PostEffect`, `Effects`<br>• `org.pixel.graphics.backend`: `RenderBackend` SPI, `BatchList`, `VertexStream`, `PassState`, `BackendCapabilities`<br>**Changed:** `SpriteBatch` gets a draw-list implementation (`DrawListSpriteBatch`). `GraphicsDevice` exposes `backend()`.<br>**Since Phase 0:** `org.pixel.graphics.RenderStats` (device-level per-frame GPU counters); `GraphicsDevice.getStats()` and `GraphicsDevice.endFrame()` (called by the game loop).<br>**Deprecated (removed before merge, §8 Phase 4):** `RenderEngine`, `StatefulRenderEngine`, `RenderEngine2D`, `DrawBatch`. **Deleted:** `PostProcessor` (unused). |
-| `modules/core` | `Camera2D implements View`. No game-loop changes. |
+| `modules/core` | **Since Phase 3.0:** `GameApp`, `GameContext`, `GameWindow`; `GameContainer` is the platform host base (no longer extended by games); `Camera2D(GameContext)`. Blueprint dependency removed. **Phase 3:** `Camera2D implements View`. |
+| `modules/blueprint` | **Removed in Phase 3.0.** |
+| `modules/commons` (service package) | **Removed in Phase 3.0:** `ServiceProvider`, `ServiceFactory`, `ServiceRegistrar`, ... |
 | `platform/desktop` | **New** `org.pixel.graphics.opengl.render`: `GLRenderBackend`, `GLBatchRenderer`, `GLRenderTarget`, `GLMaterialCompiler`, `GLTextureSlots`.<br>**New** shaders in `engine/shader/opengl/urp/` (uber, post effects).<br>**New** `GLSdfFontImporter`: MTSDF generation through `lwjgl-msdfgen` + `lwjgl-freetype`, plus an importer for
 pre-baked `msdf-atlas-gen` atlases. **New dependencies:** `org.lwjgl:lwjgl-msdfgen` and `org.lwjgl:lwjgl-freetype`
 (+ natives), same LWJGL version (3.4.3).<br>**Changed:** `GLGraphicsDevice` creates the backend. `GLContentManagerFactory` registers the SDF font importer. The `SpriteBatch` service switches to `DrawListSpriteBatch` after parity.<br>**Deprecated → removed before merge:** `GLSpriteBatch`, `NvgRenderEngine` (and the `lwjgl-nanovg` dependency), the `GL*EffectShader` classes (replaced by effects). |
@@ -473,6 +475,9 @@ Each phase ends green (`./gradlew build`) and is reviewable on its own.
 - Tests: batcher (layout breaks, table remapping/alignment/capacity), canvas geometry, stroke padding, transforms,
   commit-on-state-change, clipping (nested, restored, rotated), lines, images, depth order, and **0 bytes
   allocated** for 20 frames of 8,000 canvas commands.
+- Known limitation: the anti-aliasing margin around shapes is about 2 layer units, scaled by the canvas
+  transform but not by the camera. Under a strongly zoomed-out view the soft edge can be slightly cut. Phase 3
+  fixes this: the pass knows its view scale and passes it to its canvases.
 - Demo: `urp/CanvasShapesDemo`. Its 53-shape frame (strokes, radii, lines, rotation, a clipped scrolling panel with
   images and nested clips) is **1 draw call**. Sprite parity and benchmark unchanged.
 
@@ -485,6 +490,32 @@ with fill/stroke/shadow/weight, and `TextLayout`/`TextMeasurer` (GL-free, tested
 8–200 px, zoom and rotation, Retina, and outlines at the range limit.
 
 *2e:* port the NanoVG demos to `Canvas`, with a Retina check of clipping and text sharpness.
+
+**Phase 3.0: game model (prerequisite of the pipeline)** ✅
+- **Blueprint removed.** It was reflection-based DI with classpath scanning at startup (fragile in jars, needs
+  `-parameters`, and core depended on it). Gone: `modules/blueprint`, the `blueprintPackages` setting, the hook in
+  `GameContainer`, and the two blueprint learning demos. BlueGem and SpaceShooter are ported to explicit wiring,
+  which also fixed SpaceShooter's event lookups that could never have found the event bus.
+- **`ServiceProvider` removed** (with `ServiceFactory`, `ServiceRegistrar` and every `*ServiceFactory`). It was a
+  global static registry, and every `get()` built a new instance (each `ContentManager` had its own cache).
+- **Platform-free games**: games extend `org.pixel.core.GameApp` and are run by a platform launcher:
+  `DesktopLauncher.run(app, settings)` or `AndroidLauncher.create(app, settings, context)`. The host
+  (`DesktopGameHost`, `AndroidGameHost`, both extending `GameContainer`) owns the platform and implements
+  `GameContext`.
+- **`GameContext`** (per game, no statics): `graphics()` (the `GraphicsDevice`: render backend, stats,
+  `createSpriteBatch()`), `content()` (one shared `ContentManager`, disposed by the host), `audio()`, `window()`
+  (`GameWindow`: size, pixel ratio, focus, title), `settings()`, `exit()`. `GameApp` has shortcuts for each,
+  available from `load()` on. Desktop-only features: `DesktopWindowManager.of(context())`.
+- **Disposal order** owned by the host: game → content → graphics device → audio → window, and the game's
+  `dispose()` only runs if its `load()` ran.
+- **ext-network**: `Network.createServer(settings)` / `Network.createClient(settings)` replace the service
+  registrar.
+- **Android**: `AndroidGameHost`, `AndroidWindow` and `AndroidLauncher`. Assets load through the host's context
+  (`MobileResourceLoader(context)`, `GLES30TextureShader(context)`). The URP backend and audio report
+  "not implemented on Android yet". *Written, not compiled* (Android is not part of the default build).
+- Verified: full build and tests; every learning and concept demo runs on the new host; parity and benchmark are
+  unchanged. (`ImGuiDemo` cannot start on Apple Silicon because `imgui-java` 1.86.2 ships x86_64 macOS natives
+  only. That is not caused by this change.)
 
 **Phase 3: pipeline**
 - Layers, passes, views, `RenderTarget`, post effects (port the 5 existing effects plus bloom and vignette),
@@ -510,8 +541,9 @@ These shape the design now so an editor can be built later without reworking the
    debugger).
 6. **Hot reload**: materials and fonts can be recompiled or reloaded by handle without rebuilding the pipeline.
 
-Not in this branch, but required for an editor later: decoupling the game from the window loop, per-instance input
-(no static `Mouse`/`Keyboard`), and serializable scenes with stable asset ids.
+Done in Phase 3.0: the game is decoupled from the window loop (`GameApp` is hosted, so an editor can be another
+host). Still required for an editor later: per-instance input (no static `Mouse`/`Keyboard`) and serializable scenes
+with stable asset ids.
 
 ## 10. What happens to `task/urp`
 

@@ -1,7 +1,7 @@
 package org.pixel.core;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.lifecycle.*;
+import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.graphics.GraphicsDevice;
@@ -10,23 +10,24 @@ import java.util.concurrent.locks.LockSupport;
 
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
-public abstract class WindowGameContainer<T extends WindowManager, S extends GraphicsDevice, Z extends GameSettings>
-        extends GameContainer<S, Z>
-        implements Initializable, Loadable, Updatable, Drawable, Disposable {
+/**
+ * Host base for windowed platforms: owns the window manager and the game loop.
+ *
+ * @param <T> The window manager type.
+ * @param <S> The graphics device type.
+ * @param <Z> The settings type.
+ */
+public abstract class WindowGameContainer<T extends WindowManager, S extends GraphicsDevice, Z extends WindowSettings>
+        extends GameContainer<S, Z> {
 
-    private static final Logger log = LoggerFactory.getLogger(GameContainer.class);
+    private static final Logger log = LoggerFactory.getLogger(WindowGameContainer.class);
 
     protected T windowManager;
 
     private double targetFpsTimeRef;
 
-    /**
-     * Constructor.
-     *
-     * @param settings The settings to use.
-     */
-    public WindowGameContainer(Z settings) {
-        super(settings);
+    protected WindowGameContainer(GameApp app, Z settings) {
+        super(app, settings);
     }
 
     /**
@@ -36,71 +37,61 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
      */
     protected abstract boolean initWindowManager();
 
-    @Override
-    public boolean init() {
-        if (this.state.hasInitialized()) {
-            log.warn("Game already initialized.");
-            return false;
-        }
-        this.state = State.INITIALIZING;
+    /**
+     * Release the platform's audio context (after the content manager released its sounds).
+     */
+    protected abstract void disposePlatformAudio();
 
-        // Initialize main components
-        if (!initWindowManager()) {
-            log.error("Failed to initialize the window manager.");
-            return false;
+    /**
+     * Initialize the platform, load the game, run the loop until the window closes, then dispose everything (also
+     * when the game throws).
+     */
+    public void start() {
+        if (state != State.NEW) {
+            throw new IllegalStateException("A game host can only be started once.");
         }
-
-        if (super.init()) {
-            // Load window procedure
-            load();
-            return true;
+        state = State.INITIALIZING;
+        try {
+            if (!initWindowManager()) {
+                log.error("Failed to initialize the window manager.");
+                return;
+            }
+            if (!initContainer()) {
+                return;
+            }
+            state = State.INITIALIZED;
+            loadApp();
+            gameLoop();
+        } finally {
+            dispose();
         }
-
-        return false;
     }
 
     @Override
-    public void start() {
-        super.start();
-
-        if (this.state.hasInitialized()) {
-            try {
-                this.gameLoop();
-            } finally {
-                // Always release native resources, even if the game loop threw. Skip if the game already
-                // disposed itself (e.g. legacy code calling dispose() from update()).
-                if (!this.state.isDisposed()) {
-                    this.dispose();
-                }
-            }
+    public void exit() {
+        if (windowManager != null) {
+            windowManager.requestClose();
         }
     }
 
     /**
-     * Request the game to exit. The current frame completes, the loop ends and {@link #dispose()} is called
-     * once, while the graphics context is still valid. Prefer this over calling {@link #dispose()} directly
-     * from game code.
+     * Release the game, then the shared services and graphics device (GL context still alive), then audio, then the
+     * window. Runs once.
      */
-    public void exit() {
-        if (this.windowManager != null) {
-            this.windowManager.requestClose();
-        }
-    }
-
-    @Override
-    public void dispose() {
-        if (this.state.isDisposed()) {
+    private void dispose() {
+        if (state.isDisposed()) {
             return;
         }
-        this.state = State.DISPOSING;
-
-        // Release graphics resources first: they need the GL context, which dies with the window.
-        super.dispose();
-        if (windowManager != null) {
-            windowManager.dispose();
+        state = State.DISPOSING;
+        try {
+            disposeContainer(); // null-safe: only disposes what was created
+        } finally {
+            disposePlatformAudio();
+            if (windowManager != null) {
+                windowManager.dispose();
+            }
+            state = State.DISPOSED;
         }
-
-        this.state = State.DISPOSED;
     }
 
     /**
@@ -113,18 +104,9 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
     }
 
     /**
-     * Get the active window manager.
-     *
-     * @return The active window manager.
+     * The game loop.
      */
-    public T getWindowManager() {
-        return windowManager;
-    }
-
-    /**
-     * The render loop.
-     */
-    protected void gameLoop() {
+    private void gameLoop() {
         var delta = new DeltaTime();
         while (this.windowManager.isWindowActive()) {
             delta.tick();
@@ -148,34 +130,16 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
                     LockSupport.parkNanos((long) (sleepTime * 1_000_000_000));
                 }
 
-                // Update lastFrameTime for the next frame
                 targetFpsTimeRef = nextFrameTime;
             }
 
             this.windowManager.beginFrame();
-
-            // call container update
-            updateContainer(delta);
-
-            // call game update
-            update(delta);
-
+            updateFrame(delta);
             if (!this.windowManager.isWindowActive()) {
-                break; // update code might kill the window...
+                break; // update code may have requested exit
             }
-
-            // call game draw
-            if (this.settings.isAutoClear()) {
-                this.clear();
-            }
-            draw(delta);
-            this.graphicsDevice.endFrame();
-
+            drawFrame(delta);
             this.windowManager.endFrame();
-
-            // TODO: study the feasibility/impact of implementing a multi-threaded mechanism
-            // on the game loop, more info:
-            // https://github.com/LWJGL/lwjgl3/blob/master/modules/samples/src/test/java/org/lwjgl/demo/glfw/Threads.java
         }
     }
 }

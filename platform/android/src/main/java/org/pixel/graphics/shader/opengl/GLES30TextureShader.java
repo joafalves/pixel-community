@@ -16,19 +16,12 @@ public class GLES30TextureShader extends GLES30Shader {
     private static final List<String> attributes = Arrays.asList("aVertexPosition", "aVertexColor",
             "aTextureCoordinates");
 
-    private static final String vertSrc;
-    private static final String fragSrc;
+    private static final String VERTEX_PATH = "engine/shader/gles30/texture.vert.glsl";
+    private static final String FRAGMENT_PATH = "engine/shader/gles30/texture.frag.glsl";
 
-    static {
-        vertSrc = FileUtils.loadTextAsset("engine/shader/gles30/texture.vert.glsl");
-        fragSrc = FileUtils.loadTextAsset("engine/shader/gles30/texture.frag.glsl");
-    }
-
-    /**
-     * Constructor.
-     */
-    public GLES30TextureShader() {
-        super(vertSrc, fragSrc, attributes, uniforms);
+    public GLES30TextureShader(android.content.Context context) {
+        super(FileUtils.loadTextAsset(context, VERTEX_PATH), FileUtils.loadTextAsset(context, FRAGMENT_PATH),
+                attributes, uniforms);
         this.init();
     }
 

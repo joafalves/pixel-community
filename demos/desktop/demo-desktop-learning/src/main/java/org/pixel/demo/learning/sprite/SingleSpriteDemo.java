@@ -5,9 +5,9 @@
 
 package org.pixel.demo.learning.sprite;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.demo.learning.common.DemoGame;
@@ -22,18 +22,15 @@ public class SingleSpriteDemo extends DemoGame {
     private SpriteBatch spriteBatch;
     private Texture spriteTex;
 
-    public SingleSpriteDemo(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
+        super.load();
         // game related changes & definitions
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        content = ServiceProvider.get(ContentManager.class);
+        spriteBatch = graphics().createSpriteBatch();
+        content = content();
 
         // load texture into memory
         spriteTex = content.load("images/screenshot-600x320.png", Texture.class);
@@ -58,7 +55,6 @@ public class SingleSpriteDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        content.dispose();
         spriteBatch.dispose();
         spriteTex.dispose();
 
@@ -72,7 +68,6 @@ public class SingleSpriteDemo extends DemoGame {
         settings.setVsync(true);
         settings.setDevMode(true);
 
-        var window = new SingleSpriteDemo(settings);
-        window.start();
+        DesktopLauncher.run(new SingleSpriteDemo(), settings);
     }
 }

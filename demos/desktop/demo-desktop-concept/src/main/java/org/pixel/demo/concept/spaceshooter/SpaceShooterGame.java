@@ -1,14 +1,12 @@
 package org.pixel.demo.concept.spaceshooter;
 
-import org.pixel.blueprint.BlueprintAssembler;
-import org.pixel.blueprint.annotation.Auto;
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.event.EventManager;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.core.Camera2D;
-import org.pixel.core.Game;
+import org.pixel.core.GameApp;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.concept.commons.FpsCounter;
 import org.pixel.demo.concept.commons.component.PlayerBoundaryComponent;
@@ -34,7 +32,7 @@ import org.pixel.math.Vector2;
 import static org.pixel.demo.concept.spaceshooter.SpaceShooterEvents.COLLISION;
 
 @Deprecated()
-public class SpaceShooterGame extends Game {
+public class  SpaceShooterGame extends GameApp {
 
     private FpsCounter fpsCounter;
     private Camera2D gameCamera;
@@ -43,22 +41,17 @@ public class SpaceShooterGame extends Game {
     private Texture explosionTexture;
     private GLBackgroundTexture backgroundTexture;
 
-    @Auto
     private EventManager eventManager;
-
-    public SpaceShooterGame(WindowSettings settings) {
-        super(settings);
-    }
+    private SpriteBatch spriteBatch;
 
     @Override
     public void load() {
-        fpsCounter = new FpsCounter(this);
-        var spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        var content = ServiceProvider.get(ContentManager.class);
-        gameCamera = new Camera2D(this);
+        fpsCounter = new FpsCounter(context());
+        spriteBatch = graphics().createSpriteBatch();
+        var content = content();
+        eventManager = new EventManager(); // scene-wide event bus (was injected by blueprints)
+        gameCamera = new Camera2D(context());
         gameCamera.setOrigin(0);
-
-        BlueprintAssembler.assemble(this);
 
         // content load
         var texturePack = content.loadTexturePack("spaceshooter/spritemap.json");
@@ -87,11 +80,12 @@ public class SpaceShooterGame extends Game {
         playerSprite.getData().put(SpaceShooterAttribute.BULLET1_FRAME, texturePack.getFrame("bullet1"));
         playerSprite.getTransform().setPosition(getVirtualWidth() / 2.f, getVirtualHeight() / 2.f);
         playerSprite.getTransform().setRotation(-MathHelper.PIo2);
-        playerSprite.addComponent(new PlayerInputComponent());
+        playerSprite.addComponent(new PlayerInputComponent(eventManager));
         playerSprite.addComponent(new ConstantVelocityComponent(new Vector2(0, 55.f)));
         playerSprite.addComponent(
                 new PlayerBoundaryComponent(new Boundary(0, 0, gameCamera.getWidth(), gameCamera.getHeight())));
         gameScene.addChild(playerSprite);
+        playerSprite.listen(eventManager);
 
         var engineFireSprite = new Sprite("EngineFire", engineFireTexture);
         engineFireSprite.getTransform().setRotation(MathHelper.PIo2);
@@ -115,7 +109,7 @@ public class SpaceShooterGame extends Game {
 
         var collisionHandler = new GameObject("CollisionHandler");
         gameScene.addChild(collisionHandler);
-        collisionHandler.addComponent(new CollisionHandlingComponent());
+        collisionHandler.addComponent(new CollisionHandlingComponent(eventManager));
 
         bindEvents();
     }
@@ -135,12 +129,14 @@ public class SpaceShooterGame extends Game {
     public void dispose() {
         backgroundTexture.dispose();
         gameScene.dispose();
+        spriteBatch.dispose();
         super.dispose();
     }
 
     private void bindEvents() {
         eventManager.subscribe(COLLISION, CollisionData.class, (data) -> {
             var explosionSprite = new Sprite("explosion", explosionTexture);
+            explosionSprite.setPivot(0.5f, 0.5f); // centered on the hit (sprites default to a top-left pivot)
             explosionSprite.getTransform().setPosition(data.getPosition());
             var animationComponent = new SpriteAnimationComponent(9, 9, 5);
             explosionSprite.addComponent(animationComponent);
@@ -165,9 +161,7 @@ public class SpaceShooterGame extends Game {
         settings.setDevMode(false);
         settings.setWindowWidth(windowWidth);
         settings.setWindowHeight(windowHeight);
-        settings.setBlueprintPackages(new String[]{"org.pixel.demo.concept"});
 
-        var window = new SpaceShooterGame(settings);
-        window.start();
+        DesktopLauncher.run(new SpaceShooterGame(), settings);
     }
 }

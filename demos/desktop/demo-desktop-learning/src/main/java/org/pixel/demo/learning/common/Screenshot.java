@@ -2,7 +2,7 @@ package org.pixel.demo.learning.common;
 
 import org.lwjgl.stb.STBImageWrite;
 import org.lwjgl.system.MemoryUtil;
-import org.pixel.core.Game;
+import org.pixel.core.GameContext;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -21,14 +21,14 @@ public final class Screenshot {
     /**
      * Capture the back buffer of the game window (call at the end of {@code draw()}).
      *
-     * @param game The game.
-     * @param file The PNG file to write.
+     * @param context The game context.
+     * @param file    The PNG file to write.
      * @throws IOException If the directory cannot be created.
      */
-    public static void capture(Game game, Path file) throws IOException {
-        int width = game.getWindowManager().getWindowWidth();   // framebuffer pixels (HiDPI aware)
-        int height = game.getWindowManager().getWindowHeight();
-        writePng(file, game.getGraphicsDevice().readPixels(0, 0, width, height, true), width, height);
+    public static void capture(GameContext context, Path file) throws IOException {
+        int width = context.window().getWidth();   // framebuffer pixels (HiDPI aware)
+        int height = context.window().getHeight();
+        writePng(file, context.graphics().readPixels(0, 0, width, height, true), width, height);
     }
 
     /**

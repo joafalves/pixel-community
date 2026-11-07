@@ -4,7 +4,6 @@ import android.content.Context;
 
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.commons.service.ServiceProvider;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,15 +13,6 @@ import java.io.InputStreamReader;
 public class FileUtils {
     private static final Logger log = LoggerFactory.getLogger(FileUtils.class);
 
-    /**
-     * Load asset file using the default context. This method can only be used after the game has been initialized.
-     *
-     * @param path The asset file path.
-     * @return The file content.
-     */
-    public static InputStream loadAsset(String path) {
-        return loadAsset(ServiceProvider.get(Context.class), path);
-    }
 
     /**
      * Load asset file.
@@ -45,15 +35,6 @@ public class FileUtils {
         }
     }
 
-    /**
-     * Load asset file using the default context. This method can only be used after the game has been initialized.
-     *
-     * @param path The asset file path.
-     * @return The file content.
-     */
-    public static String loadTextAsset(String path) {
-        return loadTextAsset(ServiceProvider.get(Context.class), path);
-    }
 
     /**
      * Load asset file.

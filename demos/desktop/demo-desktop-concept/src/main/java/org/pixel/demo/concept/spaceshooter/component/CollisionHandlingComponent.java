@@ -1,6 +1,5 @@
 package org.pixel.demo.concept.spaceshooter.component;
 
-import org.pixel.blueprint.annotation.Auto;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.event.EventManager;
 import org.pixel.demo.concept.spaceshooter.SpaceShooterAttribute;
@@ -20,8 +19,16 @@ public class CollisionHandlingComponent extends GameComponent {
     private GameObject enemyContainer;
     private GameObject miscContainer;
 
-    @Auto
-    private EventManager eventManager;
+    private final EventManager eventManager;
+
+    /**
+     * Constructor.
+     *
+     * @param eventManager The game's event bus (collisions are published on it).
+     */
+    public CollisionHandlingComponent(EventManager eventManager) {
+        this.eventManager = eventManager;
+    }
 
     @Override
     public void attached(GameObject parent, GameObject previousParent) {

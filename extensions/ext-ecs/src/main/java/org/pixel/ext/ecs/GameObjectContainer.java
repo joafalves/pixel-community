@@ -1,5 +1,6 @@
 package org.pixel.ext.ecs;
 
+import org.pixel.commons.DeltaTime;
 import org.pixel.commons.data.DataMap;
 import org.pixel.commons.lifecycle.Disposable;
 import org.pixel.ext.ecs.lifecycle.Attachable;
@@ -220,6 +221,34 @@ public abstract class GameObjectContainer implements Attachable<GameObjectContai
             return true;
         }
         return false;
+    }
+
+    /**
+     * Update the enabled children, then detach the disposed ones. Children may add game objects (to this container
+     * or others) while updating, e.g. spawning an explosion on a collision event: new children are updated in the
+     * same frame. (Iterating with an iterator used to throw a ConcurrentModificationException in that case.)
+     *
+     * @param delta The frame delta.
+     */
+    protected void updateChildren(DeltaTime delta) {
+        List<GameObject> list = this.children;
+        boolean anyDisposed = false;
+        for (int i = 0; i < list.size(); i++) { // size re-read on purpose: children added meanwhile are updated too
+            GameObject child = list.get(i);
+            if (child.isEnabled()) {
+                child.update(delta);
+            }
+            anyDisposed |= child.isDisposed();
+        }
+        if (anyDisposed) {
+            for (int i = list.size() - 1; i >= 0; i--) {
+                GameObject child = list.get(i);
+                if (child.isDisposed()) {
+                    child.setParent(null);
+                    list.remove(i);
+                }
+            }
+        }
     }
 
     /**

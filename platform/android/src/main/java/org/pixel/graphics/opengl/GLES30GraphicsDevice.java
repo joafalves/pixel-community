@@ -8,7 +8,10 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.core.Game;
+import org.pixel.core.AndroidGameHost;
+import org.pixel.graphics.backend.RenderBackend;
+import org.pixel.graphics.render.GLES30SpriteBatch;
+import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.graphics.GraphicsDevice;
 import org.pixel.graphics.RenderStats;
 
@@ -18,13 +21,13 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
 
     private static final Logger log = LoggerFactory.getLogger(GLES30GraphicsDevice.class);
 
-    private final Game game;
+    private final AndroidGameHost host;
 
     private State state;
 
-    public GLES30GraphicsDevice(Game game, Context context) {
+    public GLES30GraphicsDevice(AndroidGameHost host, Context context) {
         super(context);
-        this.game = game;
+        this.host = host;
         this.state = State.NEW;
     }
 
@@ -45,25 +48,19 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
             @Override
             public void onSurfaceCreated(javax.microedition.khronos.opengles.GL10 gl, javax.microedition.khronos.egl.EGLConfig config) {
                 initGLESCapabilities();
-                setClearColor(game.getSettings().getBackgroundColor());
+                setClearColor(host.settings().getBackgroundColor());
 
                 // Log the OpenGL ES version.
                 log.debug("OpenGL ES Version: {0}.", GLES30.glGetString(GLES30.GL_VERSION));
 
-                // load assets here:
-                game.load();
+                host.onSurfaceCreated(); // loads the game the first time
             }
 
             @Override
             public void onDrawFrame(javax.microedition.khronos.opengles.GL10 gl) {
-                // android game loop:
+                // android game loop (the host clears, updates, draws and ends the frame):
                 delta.tick();
-                game.update(delta);
-                if (game.getSettings().isAutoClear()) {
-                    clear();
-                }
-                game.draw(delta);
-                stats.endFrame();
+                host.onDrawFrame(delta);
             }
 
             @Override
@@ -74,13 +71,25 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
                 GLES30.glViewport(0, 0, width, height);
 
                 // Notify the game about the viewport change.
-                game.onViewportChanged(width, height);
+                host.onSurfaceChanged(width, height);
             }
         });
 
         this.state = State.INITIALIZED;
 
         return true;
+    }
+
+    @Override
+    public RenderBackend getRenderBackend() {
+        throw new UnsupportedOperationException("The URP v2 render backend is not implemented for OpenGL ES yet.");
+    }
+
+    @Override
+    public SpriteBatch createSpriteBatch() {
+        GLES30SpriteBatch spriteBatch = new GLES30SpriteBatch(getContext());
+        spriteBatch.init();
+        return spriteBatch;
     }
 
     @Override

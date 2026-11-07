@@ -1,5 +1,6 @@
 package org.pixel.demo.concept.terragen;
 
+import org.pixel.core.DesktopLauncher;
 import static org.lwjgl.opengl.GL11C.GL_NEAREST;
 import static org.lwjgl.opengl.GL11C.GL_REPEAT;
 import static org.lwjgl.opengl.GL11C.GL_RGBA;
@@ -23,13 +24,12 @@ import java.util.concurrent.TimeUnit;
 import org.lwjgl.BufferUtils;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.opengl.GLTexture;
 import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
-import org.pixel.core.Game;
+import org.pixel.core.GameApp;
 import org.pixel.graphics.GraphicsBackend;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.input.keyboard.Keyboard;
@@ -37,7 +37,7 @@ import org.pixel.input.keyboard.KeyboardKey;
 import org.pixel.math.MathHelper;
 import org.pixel.math.Rectangle;
 
-public class TerragenAdvancedGame extends Game {
+public class TerragenAdvancedGame extends GameApp {
 
     private final Logger log = LoggerFactory.getLogger(TerragenAdvancedGame.class);
 
@@ -64,25 +64,16 @@ public class TerragenAdvancedGame extends Game {
     private double persistence = 0.5;
     private HashMap<Integer, Color> colorMap;
 
-    /**
-     * Constructor.
-     *
-     * @param settings The settings to use.
-     */
-    public TerragenAdvancedGame(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        gameCamera = new Camera2D(this);
+        spriteBatch = graphics().createSpriteBatch();
+        gameCamera = new Camera2D(context());
         gameCamera.setOrigin(0);
         seed = ThreadLocalRandom.current().nextLong();
         colorTexture = new GLTexture(glGenTextures(), SCREEN_WIDTH, SCREEN_HEIGHT);
         heightMapTexture = new GLTexture(glGenTextures(), SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        setBackgroundColor(Color.BLACK);
+        graphics().setClearColor(Color.BLACK);
 
         final var startNanoTimestamp = System.nanoTime();
         generateTextures();
@@ -258,7 +249,7 @@ public class TerragenAdvancedGame extends Game {
     }
 
     private void updateStatus() {
-        setWindowTitle(
+        window().setTitle(
                 String.format(
                         "Max [E]lev: %d | Amp: %f | [F]requency: %f | [O]ctaves: %d | [L]acunarity: %f | [P]ersistence: %f",
                         maxElevation, amplitude, frequency, octaves, lacunarity, persistence));
@@ -297,7 +288,6 @@ public class TerragenAdvancedGame extends Game {
         settings.setIdleThrottle(false);
         settings.setGraphicsBackend(GraphicsBackend.OpenGL);
 
-        var window = new TerragenAdvancedGame(settings);
-        window.start();
+        DesktopLauncher.run(new TerragenAdvancedGame(), settings);
     }
 }

@@ -1,7 +1,7 @@
 package org.pixel.demo.learning.ecs;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.ext.ecs.GameComponent;
@@ -21,14 +21,11 @@ public class EcsNoSceneDemo extends DemoGame {
     private SpriteBatch spriteBatch;
     private Sprite sprite;
 
-    public EcsNoSceneDemo(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        contentManager = ServiceProvider.get(ContentManager.class);
+        super.load();
+        spriteBatch = graphics().createSpriteBatch();
+        contentManager = content();
 
         sprite = new Sprite("earth", contentManager.loadTexture("images/earth-48x48.png"));
         sprite.setPivot(Vector2.half());
@@ -50,7 +47,6 @@ public class EcsNoSceneDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        contentManager.dispose();
         super.dispose();
     }
 
@@ -73,7 +69,6 @@ public class EcsNoSceneDemo extends DemoGame {
         settings.setVsync(true);
         settings.setDevMode(false);
 
-        var window = new EcsNoSceneDemo(settings);
-        window.start();
+        DesktopLauncher.run(new EcsNoSceneDemo(), settings);
     }
 }

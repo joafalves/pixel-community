@@ -1,5 +1,6 @@
 package org.pixel.demo.learning.render;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.demo.learning.common.DemoGame;
@@ -11,13 +12,10 @@ public class PrimitivesRenderDemo extends DemoGame {
 
     private RenderEngine2D re;
 
-    public PrimitivesRenderDemo(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
-        re = new NvgRenderEngine(getSettings().getWindowWidth(), getSettings().getWindowHeight());
+        super.load();
+        re = new NvgRenderEngine(window().getWidth(), window().getHeight());
     }
 
     @Override
@@ -103,7 +101,6 @@ public class PrimitivesRenderDemo extends DemoGame {
         settings.setMultisampling(2);
         settings.setVsync(true);
 
-        var window = new PrimitivesRenderDemo(settings);
-        window.start();
+        DesktopLauncher.run(new PrimitivesRenderDemo(), settings);
     }
 }

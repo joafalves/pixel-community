@@ -21,7 +21,17 @@ public class PlayerInputComponent extends GameComponent {
     private static final float SPEED_X = 165f;
     private static final float SHOOT_DELAY_MS = 150f;
 
+    private final EventManager eventManager;
     private float shootElapsed = 0f;
+
+    /**
+     * Constructor.
+     *
+     * @param eventManager The game's event bus (shots are published on it).
+     */
+    public PlayerInputComponent(EventManager eventManager) {
+        this.eventManager = eventManager;
+    }
 
     @Override
     public void update(DeltaTime delta) {
@@ -33,7 +43,7 @@ public class PlayerInputComponent extends GameComponent {
         shootElapsed += delta.getElapsedMs();
         if (Keyboard.isKeyDown(KeyboardKey.SPACE) && shootElapsed > SHOOT_DELAY_MS) {
             shootElapsed = 0f;
-            getGameObject().getTopMostParent().getData().get(EventManager.class).publish(SHOOT, null);
+            eventManager.publish(SHOOT, null);
         }
     }
 

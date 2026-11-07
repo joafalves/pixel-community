@@ -1,16 +1,17 @@
 package org.pixel.demo.learning.benchmark;
 
+import org.pixel.core.DesktopWindowManager;
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
 import org.pixel.content.Texture;
 import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.core.Camera2D;
-import org.pixel.core.Game;
+import org.pixel.core.GameApp;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.Screenshot;
 import org.pixel.graphics.render.BlendMode;
@@ -38,7 +39,7 @@ import java.util.function.Consumer;
  * <p>
  * Run with: {@code ./gradlew :pixel-demo-desktop-learning:renderParity}
  */
-public class RenderParityCheck extends Game {
+public class RenderParityCheck extends GameApp {
 
     private static final Logger log = LoggerFactory.getLogger(RenderParityCheck.class);
     private static final int WIDTH = 800;
@@ -62,18 +63,14 @@ public class RenderParityCheck extends Game {
     private record Scene(String name, BlendMode blendMode, Consumer<SpriteBatch> draw) {
     }
 
-    public RenderParityCheck(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
-        content = ServiceProvider.get(ContentManager.class);
-        legacy = new GLSpriteBatch(getGraphicsDevice().getStats());
+        content = content();
+        legacy = new GLSpriteBatch(graphics().getStats());
         legacy.init();
-        drawList = new DrawListSpriteBatch(getGraphicsDevice().getRenderBackend());
+        drawList = new DrawListSpriteBatch(graphics().getRenderBackend());
         drawList.init();
-        camera = new Camera2D(this);
+        camera = new Camera2D(context());
         camera.setOrigin(0, 0);
 
         String[] files = {"images/blue-32x32.png", "images/green-32x32.png", "images/red-32x32.png",
@@ -100,8 +97,8 @@ public class RenderParityCheck extends Game {
         }
         done = true;
 
-        int width = getWindowManager().getWindowWidth();   // framebuffer pixels (HiDPI aware)
-        int height = getWindowManager().getWindowHeight();
+        int width = DesktopWindowManager.of(context()).getWindowWidth();   // framebuffer pixels (HiDPI aware)
+        int height = DesktopWindowManager.of(context()).getWindowHeight();
         try {
             Path dir = Path.of("build", "parity");
             Files.createDirectories(dir);
@@ -125,11 +122,11 @@ public class RenderParityCheck extends Game {
     }
 
     private byte[] render(Scene scene, SpriteBatch batch, int width, int height) {
-        clear();
+        graphics().clear();
         batch.begin(camera.getViewMatrix(), scene.blendMode);
         scene.draw.accept(batch);
         batch.end();
-        return getGraphicsDevice().readPixels(0, 0, width, height, true);
+        return graphics().readPixels(0, 0, width, height, true);
     }
 
     /**
@@ -277,7 +274,6 @@ public class RenderParityCheck extends Game {
         for (Texture texture : textures) {
             texture.dispose();
         }
-        content.dispose();
         super.dispose();
     }
 
@@ -288,6 +284,6 @@ public class RenderParityCheck extends Game {
         settings.setVsync(false);
         settings.setIdleThrottle(false);
         settings.setBackgroundColor(new Color(0.1f, 0.12f, 0.16f, 1f));
-        new RenderParityCheck(settings).start();
+        DesktopLauncher.run(new RenderParityCheck(), settings);
     }
 }

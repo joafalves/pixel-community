@@ -1,16 +1,16 @@
 package org.pixel.demo.learning.benchmark;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
 import org.pixel.content.Texture;
 import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.core.Camera2D;
-import org.pixel.core.Game;
+import org.pixel.core.GameApp;
 import org.pixel.core.WindowSettings;
 import org.pixel.graphics.RenderStats;
 import org.pixel.graphics.render.DrawListSpriteBatch;
@@ -47,7 +47,7 @@ import static org.lwjgl.opengl.GL11C.glGetString;
  * and {@code -Dbench.measure=8} (seconds), {@code -Dbench.only=name} (single scenario),
  * {@code -Dbench.renderers=legacy,drawlist} (which renderers to run).
  */
-public class RenderBenchmark extends Game {
+public class RenderBenchmark extends GameApp {
 
     private static final Logger log = LoggerFactory.getLogger(RenderBenchmark.class);
     private static final int WIDTH = 1280;
@@ -81,23 +81,19 @@ public class RenderBenchmark extends Game {
     private long drawCalls, primitives, vertices, textureBinds, uploadedBytes, statFrames;
     private boolean previousFrameMeasured;
 
-    public RenderBenchmark(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
-        content = ServiceProvider.get(ContentManager.class);
+        content = content();
         for (String name : rendererNames) {
             SpriteBatch renderer = switch (name.trim()) {
-                case "legacy" -> new GLSpriteBatch(getGraphicsDevice().getStats());
-                case "drawlist" -> new DrawListSpriteBatch(getGraphicsDevice().getRenderBackend());
+                case "legacy" -> new GLSpriteBatch(graphics().getStats());
+                case "drawlist" -> new DrawListSpriteBatch(graphics().getRenderBackend());
                 default -> throw new IllegalArgumentException("Unknown renderer '" + name + "' (legacy, drawlist).");
             };
             renderer.init();
             renderers.put(name.trim(), renderer);
         }
-        camera = new Camera2D(this);
+        camera = new Camera2D(context());
         camera.setOrigin(0, 0);
         gpuTimer = new GpuTimer();
 
@@ -141,7 +137,7 @@ public class RenderBenchmark extends Game {
         }
         // The device publishes a frame's counters once it ends, so the previous frame is complete now.
         if (previousFrameMeasured) {
-            accumulateFrameStats(getGraphicsDevice().getStats().lastFrame());
+            accumulateFrameStats(graphics().getStats().lastFrame());
         }
 
         double now = delta.getTotalElapsed();
@@ -203,7 +199,6 @@ public class RenderBenchmark extends Game {
             for (Texture texture : textures) {
                 texture.dispose(); // not cached (loaded with useCache=false), so not released by the content manager
             }
-            content.dispose();
         }
         super.dispose();
     }
@@ -514,6 +509,6 @@ public class RenderBenchmark extends Game {
         settings.setIdleThrottle(false); // keep full speed even if the window is not focused
         settings.setAutoClear(true);
 
-        new RenderBenchmark(settings).start();
+        DesktopLauncher.run(new RenderBenchmark(), settings);
     }
 }

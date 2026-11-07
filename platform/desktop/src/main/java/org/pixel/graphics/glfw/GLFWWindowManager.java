@@ -46,7 +46,7 @@ public class GLFWWindowManager extends DesktopWindowManager {
 
     public GLFWWindowManager(WindowGameContainer<?, ?, ?> game) {
         this.game = game;
-        this.windowSettings = (WindowSettings) game.getSettings();
+        this.windowSettings = (WindowSettings) game.settings();
         this.state = State.NEW;
     }
 
@@ -119,6 +119,14 @@ public class GLFWWindowManager extends DesktopWindowManager {
             return;
         }
 
+        if (!this.state.hasInitialized()) {
+            // init failed part-way: there is no window to destroy (glfwTerminate is safe even before glfwInit)
+            glfwTerminate();
+            freeErrorCallback();
+            this.state = State.DISPOSED;
+            return;
+        }
+
         this.state = State.DISPOSING;
 
         glfwSetWindowShouldClose(windowHandle, true);
@@ -132,12 +140,16 @@ public class GLFWWindowManager extends DesktopWindowManager {
         glfwDestroyWindow(windowHandle);
         glfwTerminate();
 
+        freeErrorCallback();
+
+        this.state = State.DISPOSED;
+    }
+
+    private static void freeErrorCallback() {
         GLFWErrorCallback previousErrorCallback = glfwSetErrorCallback(null);
         if (previousErrorCallback != null) {
             previousErrorCallback.free();
         }
-
-        this.state = State.DISPOSED;
     }
 
     @Override
@@ -210,6 +222,12 @@ public class GLFWWindowManager extends DesktopWindowManager {
 
         this.windowSettings.setWindowMode(mode);
         this.updateWindowMode();
+    }
+
+    @Override
+    public void toggleFullscreen() {
+        setWindowMode(windowSettings.getWindowMode() == WindowMode.WINDOWED ? WindowMode.FULLSCREEN
+                : WindowMode.WINDOWED);
     }
 
     @Override

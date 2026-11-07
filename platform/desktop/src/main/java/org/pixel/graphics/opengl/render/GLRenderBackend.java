@@ -63,6 +63,7 @@ public final class GLRenderBackend implements RenderBackend {
     private final int whiteTexture;
     private final int[] boundTextures;
     private final FloatBuffer matrixBuffer = MemoryUtil.memAllocFloat(16);
+    private FloatBuffer tableUpload = MemoryUtil.memAllocFloat(1024); // staging for clip/style tables
 
     private State state = State.INITIALIZED;
     private boolean inPass;
@@ -208,6 +209,7 @@ public final class GLRenderBackend implements RenderBackend {
         glDeleteBuffers(styleUbo);
         glDeleteTextures(whiteTexture);
         MemoryUtil.memFree(matrixBuffer);
+        MemoryUtil.memFree(tableUpload);
     }
 
     /**
@@ -227,11 +229,16 @@ public final class GLRenderBackend implements RenderBackend {
     }
 
     private void uploadTable(int ubo, float[] data, int floats, int blockBytes) {
-        long bytes = (long) data.length * Float.BYTES + blockBytes;
         glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-        nglBufferData(GL_UNIFORM_BUFFER, bytes, 0L, GL_STREAM_DRAW); // orphan
+        // orphan, sized so that binding a full block at the last batch offset stays inside the buffer
+        nglBufferData(GL_UNIFORM_BUFFER, (long) floats * Float.BYTES + blockBytes, 0L, GL_STREAM_DRAW);
         if (floats > 0) {
-            glBufferSubData(GL_UNIFORM_BUFFER, 0, data); // whole array (valid prefix + unused capacity)
+            if (tableUpload.capacity() < floats) {
+                tableUpload = MemoryUtil.memRealloc(tableUpload, Math.max(floats, tableUpload.capacity() * 2));
+            }
+            tableUpload.clear();
+            tableUpload.put(data, 0, floats).flip(); // only the used prefix
+            glBufferSubData(GL_UNIFORM_BUFFER, 0, tableUpload);
         }
         stats.recordUpload((long) floats * Float.BYTES);
     }

@@ -5,26 +5,36 @@
 
 package org.pixel.core;
 
-import org.pixel.blueprint.BlueprintAssembler;
-import org.pixel.blueprint.BlueprintLoader;
+import org.pixel.audio.AudioPlayer;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.lifecycle.*;
+import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.content.ContentManager;
 import org.pixel.graphics.GraphicsDevice;
 
 import java.util.Properties;
 
-public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSettings>
-        implements Initializable, Loadable, Updatable, Drawable, Disposable {
+/**
+ * Base class of the platform hosts that run a {@link GameApp} (desktop window, Android surface, ...). Owns the
+ * platform services and implements the {@link GameContext} given to the game. Game code never extends this class.
+ *
+ * @param <S> The graphics device type.
+ * @param <Z> The settings type.
+ */
+public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSettings> implements GameContext {
 
     private static final Logger log = LoggerFactory.getLogger(GameContainer.class);
 
+    protected final GameApp app;
+    protected final Z settings;
     protected S graphicsDevice;
-    protected Z settings;
+    protected ContentManager contentManager;
+    protected AudioPlayer audioPlayer;
     protected State state;
 
+    private boolean appLoaded;
     private float elapsed;
     private int frameCount;
     private int instantFps;
@@ -33,36 +43,28 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
     /**
      * Constructor.
      *
+     * @param app      The game to run.
      * @param settings The settings to use.
      */
-    public GameContainer(Z settings) {
+    protected GameContainer(GameApp app, Z settings) {
+        if (app == null) {
+            throw new IllegalArgumentException("Game cannot be null.");
+        }
         if (settings == null) {
             throw new IllegalArgumentException("Game settings cannot be null.");
         }
+        this.app = app;
         this.settings = settings;
         this.state = State.NEW;
     }
 
     /**
-     * This function will initialize and run the game window.
-     */
-    public void start() {
-        this.init();
-    }
-
-    /**
-     * Initializes the window and rendering context.
+     * Initialize the platform services and attach the game (its {@link GameApp#load()} is called by the host once
+     * the platform is ready).
      *
-     * @return True if the window was initialized successfully.
+     * @return True if everything was initialized.
      */
-    @Override
-    public boolean init() {
-        if (this.state.hasInitialized()) {
-            log.warn("Game already initialized.");
-            return false;
-        }
-        this.state = State.INITIALIZING;
-
+    protected boolean initContainer() {
         if (!initGraphicsDevice()) {
             log.error("Failed to initialize the graphics device.");
             return false;
@@ -71,166 +73,127 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
             log.error("Failed to initialize the audio device.");
             return false;
         }
-        if (!initServices()) {
-            log.error("Failed to initialize the services.");
-            return false;
-        }
-
-        var blueprintPackages = settings.getBlueprintPackages();
-        if (blueprintPackages != null && blueprintPackages.length > 0) {
-            BlueprintLoader.load(blueprintPackages);
-            BlueprintAssembler.assemble(this);
-        }
-
-        this.state = State.INITIALIZED;
+        this.contentManager = createContentManager();
+        this.audioPlayer = createAudioPlayer();
+        app.attach(this);
         return true;
     }
 
-    @Override
-    public void load() {
-        // empty by design (not abstract to make this optional)
+    /**
+     * Load the game (called by the host once the platform is ready).
+     */
+    protected final void loadApp() {
+        appLoaded = true; // set first: a game that fails while loading still gets dispose() to clean up
+        app.load();
     }
 
-    @Override
-    public void update(DeltaTime delta) {
-        // empty by design (not abstract to make this optional)
-    }
-
-    public final void updateContainer(DeltaTime delta) {
+    /**
+     * Run one frame of game logic (called by the host loop).
+     */
+    protected final void updateFrame(DeltaTime delta) {
         frameCount++;
-
         elapsed += delta.getElapsed();
         if (elapsed >= 1) {
-            // FPS calculation:
             instantFps = (int) (frameCount / elapsed);
             smoothFps = smoothFps * 0.4f + instantFps * 0.6f;
             elapsed = 0;
             frameCount = 0;
         }
-    }
-
-    @Override
-    public void draw(DeltaTime delta) {
-        // empty by design (not abstract to make this optional)
-    }
-
-    @Override
-    public void dispose() {
-        // dispose graphics device and window manager
-        if (graphicsDevice != null) {
-            graphicsDevice.dispose();
-        }
+        app.update(delta);
     }
 
     /**
-     * Called when the viewport changes.
-     *
-     * @param width  The new viewport width.
-     * @param height The new viewport height.
+     * Draw one frame (called by the host loop).
+     */
+    protected final void drawFrame(DeltaTime delta) {
+        if (settings.isAutoClear()) {
+            graphicsDevice.clear();
+        }
+        app.draw(delta);
+        graphicsDevice.endFrame();
+    }
+
+    /**
+     * Forward a drawable-size change to the game (called by the platform).
      */
     public void onViewportChanged(int width, int height) {
-        // empty by design (not abstract to make this optional)
+        app.onViewportChanged(width, height);
     }
 
     /**
-     * Clear the render window.
+     * Dispose the game first (while every context is alive), then the shared services and the graphics device.
+     * Platform hosts extend this to release their own resources afterwards.
      */
-    public void clear() {
-        graphicsDevice.clear();
+    protected void disposeContainer() {
+        try {
+            if (appLoaded) {
+                app.dispose();
+            }
+        } finally {
+            if (contentManager != null) {
+                contentManager.dispose();
+            }
+            if (graphicsDevice != null) {
+                graphicsDevice.dispose();
+            }
+        }
     }
 
-    /**
-     * Initialize the graphics device.
-     * 
-     * @return True if the graphics device was initialized successfully.
-     */
     protected abstract boolean initGraphicsDevice();
 
-    /**
-     * Initialize the audio context.
-     * 
-     * @return True if the audio context was initialized successfully.
-     */
     protected abstract boolean initAudio();
 
-    /**
-     * Initialize the services.
-     * 
-     * @return True if the services were initialized successfully.
-     */
-    protected abstract boolean initServices();
+    protected abstract ContentManager createContentManager();
 
-    /**
-     * Get the window virtual width.
-     *
-     * @return The window virtual width.
-     */
-    public int getVirtualWidth() {
-        return this.settings.getVirtualWidth();
+    protected abstract AudioPlayer createAudioPlayer();
+
+    // region GameContext
+
+    @Override
+    public S graphics() {
+        return graphicsDevice;
     }
 
-    /**
-     * Get the window virtual height.
-     *
-     * @return The window virtual height.
-     */
-    public int getVirtualHeight() {
-        return this.settings.getVirtualHeight();
+    @Override
+    public ContentManager content() {
+        return contentManager;
     }
 
-    /**
-     * Set the window background color.
-     *
-     * @param backgroundColor The window background color.
-     */
-    public void setBackgroundColor(Color backgroundColor) {
-        if (this.graphicsDevice == null) {
-            throw new IllegalStateException("Graphics device not initialized.");
-        }
-
-        this.graphicsDevice.setClearColor(backgroundColor);
+    @Override
+    public AudioPlayer audio() {
+        return audioPlayer;
     }
 
-    /**
-     * Get client properties.
-     *
-     * @return The client properties.
-     */
-    public Properties getClientProperties() {
-        return this.settings.getClientProperties();
-    }
-
-    /**
-     * Get the active graphics device.
-     * 
-     * @return The active graphics device.
-     */
-    public S getGraphicsDevice() {
-        return this.graphicsDevice;
-    }
-
-    /**
-     * Get the game settings.
-     * 
-     * @return The game settings.
-     */
-    public Z getSettings() {
+    @Override
+    public Z settings() {
         return settings;
     }
 
-    /**
-     * Get the current FPS (Instant)
-     * @return The instant FPS
-     */
+    @Override
     public int getFps() {
-        return this.instantFps;
+        return instantFps;
     }
 
-    /**
-     * Get the current FPS (Smoothed)
-     * @return The smoothed FPS
-     */
+    @Override
     public int getSmoothedFps() {
-        return (int) this.smoothFps;
+        return (int) smoothFps;
+    }
+
+    // endregion
+
+    /**
+     * Set the clear color.
+     *
+     * @param backgroundColor The color.
+     */
+    public void setBackgroundColor(Color backgroundColor) {
+        if (graphicsDevice == null) {
+            throw new IllegalStateException("Graphics device not initialized.");
+        }
+        graphicsDevice.setClearColor(backgroundColor);
+    }
+
+    public Properties getClientProperties() {
+        return settings.getClientProperties();
     }
 }

@@ -1,7 +1,7 @@
 package org.pixel.demo.learning.ecs;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.ext.ecs.GameComponent;
@@ -18,14 +18,11 @@ public class EcsHierarchyDemo extends DemoGame {
 
     private SpriteBatch spriteBatch;
 
-    public EcsHierarchyDemo(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        contentManager = ServiceProvider.get(ContentManager.class);
+        super.load();
+        spriteBatch = graphics().createSpriteBatch();
+        contentManager = content();
 
         var parent = new Sprite("parent", contentManager.loadTexture("images/earth-48x48.png"));
         parent.setPivot(Vector2.half());
@@ -62,7 +59,6 @@ public class EcsHierarchyDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        contentManager.dispose();
         spriteBatch.dispose();
         super.dispose();
     }
@@ -85,7 +81,6 @@ public class EcsHierarchyDemo extends DemoGame {
         settings.setTargetFps(60);
         settings.setDevMode(false);
 
-        var window = new EcsHierarchyDemo(settings);
-        window.start();
+        DesktopLauncher.run(new EcsHierarchyDemo(), settings);
     }
 }

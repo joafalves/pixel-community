@@ -1,5 +1,6 @@
 package org.pixel.demo.learning.misc;
 
+import org.pixel.core.DesktopLauncher;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.pixel.demo.learning.common.DemoGame;
@@ -21,12 +22,9 @@ public class SerializationDemo extends DemoGame {
         private int gold;
     }
 
-    public SerializationDemo(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
+        super.load();
         // hypothetical scenario of storing a save data...
         var gameData = new SaveData(new Vector2(100, 100), 5000);
         DataSerializer.write(gameData, DATA_PATH);
@@ -45,7 +43,6 @@ public class SerializationDemo extends DemoGame {
         settings.setDevMode(false);
         settings.setVsync(true);
 
-        var window = new SerializationDemo(settings);
-        window.start();
+        DesktopLauncher.run(new SerializationDemo(), settings);
     }
 }

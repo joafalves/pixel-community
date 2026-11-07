@@ -42,6 +42,8 @@ import org.pixel.core.DesktopWindowManager;
 import org.pixel.core.WindowSettings;
 import org.pixel.graphics.GraphicsDevice;
 import org.pixel.graphics.RenderStats;
+import org.pixel.graphics.render.DrawListSpriteBatch;
+import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.graphics.opengl.render.GLRenderBackend;
 
 public class GLGraphicsDevice implements GraphicsDevice {
@@ -117,6 +119,13 @@ public class GLGraphicsDevice implements GraphicsDevice {
             throw new IllegalStateException("Graphics device is not initialized.");
         }
         return renderBackend;
+    }
+
+    @Override
+    public SpriteBatch createSpriteBatch() {
+        DrawListSpriteBatch spriteBatch = new DrawListSpriteBatch(getRenderBackend());
+        spriteBatch.init();
+        return spriteBatch;
     }
 
     @Override

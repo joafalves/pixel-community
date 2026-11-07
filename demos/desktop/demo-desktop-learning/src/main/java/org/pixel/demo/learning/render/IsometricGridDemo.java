@@ -1,5 +1,7 @@
 package org.pixel.demo.learning.render;
 
+import org.pixel.core.DesktopWindowManager;
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
@@ -28,14 +30,11 @@ public class IsometricGridDemo extends DemoGame {
     private boolean dragging; // Whether the mouse is dragging
     private Vector2 highlightedTile; // The tile currently being highlighted
 
-    public IsometricGridDemo(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
-        int windowWidth = getWindowManager().getWindowWidth();
-        int windowHeight = getWindowManager().getWindowHeight();
+        super.load();
+        int windowWidth = DesktopWindowManager.of(context()).getWindowWidth();
+        int windowHeight = DesktopWindowManager.of(context()).getWindowHeight();
 
         re = new NvgRenderEngine(windowWidth, windowHeight);
         gridOffset = new Vector2(windowWidth / 2.0f, windowHeight / 2.0f); // Start with no offset
@@ -51,7 +50,7 @@ public class IsometricGridDemo extends DemoGame {
             if (!dragging) {
                 dragging = true;
                 Mouse.getPosition(dragStartPos);
-                getWindowManager().setWindowCursorType(WindowCursorType.HAND);
+                DesktopWindowManager.of(context()).setWindowCursorType(WindowCursorType.HAND);
                 log.info("Drag start: " + dragStartPos);
             } else {
                 Vector2 currentMousePos = Mouse.getPosition();
@@ -64,7 +63,7 @@ public class IsometricGridDemo extends DemoGame {
                 log.info("Drag end");
             }
             dragging = false;
-            getWindowManager().setWindowCursorType(WindowCursorType.ARROW);
+            DesktopWindowManager.of(context()).setWindowCursorType(WindowCursorType.ARROW);
         }
 
         // Calculate which tile is highlighted
@@ -135,7 +134,6 @@ public class IsometricGridDemo extends DemoGame {
         settings.setWindowHeight(1080);
         settings.setTitle("Isometric Grid Demo - Drag mouse to move grid");
 
-        var window = new IsometricGridDemo(settings);
-        window.start();
+        DesktopLauncher.run(new IsometricGridDemo(), settings);
     }
 }

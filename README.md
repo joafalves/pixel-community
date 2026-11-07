@@ -26,28 +26,21 @@ Check the :file_folder: [demos folder](https://github.com/joafalves/pixel-commun
 ##### Basic example (Drawing a Sprite) #####
 
 ```java
-public class SingleSpriteDemo extends Game {
+public class SingleSpriteDemo extends GameApp {
 
     private Camera2D gameCamera;
-    private ContentManager content;
     private SpriteBatch spriteBatch;
-
     private Texture spriteTex;
-
-    public SingleSpriteDemo(GameWindowSettings settings) {
-        super(settings);
-    }
 
     @Override
     public void load() {
-        // load up of resources and game utilities:
-        content = ServiceProvider.get(ContentManager.class);
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        gameCamera = new Camera2D(this);
+        // the game context is available from load() on: graphics(), content(), audio(), window(), settings()
+        spriteBatch = graphics().createSpriteBatch(); // created by you: you dispose it
+        gameCamera = new Camera2D(context());
 
-        // example of loading a texture into memory:
-        spriteTex = content.load("<texture_path>", Texture.class);
-        // ... or with the built-in 'texture' method: content.loadTexture(...)
+        // the content manager is shared by the whole game and released by the framework
+        spriteTex = content().load("<texture_path>", Texture.class);
+        // ... or with the built-in 'texture' method: content().loadTexture(...)
     }
 
     @Override
@@ -57,21 +50,19 @@ public class SingleSpriteDemo extends Game {
 
     @Override
     public void draw(DeltaTime delta) {
-        // begin the spritebatch phase:
         spriteBatch.begin(gameCamera.getViewMatrix(), BlendMode.NORMAL_BLEND);
-
-        // sprite draw/put for this drawing phase:
         spriteBatch.draw(spriteTex, Vector2.ZERO, Color.WHITE);
-
-        // end and draw all sprites stored:
         spriteBatch.end();
     }
 
     @Override
     public void dispose() {
-        content.dispose();
         spriteBatch.dispose();
-        super.dispose();
+    }
+
+    public static void main(String[] args) {
+        // the same GameApp runs on other platforms through their launcher (e.g. AndroidLauncher)
+        DesktopLauncher.run(new SingleSpriteDemo(), new WindowSettings("Sprite demo", 800, 600));
     }
 }
 ```
@@ -92,10 +83,9 @@ The framework functionality is divided into multiple modules which can be import
         ├── ext-network             # Network extension
         └── ext-tween               # Tween extension
     .modules/                       # The principal modules of the framework
-        ├── blueprint               # Blueprint configuration classes
         ├── commons                 # Common utility classes
         ├── content                 # Common Content classes (Texture, Font, Audio, ...)
-        ├── core                    # Core module (GameContainer, GameSettings, Camera2D, ...)
+        ├── core                    # Core module (GameApp, GameContext, GameSettings, Camera2D, ...)
         ├── graphics                # Graphics API module
         ├── math                    # Math module (Vector, Matrix, ...)
         └── pipeline                # Generic Pipeline processing module

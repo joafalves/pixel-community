@@ -47,6 +47,7 @@ public class GLES30SpriteBatch extends SpriteBatch {
     private FloatBuffer dataBuffer;
     private SpriteData[] spriteData;
 
+    private final android.content.Context context;
     private int bufferMaxSize;
     private int bufferWriteIndex;
     private int lastTextureId;
@@ -56,8 +57,8 @@ public class GLES30SpriteBatch extends SpriteBatch {
     /**
      * Constructor.
      */
-    public GLES30SpriteBatch() {
-        this(BUFFER_UNIT_LENGTH);
+    public GLES30SpriteBatch(android.content.Context context) {
+        this(context, BUFFER_UNIT_LENGTH);
     }
 
     /**
@@ -65,7 +66,8 @@ public class GLES30SpriteBatch extends SpriteBatch {
      *
      * @param bufferMaxSize The maximum buffer size.
      */
-    public GLES30SpriteBatch(int bufferMaxSize) {
+    public GLES30SpriteBatch(android.content.Context context, int bufferMaxSize) {
+        this.context = context;
         this.bufferMaxSize = bufferMaxSize;
         this.bufferWriteIndex = 0;
     }
@@ -80,7 +82,7 @@ public class GLES30SpriteBatch extends SpriteBatch {
 
         vbo = new GLES30VertexBufferObject();
         vao = new GLES30VertexArrayObject();
-        shader = new GLES30TextureShader();
+        shader = new GLES30TextureShader(context);
 
         initShader();
         initBuffer();
