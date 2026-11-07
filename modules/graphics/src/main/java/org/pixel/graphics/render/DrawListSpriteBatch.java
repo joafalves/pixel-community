@@ -5,11 +5,9 @@ import org.pixel.commons.lifecycle.State;
 import org.pixel.content.Font;
 import org.pixel.content.FontGlyph;
 import org.pixel.content.Texture;
-import org.pixel.graphics.backend.BatchList;
 import org.pixel.graphics.backend.PassState;
 import org.pixel.graphics.backend.RenderBackend;
-import org.pixel.graphics.backend.VertexLayout;
-import org.pixel.graphics.backend.VertexStream;
+import org.pixel.graphics.backend.RenderData;
 import org.pixel.graphics.draw.Batcher;
 import org.pixel.graphics.draw.Colors;
 import org.pixel.graphics.draw.DrawList;
@@ -35,8 +33,8 @@ public class DrawListSpriteBatch extends SpriteBatch {
 
     private final RenderBackend backend;
     private final DrawList drawList = new DrawList(LayerMode.SORTED);
-    private final VertexStream vertices = new VertexStream(VertexLayout.SPRITE, 4096);
-    private final BatchList batches;
+    private final Batcher batcher = new Batcher();
+    private final RenderData renderData;
     private final PassState passState = new PassState();
 
     private State state = State.NEW;
@@ -52,7 +50,7 @@ public class DrawListSpriteBatch extends SpriteBatch {
             throw new IllegalArgumentException("Render backend cannot be null.");
         }
         this.backend = backend;
-        this.batches = new BatchList(backend.capabilities().maxTextureSlots());
+        this.renderData = new RenderData(backend.capabilities().maxTextureSlots());
     }
 
     @Override
@@ -100,11 +98,11 @@ public class DrawListSpriteBatch extends SpriteBatch {
         }
 
         drawList.prepare();
-        Batcher.build(drawList, backend.capabilities(), vertices, batches);
+        batcher.build(drawList, backend.capabilities(), renderData);
 
         backend.beginPass(passState);
         try {
-            backend.submit(vertices, batches);
+            backend.submit(renderData);
         } finally {
             backend.endPass();
         }

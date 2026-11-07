@@ -5,7 +5,7 @@ import org.pixel.commons.lifecycle.Disposable;
 /**
  * The only layer that talks to the GPU API. Everything above it (draw lists, batching, front-ends) is GL-free.
  * <p>
- * Usage per pass: {@link #beginPass(PassState)}, one or more {@link #submit(VertexStream, BatchList)}, then
+ * Usage per pass: {@link #beginPass(PassState)}, one or more {@link #submit(RenderData)}, then
  * {@link #endPass()}. Implementations record their work into the device's render statistics.
  */
 public interface RenderBackend extends Disposable {
@@ -23,12 +23,11 @@ public interface RenderBackend extends Disposable {
     void beginPass(PassState state);
 
     /**
-     * Upload the vertices and draw every batch, in order.
+     * Upload the vertices and tables, then draw every batch in order.
      *
-     * @param vertices The vertex data of the pass.
-     * @param batches  The batches (quad ranges + textures) to draw.
+     * @param data The vertex streams and batches of the pass.
      */
-    void submit(VertexStream vertices, BatchList batches);
+    void submit(RenderData data);
 
     /**
      * End the pass and restore shared GPU state other renderers rely on.

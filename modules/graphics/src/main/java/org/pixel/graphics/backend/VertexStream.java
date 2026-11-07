@@ -86,12 +86,53 @@ public final class VertexStream {
      * @param slot Texture slot of the batch (0..255).
      */
     public void putSpriteVertex(float x, float y, float u, float v, int rgba, int slot) {
+        // (layout is checked by the batcher, which owns one stream per layout)
         buffer.putFloat(x);
         buffer.putFloat(y);
         buffer.putFloat(u);
         buffer.putFloat(v);
         buffer.putInt(LITTLE_ENDIAN ? rgba : Integer.reverseBytes(rgba));
         buffer.putInt(LITTLE_ENDIAN ? (slot & 0xFF) : (slot & 0xFF) << 24);
+        vertexCount++;
+    }
+
+    /**
+     * Write one {@link VertexLayout#FULL} vertex. Call {@link #reserve(int)} first.
+     *
+     * @param x         Position x.
+     * @param y         Position y.
+     * @param u         Texture coordinate u (or shape dimension x).
+     * @param v         Texture coordinate v (or shape dimension y).
+     * @param rgba      Packed fill color (R in the lowest byte).
+     * @param localX    Shape-local x.
+     * @param localY    Shape-local y.
+     * @param p0        Shape parameter 0.
+     * @param p1        Shape parameter 1.
+     * @param p2        Shape parameter 2.
+     * @param p3        Shape parameter 3.
+     * @param shapeType Shape type code (0..255).
+     * @param slot      Texture slot (0..255).
+     * @param clip      Batch-local clip index (0 = none).
+     * @param style     Batch-local style index (0 = none).
+     */
+    public void putFullVertex(float x, float y, float u, float v, int rgba, float localX, float localY,
+                              float p0, float p1, float p2, float p3, int shapeType, int slot, int clip, int style) {
+        buffer.putFloat(x);
+        buffer.putFloat(y);
+        buffer.putFloat(u);
+        buffer.putFloat(v);
+        buffer.putInt(LITTLE_ENDIAN ? rgba : Integer.reverseBytes(rgba));
+        buffer.putFloat(localX);
+        buffer.putFloat(localY);
+        buffer.putFloat(p0);
+        buffer.putFloat(p1);
+        buffer.putFloat(p2);
+        buffer.putFloat(p3);
+        buffer.put((byte) shapeType);
+        buffer.put((byte) slot);
+        buffer.putShort((short) clip);
+        buffer.putShort((short) style);
+        buffer.putShort((short) 0);
         vertexCount++;
     }
 

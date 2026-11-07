@@ -1,7 +1,5 @@
 package org.pixel.demo.learning.benchmark;
 
-import org.lwjgl.stb.STBImageWrite;
-import org.lwjgl.system.MemoryUtil;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
@@ -14,6 +12,7 @@ import org.pixel.content.importer.settings.FontImporterSettings;
 import org.pixel.core.Camera2D;
 import org.pixel.core.Game;
 import org.pixel.core.WindowSettings;
+import org.pixel.demo.learning.common.Screenshot;
 import org.pixel.graphics.render.BlendMode;
 import org.pixel.graphics.render.DrawListSpriteBatch;
 import org.pixel.graphics.render.SpriteBatch;
@@ -22,7 +21,6 @@ import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -206,13 +204,10 @@ public class RenderParityCheck extends Game {
     }
 
     private static void writePng(Path file, byte[] rgba, int width, int height) {
-        ByteBuffer buffer = MemoryUtil.memAlloc(rgba.length);
         try {
-            buffer.put(rgba).flip();
-            STBImageWrite.stbi_flip_vertically_on_write(true); // GL rows are bottom-up
-            STBImageWrite.stbi_write_png(file.toString(), width, height, 4, buffer, width * 4);
-        } finally {
-            MemoryUtil.memFree(buffer);
+            Screenshot.writePng(file, rgba, width, height);
+        } catch (IOException e) {
+            log.error("Unable to write " + file, e);
         }
     }
 

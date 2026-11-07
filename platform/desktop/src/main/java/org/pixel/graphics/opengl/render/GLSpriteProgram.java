@@ -31,7 +31,7 @@ final class GLSpriteProgram extends GLShader {
         init();
     }
 
-    private static String require(String path) {
+    static String require(String path) {
         String source = loadShader(path);
         if (source == null) {
             throw new IllegalStateException("Shader source not found on the classpath: " + path);
@@ -39,7 +39,7 @@ final class GLSpriteProgram extends GLShader {
         return source;
     }
 
-    private static String textureSwitch(int slots) {
+    static String textureSwitch(int slots) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < slots; i++) {
             sb.append("        case ").append(i).append(": color *= texture(uTextures[").append(i)

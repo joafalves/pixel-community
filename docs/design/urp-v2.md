@@ -129,11 +129,16 @@ why a batch broke, §6.3). This replaces `DirectRenderer`. Post effects (§5.6) 
 material.
 
 ### 4.5 Clipping
-Each command carries a 16-bit **clip index** into a per-layer clip table of rectangles in layer space. The vertex
-shader passes the clip rect through, and the fragment shader discards fragments outside it. Consequences:
-- Clip changes do **not** flush the batch, so nested scroll panes cost nothing extra.
-- Clip rects are transformed on the CPU with the current transform, so translated and scaled content clips
-  correctly. Rotated clips are an open question (§12).
+Each command carries a **clip id** into the draw list's frame-local `ClipTable` (axis-aligned rectangles in layer
+space; 0 = no clip). The batcher copies the clips a batch uses into that batch's slice of the pass clip table,
+which the backend binds as a uniform-buffer range. Vertices carry the 16-bit batch-local index. The vertex shader
+passes the layer-space position through, and the fragment shader drops fragments outside the rectangle.
+Consequences:
+- Clip changes do **not** flush the batch, so nested scroll panes cost nothing extra. A batch holds up to 256 clips;
+  more start a new batch.
+- Clip rects are transformed on the CPU with the current transform and intersected with the enclosing clip, so
+  translated and scaled content clips correctly. Under a rotated transform the clip is the bounding box of the
+  rotated rectangle, with a one-time warning (implemented in Phase 2a; stencil clipping can come later).
 - No `glScissor` and no viewport readback, so Retina is correct by construction.
 
 ### 4.6 View
@@ -450,13 +455,36 @@ Each phase ends green (`./gradlew build`) and is reviewable on its own.
 - GPU checks: `renderParity` (7 scenes, classic vs draw list, pixel comparison: no mismatches) and `renderBenchmark`
   (both renderers in one session). All gates passed.
 
-**Phase 2: Canvas and text**
-- SDF shapes, images, nine-patch, paths (triangulation), transform stack, clip stack (per-vertex).
-- Shapes with fill, stroke, gradients and soft shadows (§4.10).
-- MTSDF fonts: runtime generation (msdfgen) with a disk cache, the pre-baked atlas importer, the glyph shader with
-  fill/stroke/shadow/weight, and `TextLayout`/`TextMeasurer` (GL-free, tested). A text quality demo covers sizes
-  8–200 px, zoom and rotation, Retina, and outlines at the range limit.
-- Port the NanoVG demos to `Canvas`. The Retina check covers clipping and text sharpness.
+**Phase 2: Canvas and text** (split into reviewable slices)
+
+*2a: Canvas core* ✅
+- `VertexLayout.FULL` (52 B) and the shape program (`engine/shader/opengl/urp/shape.*.glsl`): SDF rounded rect
+  (per-corner radii), ellipse (exact circle), segment (butt/round/square caps), textured quads. Coverage uses
+  `fwidth`, so edges stay one pixel soft under any scale or rotation (no MSAA needed). Fill and stroke are
+  composited in one pass (premultiplied).
+- `StyleTable` (frame-local, de-duplicated stroke styles) and `ClipTable`. The batcher remaps both into
+  per-batch, uniform-aligned table slices, and the backend binds them with `glBindBufferRange` (GLES 3.0
+  compatible).
+- `org.pixel.graphics.canvas`: `Canvas` (fluent builders committed on the next command or state change, a
+  `save`/`restore` stack, translate/rotate/scale, nested clipping), `CanvasBatch` (immediate begin/end owner until
+  Phase 3 layers), `StrokeAlign`, `LineCap`.
+- One pass can mix sprite and shape batches: `RenderData` holds one vertex stream per layout, and a layout switch is a
+  batch break.
+- Tests: batcher (layout breaks, table remapping/alignment/capacity), canvas geometry, stroke padding, transforms,
+  commit-on-state-change, clipping (nested, restored, rotated), lines, images, depth order, and **0 bytes
+  allocated** for 20 frames of 8,000 canvas commands.
+- Demo: `urp/CanvasShapesDemo`. Its 53-shape frame (strokes, radii, lines, rotation, a clipped scrolling panel with
+  images and nested clips) is **1 draw call**. Sprite parity and benchmark unchanged.
+
+*2b:* gradients (linear/radial), soft shadows (closed-form rounded-rect Gaussian), dashed strokes, nine-patch.
+
+*2c:* paths: polygon fill (triangulation), stroke expansion with joins and caps.
+
+*2d:* MTSDF fonts: runtime generation (msdfgen) with a disk cache, the pre-baked atlas importer, the glyph shader
+with fill/stroke/shadow/weight, and `TextLayout`/`TextMeasurer` (GL-free, tested). A text quality demo covers sizes
+8–200 px, zoom and rotation, Retina, and outlines at the range limit.
+
+*2e:* port the NanoVG demos to `Canvas`, with a Retina check of clipping and text sharpness.
 
 **Phase 3: pipeline**
 - Layers, passes, views, `RenderTarget`, post effects (port the 5 existing effects plus bloom and vignette),

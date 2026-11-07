@@ -5,11 +5,14 @@ import org.pixel.graphics.backend.BackendCapabilities;
 import org.pixel.graphics.backend.BatchList;
 import org.pixel.graphics.backend.PassState;
 import org.pixel.graphics.backend.RenderBackend;
+import org.pixel.graphics.backend.RenderData;
+import org.pixel.graphics.backend.VertexLayout;
 import org.pixel.graphics.backend.VertexStream;
 import org.pixel.graphics.render.BlendMode;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -18,13 +21,18 @@ import java.util.List;
  */
 public class RecordingBackend implements RenderBackend {
 
-    public record Batch(int firstQuad, int quadCount, List<Texture> textures) {
+    public record Batch(VertexLayout layout, int firstQuad, int quadCount, List<Texture> textures,
+                        List<float[]> clips, List<float[]> styles) {
     }
 
     public record Vertex(float x, float y, float u, float v, int rgba, int slot) {
     }
 
-    public record Pass(BlendMode blendMode, List<Batch> batches, List<Vertex> vertices) {
+    public record FullVertex(float x, float y, float u, float v, int rgba, float localX, float localY,
+                             float p0, float p1, float p2, float p3, int type, int slot, int clip, int style) {
+    }
+
+    public record Pass(BlendMode blendMode, List<Batch> batches, List<Vertex> vertices, List<FullVertex> shapes) {
     }
 
     private final BackendCapabilities capabilities;
@@ -36,7 +44,11 @@ public class RecordingBackend implements RenderBackend {
     private BlendMode blendMode;
 
     public RecordingBackend(int maxTextureSlots, int maxQuadsPerBatch, boolean capture) {
-        this.capabilities = new BackendCapabilities(maxTextureSlots, maxQuadsPerBatch);
+        this(new BackendCapabilities(maxTextureSlots, maxQuadsPerBatch, 256, 256, 64), capture);
+    }
+
+    public RecordingBackend(BackendCapabilities capabilities, boolean capture) {
+        this.capabilities = capabilities;
         this.capture = capture;
     }
 
@@ -53,8 +65,9 @@ public class RecordingBackend implements RenderBackend {
     }
 
     @Override
-    public void submit(VertexStream vertices, BatchList batches) {
+    public void submit(RenderData data) {
         if (!inPass) throw new IllegalStateException("submit outside pass");
+        BatchList batches = data.batches();
         drawCalls += batches.size();
         passCount++;
         if (!capture) {
@@ -66,16 +79,21 @@ public class RecordingBackend implements RenderBackend {
             for (int s = 0; s < batches.textureCount(b); s++) {
                 textures.add(batches.texture(b, s));
             }
-            recordedBatches.add(new Batch(batches.firstQuad(b), batches.quadCount(b), textures));
+            List<float[]> clips = new ArrayList<>();
+            for (int c = 0; c < batches.clipCount(b); c++) {
+                int o = batches.clipOffset(b) + c * BatchList.CLIP_FLOATS;
+                clips.add(Arrays.copyOfRange(batches.clipData(), o, o + BatchList.CLIP_FLOATS));
+            }
+            List<float[]> styles = new ArrayList<>();
+            for (int s = 0; s < batches.styleCount(b); s++) {
+                int o = batches.styleOffset(b) + s * BatchList.STYLE_FLOATS;
+                styles.add(Arrays.copyOfRange(batches.styleData(), o, o + BatchList.STYLE_FLOATS));
+            }
+            recordedBatches.add(new Batch(batches.layout(b), batches.firstQuad(b), batches.quadCount(b), textures,
+                    clips, styles));
         }
-        List<Vertex> recordedVertices = new ArrayList<>();
-        ByteBuffer data = vertices.slice(0, vertices.vertexCount());
-        for (int i = 0; i < vertices.vertexCount(); i++) {
-            int base = i * 24;
-            recordedVertices.add(new Vertex(data.getFloat(base), data.getFloat(base + 4), data.getFloat(base + 8),
-                    data.getFloat(base + 12), littleEndianInt(data, base + 16), data.get(base + 20) & 0xFF));
-        }
-        passes.add(new Pass(blendMode, recordedBatches, recordedVertices));
+        passes.add(new Pass(blendMode, recordedBatches, readSprites(data.vertices(VertexLayout.SPRITE)),
+                readShapes(data.vertices(VertexLayout.FULL))));
     }
 
     @Override
@@ -90,6 +108,31 @@ public class RecordingBackend implements RenderBackend {
 
     public Pass lastPass() {
         return passes.get(passes.size() - 1);
+    }
+
+    private static List<Vertex> readSprites(VertexStream stream) {
+        List<Vertex> out = new ArrayList<>();
+        ByteBuffer data = stream.slice(0, stream.vertexCount());
+        for (int i = 0; i < stream.vertexCount(); i++) {
+            int base = i * VertexLayout.SPRITE.stride();
+            out.add(new Vertex(data.getFloat(base), data.getFloat(base + 4), data.getFloat(base + 8),
+                    data.getFloat(base + 12), littleEndianInt(data, base + 16), data.get(base + 20) & 0xFF));
+        }
+        return out;
+    }
+
+    private static List<FullVertex> readShapes(VertexStream stream) {
+        List<FullVertex> out = new ArrayList<>();
+        ByteBuffer data = stream.slice(0, stream.vertexCount());
+        for (int i = 0; i < stream.vertexCount(); i++) {
+            int b = i * VertexLayout.FULL.stride();
+            out.add(new FullVertex(data.getFloat(b), data.getFloat(b + 4), data.getFloat(b + 8),
+                    data.getFloat(b + 12), littleEndianInt(data, b + 16), data.getFloat(b + 20),
+                    data.getFloat(b + 24), data.getFloat(b + 28), data.getFloat(b + 32), data.getFloat(b + 36),
+                    data.getFloat(b + 40), data.get(b + 44) & 0xFF, data.get(b + 45) & 0xFF,
+                    data.getShort(b + 46) & 0xFFFF, data.getShort(b + 48) & 0xFFFF));
+        }
+        return out;
     }
 
     private static int littleEndianInt(ByteBuffer data, int offset) {

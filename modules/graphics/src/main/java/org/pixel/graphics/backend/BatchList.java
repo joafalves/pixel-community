@@ -5,18 +5,44 @@ import org.pixel.content.Texture;
 import java.util.Arrays;
 
 /**
- * The batches of one pass: consecutive quad ranges of a {@link VertexStream} that can each be drawn with one draw
- * call, plus the textures each batch binds (slot i of a batch = texture unit i). Grows, never shrinks.
+ * The batches of one pass. A batch is a consecutive quad range of the vertex stream of its {@link VertexLayout}
+ * that is drawn with one draw call, plus:
+ * <ul>
+ *   <li>the textures it binds (slot i = texture unit i);</li>
+ *   <li>for {@link VertexLayout#FULL} batches, its slice of the pass-wide <b>clip table</b> (1 vec4 per clip:
+ *   x0, y0, x1, y1) and <b>style table</b> (2 vec4 per style). Each slice starts at an offset aligned to the
+ *   backend's uniform buffer alignment, so a backend can bind it directly as a uniform range.</li>
+ * </ul>
+ * Grows, never shrinks.
  */
 public final class BatchList {
+
+    /**
+     * Floats per clip table entry (one vec4).
+     */
+    public static final int CLIP_FLOATS = 4;
+    /**
+     * Floats per style table entry (two vec4: stroke color, then stroke width / offset / reserved).
+     */
+    public static final int STYLE_FLOATS = 8;
 
     private final int maxTextureSlots;
 
     private int size;
+    private VertexLayout[] layout = new VertexLayout[16];
     private int[] firstQuad = new int[16];
     private int[] quadCount = new int[16];
     private int[] textureCount = new int[16];
+    private int[] clipOffset = new int[16];
+    private int[] clipCount = new int[16];
+    private int[] styleOffset = new int[16];
+    private int[] styleCount = new int[16];
     private Texture[] textures;
+
+    private float[] clipData = new float[256];
+    private int clipDataSize;
+    private float[] styleData = new float[512];
+    private int styleDataSize;
 
     /**
      * Constructor.
@@ -36,11 +62,13 @@ public final class BatchList {
     }
 
     /**
-     * Remove all batches (capacity is kept).
+     * Remove all batches and table data (capacity is kept).
      */
     public void clear() {
         Arrays.fill(textures, 0, size * maxTextureSlots, null);
         size = 0;
+        clipDataSize = 0;
+        styleDataSize = 0;
     }
 
     /**
@@ -53,19 +81,33 @@ public final class BatchList {
     /**
      * Start a new batch.
      *
-     * @param first The first quad of the batch in the vertex stream.
+     * @param batchLayout    The vertex layout of the batch.
+     * @param first          The first quad of the batch in the stream of that layout.
+     * @param alignmentFloats Alignment of the batch's table slices (in floats).
      */
-    public void begin(int first) {
+    public void begin(VertexLayout batchLayout, int first, int alignmentFloats) {
         if (size == firstQuad.length) {
             int capacity = size * 2;
+            layout = Arrays.copyOf(layout, capacity);
             firstQuad = Arrays.copyOf(firstQuad, capacity);
             quadCount = Arrays.copyOf(quadCount, capacity);
             textureCount = Arrays.copyOf(textureCount, capacity);
+            clipOffset = Arrays.copyOf(clipOffset, capacity);
+            clipCount = Arrays.copyOf(clipCount, capacity);
+            styleOffset = Arrays.copyOf(styleOffset, capacity);
+            styleCount = Arrays.copyOf(styleCount, capacity);
             textures = Arrays.copyOf(textures, capacity * maxTextureSlots);
         }
+        layout[size] = batchLayout;
         firstQuad[size] = first;
         quadCount[size] = 0;
         textureCount[size] = 0;
+        clipDataSize = align(clipDataSize, alignmentFloats);
+        styleDataSize = align(styleDataSize, alignmentFloats);
+        clipOffset[size] = clipDataSize;
+        clipCount[size] = 0;
+        styleOffset[size] = styleDataSize;
+        styleCount[size] = 0;
         size++;
     }
 
@@ -93,6 +135,42 @@ public final class BatchList {
     }
 
     /**
+     * Append a clip rectangle to the current (last) batch's clip table.
+     *
+     * @return The batch-local, 1-based clip index.
+     */
+    public int addClip(float x0, float y0, float x1, float y1) {
+        ensureClipData(clipDataSize + CLIP_FLOATS);
+        int i = clipDataSize;
+        clipData[i] = x0;
+        clipData[i + 1] = y0;
+        clipData[i + 2] = x1;
+        clipData[i + 3] = y1;
+        clipDataSize += CLIP_FLOATS;
+        return ++clipCount[size - 1];
+    }
+
+    /**
+     * Append a style to the current (last) batch's style table.
+     *
+     * @return The batch-local, 1-based style index.
+     */
+    public int addStyle(float r, float g, float b, float a, float strokeWidth, float strokeOffset) {
+        ensureStyleData(styleDataSize + STYLE_FLOATS);
+        int i = styleDataSize;
+        styleData[i] = r;
+        styleData[i + 1] = g;
+        styleData[i + 2] = b;
+        styleData[i + 3] = a;
+        styleData[i + 4] = strokeWidth;
+        styleData[i + 5] = strokeOffset;
+        styleData[i + 6] = 0f;
+        styleData[i + 7] = 0f;
+        styleDataSize += STYLE_FLOATS;
+        return ++styleCount[size - 1];
+    }
+
+    /**
      * Add one quad to the current (last) batch.
      */
     public void addQuad() {
@@ -104,6 +182,25 @@ public final class BatchList {
      */
     public int currentQuadCount() {
         return quadCount[size - 1];
+    }
+
+    /**
+     * @return The layout of the current (last) batch, or {@code null} if there is none.
+     */
+    public VertexLayout currentLayout() {
+        return size == 0 ? null : layout[size - 1];
+    }
+
+    public int currentClipCount() {
+        return clipCount[size - 1];
+    }
+
+    public int currentStyleCount() {
+        return styleCount[size - 1];
+    }
+
+    public VertexLayout layout(int batch) {
+        return layout[batch];
     }
 
     public int firstQuad(int batch) {
@@ -125,5 +222,65 @@ public final class BatchList {
      */
     public Texture texture(int batch, int slot) {
         return textures[batch * maxTextureSlots + slot];
+    }
+
+    /**
+     * @return Float offset of the batch's clip slice in {@link #clipData()}.
+     */
+    public int clipOffset(int batch) {
+        return clipOffset[batch];
+    }
+
+    public int clipCount(int batch) {
+        return clipCount[batch];
+    }
+
+    /**
+     * @return Float offset of the batch's style slice in {@link #styleData()}.
+     */
+    public int styleOffset(int batch) {
+        return styleOffset[batch];
+    }
+
+    public int styleCount(int batch) {
+        return styleCount[batch];
+    }
+
+    /**
+     * @return The pass-wide clip table (valid floats: {@link #clipDataSize()}). Shared, not a copy.
+     */
+    public float[] clipData() {
+        return clipData;
+    }
+
+    public int clipDataSize() {
+        return clipDataSize;
+    }
+
+    /**
+     * @return The pass-wide style table (valid floats: {@link #styleDataSize()}). Shared, not a copy.
+     */
+    public float[] styleData() {
+        return styleData;
+    }
+
+    public int styleDataSize() {
+        return styleDataSize;
+    }
+
+    private static int align(int value, int alignment) {
+        return (value + alignment - 1) / alignment * alignment;
+    }
+
+    private void ensureClipData(int needed) {
+        if (needed > clipData.length) {
+            clipData = Arrays.copyOf(clipData, Math.max(needed, clipData.length * 2));
+        }
+    }
+
+    private void ensureStyleData(int needed) {
+        if (needed > styleData.length) {
+            styleData = Arrays.copyOf(styleData, Math.max(needed, styleData.length * 2));
+        }
     }
 }
