@@ -20,7 +20,9 @@ public interface GameContext {
     GraphicsDevice graphics();
 
     /**
-     * @return The game's content manager. Always the same instance, so its cache is shared by the whole game.
+     * @return The game's content manager. Always the same instance, so its cache is shared by the whole game. For
+     * assets with a shorter life (a level, a screen), use a child: {@code content().child("level-1")} shares what is
+     * already loaded here and frees its own assets when it is unloaded or disposed.
      */
     ContentManager content();
 

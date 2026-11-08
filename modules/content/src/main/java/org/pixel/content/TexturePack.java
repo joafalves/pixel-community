@@ -71,10 +71,12 @@ public class TexturePack implements Disposable {
     /**
      * Dispose the texture pack.
      */
+    /**
+     * Nothing to release: the texture is a separate content asset, owned (and disposed) by the content manager that
+     * loaded it, which may be an ancestor shared with other packs.
+     */
     @Override
     public void dispose() {
-        if (this.texture != null) {
-            this.texture.dispose();
-        }
+        // the texture is not owned by the pack
     }
 }

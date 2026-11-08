@@ -616,6 +616,23 @@ Each phase ends green (`./gradlew build`) and is reviewable on its own.
 - Not done yet: reloading textures after a lost context (lifecycle work), touch input, audio, text on Android
   (pre-baked atlas importer).
 
+**Content children** ✅
+- `content().child()` / `child("level-1")` gives assets a shorter lifetime than the game (a level, a screen). A
+  child looks assets up in its own cache and then its ancestors' (shared assets are never loaded twice), loads
+  anything else into its own cache (dependencies an importer loads through it too), and frees only those:
+  `unload()` keeps it usable for the next level, `dispose()` ends it. Children are unloaded or disposed before their
+  parent, since they may use its assets. Importers and the data pipeline are inherited, with local overrides; a
+  child never disposes importers it inherited. Uncached loads stay owned by the caller.
+- Shared assets belong in the parent: lookups only go upwards, so siblings never see each other's assets.
+- `TexturePack` no longer disposes its texture: the texture is its own cache entry, owned by whichever manager
+  loaded it (possibly an ancestor), so a level could otherwise free the HUD's atlas. Disposal is exception-safe
+  (one failing asset is logged, the rest are still released) and safe against concurrent loads: `dispose()` is
+  claimed atomically and an asset finishing after it is released at once. BlueGem's title scene uses its own
+  child instead of disposing the game's content manager.
+- Tests: `ContentManagerChildTest` (sharing, ownership, dependency ownership including texture packs, unload,
+  cascading disposal, failing disposals, disposal during a load, importer and pipeline inheritance, uncached loads,
+  names). Demo: `learning/content/ContentLevelsDemo`.
+
 **Phase 3.0: game model (prerequisite of the pipeline)** ✅
 - **Blueprint removed.** It was reflection-based DI with classpath scanning at startup (fragile in jars, needs
   `-parameters`, and core depended on it). Gone: `modules/blueprint`, the `blueprintPackages` setting, the hook in
