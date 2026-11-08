@@ -9,6 +9,7 @@ import org.pixel.graphics.backend.VertexLayout;
 import org.pixel.graphics.canvas.Canvas;
 import org.pixel.graphics.backend.RenderTarget;
 import org.pixel.graphics.draw.Layer;
+import org.pixel.graphics.material.Material;
 import org.pixel.graphics.pass.RenderPipeline;
 import org.pixel.graphics.opengl.GLApi;
 import org.pixel.graphics.render.DrawListSpriteBatch;
@@ -113,7 +114,7 @@ class GLRenderBackendTest {
         assertEquals(GLShapeProgram.STYLE_BINDING, styles.index());
         assertEquals(0, clips.offset());
         assertEquals(256L * 4 * Float.BYTES, clips.size());   // 256 clips of one vec4
-        assertEquals(128L * 28 * Float.BYTES, styles.size()); // 128 styles of 7 vec4
+        assertEquals(128L * 32 * Float.BYTES, styles.size()); // 128 styles of 8 vec4 (16 KB, the GLES 3.0 minimum)
         assertNotEquals(gl.draws.get(0).program(), 0);
         pipeline.dispose();
     }
@@ -223,6 +224,8 @@ class GLRenderBackendTest {
         sprites.init();
         RenderPipeline pipeline = RenderPipeline.builder(countingBackend).pass(() -> WIDE, LAYER).build();
         Vector2 position = new Vector2();
+        Material flash = Material.effect("uniform float uTime;\n"
+                + "vec4 effect(vec4 color, vec2 uv, Fragment f) { return color * f.data.x; }");
         Runnable frame = () -> {
             sprites.begin(view);
             for (int i = 0; i < 20_000; i++) {
@@ -233,6 +236,10 @@ class GLRenderBackendTest {
             Canvas c = pipeline.canvas(LAYER);
             for (int i = 0; i < 500; i++) {
                 c.roundRect(i, i, 20, 10, 3).fill(Color.RED).stroke(1, Color.WHITE).shadow(0, 2, 4, Color.BLACK);
+            }
+            flash.set("uTime", position.getX()); // changes every frame: uploaded every frame
+            for (int i = 0; i < 100; i++) {
+                c.image(countingTexture, i, 0).material(flash, i % 4); // per-command data, one batch
             }
             pipeline.render();
         };
@@ -247,9 +254,122 @@ class GLRenderBackendTest {
             frame.run();
         }
         assertEquals(0, threads.getThreadAllocatedBytes(thread) - before, "bytes allocated by 20 frames");
-        assertEquals(40 * 3, counting.drawCount); // per frame: 20,000 sprites in 2 chunks + 1 shape batch
+        assertEquals(40 * 4, counting.drawCount); // per frame: 20,000 sprites in 2 chunks, shapes, material images
+        flash.dispose();
         sprites.dispose();
         pipeline.dispose();
         countingBackend.dispose();
     }
+
+    // region materials
+
+    private static final String TINT = "uniform vec4 uTint;\nuniform sampler2D uNoise;\n"
+            + "vec4 effect(vec4 color, vec2 uv, Fragment f) { return color * uTint * texture(uNoise, uv).r; }";
+
+    @Test
+    void materialBatchesUseTheMaterialProgramWithItsValuesAndTextures() {
+        GLTexture noise = new GLTexture(gl, 3000, 8, 8);
+        Material tint = Material.effect(TINT).set("uTint", 1f, 0.5f, 0.25f, 1f).texture("uNoise", noise);
+        RenderPipeline pipeline = RenderPipeline.builder(backend).pass(() -> WIDE, LAYER).build();
+        Canvas c = pipeline.canvas(LAYER);
+        c.rect(0, 0, 10, 10).fill(Color.RED);
+        c.image(texture, 0, 0).material(tint, 0.5f);
+        c.image(texture, 20, 0).material(tint, 0.25f); // other data: same batch
+        c.rect(0, 0, 10, 10).fill(Color.RED);
+        int shaders = gl.shaderSources.size();
+        pipeline.render();
+
+        String fragment = gl.shaderSources.get(shaders + 1); // the material's vertex + fragment shader were compiled
+        assertEquals(shaders + 2, gl.shaderSources.size());
+        assertTrue(fragment.contains("#define PIXEL_MATERIAL") && fragment.contains("uniform vec4 uTint;"));
+        assertTrue(fragment.contains("uniform sampler2D uTextures[12];")); // 16 units, 4 kept for material textures
+        assertEquals(3, gl.draws.size());
+        int builtIn = gl.draws.get(0).program();
+        assertNotEquals(builtIn, gl.draws.get(1).program());
+        assertEquals(builtIn, gl.draws.get(2).program());
+        assertTrue(gl.uniforms.contains("uTint=1.0,0.5,0.25,1.0"));
+        assertTrue(gl.uniforms.contains("uNoise=12")); // the first unit after the command textures
+        assertEquals(3000, gl.unitTextures.get(12));
+
+        gl.uniforms.clear();
+        c.image(texture, 0, 0).material(tint);
+        pipeline.render();
+        assertFalse(gl.uniforms.stream().anyMatch(u -> u.startsWith("uTint")), "unchanged values are not uploaded");
+        tint.set("uTint", Color.WHITE);
+        c.image(texture, 0, 0).material(tint);
+        pipeline.render();
+        assertTrue(gl.uniforms.contains("uTint=1.0,1.0,1.0,1.0"));
+        assertEquals(shaders + 2, gl.shaderSources.size(), "compiled once");
+        tint.dispose();
+        pipeline.dispose();
+    }
+
+    @Test
+    void aMaterialThatFailsToReloadKeepsItsPreviousProgram() {
+        Material tint = Material.effect(TINT).set("uTint", Color.WHITE);
+        RenderPipeline pipeline = RenderPipeline.builder(backend).pass(() -> WIDE, LAYER).build();
+        Canvas c = pipeline.canvas(LAYER);
+        c.image(texture, 0, 0).material(tint);
+        pipeline.render();
+        int program = gl.draws.get(0).program();
+
+        gl.failCompile = "oops";
+        tint.setSource(TINT + " oops");
+        gl.draws.clear();
+        c.image(texture, 0, 0).material(tint);
+        pipeline.render();
+        assertEquals(program, gl.draws.get(0).program());
+        assertTrue(tint.getError().contains("oops"));
+        assertFalse(gl.deletedPrograms.contains(program));
+
+        gl.failCompile = null;
+        tint.setSource(TINT + " // fixed");
+        gl.draws.clear();
+        c.image(texture, 0, 0).material(tint);
+        pipeline.render();
+        assertNotEquals(program, gl.draws.get(0).program());
+        assertNull(tint.getError());
+        assertTrue(gl.deletedPrograms.contains(program), "the replaced program is deleted");
+        tint.dispose();
+        pipeline.dispose();
+    }
+
+    @Test
+    void materialsCompileAgainInARecreatedContext() {
+        Material tint = Material.effect(TINT).set("uTint", Color.WHITE);
+        RenderPipeline pipeline = RenderPipeline.builder(backend).pass(() -> WIDE, LAYER).build();
+        Canvas c = pipeline.canvas(LAYER);
+        c.image(texture, 0, 0).material(tint);
+        pipeline.render();
+        int program = gl.draws.get(0).program();
+
+        backend.contextRecreated();
+        gl.draws.clear();
+        gl.uniforms.clear();
+        c.image(texture, 0, 0).material(tint);
+        pipeline.render();
+        assertNotEquals(program, gl.draws.get(0).program());
+        assertFalse(gl.deletedPrograms.contains(program), "names of the lost context are never deleted");
+        assertTrue(gl.uniforms.contains("uTint=1.0,1.0,1.0,1.0"), "values are uploaded to the new program");
+        tint.dispose();
+        pipeline.dispose();
+    }
+
+    @Test
+    void rawMaterialsGetTheSlotHelpersAndOptionalBlocks() {
+        Material raw = Material.raw("void main() { gl_Position = vec4(0.0); }",
+                "out vec4 o; void main() { o = pixelSample(0, vec2(0.0)); }");
+        RenderPipeline pipeline = RenderPipeline.builder(backend).pass(() -> WIDE, LAYER).build();
+        pipeline.canvas(LAYER).image(texture, 0, 0).material(raw);
+        int shaders = gl.shaderSources.size();
+        pipeline.render();
+        String fragment = gl.shaderSources.get(shaders + 1);
+        assertTrue(fragment.contains("#define PIXEL_TEXTURE_SLOTS 12"));
+        assertTrue(fragment.contains("vec4 pixelSample(int slot, vec2 uv)"));
+        assertEquals(1, gl.draws.size());
+        raw.dispose();
+        pipeline.dispose();
+    }
+
+    // endregion
 }

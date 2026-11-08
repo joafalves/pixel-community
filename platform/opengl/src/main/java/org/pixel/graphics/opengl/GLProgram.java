@@ -82,6 +82,13 @@ public class GLProgram implements Disposable {
     }
 
     /**
+     * @return Whether the program has an active uniform block with that name.
+     */
+    public boolean hasUniformBlock(String name) {
+        return gl.getUniformBlockIndex(program, name) != GL_INVALID_INDEX;
+    }
+
+    /**
      * Bind a uniform block of this program to a uniform buffer binding point.
      *
      * @throws IllegalStateException If the program has no such block.

@@ -9,10 +9,6 @@ import org.pixel.graphics.opengl.GLProgram;
  */
 final class GLSpriteProgram extends GLProgram {
 
-    static final String U_MATRIX = "uMatrix";
-    static final String U_TEXTURES = "uTextures";
-    static final String U_PREMULTIPLIED = "uPremultiplied";
-
     private static final String VERTEX_PATH = "engine/shader/opengl/urp/sprite.vert.glsl";
     private static final String FRAGMENT_PATH = "engine/shader/opengl/urp/sprite.frag.glsl";
 

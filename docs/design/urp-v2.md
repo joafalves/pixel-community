@@ -85,8 +85,9 @@ allocated per command.
 ### 4.3 Sort key (sorted layers)
 - `SORTED`: the key is the depth only (float → order-preserving 32-bit int). A **stable** sort over command indices
   keeps submission order within equal depth.
-- `SORTED` + `batchByMaterial()`: 64-bit key `[ depth : 32 | material : 16 | texture : 16 ]`, also stable. Material
-  and texture ids are dense, frame-local ids assigned on first use.
+- `SORTED` + `batchByMaterial()`: 64-bit key `[ depth : 32 | material : 16 | texture : 16 ]`, also stable. As built
+  (3c), the material part is the material's id (1 to 65535) and the texture part a 16-bit identity hash: no lookup
+  tables, and a collision only costs batching, never correctness (the order within equal depth is unspecified).
 - `ORDERED`: no sort.
 
 In all modes, batching then walks the commands in their final order and merges consecutive compatible commands.
@@ -124,6 +125,19 @@ material, so N enemies with the same dissolve material and progress value still 
 uniform value creates a new material *instance*, which batches only with commands that share it (frame stats show
 why a batch broke, §6.3). This replaces `DirectRenderer`. Post effects (§5.6) are a separate, full-screen kind of
 material.
+
+**As built (3c), the model changed in two places:**
+- *No material instances.* Uniforms and textures belong to the `Material` and are read when the frame renders, so
+  `with(...)` (an allocation per call) was dropped. Values that differ per command go in the command's **material
+  data**, a vec4 (`.material(m, x, y, z, w)`, read as `f.data`), stored in the command's style record. N enemies
+  with the same dissolve material and different progress values share one batch.
+- *Blending stays per layer.* A blend mode per material would break batches mid-layer and make draw order depend on
+  materials; additive materials go in an additive layer.
+
+The snippet signature is `vec4 effect(vec4 color, vec2 uv, Fragment f)`: `color` is what the built-in shader computed
+(premultiplied, after coverage, stroke and texture), and `Fragment` has `position` (layer space), `local` (from the
+center of shapes and images), `data` and `type`; `sampleImage(uv)` samples the command's own texture. Materials have
+up to 4 textures on the last 4 texture units (material batches use 12 of the 16 slots for command textures).
 
 ### 4.5 Clipping
 Each command carries a **clip id** into the draw list's frame-local `ClipTable` (axis-aligned rectangles in layer
@@ -729,8 +743,36 @@ Each phase ends green (`./gradlew build`) and is reviewable on its own.
   generation. Screen targets start at the screen size, so the first frame already has the right pixel scale.
 - Not yet: image textures are not reloaded after a lost context (lifecycle work).
 
-*3c: materials:* effect materials (one GLSL function injected into the shape program), raw materials, uniforms,
-material batching (`batchByMaterial`), hot reload.
+*3c: materials* ✅
+- `Material.effect(source)`: an `effect()` function compiled into a variant of the shape program
+  (`#define PIXEL_MATERIAL`, the function inserted before `main`, which applies it to the final premultiplied color).
+  `Material.raw(vertex, fragment)`: complete shaders for the shape vertex layout; the fragment shader gets
+  `uTextures`, `uPremultiplied` and `pixelSample(slot, uv)`, and the uniform blocks are bound if declared. Both run
+  on GL 3.3 and GLES 3.0.
+- Values: named float uniforms (1, 2 or 4 components) and up to 4 named textures per material, uploaded only when
+  they changed (a values serial). Per-command material data: a vec4 in the style record, which grew to 8 vec4 (128
+  styles = 16 KB, the GLES 3.0 minimum block size).
+- Canvas: `.material(m)` and `.material(m, x[, y, z, w])` on every command; the draw list keeps a material per
+  command. Batches break on a material change; material batches have `maxTextureSlots - 4` command slots.
+- `Layer.sorted(name).batchByMaterial()` (`LayerMode.SORTED_BY_MATERIAL`): the radix sort now carries a payload
+  index array, so keys can use all 64 bits. A row of alternating grass and water tiles: 100 batches to 2.
+- Backend: a program state per program (matrix uploaded once per pass that uses it, premultiplied mask); a material
+  compiles through `RenderBackend.compileMaterial` on first use, again after `setSource` or a lost context.
+- Hot reload: `setSource` recompiles on next use; a source that fails keeps the previous program running and is
+  reported by `getError()` (logged once); if the context is lost while an edit is broken, the last source that
+  compiled is rebuilt. `SourceWatcher` polls a file (four times a second, no threads; time and size count as changes)
+  and feeds it to a material; contents the material rejects (an editor caught mid-save) are reported, not thrown.
+  A material keeps one compiled program, so it is meant for one render backend.
+- Images and nine-patches get local coordinates from their center, so `f.local` works for them like for shapes.
+- Golden scene "materials": flash (data), dissolve (data, discard), a material texture mask, an effect over text and
+  its outline, and a raw material moving vertices.
+- Tests: material values, compiling, failed reloads and context loss; material data merged into styles; batch
+  breaks and slot limits; grouping order; canvas material scope; fewer draw calls with grouping; zero allocations
+  with materials, data and per-frame uniform changes; the GL backend binding material programs, uploading values
+  only on change, material texture units, failed reloads and recreated contexts; the file watcher.
+- Demo: `urp/MaterialsDemo`: animated water from `shaders/water.glsl` (edit it while the demo runs), tiles grouped
+  by material (B compares with a plain sorted layer), hit flash and dissolve with per-command data, grass swaying
+  through a raw material, an effect over the title text. Android: pulsing planets (data) and a raw material.
 
 *3d: inspection:* pick ids, last-frame snapshot and `pick()`, per pass/layer frame stats and batch break reasons.
 

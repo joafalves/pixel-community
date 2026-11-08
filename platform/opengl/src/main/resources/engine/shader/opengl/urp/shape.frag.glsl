@@ -3,6 +3,8 @@
 // Shapes are signed distance fields (negative inside) in shape-local units; coverage uses fwidth, so edges stay
 // one pixel soft at any scale or rotation. Shape type codes match org.pixel.graphics.draw.ShapeType; the style
 // record layout matches org.pixel.graphics.draw.StyleTable.
+// Effect materials are compiled from this file with PIXEL_MATERIAL defined and their effect() function inserted.
+/*$defines*/
 
 in vec2 vTexCoord;   // texture coordinates (TEXTURED, GLYPH) or shape dimensions (SDF shapes)
 in vec4 vColor;      // fill color, gradient start color, or tint
@@ -12,7 +14,7 @@ in vec2 vLayerPos;   // position in layer space (for clipping)
 flat in int vType;
 flat in int vSlot;
 flat in int vClip;   // 1-based index into uClips, 0 = none
-flat in int vStyle;  // 1-based style index (7 vec4 each), 0 = plain fill
+flat in int vStyle;  // 1-based style index (8 vec4 each), 0 = plain fill
 
 uniform sampler2D uTextures[/*$numTextures*/];
 
@@ -21,7 +23,7 @@ layout(std140) uniform ClipBlock {
 };
 
 layout(std140) uniform StyleBlock {
-    vec4 uStyles[/*$maxStyleVec4*/]; // 7 vec4 per style (see StyleTable)
+    vec4 uStyles[/*$maxStyleVec4*/]; // 8 vec4 per style (see StyleTable)
 };
 
 out vec4 oFragColor;
@@ -219,7 +221,7 @@ vec4 glyphColor() {
     vec4 strokeColor = vec4(0.0);
     float strokeInner = 0.0, strokeOuter = 0.0;
     if (vStyle > 0) {
-        int base = (vStyle - 1) * 7;
+        int base = (vStyle - 1) * 8;
         vec4 stroke = uStyles[base + 1];
         vec4 flags = uStyles[base + 6];
         if (flags.x > 0.5) {
@@ -257,6 +259,26 @@ vec4 glyphColor() {
     return fillAndStroke(fill, strokeColor, cf, dEdge, strokeOuter > 0.0 ? dTrue : dEdge,
                          strokeInner, strokeOuter, 1.0, pixel);
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// materials
+
+// What an effect material's function gets besides the color (see org.pixel.graphics.material.Material).
+struct Fragment {
+    vec2 position; // layer space
+    vec2 local;    // shape-local coordinates: from the center of shapes, images, nine-patches (text: text units)
+    vec4 data;     // the command's material data
+    int type;      // shape type (TEXTURED, RECT, ...)
+};
+
+// the command's own texture at uv, premultiplied (images, nine-patches)
+vec4 sampleImage(vec2 uv) {
+    return sampleSlot(vSlot, uv);
+}
+
+#ifdef PIXEL_MATERIAL
+/*$material*/
+#endif
 
 // ---------------------------------------------------------------------------------------------------------------
 
@@ -297,7 +319,7 @@ void main() {
         float strokeInner = 0.0, strokeOuter = 0.0, strokeMask = 1.0;
         vec4 shadowResult = vec4(0.0);
         if (vStyle > 0) {
-            int base = (vStyle - 1) * 7;
+            int base = (vStyle - 1) * 8;
             vec4 stroke = uStyles[base + 1];       // width, offset, dash length, dash gap
             vec4 gradient = uStyles[base + 2];     // linear (x0, y0, x1, y1) / radial (cx, cy, r, -)
             vec4 shadowColor = uStyles[base + 4];
@@ -348,6 +370,15 @@ void main() {
         vec4 shape = fillAndStroke(fill, strokeColor, fillCoverage, d, d, strokeInner, strokeOuter, strokeMask, pixel);
         color = shape + shadowResult * (1.0 - shape.a);
     }
+
+#ifdef PIXEL_MATERIAL
+    Fragment f;
+    f.position = vLayerPos;
+    f.local = vLocal;
+    f.data = vStyle > 0 ? uStyles[(vStyle - 1) * 8 + 7] : vec4(0.0);
+    f.type = vType;
+    color = effect(color, vTexCoord, f);
+#endif
 
     if (clipMask == 0.0 || (color.a <= 0.0 && max(color.r, max(color.g, color.b)) <= 0.0)) {
         discard; // nothing to add (alpha 0 with color is light: premultiplied emission)

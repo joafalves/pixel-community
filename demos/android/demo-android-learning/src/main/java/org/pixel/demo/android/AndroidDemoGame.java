@@ -11,6 +11,7 @@ import org.pixel.ext.tween.TweenLoopMode;
 import org.pixel.ext.tween.TweenSequencer;
 import org.pixel.graphics.canvas.Canvas;
 import org.pixel.graphics.draw.Layer;
+import org.pixel.graphics.material.Material;
 import org.pixel.graphics.backend.RenderTarget;
 import org.pixel.graphics.pass.Effects;
 import org.pixel.graphics.pass.RenderPipeline;
@@ -20,8 +21,9 @@ import org.pixel.math.Vector2;
 
 /**
  * Android demo on the URP v2 renderer (the same GL backend as desktop): Canvas shapes, gradients, a soft shadow and
- * a path drawn into a screen-sized render target and post-processed (vignette), then tweened sprites on top
- * through the sprite batch. The origin is at the center of the screen.
+ * a path drawn into a screen-sized render target and post-processed (vignette), materials (an effect with per-command
+ * data and a raw material that moves vertices), then tweened sprites on top through the sprite batch. The origin is at
+ * the center of the screen.
  */
 public class AndroidDemoGame extends GameApp {
 
@@ -41,6 +43,7 @@ public class AndroidDemoGame extends GameApp {
     private Vector2 spritePositionA;
     private Vector2 spritePositionB;
     private TweenSequencer sequencer;
+    private Material pulse, sway;
     private float time;
 
     @Override
@@ -55,6 +58,8 @@ public class AndroidDemoGame extends GameApp {
         pipeline = builder.pass(camera, scene, MAIN).post(scene, Effects.vignette(0.7f)).build();
 
         spriteTexture = content().loadTexture("images/earth-48x48.png");
+        pulse = Material.effect(PULSE);
+        sway = Material.raw(SWAY_VERTEX, SWAY_FRAGMENT);
 
         spritePositionA = new Vector2(200, 200);
         Tween tweenA = new Tween(spritePositionA.getX(), spritePositionA.getY())
@@ -80,6 +85,8 @@ public class AndroidDemoGame extends GameApp {
     public void update(DeltaTime delta) {
         sequencer.update(delta);
         time += delta.getElapsed();
+        pulse.set("uTime", time);
+        sway.set("uTime", time);
     }
 
     @Override
@@ -95,6 +102,11 @@ public class AndroidDemoGame extends GameApp {
         c.rotate(time);
         star(c, 95, 40, 5).fillLinear(-95, 0, TEAL, 95, 0, GOLD).stroke(5, Color.WHITE).join(LineJoin.ROUND);
         c.restore();
+        // materials: three planets pulsing out of phase (material data) and one swaying (raw material)
+        for (int i = 0; i < 3; i++) {
+            c.image(spriteTexture, -300 + i * 200, 0).size(144, 144).anchor(0.5f, 0.5f).material(pulse, i * 2.1f);
+        }
+        c.image(spriteTexture, 300, 0).size(144, 144).anchor(0.5f, 0.5f).material(sway);
         pipeline.render();
 
         spriteBatch.begin(camera.getViewMatrix());
@@ -127,9 +139,42 @@ public class AndroidDemoGame extends GameApp {
         camera.setHeight(height);
     }
 
+    private static final String PULSE = "uniform float uTime;\n"
+            + "vec4 effect(vec4 color, vec2 uv, Fragment f) {\n"
+            + "    float w = 0.5 + 0.5 * sin(uTime * 4.0 + f.data.x);\n"
+            + "    return vec4(mix(color.rgb, vec3(color.a), w * 0.6), color.a);\n"
+            + "}\n";
+    private static final String SWAY_VERTEX = "layout(location = 0) in vec2 aPosition;\n"
+            + "layout(location = 1) in vec2 aTexCoord;\n"
+            + "layout(location = 2) in vec4 aColor;\n"
+            + "layout(location = 6) in int aSlot;\n"
+            + "uniform mat4 uMatrix;\n"
+            + "uniform float uTime;\n"
+            + "out vec2 vUv;\n"
+            + "out vec4 vColor;\n"
+            + "flat out int vSlot;\n"
+            + "void main() {\n"
+            + "    vUv = aTexCoord;\n"
+            + "    vColor = aColor;\n"
+            + "    vSlot = aSlot;\n"
+            + "    vec2 p = aPosition + vec2((1.0 - aTexCoord.y) * sin(uTime * 3.0) * 40.0, 0.0);\n"
+            + "    gl_Position = uMatrix * vec4(p, 0.0, 1.0);\n"
+            + "}\n";
+    private static final String SWAY_FRAGMENT = "in vec2 vUv;\n"
+            + "in vec4 vColor;\n"
+            + "flat in int vSlot;\n"
+            + "out vec4 oColor;\n"
+            + "void main() {\n"
+            + "    vec4 c = pixelSample(vSlot, vUv) * vec4(vColor.rgb * vColor.a, vColor.a);\n"
+            + "    if (c.a <= 0.0) discard;\n"
+            + "    oColor = c;\n"
+            + "}\n";
+
     @Override
     public void dispose() {
         pipeline.dispose();
+        pulse.dispose();
+        sway.dispose();
         spriteBatch.dispose(); // the content manager belongs to the host, which disposes it
     }
 }

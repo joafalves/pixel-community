@@ -1,6 +1,7 @@
 package org.pixel.graphics.backend;
 
 import org.pixel.commons.lifecycle.Disposable;
+import org.pixel.graphics.material.Material;
 
 /**
  * The only layer that talks to the GPU API. Everything above it (draw lists, batching, front-ends) is GL-free.
@@ -85,4 +86,16 @@ public interface RenderBackend extends Disposable {
     byte[] readPixels(RenderTarget target);
 
     // endregion
+
+    /**
+     * Compile a material's program (called by {@code Material} on first use, after a source change and after the
+     * context was recreated). Its batches bind {@link BackendCapabilities#materialTextureSlots()} command textures,
+     * plus the material's own textures on the units after them.
+     *
+     * @param material       The material (its kind and values).
+     * @param vertexSource   The vertex shader of a raw material ({@code null} for effect materials).
+     * @param source         The effect function, or the raw material's fragment shader.
+     * @throws IllegalStateException With the compiler's log if the source does not compile.
+     */
+    MaterialProgram compileMaterial(Material material, String vertexSource, String source);
 }

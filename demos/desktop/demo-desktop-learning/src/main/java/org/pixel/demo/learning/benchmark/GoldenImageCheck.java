@@ -18,6 +18,7 @@ import org.pixel.graphics.canvas.LineCap;
 import org.pixel.graphics.canvas.LineJoin;
 import org.pixel.graphics.canvas.StrokeAlign;
 import org.pixel.graphics.draw.Layer;
+import org.pixel.graphics.material.Material;
 import org.pixel.graphics.pass.Effects;
 import org.pixel.graphics.pass.PostEffect;
 import org.pixel.graphics.pass.RenderPipeline;
@@ -70,6 +71,8 @@ public class GoldenImageCheck extends GameApp {
     private final Camera2D camera = new Camera2D(0, 0, WIDTH, HEIGHT); // one unit per pixel, origin top-left
     private SdfFont font;
     private Texture earth;
+    private Texture letter;
+    private Material flash, dissolve, mask, rainbow, sway;
     private int failures;
     private boolean done;
 
@@ -82,6 +85,64 @@ public class GoldenImageCheck extends GameApp {
     public void load() {
         font = content().load("fonts/gidole-regular.ttf", SdfFont.class);
         earth = content().loadTexture("images/earth-48x48.png");
+        letter = content().loadTexture("images/a-char-256x256.png");
+        flash = Material.effect("""
+                vec4 effect(vec4 color, vec2 uv, Fragment f) {
+                    return vec4(mix(color.rgb, vec3(color.a), f.data.x), color.a);
+                }
+                """);
+        dissolve = Material.effect("""
+                float hash(vec2 p) {
+                    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+                }
+                vec4 effect(vec4 color, vec2 uv, Fragment f) {
+                    float n = hash(floor(f.local / 6.0));
+                    if (n < f.data.x) discard;
+                    return mix(vec4(1.0, 0.55, 0.2, 1.0) * color.a, color, smoothstep(f.data.x, f.data.x + 0.1, n));
+                }
+                """);
+        mask = Material.effect("""
+                uniform sampler2D uMask;
+                vec4 effect(vec4 color, vec2 uv, Fragment f) {
+                    vec2 m = f.local / f.data.xy * 0.5 + 0.5;
+                    return color * smoothstep(0.9, 0.6, texture(uMask, m).r); // the green letter, not the white
+                }
+                """).texture("uMask", letter);
+        rainbow = Material.effect("""
+                uniform float uScale;
+                vec4 effect(vec4 color, vec2 uv, Fragment f) {
+                    vec3 tint = 0.5 + 0.5 * cos(f.position.x * uScale + vec3(0.0, 2.1, 4.2));
+                    return vec4(color.rgb * tint, color.a);
+                }
+                """).set("uScale", 0.03f);
+        sway = Material.raw("""
+                layout(location = 0) in vec2 aPosition;
+                layout(location = 1) in vec2 aTexCoord;
+                layout(location = 2) in vec4 aColor;
+                layout(location = 6) in int aSlot;
+                uniform mat4 uMatrix;
+                uniform float uSway;
+                out vec2 vUv;
+                out vec4 vColor;
+                flat out int vSlot;
+                void main() {
+                    vUv = aTexCoord;
+                    vColor = aColor;
+                    vSlot = aSlot;
+                    vec2 p = aPosition + vec2((1.0 - aTexCoord.y) * uSway, 0.0); // the top leans
+                    gl_Position = uMatrix * vec4(p, 0.0, 1.0);
+                }
+                """, """
+                in vec2 vUv;
+                in vec4 vColor;
+                flat in int vSlot;
+                out vec4 oColor;
+                void main() {
+                    vec4 c = pixelSample(vSlot, vUv) * vec4(vColor.rgb * vColor.a, vColor.a);
+                    if (c.a <= 0.0) discard;
+                    oColor = c;
+                }
+                """).set("uSway", 24f);
     }
 
     @Override
@@ -103,7 +164,8 @@ public class GoldenImageCheck extends GameApp {
                 new Scene("bloom", p -> blending(p.canvas(MAIN), p.canvas(ADD), p.canvas(MUL)),
                         Effects.bloom(0.5f, 1f)),
                 new Scene("transparency", p -> transparency(p.canvas(OVERLAY), p.canvas(OVERLAY_ADD),
-                        p.canvas(MAIN))));
+                        p.canvas(MAIN))),
+                new Scene("materials", p -> materials(p.canvas(MAIN))));
         List<String> failed = new ArrayList<>();
         for (Scene scene : scenes) {
             if (!check(backend, scene)) {
@@ -300,11 +362,34 @@ public class GoldenImageCheck extends GameApp {
         main.restore();
     }
 
+    /**
+     * Effect materials with per-command data (flash, dissolve), a material texture (mask), uniforms over text
+     * (rainbow) and a raw material moving vertices (sway).
+     */
+    private void materials(Canvas c) {
+        for (int i = 0; i < 3; i++) {
+            c.image(earth, 16 + i * 112, 16).size(96, 96).material(flash, i * 0.5f);
+        }
+        c.image(earth, 352, 16).size(96, 96).material(sway);
+        for (int i = 0; i < 2; i++) {
+            c.roundRect(16 + i * 116, 128, 100, 72, 14).fill(TEAL).stroke(4, GOLD).material(dissolve, 0.3f + i * 0.3f);
+        }
+        c.roundRect(248, 128, 100, 72, 14).fill(PINK).material(mask, 50f, 36f, 0f, 0f);
+        c.circle(410, 164, 36).fill(GOLD).stroke(3, Color.WHITE).material(mask, 36f, 36f, 0f, 0f);
+        c.text(font, "MATERIALS", 240, 222).size(64).align(TextAlign.CENTER).fill(Color.WHITE).stroke(3, INK)
+                .material(rainbow);
+    }
+
     // endregion
 
     @Override
     public void dispose() {
-        // fonts and textures belong to the content manager
+        // fonts and textures belong to the content manager; the materials are ours
+        for (Material material : new Material[]{flash, dissolve, mask, rainbow, sway}) {
+            if (material != null) {
+                material.dispose();
+            }
+        }
     }
 
     public static void main(String[] args) {

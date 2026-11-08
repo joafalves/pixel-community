@@ -2,6 +2,7 @@ package org.pixel.graphics.draw;
 
 import org.pixel.content.Texture;
 import org.pixel.graphics.backend.VertexLayout;
+import org.pixel.graphics.material.Material;
 
 import java.util.Arrays;
 
@@ -15,6 +16,9 @@ import java.util.Arrays;
  * {@link ClipTable}. Commands are stored struct-of-arrays in primitive arrays that grow but never shrink. After
  * {@link #prepare()}, {@link #orderedIndex(int)} gives the commands in final draw order (see {@link LayerMode}).
  * Front-ends (SpriteBatch, Canvas, ...) record here; a {@link Batcher} turns the result into GPU batches.
+ * <p>
+ * Shape commands carry the {@link Material} set with {@link #setMaterial} when they were added; material data is
+ * merged into the command's style record ({@link StyleTable#MATERIAL_DATA}).
  */
 public final class DrawList {
 
@@ -34,14 +38,25 @@ public final class DrawList {
     private float[] params;    // 4 per quad (FULL only)
     private int[] styleIds;    // StyleTable id, 0 = none (FULL only)
     private int[] clipIds;     // ClipTable id, 0 = none (FULL only)
+    private Material[] materials; // null = built-in program (FULL only)
     private final StyleTable styles = new StyleTable();
     private final ClipTable clips = new ClipTable();
-    private long[] keys;       // SORTED: depth then sequence
-    private long[] sortBuffer; // radix sort scratch (same capacity as keys)
+    private long[] keys;       // sorted modes: depth (high 32 bits), then material and texture group (low 32 bits)
+    private int[] sequence;    // sorted modes: the command index travelling with its key
+    private long[] keyBuffer;  // radix sort scratch
+    private int[] sequenceBuffer;
     private final int[] radixCounts = new int[256];
     private boolean needsSort;
-    private float firstDepth;
+    private long firstKey;
     private boolean prepared;
+
+    // material applied to shape commands being added, and its per-command data
+    private Material material;
+    private boolean hasMaterialData;
+    private final float[] materialData = new float[4];
+    private final float[] styleScratch = new float[StyleTable.FLOATS];
+    private int dataBaseStyle = -1;   // cache: style id without data ...
+    private int dataMergedStyle;      // ... and with the current data merged in
 
     /**
      * Constructor.
@@ -71,9 +86,11 @@ public final class DrawList {
      * Remove all commands (capacity is kept).
      */
     public void clear() {
-        // drop texture references so the list never keeps disposed textures reachable
+        // drop texture and material references so the list never keeps disposed ones reachable
         Arrays.fill(textures, 0, size, null);
+        Arrays.fill(materials, 0, size, null);
         size = 0;
+        setMaterial(null);
         styles.clear();
         clips.clear();
         needsSort = false;
@@ -116,7 +133,10 @@ public final class DrawList {
         if (texture == null) {
             throw new IllegalArgumentException("Texture cannot be null.");
         }
-        int i = append(texture, x0, y0, x1, y1, x2, y2, x3, y3, u0, v0, u1, v1, rgba, depth);
+        if (material != null) {
+            throw new IllegalStateException("Materials apply to shape commands, not sprite quads.");
+        }
+        int i = append(texture, null, x0, y0, x1, y1, x2, y2, x3, y3, u0, v0, u1, v1, rgba, depth);
         layouts[i] = VertexLayout.SPRITE;
     }
 
@@ -155,7 +175,7 @@ public final class DrawList {
         if (type.isTextured() != (texture != null)) {
             throw new IllegalArgumentException("A texture is required for (and only for) textured shapes.");
         }
-        int i = append(texture, x0, y0, x1, y1, x2, y2, x3, y3, u0, v0, u1, v1, rgba, depth);
+        int i = append(texture, material, x0, y0, x1, y1, x2, y2, x3, y3, u0, v0, u1, v1, rgba, depth);
         layouts[i] = VertexLayout.FULL;
         shapeTypes[i] = (byte) type.code();
         int c = i * 8; // corners: top-left, top-right, bottom-right, bottom-left
@@ -180,7 +200,7 @@ public final class DrawList {
         params[p + 1] = p1;
         params[p + 2] = p2;
         params[p + 3] = p3;
-        styleIds[i] = styleId;
+        styleIds[i] = withMaterialData(styleId);
         clipIds[i] = clipId;
     }
 
@@ -218,8 +238,8 @@ public final class DrawList {
         if (type.isTextured() != (texture != null)) {
             throw new IllegalArgumentException("A texture is required for (and only for) textured shapes.");
         }
-        int i = append(texture, positions[0], positions[1], positions[2], positions[3], positions[4], positions[5],
-                positions[6], positions[7], 0f, 0f, 0f, 0f, rgba, depth);
+        int i = append(texture, material, positions[0], positions[1], positions[2], positions[3], positions[4],
+                positions[5], positions[6], positions[7], 0f, 0f, 0f, 0f, rgba, depth);
         layouts[i] = VertexLayout.FULL;
         shapeTypes[i] = (byte) type.code();
         System.arraycopy(uv, 0, cornerUv, i * 8, 8);
@@ -229,11 +249,55 @@ public final class DrawList {
         params[p + 1] = p1;
         params[p + 2] = p2;
         params[p + 3] = p3;
-        styleIds[i] = styleId;
+        styleIds[i] = withMaterialData(styleId);
         clipIds[i] = clipId;
     }
 
-    private int append(Texture texture,
+    /**
+     * Set the material of the shape commands added from now on ({@code null} = the built-in program), without
+     * material data.
+     */
+    public void setMaterial(Material material) {
+        this.material = material;
+        this.hasMaterialData = false;
+        dataBaseStyle = -1;
+    }
+
+    /**
+     * Set the material of the shape commands added from now on, with per-command data ({@code Fragment.data}).
+     */
+    public void setMaterial(Material material, float x, float y, float z, float w) {
+        if (material == null) {
+            throw new IllegalArgumentException("Material data needs a material.");
+        }
+        this.material = material;
+        this.hasMaterialData = true;
+        materialData[0] = x;
+        materialData[1] = y;
+        materialData[2] = z;
+        materialData[3] = w;
+        dataBaseStyle = -1;
+    }
+
+    /** The style id with the current material data merged in (cached: a path or text adds many quads). */
+    private int withMaterialData(int styleId) {
+        if (!hasMaterialData) {
+            return styleId;
+        }
+        if (styleId != dataBaseStyle) {
+            if (styleId == 0) {
+                Arrays.fill(styleScratch, 0f); // no stroke, solid paint, no shadow: only the data
+            } else {
+                styles.copy(styleId, styleScratch, 0);
+            }
+            System.arraycopy(materialData, 0, styleScratch, StyleTable.MATERIAL_DATA, 4);
+            dataMergedStyle = styles.intern(styleScratch);
+            dataBaseStyle = styleId;
+        }
+        return dataMergedStyle;
+    }
+
+    private int append(Texture texture, Material commandMaterial,
                        float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3,
                        float u0, float v0, float u1, float v1, int rgba, float depth) {
         if (size == textures.length) {
@@ -241,6 +305,7 @@ public final class DrawList {
         }
         int i = size;
         textures[i] = texture;
+        materials[i] = commandMaterial;
 
         int p = i * 8;
         positions[p] = x0;
@@ -260,11 +325,18 @@ public final class DrawList {
 
         colors[i] = rgba;
 
-        if (mode == LayerMode.SORTED) {
-            keys[i] = SortKeys.depthThenSequence(depth, i);
+        if (mode != LayerMode.ORDERED) {
+            long key = (long) SortKeys.orderedDepth(depth) << 32;
+            if (mode == LayerMode.SORTED_BY_MATERIAL) {
+                int materialId = commandMaterial != null ? commandMaterial.getId() : 0;
+                int textureGroup = texture != null ? System.identityHashCode(texture) & 0xFFFF : 0;
+                key |= ((long) materialId << 16) | textureGroup;
+            }
+            keys[i] = key;
+            sequence[i] = i;
             if (i == 0) {
-                firstDepth = depth;
-            } else if (depth != firstDepth) {
+                firstKey = key;
+            } else if (key != firstKey) {
                 needsSort = true;
             }
         }
@@ -278,13 +350,8 @@ public final class DrawList {
      * Establish the final draw order. Must be called after recording and before {@link #orderedIndex(int)}.
      */
     public void prepare() {
-        if (mode == LayerMode.SORTED && needsSort) {
-            sortByDepth();
-        } else if (mode == LayerMode.SORTED) {
-            // all depths equal: submission order is already the final order
-            for (int i = 0; i < size; i++) {
-                keys[i] = i;
-            }
+        if (needsSort) { // otherwise every key is equal: submission order is already the final order
+            sortKeys(mode == LayerMode.SORTED_BY_MATERIAL ? 0 : 32);
         }
         needsSort = false;
         prepared = true;
@@ -298,7 +365,7 @@ public final class DrawList {
         if (!prepared) {
             throw new IllegalStateException("prepare() must be called before reading the draw order.");
         }
-        return mode == LayerMode.SORTED ? SortKeys.sequence(keys[order]) : order;
+        return mode == LayerMode.ORDERED ? order : sequence[order];
     }
 
     public Texture texture(int index) {
@@ -398,6 +465,13 @@ public final class DrawList {
     }
 
     /**
+     * @return The command's material, or {@code null} for the built-in program.
+     */
+    public Material material(int index) {
+        return materials[index];
+    }
+
+    /**
      * @return The frame-local stroke styles referenced by commands of this list.
      */
     public StyleTable styles() {
@@ -412,14 +486,15 @@ public final class DrawList {
     }
 
     /**
-     * Stable LSD radix sort of {@code keys[0..size)} by their high 32 bits (the ordered depth). Keys were written in
-     * submission order, so stability keeps equal depths in submission order. O(n), allocation-free (unlike
+     * Stable LSD radix sort of {@code keys[0..size)} (and their command indices) by the key bits from
+     * {@code fromShift} up: 32 sorts by depth only, 0 also by material and texture group. Keys were written in
+     * submission order, so stability keeps equal keys in submission order. O(n), allocation-free (unlike
      * {@code Arrays.sort}, which may allocate a merge buffer for partially sorted input).
      */
-    private void sortByDepth() {
-        long[] src = keys;
-        long[] dst = sortBuffer;
-        for (int shift = 32; shift < 64; shift += 8) {
+    private void sortKeys(int fromShift) {
+        long[] src = keys, dst = keyBuffer;
+        int[] srcSeq = sequence, dstSeq = sequenceBuffer;
+        for (int shift = fromShift; shift < 64; shift += 8) {
             int[] counts = radixCounts;
             Arrays.fill(counts, 0);
             for (int i = 0; i < size; i++) {
@@ -435,14 +510,20 @@ public final class DrawList {
             }
             for (int i = 0; i < size; i++) {
                 long key = src[i];
-                dst[counts[radixByte(key, shift)]++] = key;
+                int at = counts[radixByte(key, shift)]++;
+                dst[at] = key;
+                dstSeq[at] = srcSeq[i];
             }
             long[] swap = src;
             src = dst;
             dst = swap;
+            int[] swapSeq = srcSeq;
+            srcSeq = dstSeq;
+            dstSeq = swapSeq;
         }
         if (src != keys) {
             System.arraycopy(src, 0, keys, 0, size);
+            System.arraycopy(srcSeq, 0, sequence, 0, size);
         }
     }
 
@@ -463,8 +544,11 @@ public final class DrawList {
         params = new float[capacity * 4];
         styleIds = new int[capacity];
         clipIds = new int[capacity];
+        materials = new Material[capacity];
         keys = new long[capacity];
-        sortBuffer = new long[capacity];
+        sequence = new int[capacity];
+        keyBuffer = new long[capacity];
+        sequenceBuffer = new int[capacity];
     }
 
     private void grow(int capacity) {
@@ -479,7 +563,10 @@ public final class DrawList {
         params = Arrays.copyOf(params, capacity * 4);
         styleIds = Arrays.copyOf(styleIds, capacity);
         clipIds = Arrays.copyOf(clipIds, capacity);
+        materials = Arrays.copyOf(materials, capacity);
         keys = Arrays.copyOf(keys, capacity);
-        sortBuffer = new long[capacity];
+        sequence = Arrays.copyOf(sequence, capacity);
+        keyBuffer = new long[capacity];
+        sequenceBuffer = new int[capacity];
     }
 }

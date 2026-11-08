@@ -8,6 +8,7 @@ import org.pixel.graphics.draw.Colors;
 import org.pixel.graphics.draw.DrawList;
 import org.pixel.graphics.draw.ShapeType;
 import org.pixel.graphics.draw.StyleTable;
+import org.pixel.graphics.material.Material;
 import org.pixel.graphics.pass.View;
 import org.pixel.graphics.text.SdfFont;
 import org.pixel.graphics.text.TextAlign;
@@ -55,7 +56,7 @@ public final class Canvas {
     private final PathTessellator tessellator = new PathTessellator();
     private final float[] cornerPos = new float[8], cornerLayer = new float[8], cornerUv = new float[8],
             cornerLocal = new float[8];
-    private Command pending;
+    private Command<?> pending;
     private View[] views = NO_VIEWS;
     private static final View[] NO_VIEWS = new View[0];
     private boolean warnedRotatedClip;
@@ -78,7 +79,10 @@ public final class Canvas {
      * frame.
      */
     public void reset() {
-        pending = null;
+        if (pending != null) {
+            pending.material = null; // dropped without committing
+            pending = null;
+        }
         transform.identity();
         clipId = 0;
         depth = 0;
@@ -117,10 +121,32 @@ public final class Canvas {
      */
     public void flush() {
         if (pending != null) {
-            Command command = pending;
+            Command<?> command = pending;
             pending = null;
-            command.commit();
+            Material material = command.material;
+            if (material == null) {
+                command.commit();
+                return;
+            }
+            if (command.hasMaterialData) {
+                list.setMaterial(material, command.data0, command.data1, command.data2, command.data3);
+            } else {
+                list.setMaterial(material);
+            }
+            try {
+                command.commit();
+            } finally {
+                list.setMaterial(null);
+                command.material = null;
+            }
         }
+    }
+
+    /** Make a builder the pending command, without the material of its previous use. */
+    private void start(Command<?> command) {
+        command.material = null;
+        command.hasMaterialData = false;
+        pending = command;
     }
 
     // region state
@@ -260,7 +286,7 @@ public final class Canvas {
     public Rect rect(float x, float y, float width, float height) {
         flush();
         rect.reset(x, y, width, height);
-        pending = rect;
+        start(rect);
         return rect;
     }
 
@@ -284,7 +310,7 @@ public final class Canvas {
     public Ellipse ellipse(float centerX, float centerY, float radiusX, float radiusY) {
         flush();
         ellipse.reset(centerX, centerY, Math.abs(radiusX), Math.abs(radiusY));
-        pending = ellipse;
+        start(ellipse);
         return ellipse;
     }
 
@@ -294,7 +320,7 @@ public final class Canvas {
     public Line line(float x1, float y1, float x2, float y2) {
         flush();
         line.reset(x1, y1, x2, y2);
-        pending = line;
+        start(line);
         return line;
     }
 
@@ -307,7 +333,7 @@ public final class Canvas {
         }
         flush();
         image.reset(texture, x, y);
-        pending = image;
+        start(image);
         return image;
     }
 
@@ -318,7 +344,7 @@ public final class Canvas {
     public Path path() {
         flush();
         path.reset();
-        pending = path;
+        start(path);
         return path;
     }
 
@@ -336,7 +362,7 @@ public final class Canvas {
         }
         flush();
         text.reset(font, string, null, x, y);
-        pending = text;
+        start(text);
         return text;
     }
 
@@ -351,7 +377,7 @@ public final class Canvas {
         }
         flush();
         text.reset(layout.font(), null, layout, x, y);
-        pending = text;
+        start(text);
         return text;
     }
 
@@ -365,7 +391,7 @@ public final class Canvas {
         }
         flush();
         ninePatch.reset(texture, x, y, width, height);
-        pending = ninePatch;
+        start(ninePatch);
         return ninePatch;
     }
 
@@ -398,8 +424,55 @@ public final class Canvas {
                 dimX, dimY, dimX, dimY, ex, ey, p0, p1, p2, p3, rgba, styleId, clipId, depthValue);
     }
 
-    private abstract static class Command {
+    /**
+     * Settings shared by every command: the material.
+     *
+     * @param <T> The concrete builder (for fluent chaining).
+     */
+    abstract static class Command<T extends Command<T>> {
+        Material material;
+        boolean hasMaterialData;
+        float data0, data1, data2, data3;
+
         abstract void commit();
+
+        @SuppressWarnings("unchecked")
+        T self() {
+            return (T) this;
+        }
+
+        /**
+         * Draw this command with a custom shader ({@code null} = the built-in one). See {@link Material}.
+         */
+        public T material(Material material) {
+            this.material = material;
+            hasMaterialData = false;
+            return self();
+        }
+
+        /**
+         * Draw this command with a custom shader and per-command values, read by the shader as {@code f.data}
+         * (commands with the same material and different data still share a batch).
+         */
+        public T material(Material material, float x, float y, float z, float w) {
+            if (material == null) {
+                throw new IllegalArgumentException("Material data needs a material.");
+            }
+            this.material = material;
+            hasMaterialData = true;
+            data0 = x;
+            data1 = y;
+            data2 = z;
+            data3 = w;
+            return self();
+        }
+
+        /**
+         * @see #material(Material, float, float, float, float)
+         */
+        public T material(Material material, float x) {
+            return material(material, x, 0f, 0f, 0f);
+        }
     }
 
     /**
@@ -410,7 +483,7 @@ public final class Canvas {
      *
      * @param <T> The concrete builder (for fluent chaining).
      */
-    public abstract class Shape<T extends Shape<T>> extends Command {
+    public abstract class Shape<T extends Shape<T>> extends Command<T> {
         int fillRgba;
         boolean hasStroke;
         int strokeRgba;
@@ -438,11 +511,6 @@ public final class Canvas {
             dashLength = 0f;
             dashGap = 0f;
             dashPhase = 0f;
-        }
-
-        @SuppressWarnings("unchecked")
-        T self() {
-            return (T) this;
         }
 
         /**
@@ -800,7 +868,7 @@ public final class Canvas {
     /**
      * Image builder (see {@link #image}).
      */
-    public final class Image extends Command {
+    public final class Image extends Command<Image> {
         private Texture texture;
         private float x, y, width, height, anchorX, anchorY;
         private float srcX, srcY, srcWidth, srcHeight;
@@ -893,7 +961,7 @@ public final class Canvas {
             list.addShape(ShapeType.TEXTURED, t,
                     m.mapX(left, top), m.mapY(left, top), m.mapX(right, top), m.mapY(right, top),
                     m.mapX(right, bottom), m.mapY(right, bottom), m.mapX(left, bottom), m.mapY(left, bottom),
-                    u0, v0, u1, v1, 0f, 0f, 0f, 0f, 0f, 0f, tintRgba, 0, clipId, depthValue);
+                    u0, v0, u1, v1, width * 0.5f, height * 0.5f, 0f, 0f, 0f, 0f, tintRgba, 0, clipId, depthValue);
         }
     }
 
@@ -994,7 +1062,7 @@ public final class Canvas {
      * concave); sub-paths are filled independently (no holes, no self-intersections). Strokes use one
      * anti-aliased quad per segment plus joins and caps; overlapping parts of translucent strokes blend twice.
      */
-    public final class Path extends Command {
+    public final class Path extends Command<Path> {
         private float[] points = new float[256];   // x, y pairs of all sub-paths
         private int pointCount;
         private int[] subStart = new int[16];
@@ -1407,7 +1475,7 @@ public final class Canvas {
     /**
      * Nine-patch builder (see {@link #ninePatch}).
      */
-    public final class NinePatch extends Command {
+    public final class NinePatch extends Command<NinePatch> {
         private Texture texture;
         private float x, y, width, height;
         private float left, top, right, bottom;
@@ -1488,10 +1556,35 @@ public final class Canvas {
                 return; // empty part (zero inset)
             }
             Affine m = transform;
-            list.addShape(ShapeType.TEXTURED, t,
-                    m.mapX(l, tp), m.mapY(l, tp), m.mapX(r, tp), m.mapY(r, tp),
-                    m.mapX(r, b), m.mapY(r, b), m.mapX(l, b), m.mapY(l, b),
-                    u0, v0, u1, v1, 0f, 0f, 0f, 0f, 0f, 0f, tintRgba, 0, clipId, depthValue);
+            float[] pos = cornerLayer, uv = cornerUv, local = cornerLocal;
+            pos[0] = m.mapX(l, tp);
+            pos[1] = m.mapY(l, tp);
+            pos[2] = m.mapX(r, tp);
+            pos[3] = m.mapY(r, tp);
+            pos[4] = m.mapX(r, b);
+            pos[5] = m.mapY(r, b);
+            pos[6] = m.mapX(l, b);
+            pos[7] = m.mapY(l, b);
+            uv[0] = u0;
+            uv[1] = v0;
+            uv[2] = u1;
+            uv[3] = v0;
+            uv[4] = u1;
+            uv[5] = v1;
+            uv[6] = u0;
+            uv[7] = v1;
+            // local coordinates from the center of the whole nine-patch (for materials), like images
+            float cx = x + width * 0.5f, cy = y + height * 0.5f;
+            local[0] = l - cx;
+            local[1] = tp - cy;
+            local[2] = r - cx;
+            local[3] = tp - cy;
+            local[4] = r - cx;
+            local[5] = b - cy;
+            local[6] = l - cx;
+            local[7] = b - cy;
+            list.addShapeCorners(ShapeType.TEXTURED, t, pos, uv, local, 0f, 0f, 0f, 0f, tintRgba, 0, clipId,
+                    depthValue);
         }
     }
 

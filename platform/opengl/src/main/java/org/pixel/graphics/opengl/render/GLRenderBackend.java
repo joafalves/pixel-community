@@ -6,6 +6,7 @@ import org.pixel.content.opengl.GLTexture;
 import org.pixel.graphics.RenderStats;
 import org.pixel.graphics.backend.BackendCapabilities;
 import org.pixel.graphics.backend.BatchList;
+import org.pixel.graphics.backend.MaterialProgram;
 import org.pixel.graphics.backend.PassState;
 import org.pixel.graphics.backend.PostParams;
 import org.pixel.graphics.backend.PostProgram;
@@ -14,6 +15,7 @@ import org.pixel.graphics.backend.RenderBackend;
 import org.pixel.graphics.backend.RenderData;
 import org.pixel.graphics.backend.VertexLayout;
 import org.pixel.graphics.backend.VertexStream;
+import org.pixel.graphics.material.Material;
 import org.pixel.graphics.opengl.GLApi;
 import org.pixel.graphics.opengl.GLProgram;
 
@@ -33,7 +35,8 @@ import static org.pixel.graphics.opengl.GLApi.*;
  * index buffer ({@code 0,1,2, 2,3,0} per quad, 16-bit indices). Vertices are uploaded in chunks of at most
  * {@link #MAX_QUADS_PER_BATCH} quads per layout (one upload per layout in the common case) and each batch is drawn
  * with an index offset into its chunk, so no base-vertex draw call is needed (GLES 3.0 compatible). Shape batches
- * bind their slice of the pass's clip and style tables as uniform buffer ranges.
+ * bind their slice of the pass's clip and style tables as uniform buffer ranges. Batches with a material use the
+ * material's program (compiled by the material through {@link #compileMaterial}) with the shape layout's buffers.
  * <p>
  * Owned and disposed by the graphics device; requires a current GL context.
  */
@@ -45,7 +48,7 @@ public final class GLRenderBackend implements RenderBackend {
     public static final int MAX_QUADS_PER_BATCH = 16384;
     private static final int MAX_TEXTURE_SLOTS = 16;
     private static final int MAX_CLIPS = 256;   // 4 KB uniform block
-    private static final int MAX_STYLES = 128;  // 14 KB uniform block (7 vec4 per style; GLES 3.0 guarantees 16 KB)
+    private static final int MAX_STYLES = 128;  // 16 KB uniform block (8 vec4 per style; GLES 3.0 guarantees 16 KB)
 
     private final GLApi gl;
     private final RenderStats stats;
@@ -67,6 +70,8 @@ public final class GLRenderBackend implements RenderBackend {
     private State state = State.INITIALIZED;
     private boolean inPass;
     private LayoutPipeline current;
+    private ProgramState currentProgram;
+    private int passSerial;
     private GLRenderTarget passTarget;           // target of the current pass (null = screen)
     private final int[] savedViewport = new int[4];
     private final int[] viewport = new int[4];
@@ -123,6 +128,7 @@ public final class GLRenderBackend implements RenderBackend {
         checkActive();
         inPass = false;
         current = null;
+        currentProgram = null;
         passTarget = null;
         generation++; // targets and effects made before rebuild themselves on next use
         createGlObjects(); // the old names died with their context: nothing to delete
@@ -165,11 +171,9 @@ public final class GLRenderBackend implements RenderBackend {
                 matrixBuffer.put(column * 4 + 1, -matrixBuffer.get(column * 4 + 1));
             }
         }
-        spritePipeline.setMatrix(matrixBuffer);
-        shapePipeline.setMatrix(matrixBuffer);
-        spritePipeline.premultipliedMask = -1;
-        shapePipeline.premultipliedMask = -1;
+        passSerial++; // programs upload the matrix when a batch of this pass first uses them
         current = null;
+        currentProgram = null;
 
         // the programs output premultiplied colors, so targets always hold valid premultiplied content
         switch (passState.getBlendMode()) {
@@ -209,10 +213,25 @@ public final class GLRenderBackend implements RenderBackend {
             }
 
             LayoutPipeline pipeline = batches.layout(b) == VertexLayout.SPRITE ? spritePipeline : shapePipeline;
+            Material material = batches.material(b);
+            ProgramState program = pipeline.program;
+            GLMaterialProgram materialProgram = null;
+            if (material != null) {
+                if (pipeline != shapePipeline) {
+                    throw new IllegalArgumentException("Materials apply to shape batches only.");
+                }
+                materialProgram = materialProgram(material);
+                program = materialProgram;
+            }
             if (pipeline != current) {
                 pipeline.bind();
                 current = pipeline;
             }
+            if (program != currentProgram) {
+                program.program.bind();
+                currentProgram = program;
+            }
+            program.matrix(matrixBuffer, passSerial);
             pipeline.ensureUploaded(data.vertices(batches.layout(b)), first, count);
 
             int premultiplied = 0;
@@ -223,7 +242,13 @@ public final class GLRenderBackend implements RenderBackend {
                     premultiplied |= 1 << slot;
                 }
             }
-            pipeline.setPremultiplied(premultiplied);
+            program.premultiplied(premultiplied);
+            if (materialProgram != null) {
+                materialProgram.upload(material);
+                for (int t = 0, k = material.getTextureCount(); t < k; t++) {
+                    bindTexture(materialProgram.firstMaterialUnit + t, textureId(material.getTexture(t)));
+                }
+            }
             if (pipeline == shapePipeline) {
                 gl.bindBufferRange(GL_UNIFORM_BUFFER, GLShapeProgram.CLIP_BINDING, clipUbo,
                         (long) batches.clipOffset(b) * Float.BYTES, clipBlockBytes);
@@ -244,6 +269,7 @@ public final class GLRenderBackend implements RenderBackend {
         }
         inPass = false;
         current = null;
+        currentProgram = null;
 
         // restore the shared defaults other renderers rely on
         gl.bindVertexArray(0);
@@ -257,6 +283,39 @@ public final class GLRenderBackend implements RenderBackend {
             passTarget = null;
         }
     }
+
+    // region materials
+
+    @Override
+    public MaterialProgram compileMaterial(Material material, String vertexSource, String source) {
+        checkActive();
+        int slots = capabilities.materialTextureSlots();
+        if (slots + Material.MAX_TEXTURES > capabilities.maxTextureSlots()) {
+            throw new IllegalStateException("Materials need at least " + (Material.MAX_TEXTURES + 1)
+                    + " texture units; this GPU has " + capabilities.maxTextureSlots() + ".");
+        }
+        GLShapeProgram program = material.getKind() == Material.Kind.EFFECT
+                ? GLShapeProgram.effect(gl, slots, MAX_CLIPS, MAX_STYLES, source)
+                : GLShapeProgram.raw(gl, slots, vertexSource, source);
+        try {
+            return new GLMaterialProgram(gl, program, slots, generation);
+        } catch (RuntimeException e) {
+            program.dispose();
+            throw e;
+        } finally {
+            currentProgram = null; // setting up the program unbound the current one
+        }
+    }
+
+    private GLMaterialProgram materialProgram(Material material) {
+        MaterialProgram program = material.program(this);
+        if (!(program instanceof GLMaterialProgram glProgram) || glProgram.generation != generation) {
+            throw new IllegalStateException("The material's program doesn't belong to this backend: " + material);
+        }
+        return glProgram;
+    }
+
+    // endregion
 
     // region render targets and post effects
 
@@ -529,14 +588,11 @@ public final class GLRenderBackend implements RenderBackend {
     }
 
     /**
-     * Program, vertex array and vertex buffer for one vertex layout, plus the quad range currently uploaded.
+     * Built-in program, vertex array and vertex buffer for one vertex layout, plus the quad range currently uploaded.
      */
     private final class LayoutPipeline {
         private final VertexLayout layout;
-        private final GLProgram program;
-        private final int uMatrixLocation;
-        private final int uPremultipliedLocation;
-        int premultipliedMask = -1; // last value sent (-1 = unknown)
+        final ProgramState program;
         private final int vao;
         private final int vbo;
         int chunkStart = -1;
@@ -547,17 +603,7 @@ public final class GLRenderBackend implements RenderBackend {
          */
         LayoutPipeline(VertexLayout layout, GLProgram program, int slots, int ebo) {
             this.layout = layout;
-            this.program = program;
-            this.uMatrixLocation = program.uniformLocation(GLSpriteProgram.U_MATRIX);
-            this.uPremultipliedLocation = program.uniformLocation(GLSpriteProgram.U_PREMULTIPLIED);
-            program.bind();
-            int[] samplerUnits = new int[slots];
-            for (int i = 0; i < slots; i++) {
-                samplerUnits[i] = i; // uTextures[i] samples texture unit i
-            }
-            gl.uniform1iv(program.uniformLocation(GLSpriteProgram.U_TEXTURES), samplerUnits);
-            program.unbind();
-
+            this.program = new ProgramState(gl, program, slots);
             this.vao = gl.genVertexArray();
             this.vbo = gl.genBuffer();
             gl.bindVertexArray(vao);
@@ -565,21 +611,8 @@ public final class GLRenderBackend implements RenderBackend {
             gl.bindBuffer(GL_ARRAY_BUFFER, vbo);
         }
 
-        void setMatrix(FloatBuffer matrix) {
-            program.bind();
-            gl.uniformMatrix4fv(uMatrixLocation, matrix);
-        }
-
-        /** Which texture slots of the batch hold premultiplied colors (bit per slot); the shader un-premultiplies them. */
-        void setPremultiplied(int mask) {
-            if (mask != premultipliedMask) {
-                gl.uniform1i(uPremultipliedLocation, mask);
-                premultipliedMask = mask;
-            }
-        }
-
+        /** Bind the vertex array and buffer (the program is bound per batch). */
         void bind() {
-            program.bind();
             gl.bindVertexArray(vao);
             gl.bindBuffer(GL_ARRAY_BUFFER, vbo);
         }

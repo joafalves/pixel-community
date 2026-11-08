@@ -3,6 +3,8 @@ package org.pixel.graphics.testing;
 import org.pixel.content.Texture;
 import org.pixel.graphics.backend.BackendCapabilities;
 import org.pixel.graphics.backend.BatchList;
+import org.pixel.graphics.backend.MaterialProgram;
+import org.pixel.graphics.material.Material;
 import org.pixel.graphics.backend.PassState;
 import org.pixel.graphics.backend.RenderBackend;
 import org.pixel.graphics.backend.RenderData;
@@ -26,7 +28,7 @@ import java.util.List;
 public class RecordingBackend implements RenderBackend {
 
     public record Batch(VertexLayout layout, int firstQuad, int quadCount, List<Texture> textures,
-                        List<float[]> clips, List<float[]> styles) {
+                        List<float[]> clips, List<float[]> styles, Material material, int slotLimit) {
     }
 
     public record Vertex(float x, float y, float u, float v, int rgba, int slot) {
@@ -93,6 +95,11 @@ public class RecordingBackend implements RenderBackend {
         BatchList batches = data.batches();
         drawCalls += batches.size();
         passCount++;
+        for (int b = 0; b < batches.size(); b++) {
+            if (batches.material(b) != null) {
+                batches.material(b).program(this); // like a real backend: compiled on first use
+            }
+        }
         if (!capture) {
             return;
         }
@@ -113,7 +120,7 @@ public class RecordingBackend implements RenderBackend {
                 styles.add(Arrays.copyOfRange(batches.styleData(), o, o + BatchList.STYLE_FLOATS));
             }
             recordedBatches.add(new Batch(batches.layout(b), batches.firstQuad(b), batches.quadCount(b), textures,
-                    clips, styles));
+                    clips, styles, batches.material(b), batches.slotLimit(b)));
         }
         passes.add(new Pass(blendMode, recordedBatches, readSprites(data.vertices(VertexLayout.SPRITE)),
                 readShapes(data.vertices(VertexLayout.FULL)), viewMatrix.clone(), target));
@@ -248,6 +255,39 @@ public class RecordingBackend implements RenderBackend {
     @Override
     public byte[] readPixels(RenderTarget target) {
         return new byte[target.getWidth() * target.getHeight() * 4];
+    }
+
+    // endregion
+
+    // region materials
+
+    /** A material program that only records its source. */
+    public static final class CompiledMaterial implements MaterialProgram {
+        public final String source;
+        public boolean disposed;
+
+        CompiledMaterial(String source) {
+            this.source = source;
+        }
+
+        @Override
+        public void dispose() {
+            disposed = true;
+        }
+    }
+
+    public final List<CompiledMaterial> compiledMaterials = new ArrayList<>();
+    /** Sources containing this text fail to compile. */
+    public String failOn;
+
+    @Override
+    public MaterialProgram compileMaterial(Material material, String vertexSource, String source) {
+        if (failOn != null && source.contains(failOn)) {
+            throw new IllegalStateException("0:1: error: '" + failOn + "'");
+        }
+        CompiledMaterial compiled = new CompiledMaterial(source);
+        compiledMaterials.add(compiled);
+        return compiled;
     }
 
     // endregion

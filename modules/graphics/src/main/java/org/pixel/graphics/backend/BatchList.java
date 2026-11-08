@@ -1,6 +1,7 @@
 package org.pixel.graphics.backend;
 
 import org.pixel.content.Texture;
+import org.pixel.graphics.material.Material;
 
 import java.util.Arrays;
 
@@ -8,9 +9,11 @@ import java.util.Arrays;
  * The batches of one pass. A batch is a consecutive quad range of the vertex stream of its {@link VertexLayout}
  * that is drawn with one draw call, plus:
  * <ul>
- *   <li>the textures it binds (slot i = texture unit i);</li>
+ *   <li>its {@link Material} ({@code null} = the built-in program);</li>
+ *   <li>the textures it binds (slot i = texture unit i; a material batch has fewer slots, see
+ *   {@link BackendCapabilities#materialTextureSlots()});</li>
  *   <li>for {@link VertexLayout#FULL} batches, its slice of the pass-wide <b>clip table</b> (1 vec4 per clip:
- *   x0, y0, x1, y1) and <b>style table</b> (7 vec4 per style). Each slice starts at an offset aligned to the
+ *   x0, y0, x1, y1) and <b>style table</b> (8 vec4 per style). Each slice starts at an offset aligned to the
  *   backend's uniform buffer alignment, so a backend can bind it directly as a uniform range.</li>
  * </ul>
  * Grows, never shrinks.
@@ -22,14 +25,16 @@ public final class BatchList {
      */
     public static final int CLIP_FLOATS = 4;
     /**
-     * Floats per style table entry (7 vec4, see {@code org.pixel.graphics.draw.StyleTable}).
+     * Floats per style table entry (8 vec4, see {@code org.pixel.graphics.draw.StyleTable}).
      */
-    public static final int STYLE_FLOATS = 28;
+    public static final int STYLE_FLOATS = 32;
 
     private final int maxTextureSlots;
 
     private int size;
     private VertexLayout[] layout = new VertexLayout[16];
+    private Material[] materials = new Material[16];
+    private int[] slotLimit = new int[16];
     private int[] firstQuad = new int[16];
     private int[] quadCount = new int[16];
     private int[] textureCount = new int[16];
@@ -66,6 +71,7 @@ public final class BatchList {
      */
     public void clear() {
         Arrays.fill(textures, 0, size * maxTextureSlots, null);
+        Arrays.fill(materials, 0, size, null);
         size = 0;
         clipDataSize = 0;
         styleDataSize = 0;
@@ -79,16 +85,34 @@ public final class BatchList {
     }
 
     /**
-     * Start a new batch.
+     * Start a new batch with the built-in program and every texture slot.
      *
      * @param batchLayout    The vertex layout of the batch.
      * @param first          The first quad of the batch in the stream of that layout.
      * @param alignmentFloats Alignment of the batch's table slices (in floats).
      */
     public void begin(VertexLayout batchLayout, int first, int alignmentFloats) {
+        begin(batchLayout, null, first, alignmentFloats, maxTextureSlots);
+    }
+
+    /**
+     * Start a new batch.
+     *
+     * @param batchLayout     The vertex layout of the batch.
+     * @param material        The batch's material ({@code null} = built-in program).
+     * @param first           The first quad of the batch in the stream of that layout.
+     * @param alignmentFloats Alignment of the batch's table slices (in floats).
+     * @param slots           Texture slots the batch may use (1 to {@link #getMaxTextureSlots()}).
+     */
+    public void begin(VertexLayout batchLayout, Material material, int first, int alignmentFloats, int slots) {
+        if (slots < 1 || slots > maxTextureSlots) {
+            throw new IllegalArgumentException("Slots must be 1 to " + maxTextureSlots + ".");
+        }
         if (size == firstQuad.length) {
             int capacity = size * 2;
             layout = Arrays.copyOf(layout, capacity);
+            materials = Arrays.copyOf(materials, capacity);
+            slotLimit = Arrays.copyOf(slotLimit, capacity);
             firstQuad = Arrays.copyOf(firstQuad, capacity);
             quadCount = Arrays.copyOf(quadCount, capacity);
             textureCount = Arrays.copyOf(textureCount, capacity);
@@ -99,6 +123,8 @@ public final class BatchList {
             textures = Arrays.copyOf(textures, capacity * maxTextureSlots);
         }
         layout[size] = batchLayout;
+        materials[size] = material;
+        slotLimit[size] = slots;
         firstQuad[size] = first;
         quadCount[size] = 0;
         textureCount[size] = 0;
@@ -126,7 +152,7 @@ public final class BatchList {
                 return s;
             }
         }
-        if (count == maxTextureSlots) {
+        if (count == slotLimit[batch]) {
             return -1;
         }
         textures[base + count] = texture;
@@ -193,8 +219,36 @@ public final class BatchList {
         return styleCount[size - 1];
     }
 
+    /**
+     * @return The material of the current (last) batch ({@code null} = built-in, also when there is no batch).
+     */
+    public Material currentMaterial() {
+        return size == 0 ? null : materials[size - 1];
+    }
+
+    /**
+     * @return Whether the current (last) batch has no free texture slot left.
+     */
+    public boolean currentSlotsFull() {
+        return textureCount[size - 1] == slotLimit[size - 1];
+    }
+
     public VertexLayout layout(int batch) {
         return layout[batch];
+    }
+
+    /**
+     * @return The batch's material, or {@code null} for the built-in program.
+     */
+    public Material material(int batch) {
+        return materials[batch];
+    }
+
+    /**
+     * @return The texture slots the batch may use.
+     */
+    public int slotLimit(int batch) {
+        return slotLimit[batch];
     }
 
     public int firstQuad(int batch) {

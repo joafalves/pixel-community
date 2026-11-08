@@ -6,7 +6,7 @@ import java.util.Arrays;
  * Frame-local, de-duplicated shape styles referenced by draw commands: identical styles get the same id, so a thousand
  * shapes with the same outline and shadow share one entry. Id 0 means "no style" (plain fill). Grows, never shrinks.
  * <p>
- * A style is a record of {@link #FLOATS} floats (7 vec4, the layout read by the shape shader):
+ * A style is a record of {@link #FLOATS} floats (8 vec4, the layout read by the shape shader):
  * <pre>
  *  0..3   stroke color (alpha 0 = no stroke)
  *  4      stroke width          5  stroke offset (signed, from the edge; negative = inside)
@@ -17,14 +17,15 @@ import java.util.Arrays;
  * 20      shadow offset x      21  shadow offset y      22  shadow blur      23  shadow spread
  * 24      paint type ({@link #PAINT_SOLID}, {@link #PAINT_LINEAR}, {@link #PAINT_RADIAL})
  * 25      dash phase           26..27 reserved
+ * 28..31  material data (the command's {@code Fragment.data}; see {@code Material})
  * </pre>
  */
 public final class StyleTable {
 
     /**
-     * Floats per style record (7 vec4).
+     * Floats per style record (8 vec4).
      */
-    public static final int FLOATS = 28;
+    public static final int FLOATS = 32;
 
     public static final int STROKE_COLOR = 0;
     public static final int STROKE_WIDTH = 4;
@@ -40,6 +41,7 @@ public final class StyleTable {
     public static final int SHADOW_SPREAD = 23;
     public static final int PAINT_TYPE = 24;
     public static final int DASH_PHASE = 25;
+    public static final int MATERIAL_DATA = 28;
 
     public static final float PAINT_SOLID = 0f;
     public static final float PAINT_LINEAR = 1f;

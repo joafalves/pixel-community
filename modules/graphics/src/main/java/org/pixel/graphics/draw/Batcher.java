@@ -6,6 +6,7 @@ import org.pixel.graphics.backend.BatchList;
 import org.pixel.graphics.backend.RenderData;
 import org.pixel.graphics.backend.VertexLayout;
 import org.pixel.graphics.backend.VertexStream;
+import org.pixel.graphics.material.Material;
 
 import java.util.Arrays;
 
@@ -14,6 +15,7 @@ import java.util.Arrays;
  * consecutive commands into one batch until one of these breaks it:
  * <ul>
  *   <li>the vertex layout changes (sprite quads vs shape/canvas quads);</li>
+ *   <li>the material changes;</li>
  *   <li>the batch reaches the backend's maximum quad count;</li>
  *   <li>a new texture doesn't fit in the batch's texture slots;</li>
  *   <li>a new clip rectangle or style doesn't fit in the batch's clip/style table.</li>
@@ -73,10 +75,11 @@ public final class Batcher {
             }
             VertexLayout layout = list.layout(index);
             VertexStream vertices = out.vertices(layout);
+            Material material = list.material(index);
 
-            if (batches.currentLayout() != layout || batches.currentQuadCount() == maxQuads
-                    || !fits(list, index, batches, capabilities)) {
-                beginBatch(batches, layout, vertices.quadCount(), alignment);
+            if (batches.currentLayout() != layout || batches.currentMaterial() != material
+                    || batches.currentQuadCount() == maxQuads || !fits(list, index, batches, capabilities)) {
+                beginBatch(batches, layout, material, vertices.quadCount(), alignment, capabilities);
             }
 
             Texture texture = list.texture(index);
@@ -108,8 +111,11 @@ public final class Batcher {
         return maxX < bounds[0] || minX > bounds[2] || maxY < bounds[1] || minY > bounds[3];
     }
 
-    private void beginBatch(BatchList batches, VertexLayout layout, int firstQuad, int alignment) {
-        batches.begin(layout, firstQuad, alignment);
+    private void beginBatch(BatchList batches, VertexLayout layout, Material material, int firstQuad, int alignment,
+                            BackendCapabilities capabilities) {
+        int slots = material != null ? Math.min(capabilities.materialTextureSlots(), batches.getMaxTextureSlots())
+                : batches.getMaxTextureSlots();
+        batches.begin(layout, material, firstQuad, alignment, slots);
         batchSerial++;
     }
 
@@ -118,8 +124,7 @@ public final class Batcher {
      */
     private boolean fits(DrawList list, int index, BatchList batches, BackendCapabilities capabilities) {
         Texture texture = list.texture(index);
-        if (texture != null && batches.textureCount(batches.size() - 1) == batches.getMaxTextureSlots()
-                && !hasTexture(batches, texture)) {
+        if (texture != null && batches.currentSlotsFull() && !hasTexture(batches, texture)) {
             return false;
         }
         if (list.layout(index) == VertexLayout.FULL) {

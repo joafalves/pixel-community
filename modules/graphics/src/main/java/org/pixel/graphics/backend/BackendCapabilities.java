@@ -13,6 +13,11 @@ package org.pixel.graphics.backend;
 public record BackendCapabilities(int maxTextureSlots, int maxQuadsPerBatch, int maxClipsPerBatch,
                                   int maxStylesPerBatch, int tableAlignmentFloats) {
 
+    /**
+     * Texture units reserved for a material's own textures ({@code Material.texture(name, texture)}).
+     */
+    public static final int MATERIAL_TEXTURES = 4;
+
     public BackendCapabilities {
         if (maxTextureSlots < 1 || maxQuadsPerBatch < 1 || maxClipsPerBatch < 1 || maxStylesPerBatch < 1) {
             throw new IllegalArgumentException("Backend limits must be at least 1.");
@@ -20,5 +25,13 @@ public record BackendCapabilities(int maxTextureSlots, int maxQuadsPerBatch, int
         if (tableAlignmentFloats < 4 || tableAlignmentFloats % 4 != 0) {
             throw new IllegalArgumentException("tableAlignmentFloats must be a positive multiple of 4 (one vec4).");
         }
+    }
+
+    /**
+     * Texture slots of a batch drawn with a material: the material's own textures take the last
+     * {@link #MATERIAL_TEXTURES} units.
+     */
+    public int materialTextureSlots() {
+        return Math.max(1, maxTextureSlots - MATERIAL_TEXTURES);
     }
 }

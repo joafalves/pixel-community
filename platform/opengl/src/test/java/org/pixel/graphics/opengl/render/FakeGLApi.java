@@ -68,6 +68,20 @@ final class FakeGLApi implements GLApi {
     }
 
     final List<String> calls = new ArrayList<>(); // framebuffer, viewport and post calls (when capturing)
+    final List<String> uniforms = new ArrayList<>(); // "name=value" of uniform1f/2f/4f/1i calls (when capturing)
+    final java.util.Map<Integer, Integer> unitTextures = new java.util.HashMap<>(); // texture unit -> texture
+    final java.util.Map<Integer, String> shaderText = new java.util.HashMap<>();
+    final java.util.Set<Integer> deletedPrograms = new java.util.HashSet<>();
+    String failCompile; // shaders containing this text fail to compile
+    private final java.util.Map<String, Integer> locations = new java.util.HashMap<>();
+    private final java.util.Map<Integer, String> locationNames = new java.util.HashMap<>();
+    private int activeUnit;
+
+    private void uniform(int location, String value) {
+        if (capture) {
+            uniforms.add(locationNames.getOrDefault(location, "?" + location) + "=" + value);
+        }
+    }
     int framebuffer;
     final int[] viewportState = {0, 0, 800, 600};
 
@@ -151,18 +165,30 @@ final class FakeGLApi implements GLApi {
 
     @Override
     public void uniform1i(int location, int value) {
+        if (capture) {
+            uniform(location, String.valueOf(value));
+        }
     }
 
     @Override
     public void uniform1f(int location, float x) {
+        if (capture) {
+            uniform(location, String.valueOf(x));
+        }
     }
 
     @Override
     public void uniform2f(int location, float x, float y) {
+        if (capture) {
+            uniform(location, x + "," + y);
+        }
     }
 
     @Override
     public void uniform4f(int location, float x, float y, float z, float w) {
+        if (capture) {
+            uniform(location, x + "," + y + "," + z + "," + w);
+        }
     }
 
     @Override
@@ -255,11 +281,15 @@ final class FakeGLApi implements GLApi {
 
     @Override
     public void activeTexture(int unit) {
+        activeUnit = unit - GL_TEXTURE0;
     }
 
     @Override
     public void bindTexture(int target, int texture) {
         textureBinds++;
+        if (capture) {
+            unitTextures.put(activeUnit, texture);
+        }
     }
 
     @Override
@@ -279,6 +309,7 @@ final class FakeGLApi implements GLApi {
     @Override
     public void shaderSource(int shader, String source) {
         shaderSources.add(source);
+        shaderText.put(shader, source);
     }
 
     @Override
@@ -287,12 +318,12 @@ final class FakeGLApi implements GLApi {
 
     @Override
     public int getShaderi(int shader, int name) {
-        return GL_TRUE;
+        return failCompile != null && shaderText.getOrDefault(shader, "").contains(failCompile) ? GL_FALSE : GL_TRUE;
     }
 
     @Override
     public String getShaderInfoLog(int shader) {
-        return "";
+        return "0:1: error: '" + failCompile + "'";
     }
 
     @Override
@@ -324,6 +355,7 @@ final class FakeGLApi implements GLApi {
 
     @Override
     public void deleteProgram(int program) {
+        deletedPrograms.add(program);
     }
 
     @Override
@@ -333,7 +365,19 @@ final class FakeGLApi implements GLApi {
 
     @Override
     public int getUniformLocation(int program, String name) {
-        return 0;
+        if (!capture) {
+            return 0;
+        }
+        return locations.computeIfAbsent(program + ":" + name, key -> {
+            int location = locations.size() + 1;
+            locationNames.put(location, name);
+            return location;
+        });
+    }
+
+    /** The program currently in use. */
+    int program() {
+        return program;
     }
 
     @Override

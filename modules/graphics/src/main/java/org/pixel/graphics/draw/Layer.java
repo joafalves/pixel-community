@@ -9,6 +9,7 @@ import org.pixel.graphics.render.BlendMode;
  * static final Layer WORLD = Layer.sorted("world");
  * static final Layer FX = Layer.ordered("fx").blend(BlendMode.ADDITIVE);
  * static final Layer HUD = Layer.ordered("hud");
+ * static final Layer TILES = Layer.sorted("tiles").batchByMaterial();
  * </pre>
  *
  * @see LayerMode
@@ -40,6 +41,18 @@ public final class Layer {
      */
     public static Layer sorted(String name) {
         return new Layer(name, LayerMode.SORTED, BlendMode.NORMAL_BLEND);
+    }
+
+    /**
+     * @return A copy of this sorted layer that groups commands of equal depth by material and texture, for fewer draw
+     * calls when their overlap order doesn't matter (see {@link LayerMode#SORTED_BY_MATERIAL}).
+     * @throws IllegalStateException If this layer is not sorted.
+     */
+    public Layer batchByMaterial() {
+        if (mode == LayerMode.ORDERED) {
+            throw new IllegalStateException("Only sorted layers can group commands: " + this);
+        }
+        return new Layer(name, LayerMode.SORTED_BY_MATERIAL, blendMode);
     }
 
     /**
