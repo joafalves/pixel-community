@@ -178,8 +178,7 @@ connected device or a running emulator (add `-Pscreenshot=build/android.png` to 
 1. I'm unable to run Pixel on MacOS due to system error.
     - Add `-XstartOnFirstThread` as a java VM Option before running your project.
 2. Is Pixel compatible with Kotlin?
-    - Yes, Pixel is fully compatible with Kotlin. Check
-      this [demo](https://github.com/joafalves/pixel-community/tree/devel/demos/kotlin) for an example.
+    - Yes: Pixel is plain Java, so Kotlin code can extend `GameApp` and use every module directly.
 3. Is Pixel available as a Maven dependency?
     - Yes, Pixel is available as a public Maven
       dependency. [Click here](https://github.com/joafalves/pixel-community/wiki/1.-Getting-Started) for more details on
