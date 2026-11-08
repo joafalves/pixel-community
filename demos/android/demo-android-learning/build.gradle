@@ -1,53 +1,92 @@
-apply plugin: 'com.android.application'
-apply plugin: 'org.jetbrains.kotlin.android'
-
+/*
+ * This software is available under Apache License
+ * Copyright (c) 2020
+ */
+// Only part of the build when pixel.android is enabled (see settings.gradle).
 buildscript {
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        // Add the classpath for the Android Gradle Plugin here
-        // Make sure to use a version compatible with your Gradle version
-        classpath 'com.android.tools.build:gradle:8.2.2'
+        classpath "com.android.tools.build:gradle:${androidGradlePluginVersion}"
     }
 }
 
-android {
-    namespace "org.pixel.android"
+apply plugin: 'com.android.application'
 
-    compileSdk 36
+android {
+    namespace "org.pixel.demo.android"
+    compileSdk Integer.parseInt(androidCompileSdk)
 
     defaultConfig {
-        minSdkVersion 30
-
+        applicationId "org.pixel.demo.android"
+        minSdk Integer.parseInt(androidMinSdk)
+        targetSdk Integer.parseInt(androidCompileSdk)
         versionCode 1
-        versionName rootProject.version
-
-        consumerProguardFiles 'consumer-rules.pro'
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
+        versionName "1.0"
     }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-
-    kotlinOptions {
-        jvmTarget = "17"
-    }
 }
 
 dependencies {
     implementation project(":${rootProject.name}-android")
     implementation project(":${rootProject.name}-ext-tween")
+}
 
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'androidx.core:core-ktx:1.16.0'
+// Install, start and check the demo on the connected device or emulator:
+//   ./gradlew -Ppixel.android=true :pixel-demo-android-learning:androidRun [-Pscreenshot=build/android.png]
+// Prints the app's warnings and errors; with -Pscreenshot it waits (-PscreenshotDelay=4 seconds) and saves the
+// screen. With several devices attached, choose one with the ANDROID_SERIAL environment variable.
+tasks.register('androidRun') {
+    group = 'android'
+    description = 'Installs the debug build on the connected device or emulator, starts it and reports errors.'
+    dependsOn 'installDebug'
+    def adb = androidComponents.sdkComponents.adb
+    def appId = android.defaultConfig.applicationId
+    def screenshot = providers.gradleProperty('screenshot').map { file(it) }.orNull
+    def delaySeconds = providers.gradleProperty('screenshotDelay').map { Float.parseFloat(it) }.getOrElse(4f)
+    def serial = providers.environmentVariable('ANDROID_SERIAL').orNull
+    doLast {
+        def adbPath = adb.get().asFile.absolutePath
+        // runs adb and returns stdout; fails the task with stderr if adb fails
+        def run = { List<String> args ->
+            def command = [adbPath] + (serial ? ['-s', serial] : []) + args
+            def process = new ProcessBuilder(command.collect { it.toString() }).start()
+            def out = new ByteArrayOutputStream(), err = new ByteArrayOutputStream()
+            def errReader = Thread.start { process.errorStream.transferTo(err) }
+            process.inputStream.transferTo(out)
+            errReader.join()
+            if (process.waitFor() != 0) {
+                throw new GradleException("adb ${args.join(' ')} failed: ${err.toString().trim()}")
+            }
+            out.toByteArray()
+        }
+        def devices = new String(run(['devices'])).readLines().drop(1).findAll { it.endsWith('\tdevice') }
+        if (serial == null && devices.size() != 1) {
+            throw new GradleException("Expected one device or emulator, found ${devices.size()}: ${devices}. "
+                    + "Set ANDROID_SERIAL to choose one.")
+        }
+        run(['logcat', '-c'])
+        println(new String(run(['shell', 'am', 'start', '-S', '-W', '-n', "${appId}/.MainActivity"])).trim())
+        Thread.sleep((long) ((screenshot != null ? delaySeconds : 2f) * 1000)) // let it run (and log)
+        def pid = new String(run(['shell', 'pidof', '-s', appId])).trim()
+        if (!(pid ==~ /\d+/)) {
+            println(new String(run(['logcat', '-d', '-s', 'AndroidRuntime:E'])))
+            throw new GradleException("${appId} is not running (crashed?).")
+        }
+        def log = new String(run(['logcat', '-d', "--pid=${pid}", '*:W', 'System.out:I']))
+        def problems = log.readLines().findAll { it =~ /Exception|FATAL|ERROR| E [A-Za-z]/ }
+        println(problems ? "App warnings/errors:\n" + problems.take(30).join('\n')
+                : "No errors logged by ${appId} (pid ${pid}).")
+        if (screenshot != null) {
+            screenshot.parentFile.mkdirs()
+            screenshot.bytes = run(['exec-out', 'screencap', '-p'])
+            println("Screenshot: ${screenshot}")
+        }
+    }
 }

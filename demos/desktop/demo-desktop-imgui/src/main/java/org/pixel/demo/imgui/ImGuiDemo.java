@@ -1,5 +1,7 @@
 package org.pixel.demo.imgui;
 
+import org.pixel.core.DesktopWindowManager;
+import org.pixel.core.DesktopLauncher;
 import imgui.ImGui;
 import imgui.ImGuiStyle;
 import imgui.flag.ImGuiCol;
@@ -8,26 +10,17 @@ import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 import org.pixel.commons.DeltaTime;
 import org.pixel.core.WindowSettings;
-import org.pixel.core.Game;
+import org.pixel.core.GameApp;
 
-public class ImGuiDemo extends Game {
+public class ImGuiDemo extends GameApp {
 
     private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
     private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
 
-    /**
-     * Constructor
-     *
-     * @param settings
-     */
-    public ImGuiDemo(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
         ImGui.createContext();
-        imGuiGlfw.init(getWindowManager().getWindowHandle(), true);
+        imGuiGlfw.init(DesktopWindowManager.of(context()).getWindowHandle(), true);
         imGuiGl3.init();
 
         applyGlobalStyles();
@@ -40,7 +33,7 @@ public class ImGuiDemo extends Game {
         ImGui.newFrame();
 
         ImGui.setNextWindowPos(0, 0);
-        ImGui.setNextWindowSize(getWindowManager().getWindowWidth(), getWindowManager().getWindowHeight());
+        ImGui.setNextWindowSize(DesktopWindowManager.of(context()).getWindowWidth(), DesktopWindowManager.of(context()).getWindowHeight());
 
         ImGui.pushStyleColor(ImGuiCol.WindowBg, ImGui.getColorU32(0.2f, 0.2f, 0.2f, 1.0f)); // #333 in RGB
         ImGui.begin("Pixel Engine", ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove
@@ -102,7 +95,6 @@ public class ImGuiDemo extends Game {
         settings.setWindowWidth(width);
         settings.setWindowHeight(height);
 
-        var window = new ImGuiDemo(settings);
-        window.start();
+        DesktopLauncher.run(new ImGuiDemo(), settings);
     }
 }

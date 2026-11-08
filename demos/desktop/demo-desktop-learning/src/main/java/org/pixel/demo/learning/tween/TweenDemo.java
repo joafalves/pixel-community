@@ -1,8 +1,8 @@
 package org.pixel.demo.learning.tween;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.ContentManager;
@@ -28,19 +28,11 @@ public class TweenDemo extends DemoGame {
     private Tween tweenA;
     private Tween tweenB;
 
-    public TweenDemo(WindowSettings settings) {
-        super(settings);
-    }
-
-    @Override
-    public void start() {
-        super.start();
-    }
-
     @Override
     public void load() {
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        contentManager = ServiceProvider.get(ContentManager.class);
+        super.load();
+        spriteBatch = graphics().createSpriteBatch();
+        contentManager = content();
 
         spriteTexture = contentManager.loadTexture("images/earth-48x48.png");
 
@@ -81,7 +73,6 @@ public class TweenDemo extends DemoGame {
     @Override
     public void dispose() {
         spriteBatch.dispose();
-        contentManager.dispose();
         super.dispose();
     }
 
@@ -93,7 +84,6 @@ public class TweenDemo extends DemoGame {
         settings.setDevMode(false);
         settings.setIdleThrottle(false);
 
-        var window = new TweenDemo(settings);
-        window.start();
+        DesktopLauncher.run(new TweenDemo(), settings);
     }
 }

@@ -69,19 +69,7 @@ public class GameObject extends GameObjectContainer implements Updatable, Sprite
             }
         }
 
-        var children = getChildren();
-        if (children != null && !children.isEmpty()) {
-            for (Iterator<GameObject> iterator = children.iterator(); iterator.hasNext(); ) {
-                var child = iterator.next();
-                if (child.isEnabled()) {
-                    child.update(delta);
-                }
-                if (child.isDisposed()) {
-                    child.setParent(null);
-                    iterator.remove();
-                }
-            }
-        }
+        updateChildren(delta);
     }
 
     /**

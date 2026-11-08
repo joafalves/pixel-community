@@ -154,6 +154,14 @@ public class Size implements Serializable {
     }
 
     @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + Float.floatToIntBits(width + 0.0f);
+        result = 31 * result + Float.floatToIntBits(height + 0.0f);
+        return result;
+    }
+
+    @Override
     public String toString() {
         return String.format("%s: [w: %f, h: %f]", this.getClass().getSimpleName(), getWidth(), getHeight());
     }

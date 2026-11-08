@@ -5,6 +5,7 @@
 
 package org.pixel.input.keyboard;
 
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_LAST;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 import static org.lwjgl.glfw.GLFW.GLFW_REPEAT;
@@ -20,8 +21,6 @@ public class Keyboard {
     // region singleton
 
     static {
-        keys = new HashMap<>();
-        pressedKeys = new HashMap<>();
         charListeners = new ArrayList<>();
     }
 
@@ -29,13 +28,13 @@ public class Keyboard {
 
     // region properties
 
-    // NOTE: the pressed keys exist because it's must faster to consider that only
-    // pressed keys exist on that map
-    // than having to manually loop through the keys map to check if the key is
-    // pressed or not (end of frame clean).
-
-    private static final HashMap<Integer, Integer> pressedKeys; // <Key, Action>
-    private static final HashMap<Integer, Integer> keys; // <Key, Action>
+    // Indexed by GLFW key code: queried every frame, so no maps (boxing key codes above 127 allocates). The keys
+    // pressed this frame are also listed, so clearing them at the end of the frame touches only those.
+    private static final int NONE = -1; // no event for the key yet
+    private static final int[] actions = noActions(); // last action per key
+    private static final boolean[] pressed = new boolean[GLFW_KEY_LAST + 1]; // pressed this frame
+    private static final int[] pressedList = new int[GLFW_KEY_LAST + 1];
+    private static int pressedCount;
     private static final List<KeyboardCharListener> charListeners;
 
     // endregion
@@ -49,8 +48,8 @@ public class Keyboard {
      * @return True if the key is down.
      */
     public static boolean isKeyDown(KeyboardKey key) {
-        var value = keys.get(key.getValue());
-        return value != null && (value == GLFW_PRESS || value == GLFW_REPEAT);
+        int action = action(key.getValue());
+        return action == GLFW_PRESS || action == GLFW_REPEAT;
     }
 
     /**
@@ -60,8 +59,7 @@ public class Keyboard {
      * @return True if the key is up.
      */
     public static boolean isKeyUp(KeyboardKey key) {
-        var value = keys.get(key.getValue());
-        return value != null && value == GLFW_RELEASE;
+        return action(key.getValue()) == GLFW_RELEASE;
     }
 
     /**
@@ -71,8 +69,18 @@ public class Keyboard {
      * @return True if the key is pressed.
      */
     public static boolean isKeyPressed(KeyboardKey key) {
-        var value = pressedKeys.get(key.getValue());
-        return (value != null && value == GLFW_PRESS);
+        int code = key.getValue();
+        return code >= 0 && code < pressed.length && pressed[code];
+    }
+
+    private static int[] noActions() {
+        int[] array = new int[GLFW_KEY_LAST + 1];
+        java.util.Arrays.fill(array, NONE);
+        return array;
+    }
+
+    private static int action(int code) {
+        return code >= 0 && code < actions.length ? actions[code] : NONE;
     }
 
     /**
@@ -81,8 +89,16 @@ public class Keyboard {
      * @return The current keyboard state.
      */
     public static KeyboardState getState() {
-        return new KeyboardState((HashMap<Integer, Integer>) keys.clone(),
-                (HashMap<Integer, Integer>) pressedKeys.clone());
+        HashMap<Integer, Integer> keys = new HashMap<>(), pressedKeys = new HashMap<>();
+        for (int code = 0; code < actions.length; code++) {
+            if (actions[code] != NONE) {
+                keys.put(code, actions[code]);
+            }
+            if (pressed[code]) {
+                pressedKeys.put(code, GLFW_PRESS);
+            }
+        }
+        return new KeyboardState(keys, pressedKeys);
     }
 
     /**
@@ -112,7 +128,10 @@ public class Keyboard {
      * frame (before native event polling).
      */
     public static void clear() {
-        pressedKeys.clear();
+        for (int i = 0; i < pressedCount; i++) {
+            pressed[pressedList[i]] = false;
+        }
+        pressedCount = 0;
     }
 
     // endregion
@@ -123,9 +142,13 @@ public class Keyboard {
 
         @Override
         public void invoke(long window, int key, int scanCode, int action, int mods) {
-            keys.put(key, action);
-            if (action == GLFW_PRESS) {
-                pressedKeys.put(key, action);
+            if (key < 0 || key >= actions.length) {
+                return; // GLFW_KEY_UNKNOWN (keys without a code)
+            }
+            actions[key] = action;
+            if (action == GLFW_PRESS && !pressed[key]) {
+                pressed[key] = true;
+                pressedList[pressedCount++] = key;
             }
         }
 

@@ -110,6 +110,11 @@ public class SizeInt implements Serializable {
     }
 
     @Override
+    public int hashCode() {
+        return 31 * width + height;
+    }
+
+    @Override
     public String toString() {
         return String.format("%s: [w: %d, h: %d]", this.getClass().getSimpleName(), getWidth(), getHeight());
     }

@@ -11,7 +11,7 @@ import org.pixel.commons.lifecycle.Disposable;
 
 import java.util.Map;
 
-public class TexturePack implements Disposable {
+public class TexturePack implements Disposable, SizedAsset {
 
     private final Texture texture;
     private final Map<String, TextureFrame> frameMap;
@@ -64,6 +64,12 @@ public class TexturePack implements Disposable {
      *
      * @return The source texture.
      */
+    /** @return 0: the frames only; the texture is an asset of its own. */
+    @Override
+    public long getMemorySize() {
+        return 0;
+    }
+
     public Texture getTexture() {
         return texture;
     }
@@ -71,10 +77,12 @@ public class TexturePack implements Disposable {
     /**
      * Dispose the texture pack.
      */
+    /**
+     * Nothing to release: the texture is a separate content asset, owned (and disposed) by the content manager that
+     * loaded it, which may be an ancestor shared with other packs.
+     */
     @Override
     public void dispose() {
-        if (this.texture != null) {
-            this.texture.dispose();
-        }
+        // the texture is not owned by the pack
     }
 }

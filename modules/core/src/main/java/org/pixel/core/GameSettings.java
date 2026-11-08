@@ -5,6 +5,7 @@
 
 package org.pixel.core;
 
+import org.pixel.core.dev.DevToolsMode;
 import lombok.Getter;
 import lombok.Setter;
 import org.pixel.commons.Color;
@@ -29,9 +30,12 @@ public class GameSettings {
     private int targetFps;
     private boolean vsync;
     private boolean devMode;
+    /** When the dev tools overlay is available (default: in dev mode). */
+    private DevToolsMode devToolsMode;
+    /** Whether the dev tools start visible (when available). */
+    private boolean devToolsVisible;
     private boolean idleThrottle;
     private boolean autoClear;
-    private String[] blueprintPackages;
 
     //endregion
 
@@ -63,6 +67,8 @@ public class GameSettings {
         this.vsync = false;
         this.multisampling = 0;
         this.devMode = false;
+        this.devToolsMode = DevToolsMode.DEV_MODE;
+        this.devToolsVisible = false;
         this.autoClear = true;
         this.targetFps = 0;
         this.backgroundColor = Color.CORNFLOWER_BLUE;

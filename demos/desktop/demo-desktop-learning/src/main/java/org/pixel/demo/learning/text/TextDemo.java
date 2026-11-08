@@ -5,9 +5,9 @@
 
 package org.pixel.demo.learning.text;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
 import org.pixel.content.importer.settings.FontImporterSettings;
@@ -30,18 +30,15 @@ public class TextDemo extends DemoGame {
     private String text = BASE_TEXT;
     private Vector2 textPosition;
 
-    public TextDemo(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
+        super.load();
         // game related changes and definitions
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        content = ServiceProvider.get(ContentManager.class);
+        spriteBatch = graphics().createSpriteBatch();
+        content = content();
 
         // load font into memory
         font = content.loadFont("fonts/gidole-regular.ttf", new FontImporterSettings(32, 1));
@@ -78,7 +75,6 @@ public class TextDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        content.dispose();
         spriteBatch.dispose();
         font.dispose();
 
@@ -92,7 +88,6 @@ public class TextDemo extends DemoGame {
         settings.setVsync(true);
         settings.setDevMode(false);
 
-        var window = new TextDemo(settings);
-        window.start();
+        DesktopLauncher.run(new TextDemo(), settings);
     }
 }

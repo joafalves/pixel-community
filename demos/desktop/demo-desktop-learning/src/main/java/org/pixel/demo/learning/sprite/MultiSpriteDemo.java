@@ -5,9 +5,9 @@
 
 package org.pixel.demo.learning.sprite;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.demo.learning.common.DemoGame;
@@ -29,18 +29,15 @@ public class MultiSpriteDemo extends DemoGame {
     private Texture spriteTexB;
     private Vector2 spritePosB;
 
-    public MultiSpriteDemo(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
+        super.load();
         // game related changes & definitions
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        content = ServiceProvider.get(ContentManager.class);
+        spriteBatch = graphics().createSpriteBatch();
+        content = content();
 
         // load texture into memory
         spriteTexA = content.load("images/earth-48x48.png", Texture.class);
@@ -72,7 +69,6 @@ public class MultiSpriteDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        content.dispose();
         spriteBatch.dispose();
         spriteTexA.dispose();
 
@@ -86,7 +82,6 @@ public class MultiSpriteDemo extends DemoGame {
         settings.setVsync(true);
         settings.setDevMode(false);
 
-        var window = new MultiSpriteDemo(settings);
-        window.start();
+        DesktopLauncher.run(new MultiSpriteDemo(), settings);
     }
 }

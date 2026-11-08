@@ -1,7 +1,12 @@
 package org.pixel.core;
 
+import org.pixel.core.dev.DevTools;
+import org.pixel.input.keyboard.Keyboard;
+import org.pixel.input.keyboard.KeyboardKey;
+import org.pixel.input.mouse.Mouse;
+import org.pixel.input.mouse.MouseButton;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.lifecycle.*;
+import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.graphics.GraphicsDevice;
@@ -10,23 +15,24 @@ import java.util.concurrent.locks.LockSupport;
 
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
 
-public abstract class WindowGameContainer<T extends WindowManager, S extends GraphicsDevice, Z extends GameSettings>
-        extends GameContainer<S, Z>
-        implements Initializable, Loadable, Updatable, Drawable, Disposable {
+/**
+ * Host base for windowed platforms: owns the window manager and the game loop.
+ *
+ * @param <T> The window manager type.
+ * @param <S> The graphics device type.
+ * @param <Z> The settings type.
+ */
+public abstract class WindowGameContainer<T extends WindowManager, S extends GraphicsDevice, Z extends WindowSettings>
+        extends GameContainer<S, Z> {
 
-    private static final Logger log = LoggerFactory.getLogger(GameContainer.class);
+    private static final Logger log = LoggerFactory.getLogger(WindowGameContainer.class);
 
     protected T windowManager;
 
     private double targetFpsTimeRef;
 
-    /**
-     * Constructor.
-     *
-     * @param settings The settings to use.
-     */
-    public WindowGameContainer(Z settings) {
-        super(settings);
+    protected WindowGameContainer(GameApp app, Z settings) {
+        super(app, settings);
     }
 
     /**
@@ -36,43 +42,61 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
      */
     protected abstract boolean initWindowManager();
 
-    @Override
-    public boolean init() {
-        if (this.state.hasInitialized()) {
-            log.warn("Game already initialized.");
-            return false;
-        }
-        this.state = State.INITIALIZING;
+    /**
+     * Release the platform's audio context (after the content manager released its sounds).
+     */
+    protected abstract void disposePlatformAudio();
 
-        // Initialize main components
-        if (!initWindowManager()) {
-            log.error("Failed to initialize the window manager.");
-            return false;
-        }
-
-        if (super.init()) {
-            // Load window procedure
-            load();
-            return true;
-        }
-
-        return false;
-    }
-
-    @Override
+    /**
+     * Initialize the platform, load the game, run the loop until the window closes, then dispose everything (also
+     * when the game throws).
+     */
     public void start() {
-        super.start();
-
-        if (this.state.hasInitialized()) {
-            this.gameLoop();
-            this.dispose();
+        if (state != State.NEW) {
+            throw new IllegalStateException("A game host can only be started once.");
+        }
+        state = State.INITIALIZING;
+        try {
+            if (!initWindowManager()) {
+                log.error("Failed to initialize the window manager.");
+                return;
+            }
+            if (!initContainer()) {
+                return;
+            }
+            state = State.INITIALIZED;
+            loadApp();
+            gameLoop();
+        } finally {
+            dispose();
         }
     }
 
     @Override
-    public void dispose() {
-        windowManager.dispose();
-        super.dispose();
+    public void exit() {
+        if (windowManager != null) {
+            windowManager.requestClose();
+        }
+    }
+
+    /**
+     * Release the game, then the shared services and graphics device (GL context still alive), then audio, then the
+     * window. Runs once.
+     */
+    private void dispose() {
+        if (state.isDisposed()) {
+            return;
+        }
+        state = State.DISPOSING;
+        try {
+            disposeContainer(); // null-safe: only disposes what was created
+        } finally {
+            disposePlatformAudio();
+            if (windowManager != null) {
+                windowManager.dispose();
+            }
+            state = State.DISPOSED;
+        }
     }
 
     /**
@@ -85,18 +109,9 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
     }
 
     /**
-     * Get the active window manager.
-     *
-     * @return The active window manager.
+     * The game loop.
      */
-    public T getWindowManager() {
-        return windowManager;
-    }
-
-    /**
-     * The render loop.
-     */
-    protected void gameLoop() {
+    private void gameLoop() {
         var delta = new DeltaTime();
         while (this.windowManager.isWindowActive()) {
             delta.tick();
@@ -106,7 +121,12 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
                 double currentTime = glfwGetTime();
                 double targetFrameDuration = 1.0 / settings.getTargetFps(); // e.g., 16.67ms for 60 FPS
 
-                // Calculate the next frame's target time
+                // Calculate the next frame's target time. If we have no reference yet (first frame) or we fell
+                // behind by more than a frame (hitch, debugger, window drag), re-anchor to "now" instead of running
+                // uncapped until the reference catches up with real time.
+                if (targetFpsTimeRef <= 0 || currentTime - targetFpsTimeRef > targetFrameDuration) {
+                    targetFpsTimeRef = currentTime;
+                }
                 double nextFrameTime = targetFpsTimeRef + targetFrameDuration;
 
                 // Sleep if there's still time until the next frame
@@ -115,33 +135,40 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
                     LockSupport.parkNanos((long) (sleepTime * 1_000_000_000));
                 }
 
-                // Update lastFrameTime for the next frame
                 targetFpsTimeRef = nextFrameTime;
             }
 
             this.windowManager.beginFrame();
-
-            // call container update
-            updateContainer(delta);
-
-            // call game update
-            update(delta);
-
+            updateFrame(delta);
             if (!this.windowManager.isWindowActive()) {
-                break; // update code might kill the window...
+                break; // update code may have requested exit
             }
-
-            // call game draw
-            if (this.settings.isAutoClear()) {
-                this.clear();
-            }
-            draw(delta);
-
+            drawFrame(delta);
             this.windowManager.endFrame();
-
-            // TODO: study the feasibility/impact of implementing a multi-threaded mechanism
-            // on the game loop, more info:
-            // https://github.com/LWJGL/lwjgl3/blob/master/modules/samples/src/test/java/org/lwjgl/demo/glfw/Threads.java
         }
+    }
+
+    /**
+     * Dev tools input: the mouse and F1 to show or hide them.
+     */
+    @Override
+    protected void updateDevToolsInput(DevTools devTools) {
+        if (!devTools.isAvailable()) {
+            return;
+        }
+        if (Keyboard.isKeyPressed(KeyboardKey.F1)) {
+            devTools.requestToggle();
+        }
+        if (!devTools.isVisible()) {
+            devTools.pointer(-1f, -1f, false); // hidden: only the key matters (no window queries)
+            return;
+        }
+        // The dev tools work in framebuffer pixels and the mouse in screen coordinates: the framebuffer scale maps the
+        // mouse. The OS content scale keeps the dev tools the same physical size everywhere. Both are cached by the
+        // window manager (updated by its callbacks), so this costs no window queries.
+        float ratio = windowManager.getFramebufferScale();
+        devTools.setScale(windowManager.getContentScale());
+        devTools.pointer(Mouse.getX() * ratio, Mouse.getY() * ratio, Mouse.isMouseButtonDown(MouseButton.LEFT));
+        devTools.scroll(Mouse.getScrollLinesY());
     }
 }

@@ -1,8 +1,7 @@
 package org.pixel.commons.event;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import lombok.RequiredArgsConstructor;
 
@@ -10,7 +9,9 @@ public class EventManager {
 
     private static final EventManager defaultDispatcher = new EventManager();
 
-    private final ConcurrentHashMap<String, List<EventListenerDispatcher>> listenerMap;
+    // Copy-on-write lists: publish() iterates a snapshot, so listeners may (un)subscribe while an event is being
+    // dispatched, and subscribe/publish may happen on different threads.
+    private final ConcurrentHashMap<String, CopyOnWriteArrayList<EventListenerDispatcher>> listenerMap;
 
     /**
      * Constructor.
@@ -35,12 +36,7 @@ public class EventManager {
      * @param listener  The listener.
      */
     public void subscribe(String eventName, EventListener<?> listener) {
-        List<EventListenerDispatcher> listeners = listenerMap.computeIfAbsent(eventName, k -> new ArrayList<>());
-        synchronized (listeners) {
-            if (!listeners.contains(listener)) {
-                listeners.add(new EventListenerDispatcher(Object.class, listener));
-            }
-        }
+        subscribeInternal(eventName, Object.class, listener);
     }
 
     /**
@@ -51,12 +47,16 @@ public class EventManager {
      * @param listener  The listener.
      */
     public <T> void subscribe(String eventName, Class<T> dataType, EventListener<T> listener) {
-        List<EventListenerDispatcher> listeners = listenerMap.computeIfAbsent(eventName, k -> new ArrayList<>());
-        synchronized (listeners) {
-            if (!listeners.contains(listener)) {
-                listeners.add(new EventListenerDispatcher(dataType, listener));
-            }
+        subscribeInternal(eventName, dataType, listener);
+    }
+
+    private void subscribeInternal(String eventName, Class<?> dataType, EventListener<?> listener) {
+        if (listener == null) {
+            throw new IllegalArgumentException("Listener cannot be null.");
         }
+        // addIfAbsent compares dispatchers by listener, so the same listener is never registered twice
+        listenerMap.computeIfAbsent(eventName, k -> new CopyOnWriteArrayList<>())
+                .addIfAbsent(new EventListenerDispatcher(dataType, listener));
     }
 
     /**
@@ -76,13 +76,8 @@ public class EventManager {
      * @return True if the listener was unsubscribed.
      */
     public boolean unsubscribe(String eventName, EventListener<?> listener) {
-        List<EventListenerDispatcher> listeners = listenerMap.get(eventName);
-        if (listeners != null) {
-            synchronized (listeners) {
-                return listeners.removeIf(l -> l.getListener() == listener);
-            }
-        }
-        return false;
+        CopyOnWriteArrayList<EventListenerDispatcher> listeners = listenerMap.get(eventName);
+        return listeners != null && listeners.removeIf(l -> l.getListener() == listener);
     }
 
     /**
@@ -92,7 +87,7 @@ public class EventManager {
      * @param eventData The event data.
      */
     public void publish(String eventName, Object eventData) {
-        List<EventListenerDispatcher> listeners = listenerMap.get(eventName);
+        CopyOnWriteArrayList<EventListenerDispatcher> listeners = listenerMap.get(eventName);
         if (listeners != null) {
             for (EventListenerDispatcher listener : listeners) {
                 listener.dispatch(eventData);
@@ -127,10 +122,15 @@ public class EventManager {
         @Override
         public boolean equals(Object obj) {
             if (obj instanceof EventListenerDispatcher) {
-                return listener.equals(((EventListenerDispatcher) obj).listener);
+                return listener == ((EventListenerDispatcher) obj).listener;
             }
 
             return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(listener);
         }
     }
 }

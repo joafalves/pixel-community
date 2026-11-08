@@ -10,9 +10,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 import static org.lwjgl.glfw.GLFW.GLFW_REPEAT;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class KeyboardState implements Serializable {
 
@@ -101,22 +99,6 @@ public class KeyboardState implements Serializable {
     public boolean isKeyPressed(int key) {
         var value = this.pressedKeys.get(key);
         return value != null && value == GLFW_PRESS;
-    }
-
-    /**
-     * Returns an array of keys that are on a down state.
-     *
-     * @return An array of keys that are on a down state
-     */
-    @Deprecated
-    public List<Integer> downKeys() {
-        List<Integer> downKeys = new ArrayList<>();
-        this.keys.forEach((key, state) -> {
-            if (state != null && state > 0) {
-                downKeys.add(key);
-            }
-        });
-        return downKeys;
     }
 
     /**

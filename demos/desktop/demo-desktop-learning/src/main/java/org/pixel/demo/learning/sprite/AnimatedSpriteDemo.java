@@ -5,9 +5,9 @@
 
 package org.pixel.demo.learning.sprite;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
@@ -30,18 +30,15 @@ public class AnimatedSpriteDemo extends DemoGame {
     private int animStep;
     private float animDelay;
 
-    public AnimatedSpriteDemo(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
+        super.load();
         // game related changes & definitions
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        content = ServiceProvider.get(ContentManager.class);
+        spriteBatch = graphics().createSpriteBatch();
+        content = content();
 
         // load texture into memory
         spriteTex = content.load("images/char-anim-50x85.png", Texture.class);
@@ -81,7 +78,6 @@ public class AnimatedSpriteDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        content.dispose();
         spriteBatch.dispose();
         spriteTex.dispose();
 
@@ -96,7 +92,6 @@ public class AnimatedSpriteDemo extends DemoGame {
         settings.setTargetFps(60);
         settings.setDevMode(true);
 
-        var window = new AnimatedSpriteDemo(settings);
-        window.start();
+        DesktopLauncher.run(new AnimatedSpriteDemo(), settings);
     }
 }

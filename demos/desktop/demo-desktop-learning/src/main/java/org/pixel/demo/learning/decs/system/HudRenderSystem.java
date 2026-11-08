@@ -3,7 +3,6 @@ package org.pixel.demo.learning.decs.system;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.event.EventManager;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
 import org.pixel.core.Camera2D;
@@ -42,7 +41,7 @@ public class HudRenderSystem extends System {
 
     @Override
     public void load() {
-        this.font = ServiceProvider.get(ContentManager.class).load("fonts/gidole-regular.ttf", Font.class);
+        this.font = world.getProperties().get(ContentManager.class).load("fonts/gidole-regular.ttf", Font.class);
     }
 
     @Override

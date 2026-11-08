@@ -5,9 +5,9 @@
 
 package org.pixel.demo.learning.audio;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.Texture;
 import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
@@ -24,16 +24,12 @@ public class AudioPanningDemo extends AudioDemo {
     private float panningValue = 0;
     private Vector2 texturePosition;
 
-    public AudioPanningDemo(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
         super.load();
 
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        camera = new Camera2D(this);
+        spriteBatch = graphics().createSpriteBatch();
+        camera = new Camera2D(context());
         camera.setOrigin(0.5f);
         texturePosition = new Vector2();
 
@@ -74,7 +70,6 @@ public class AudioPanningDemo extends AudioDemo {
         settings.setVsync(true);
         settings.setDevMode(true);
 
-        var window = new AudioPanningDemo(settings);
-        window.start();
+        DesktopLauncher.run(new AudioPanningDemo(), settings);
     }
 }

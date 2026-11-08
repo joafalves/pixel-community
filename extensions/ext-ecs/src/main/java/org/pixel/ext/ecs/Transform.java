@@ -56,7 +56,7 @@ public class Transform implements Serializable {
      * @param rotation The rotation of the transform.
      */
     public Transform(Vector2 position, float scaleX, float scaleY, float rotation) {
-        this.position = position;
+        this.position = new Vector2(position); // copy: position is mutated in place by setters
         this.scaleX = scaleX;
         this.scaleY = scaleY;
         this.rotation = rotation;

@@ -7,7 +7,6 @@ import org.pixel.commons.lifecycle.Updatable;
 import org.pixel.core.Camera;
 import org.pixel.graphics.render.SpriteBatch;
 
-import java.util.Iterator;
 
 public abstract class BaseGameScene extends GameObjectContainer implements Loadable, Updatable, Drawable {
 
@@ -22,19 +21,7 @@ public abstract class BaseGameScene extends GameObjectContainer implements Loada
 
     @Override
     public void update(DeltaTime delta) {
-        var children = getChildren();
-        if (children != null && !children.isEmpty()) {
-            for (Iterator<GameObject> iterator = children.iterator(); iterator.hasNext(); ) {
-                var child = iterator.next();
-                if (child.isEnabled()) {
-                    child.update(delta);
-                }
-                if (child.isDisposed()) {
-                    child.setParent(null);
-                    iterator.remove();
-                }
-            }
-        }
+        updateChildren(delta);
     }
 
     @Override

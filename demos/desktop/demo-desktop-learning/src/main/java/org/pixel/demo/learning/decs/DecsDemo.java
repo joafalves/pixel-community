@@ -1,11 +1,11 @@
 package org.pixel.demo.learning.decs;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
 import org.pixel.core.Camera2D;
-import org.pixel.core.Game;
+import org.pixel.core.GameApp;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.decs.component.*;
 import org.pixel.demo.learning.decs.system.*;
@@ -13,24 +13,21 @@ import org.pixel.ext.decs.Entity;
 import org.pixel.ext.decs.World;
 import org.pixel.graphics.render.SpriteBatch;
 
-public class DecsDemo extends Game {
+public class DecsDemo extends GameApp {
 
     private ContentManager content;
     private World world;
 
-    public DecsDemo(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
         super.load();
-        content = ServiceProvider.get(ContentManager.class);
+        content = content();
 
         world = new World();
         world.getProperties().put(this);
-        world.getProperties().put(ServiceProvider.get(SpriteBatch.class));
-        world.getProperties().put(new Camera2D(this)); // Put camera in the world's properties
+        world.getProperties().put(graphics().createSpriteBatch());
+        world.getProperties().put(content());
+        world.getProperties().put(new Camera2D(context())); // Put camera in the world's properties
 
         world.addSystem(new PauseSystem(world)); // Pauses/resumes other systems
         world.addSystem(new PlayerInputSystem(world));
@@ -76,7 +73,6 @@ public class DecsDemo extends Game {
     @Override
     public void dispose() {
         world.dispose();
-        content.dispose();
         super.dispose();
     }
 
@@ -85,7 +81,6 @@ public class DecsDemo extends Game {
         settings.setTitle("DECS Demo");
         settings.setVsync(true);
 
-        var game = new DecsDemo(settings);
-        game.start();
+        DesktopLauncher.run(new DecsDemo(), settings);
     }
 }

@@ -1,17 +1,14 @@
 package org.pixel.demo.concept.shard;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.DeltaTime;
 import org.pixel.ext.ecs.SceneManager;
 import org.pixel.core.WindowSettings;
-import org.pixel.core.Game;
+import org.pixel.core.GameApp;
 
-public class SkyShardGame extends Game {
+public class SkyShardGame extends GameApp {
 
     private SceneManager sceneManager;
-
-    public SkyShardGame(WindowSettings settings) {
-        super(settings);
-    }
 
     @Override
     public void load() {
@@ -46,7 +43,6 @@ public class SkyShardGame extends Game {
         settings.setWindowWidth(windowWidth);
         settings.setWindowHeight(windowHeight);
 
-        var window = new SkyShardGame(settings);
-        window.start();
+        DesktopLauncher.run(new SkyShardGame(), settings);
     }
 }

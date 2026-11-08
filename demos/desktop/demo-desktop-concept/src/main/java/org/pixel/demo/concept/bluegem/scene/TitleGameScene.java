@@ -12,7 +12,7 @@ public class TitleGameScene extends GameScene {
 
     public TitleGameScene(String name, Camera2D gameCamera, SpriteBatch spriteBatch, ContentManager contentManager) {
         super(name, gameCamera, spriteBatch);
-        this.contentManager = contentManager;
+        this.contentManager = contentManager.child("title"); // the scene's assets live as long as the scene
     }
 
     @Override
@@ -24,7 +24,7 @@ public class TitleGameScene extends GameScene {
 
     @Override
     public void dispose() {
-        contentManager.dispose(); // This will dispose all content-files loaded by the content-manager
+        contentManager.dispose(); // frees what this scene loaded; the game's content manager stays
         super.dispose();
     }
 }

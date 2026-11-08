@@ -8,14 +8,14 @@ package org.pixel.demo.concept.commons;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.core.Game;
+import org.pixel.core.GameContext;
 
 public class FpsCounter {
 
     private static final Logger log = LoggerFactory.getLogger(FpsCounter.class);
     private static final float logPeriodSec = 3f;
 
-    private final Game window;
+    private final GameContext context;
     private final String suffix;
 
     private float logPeriodElapsed = 0;
@@ -26,13 +26,13 @@ public class FpsCounter {
     private int sampleSum;
     private int sampleCount;
 
-    public FpsCounter(Game window) {
-        this.window = window;
+    public FpsCounter(GameContext context) {
+        this.context = context;
         this.suffix = "";
     }
 
-    public FpsCounter(Game window, String suffix) {
-        this.window = window;
+    public FpsCounter(GameContext context, String suffix) {
+        this.context = context;
         this.suffix = suffix;
     }
 
@@ -52,8 +52,8 @@ public class FpsCounter {
                 sampleSum = 0;
                 sampleCount = 0;
 
-                // setWindowTitle at every second takes its toll if executed on the main thread, avoid!
-                new Thread(() -> window.setWindowTitle(output + "; " + suffix)).start();
+                // window calls must happen on the main (render) thread; this runs every few seconds only
+                context.window().setTitle(output + "; " + suffix);
                 log.trace(output);
             }
 

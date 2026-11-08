@@ -14,7 +14,7 @@ public class Matrix2 implements Serializable {
     //region properties
 
     private final float[][] m = new float[2][2];
-    private transient final float[][] tmp = new float[2][2];
+    private final float[][] tmp = new float[2][2];
 
     //endregion
 
@@ -68,6 +68,11 @@ public class Matrix2 implements Serializable {
         }
 
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Arrays.deepHashCode(m);
     }
 
     /**
@@ -156,7 +161,11 @@ public class Matrix2 implements Serializable {
      * @return The cloned array.
      */
     public float[][] toArray() {
-        return m.clone();
+        float[][] copy = new float[m.length][];
+        for (int i = 0; i < m.length; i++) {
+            copy[i] = m[i].clone();
+        }
+        return copy;
     }
 
     /**

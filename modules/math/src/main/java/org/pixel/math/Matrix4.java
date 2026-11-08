@@ -14,7 +14,7 @@ public class Matrix4 implements Serializable {
     //region properties
 
     private final float[][] m = new float[4][4];
-    private transient final float[][] tmp = new float[4][4];
+    private final float[][] tmp = new float[4][4];
 
     //endregion
 
@@ -163,6 +163,11 @@ public class Matrix4 implements Serializable {
         }
 
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Arrays.deepHashCode(m);
     }
 
     /**
@@ -458,16 +463,27 @@ public class Matrix4 implements Serializable {
     public void rotate(float angle, float x, float y, float z) {
         float c = MathHelper.cos(angle);
         float s = MathHelper.sin(-angle); // y-axis is inverted in Pixel
+        float t = 1f - c;
 
-        m[0][0] = x * x * (1f - c) + c;
-        m[1][0] = y * x * (1f - c) + z * s;
-        m[2][0] = x * z * (1f - c) - y * s;
-        m[0][1] = x * y * (1f - c) - z * s;
-        m[1][1] = y * y * (1f - c) + c;
-        m[2][1] = y * z * (1f - c) + x * s;
-        m[0][2] = x * z * (1f - c) + y * s;
-        m[1][2] = y * z * (1f - c) - x * s;
-        m[2][2] = z * z * (1f - c) + c;
+        // Rotation matrix (same layout/convention as before).
+        float r00 = x * x * t + c;
+        float r10 = y * x * t + z * s;
+        float r20 = x * z * t - y * s;
+        float r01 = x * y * t - z * s;
+        float r11 = y * y * t + c;
+        float r21 = y * z * t + x * s;
+        float r02 = x * z * t + y * s;
+        float r12 = y * z * t - x * s;
+        float r22 = z * z * t + c;
+
+        // Combine with the existing transform (like translate() and scale() do) instead of overwriting the
+        // upper 3x3, which used to discard any previous rotation/scale: m' = R * m (rows 0..2).
+        for (int j = 0; j < 4; j++) {
+            float a = m[0][j], b = m[1][j], d = m[2][j];
+            m[0][j] = r00 * a + r01 * b + r02 * d;
+            m[1][j] = r10 * a + r11 * b + r12 * d;
+            m[2][j] = r20 * a + r21 * b + r22 * d;
+        }
     }
 
     /**
@@ -507,7 +523,11 @@ public class Matrix4 implements Serializable {
      * @return The array value of the matrix.
      */
     public float[][] toArray() {
-        return m.clone();
+        float[][] copy = new float[m.length][];
+        for (int i = 0; i < m.length; i++) {
+            copy[i] = m[i].clone();
+        }
+        return copy;
     }
 
     /**

@@ -1,18 +1,26 @@
 package org.pixel.demo.learning.render;
 
+import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
+import org.pixel.core.DesktopLauncher;
+import org.pixel.core.DesktopWindowManager;
 import org.pixel.core.WindowCursorType;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
-import org.pixel.commons.Color;
-import org.pixel.graphics.render.RenderEngine2D;
-import org.pixel.graphics.render.nanovg.NvgRenderEngine;
+import org.pixel.graphics.canvas.Canvas;
+import org.pixel.graphics.draw.Layer;
+import org.pixel.graphics.pass.RenderPipeline;
 import org.pixel.input.mouse.Mouse;
 import org.pixel.input.mouse.MouseButton;
 import org.pixel.math.Vector2;
 
+/**
+ * An isometric grid drawn with {@link Canvas}: the tile edges are long lines along the two isometric axes (84 lines
+ * instead of 1,681 outlined diamonds), and the tile under the cursor is a filled path. Drag with the left mouse
+ * button to move the grid.
+ */
 public class IsometricGridDemo extends DemoGame {
 
     private static final Logger log = LoggerFactory.getLogger(IsometricGridDemo.class);
@@ -21,106 +29,91 @@ public class IsometricGridDemo extends DemoGame {
     private static final int ROWS = 20;
     private static final int TILE_WIDTH = 32;
     private static final int TILE_HEIGHT = TILE_WIDTH / 2;
+    private static final Color GRID = new Color(0.33f, 0.33f, 0.36f, 1f);
 
-    private RenderEngine2D re;
-    private Vector2 gridOffset; // To keep track of the grid offset due to dragging
-    private Vector2 dragStartPos; // Initial drag position
-    private boolean dragging; // Whether the mouse is dragging
-    private Vector2 highlightedTile; // The tile currently being highlighted
+    private static final Layer MAIN = Layer.ordered("main");
 
-    public IsometricGridDemo(WindowSettings settings) {
-        super(settings);
-    }
+    private RenderPipeline pipeline;
+    private final Vector2 gridOffset = new Vector2();
+    private final Vector2 dragStart = new Vector2();
+    private final Vector2 mouse = new Vector2();
+    private boolean dragging;
+    private int highlightedCol = Integer.MIN_VALUE;
+    private int highlightedRow = Integer.MIN_VALUE;
 
     @Override
     public void load() {
-        int windowWidth = getWindowManager().getWindowWidth();
-        int windowHeight = getWindowManager().getWindowHeight();
-
-        re = new NvgRenderEngine(windowWidth, windowHeight);
-        gridOffset = new Vector2(windowWidth / 2.0f, windowHeight / 2.0f); // Start with no offset
-        dragStartPos = new Vector2();
-        highlightedTile = new Vector2(-1, -1); // Initialize with an invalid tile index
-
-        log.info("Drawing {0} lines.", (COLUMNS * 2 + 1) * (ROWS * 2 + 1));
+        super.load();
+        gameCamera.setOrigin(Vector2.zero());
+        pipeline = RenderPipeline.builder(graphics().getRenderBackend()).pass(gameCamera, MAIN).build();
+        gridOffset.set(gameCamera.getWidth() / 2f, gameCamera.getHeight() / 2f);
+        log.info("{0} tiles, drawn as {1} lines.", (COLUMNS * 2 + 1) * (ROWS * 2 + 1),
+                (COLUMNS * 2 + 2) + (ROWS * 2 + 2));
     }
 
     @Override
     public void update(DeltaTime delta) {
+        Mouse.getVirtualPosition(mouse);
+        DesktopWindowManager window = DesktopWindowManager.of(context());
         if (Mouse.isMouseButtonDown(MouseButton.LEFT)) {
             if (!dragging) {
                 dragging = true;
-                Mouse.getPosition(dragStartPos);
-                getWindowManager().setWindowCursorType(WindowCursorType.HAND);
-                log.info("Drag start: " + dragStartPos);
+                window.setWindowCursorType(WindowCursorType.HAND);
             } else {
-                Vector2 currentMousePos = Mouse.getPosition();
-                Vector2 dragDelta = Vector2.subtract(currentMousePos, dragStartPos);
-                gridOffset.add(dragDelta);
-                dragStartPos = currentMousePos;
+                gridOffset.add(mouse.getX() - dragStart.getX(), mouse.getY() - dragStart.getY());
             }
-        } else {
-            if (dragging) {
-                log.info("Drag end");
-            }
+            dragStart.set(mouse);
+        } else if (dragging) {
             dragging = false;
-            getWindowManager().setWindowCursorType(WindowCursorType.ARROW);
+            window.setWindowCursorType(WindowCursorType.ARROW);
         }
 
-        // Calculate which tile is highlighted
-        Vector2 mousePos = Mouse.getPosition();
-        float localX = mousePos.getX() - gridOffset.getX();
-        float localY = mousePos.getY() - gridOffset.getY();
-
-        float col = (localX / TILE_WIDTH + localY / TILE_HEIGHT) / 2;
-        float row = (localY / TILE_HEIGHT - localX / TILE_WIDTH) / 2;
-
-        highlightedTile.set(Math.round(col), Math.round(row));
+        // tile under the cursor (inverse of the isometric projection below)
+        float localX = mouse.getX() - gridOffset.getX();
+        float localY = mouse.getY() - gridOffset.getY();
+        highlightedCol = Math.round((localX / TILE_WIDTH + localY / TILE_HEIGHT) / 2);
+        highlightedRow = Math.round((localY / TILE_HEIGHT - localX / TILE_WIDTH) / 2);
     }
 
     @Override
     public void draw(DeltaTime delta) {
-        // Begin rendering
-        re.begin();
-        re.translate(gridOffset.getX(), gridOffset.getY());
+        Canvas c = pipeline.canvas(MAIN);
+        c.translate(gridOffset.getX(), gridOffset.getY());
 
-        // Offset grid origin based on startX and startY
-        for (int row = -ROWS; row <= ROWS; row++) {
-            for (int col = -COLUMNS; col <= COLUMNS; col++) {
-                float isoX = (col - row) * TILE_WIDTH;
-                float isoY = (col + row) * TILE_HEIGHT;
-
-                // Highlight the current tile
-                if (highlightedTile.getX() == col && highlightedTile.getY() == row) {
-                    re.beginPath();
-                    re.moveTo(isoX, isoY - TILE_HEIGHT);
-                    re.lineTo(isoX + TILE_WIDTH, isoY);
-                    re.lineTo(isoX, isoY + TILE_HEIGHT);
-                    re.lineTo(isoX - TILE_WIDTH, isoY);
-                    re.endPath();
-                    re.fillColor(Color.WHITE);
-                    re.fill();
-                }
-
-                // Draw diamond-shaped tile
-                re.beginPath();
-                re.moveTo(isoX, isoY - TILE_HEIGHT);
-                re.lineTo(isoX + TILE_WIDTH, isoY);
-                re.lineTo(isoX, isoY + TILE_HEIGHT);
-                re.lineTo(isoX - TILE_WIDTH, isoY);
-                re.endPath();
-                re.strokeColor(Color.DARK_GRAY);
-                re.stroke();
-            }
+        // highlighted tile below the grid lines
+        if (Math.abs(highlightedCol) <= COLUMNS && Math.abs(highlightedRow) <= ROWS) {
+            float isoX = isoX(highlightedCol, highlightedRow), isoY = isoY(highlightedCol, highlightedRow);
+            c.path().moveTo(isoX, isoY - TILE_HEIGHT).lineTo(isoX + TILE_WIDTH, isoY)
+                    .lineTo(isoX, isoY + TILE_HEIGHT).lineTo(isoX - TILE_WIDTH, isoY).close()
+                    .fill(Color.WHITE);
         }
 
-        // Draw grid lines
-        re.end();
+        // tile edges lie on half-integer rows and columns: one line per edge across the whole grid
+        float first = -COLUMNS - 0.5f, last = COLUMNS + 0.5f;
+        for (int k = -ROWS; k <= ROWS + 1; k++) {
+            float row = k - 0.5f;
+            c.line(isoX(first, row), isoY(first, row), isoX(last, row), isoY(last, row)).width(1).color(GRID);
+        }
+        first = -ROWS - 0.5f;
+        last = ROWS + 0.5f;
+        for (int k = -COLUMNS; k <= COLUMNS + 1; k++) {
+            float col = k - 0.5f;
+            c.line(isoX(col, first), isoY(col, first), isoX(col, last), isoY(col, last)).width(1).color(GRID);
+        }
+        pipeline.render();
+    }
+
+    private static float isoX(float col, float row) {
+        return (col - row) * TILE_WIDTH;
+    }
+
+    private static float isoY(float col, float row) {
+        return (col + row) * TILE_HEIGHT;
     }
 
     @Override
     public void dispose() {
-        re.dispose();
+        pipeline.dispose();
         super.dispose();
     }
 
@@ -128,14 +121,12 @@ public class IsometricGridDemo extends DemoGame {
         var settings = new WindowSettings(1280, 720);
         settings.setDevMode(true);
         settings.setWindowResizable(true);
-        settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setBackgroundColor(Color.BLACK);
         settings.setWindowWidth(1920);
         settings.setWindowHeight(1080);
         settings.setTitle("Isometric Grid Demo - Drag mouse to move grid");
 
-        var window = new IsometricGridDemo(settings);
-        window.start();
+        DesktopLauncher.run(new IsometricGridDemo(), settings);
     }
 }

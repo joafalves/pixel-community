@@ -44,7 +44,7 @@ public abstract class System implements Initializable, Loadable, Updatable, Draw
     }
 
     /**
-     * Initializes the system. Can be used to get dependencies from the ServiceProvider.
+     * Initializes the system. Dependencies (content, sprite batch, ...) are passed to the system by the game.
      */
     @Override
     public boolean init() {

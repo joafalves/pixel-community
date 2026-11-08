@@ -93,6 +93,16 @@ public class Line implements Serializable {
     }
 
     @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + Float.floatToIntBits(x1 + 0.0f);
+        result = 31 * result + Float.floatToIntBits(y1 + 0.0f);
+        result = 31 * result + Float.floatToIntBits(x2 + 0.0f);
+        result = 31 * result + Float.floatToIntBits(y2 + 0.0f);
+        return result;
+    }
+
+    @Override
     public String toString() {
         return String.format("%s: [x1: %f, y1: %f, x2: %f, y2: %f]",
                 this.getClass().getSimpleName(), getX1(), getY1(), getX2(), getY2());

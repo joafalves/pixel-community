@@ -13,28 +13,51 @@ import org.pixel.content.importer.settings.ContentImporterSettings;
 import org.pixel.pipeline.DataPipeline;
 
 import java.io.IOException;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Loads assets through the registered importers and caches them: loading the same file, type and settings again
+ * returns the same instance. Cached assets are owned by the manager and disposed with it.
+ * <p>
+ * <b>Children</b> ({@link #child()}) give groups of assets their own lifetime, e.g. one per level or screen. A child
+ * looks assets up in its own cache and then in its ancestors', loads anything else into its own cache, and frees
+ * only those with {@link #unload()} or {@link #dispose()}. Importers and the data pipeline are inherited.
+ * <ul>
+ *   <li>Load shared assets (UI fonts, common sprites) into the parent <b>first</b>: lookups only go upwards, so an
+ *   asset a child loaded is invisible to its parent and siblings, which would each load their own copy.</li>
+ *   <li>A child may use its parent's assets, so unloading or disposing a manager does the same to its children
+ *   first. References kept to a manager's assets are invalid once it is unloaded.</li>
+ *   <li>Assets loaded with {@code useCache = false} are not tracked: the caller owns (and disposes) them.</li>
+ * </ul>
+ * Loading from several threads is supported; an asset whose load finishes after its manager was disposed is
+ * disposed immediately and the load fails.
+ */
 public class ContentManager implements Disposable {
 
     private static final Logger log = LoggerFactory.getLogger(ContentManager.class);
 
     private final ResourceLoader resourceLoader;
-    private final ConcurrentHashMap<String, Object> assetCache;
+    private final ConcurrentHashMap<CacheKey, Object> assetCache;
     private final ConcurrentHashMap<Class<?>, ContentImporter<?>> importers;
+    private final ContentManager parent;
+    private final String name;
+    private final Set<ContentManager> children = ConcurrentHashMap.newKeySet();
+    private final AtomicInteger unnamedChildren = new AtomicInteger();
+    private final AtomicBoolean disposed = new AtomicBoolean();
 
     private DataPipeline<byte[]> dataPipeline;
 
     /**
-     * Constructor. By default, includes all internal importers.
+     * Constructor (no importers: add them with {@link #addContentImporter}).
      *
      * @param resourceLoader The resource loader to use.
      */
     public ContentManager(ResourceLoader resourceLoader) {
-        this.resourceLoader = resourceLoader;
-        this.assetCache = new ConcurrentHashMap<>();
-        this.importers = new ConcurrentHashMap<>();
+        this(resourceLoader, new ContentImporter<?>[0]);
     }
 
     /**
@@ -44,45 +67,193 @@ public class ContentManager implements Disposable {
      * @param importers      The importers to include.
      */
     public ContentManager(ResourceLoader resourceLoader, ContentImporter<?>... importers) {
+        if (resourceLoader == null) {
+            throw new IllegalArgumentException("Resource loader cannot be null.");
+        }
         this.resourceLoader = resourceLoader;
         this.assetCache = new ConcurrentHashMap<>();
         this.importers = new ConcurrentHashMap<>();
+        this.parent = null;
+        this.name = "root";
         this.addContentImporter(importers);
     }
 
+    private ContentManager(ContentManager parent, String name) {
+        this.resourceLoader = parent.resourceLoader;
+        this.assetCache = new ConcurrentHashMap<>();
+        this.importers = new ConcurrentHashMap<>();
+        this.parent = parent;
+        this.name = name != null ? name : parent.name + "/child-" + parent.unnamedChildren.incrementAndGet();
+    }
+
+    // region children and lifetime
+
     /**
-     * Dispose function
+     * Create a child manager (see the class description). The caller owns it: {@link #unload()} it to free its assets
+     * and reuse it, {@link #dispose()} it when done. Disposing this manager disposes its children too.
+     *
+     * @return A new, empty child.
+     */
+    public ContentManager child() {
+        return child(null);
+    }
+
+    /**
+     * Create a named child manager (see {@link #child()}); the name shows up in logs, e.g. {@code "level-1"}.
+     *
+     * @param name The child's name ({@code null} for a generated one).
+     * @return A new, empty child.
+     */
+    public ContentManager child(@Nullable String name) {
+        checkNotDisposed();
+        ContentManager child = new ContentManager(this, name);
+        children.add(child);
+        if (disposed.get()) { // disposed concurrently, after the check: don't leave an orphan behind
+            child.dispose();
+            checkNotDisposed();
+        }
+        return child;
+    }
+
+    /**
+     * @return The manager this one was created from, or {@code null} for the root.
+     */
+    @Nullable
+    public ContentManager getParent() {
+        return parent;
+    }
+
+    /**
+     * @return How many assets this manager holds (not counting its children's).
+     */
+    public int getAssetCount() {
+        return assetCache.size();
+    }
+
+    /**
+     * Receives the assets of {@link #forEachAsset}.
+     */
+    @FunctionalInterface
+    public interface AssetVisitor {
+        /**
+         * @param path  The asset's path.
+         * @param type  The type it was loaded as.
+         * @param asset The asset ({@link SizedAsset} for those that know their memory size).
+         */
+        void visit(String path, Class<?> type, Object asset);
+    }
+
+    /**
+     * Visit the assets this manager holds (not its children's), e.g. to list them in dev tools.
+     */
+    public void forEachAsset(AssetVisitor visitor) {
+        for (java.util.Map.Entry<CacheKey, Object> entry : assetCache.entrySet()) {
+            visitor.visit(entry.getKey().filename(), entry.getKey().type(), entry.getValue());
+        }
+    }
+
+    /**
+     * Visit the live children created with {@link #child()} (one level down).
+     */
+    public void forEachChild(java.util.function.Consumer<ContentManager> visitor) {
+        for (ContentManager child : children) {
+            visitor.accept(child);
+        }
+    }
+
+    /**
+     * @return The name given to {@link #child(String)} ({@code "root"} for a root manager).
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * @return Whether {@link #dispose()} was called (directly or through a parent).
+     */
+    public boolean isDisposed() {
+        return disposed.get();
+    }
+
+    /**
+     * Dispose the assets this manager loaded (after unloading its children) and empty its cache. The manager stays
+     * usable: later loads start from scratch. Assets of its ancestors are not affected.
+     */
+    public void unload() {
+        for (ContentManager child : children) {
+            child.unload();
+        }
+        int count = 0;
+        for (CacheKey key : assetCache.keySet()) {
+            Object asset = assetCache.remove(key); // remove first: a disposed asset is never handed out
+            if (asset != null && disposeQuietly(asset)) {
+                count++;
+            }
+        }
+        if (count > 0) {
+            log.debug("Content \"{0}\" unloaded {1} assets.", name, count);
+        }
+    }
+
+    /**
+     * {@link #unload()}, then dispose the children and the importers registered on this manager (inherited ones belong
+     * to the ancestor that registered them). The manager cannot be used afterwards.
      */
     @Override
     public void dispose() {
-        assetCache.forEach((assetName, asset) -> {
-            // dispose all "disposable" assets
-            if (asset instanceof Disposable) {
-                ((Disposable) asset).dispose();
-            }
-        });
-
-        importers.forEach((importerName, importer) -> {
-            // dispose all "disposable" assets
-            if (importer instanceof Disposable) {
-                ((Disposable) importer).dispose();
-            }
-        });
+        if (!disposed.compareAndSet(false, true)) {
+            return; // already disposed (or being disposed by another thread)
+        }
+        for (ContentManager child : children) {
+            disposeQuietly(child);
+        }
+        unload();
+        importers.values().forEach(ContentManager::disposeQuietly);
+        if (parent != null) {
+            parent.children.remove(this);
+        }
     }
 
     /**
-     * Get a reference to the asset cache.
+     * Dispose an object if it is {@link Disposable}; a failure is logged so the remaining objects still get released.
      *
-     * @param filename The filename of the asset.
-     * @param type     The type of the asset.
-     * @return A reference to the asset cache.
+     * @return Whether the object is disposable.
      */
-    private String getCacheReference(String filename, Class<?> type) {
-        return type.getCanonicalName() + ":" + filename;
+    private static boolean disposeQuietly(Object object) {
+        if (!(object instanceof Disposable disposable)) {
+            return false;
+        }
+        try {
+            disposable.dispose();
+        } catch (RuntimeException e) {
+            log.error("Unable to dispose {0}.", object, e);
+        }
+        return true;
+    }
+
+    private void checkNotDisposed() {
+        if (disposed.get()) {
+            throw new IllegalStateException("Content manager \"" + name + "\" has been disposed.");
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "ContentManager[" + name + ", " + assetCache.size() + " assets, " + children.size() + " children]";
+    }
+
+    // endregion
+
+    /**
+     * Asset cache key. The importer settings are part of the key: loading the same file with different settings
+     * (e.g. two font sizes) must produce different assets. Settings classes use value equality (Lombok @Data); a
+     * stored key holds a {@link ContentImporterSettings#copy() copy}, so the caller may change its settings later.
+     */
+    private record CacheKey(String filename, Class<?> type, ContentImporterSettings settings) {
     }
 
     /**
-     * Add a custom content importer to the content manager.
+     * Add a custom content importer to the content manager (and its children, which inherit importers).
      *
      * @param importers The importer(s) to add.
      */
@@ -90,8 +261,9 @@ public class ContentManager implements Disposable {
         for (ContentImporter<?> importer : importers) {
             var importerDetails = importer.getClass().getAnnotation(ContentImporterInfo.class);
             if (importerDetails == null) {
-                log.warn("Unable to add content importer without ContentImporter annotation.");
-                return;
+                log.warn("Unable to add content importer {0} without ContentImporterInfo annotation.",
+                        importer.getClass().getName());
+                continue; // keep registering the remaining importers
             }
 
             log.trace("Adding content importer {0}.", importer.getClass().getSimpleName());
@@ -340,15 +512,19 @@ public class ContentManager implements Disposable {
      */
     @SuppressWarnings("unchecked")
     public <T> T load(String filepath, Class<T> type, @Nullable ContentImporterSettings settings, boolean useCache) {
-        String assetRef = getCacheReference(filepath, type);
-        if (useCache && assetCache.containsKey(assetRef)) {
-            Object o = assetCache.get(assetRef);
-            if (type.isInstance(o)) {
-                return (T) assetCache.get(assetRef);
+        checkNotDisposed();
+        CacheKey assetRef = new CacheKey(filepath, type, settings);
+        if (useCache) {
+            // this manager first, then its ancestors: assets already loaded higher up are shared
+            for (ContentManager manager = this; manager != null; manager = manager.parent) {
+                Object cached = manager.assetCache.get(assetRef);
+                if (type.isInstance(cached)) {
+                    return (T) cached;
+                }
             }
         }
 
-        ContentImporter<T> fileImporter = (ContentImporter<T>) this.importers.get(type);
+        ContentImporter<T> fileImporter = (ContentImporter<T>) findImporter(type);
         if (fileImporter == null) {
             log.warn("Unable to load asset due to unavailable importer for {0}.", type.getCanonicalName());
             return null;
@@ -366,9 +542,10 @@ public class ContentManager implements Disposable {
             return null;
         }
 
-        if (dataPipeline != null) {
+        DataPipeline<byte[]> pipeline = getDataPipeline();
+        if (pipeline != null) {
             try {
-                resourceData = dataPipeline.begin(resourceData).get();
+                resourceData = pipeline.begin(resourceData).get();
 
             } catch (InterruptedException | ExecutionException e) {
                 log.error("Unable to execute data pipeline on asset {0}.", filepath, e);
@@ -376,28 +553,48 @@ public class ContentManager implements Disposable {
             }
         }
 
+        // dependencies the importer loads through the context (e.g. a texture pack's image) belong to this manager
         ImportContext ctx = new ImportContext(this, resourceData, filepath, settings);
         T asset = fileImporter.process(ctx);
         if (useCache && asset != null) {
-            assetCache.put(assetRef, asset);
+            CacheKey stored = settings != null ? new CacheKey(filepath, type, settings.copy()) : assetRef;
+            assetCache.put(stored, asset);
+            if (disposed.get() && assetCache.remove(stored, asset)) { // disposed while this was loading
+                disposeQuietly(asset);
+                checkNotDisposed();
+            }
         }
 
         return asset;
     }
 
+    private ContentImporter<?> findImporter(Class<?> type) {
+        for (ContentManager manager = this; manager != null; manager = manager.parent) {
+            ContentImporter<?> importer = manager.importers.get(type);
+            if (importer != null) {
+                return importer;
+            }
+        }
+        return null;
+    }
+
     /**
-     * Get the data pipeline configured (if any).
+     * Get the data pipeline in effect: this manager's, or else the nearest ancestor's (if any).
      *
      * @return The data pipeline.
      */
     public DataPipeline<byte[]> getDataPipeline() {
-        return dataPipeline;
+        for (ContentManager manager = this; manager != null; manager = manager.parent) {
+            if (manager.dataPipeline != null) {
+                return manager.dataPipeline;
+            }
+        }
+        return null;
     }
 
     /**
-     * Set the data pipeline for this instance. If defined, this pipeline allows
-     * custom processing of any asset data
-     * before it's passed to the importer.
+     * Set the data pipeline for this instance (and its children, unless they set their own). If defined, this
+     * pipeline allows custom processing of any asset data before it's passed to the importer.
      *
      * @param dataPipeline The data pipeline to use.
      */

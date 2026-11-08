@@ -33,3 +33,6 @@ build
 
 # Root files
 ./local.properties
+
+# local notes and scratch files (never committed)
+.local/

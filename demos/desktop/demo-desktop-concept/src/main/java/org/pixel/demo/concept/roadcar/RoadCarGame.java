@@ -1,15 +1,18 @@
 package org.pixel.demo.concept.roadcar;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.demo.concept.roadcar.model.RoadSegment;
 import org.pixel.demo.concept.roadcar.model.Vehicle;
 import org.pixel.ext.log4j.Log4j2LoggerStrategy;
+import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
-import org.pixel.core.Game;
-import org.pixel.graphics.render.RenderEngine2D;
-import org.pixel.graphics.render.nanovg.NvgRenderEngine;
+import org.pixel.core.GameApp;
+import org.pixel.graphics.canvas.Canvas;
+import org.pixel.graphics.draw.Layer;
+import org.pixel.graphics.pass.RenderPipeline;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 import org.pixel.math.MathHelper;
@@ -19,7 +22,7 @@ import org.pixel.math.Vector2;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RoadCarGame extends Game {
+public class RoadCarGame extends GameApp {
 
     static {
         LoggerFactory.setDefaultStrategy(new Log4j2LoggerStrategy());
@@ -31,14 +34,13 @@ public class RoadCarGame extends Game {
     protected final List<Vehicle> vehicleList = new ArrayList<>();
     protected final List<RoadSegment> roadSegments = new ArrayList<>();
 
-    private RenderEngine2D renderEngine;
+    private Camera2D camera;
+    private static final Layer MAIN = Layer.ordered("main");
+
+    private RenderPipeline pipeline;
     private Vector2 cameraPosition;
     private float cameraZoom;
     private float spawnElapsed = 0f;
-
-    public RoadCarGame(WindowSettings settings) {
-        super(settings);
-    }
 
     @Override
     public void load() {
@@ -46,7 +48,9 @@ public class RoadCarGame extends Game {
 
         cameraPosition = new Vector2(150, 150);
         cameraZoom = 0.75f;
-        renderEngine = new NvgRenderEngine(getSettings().getWindowWidth(), getSettings().getWindowHeight());
+        camera = new Camera2D(context());
+        camera.setOrigin(Vector2.zero());
+        pipeline = RenderPipeline.builder(graphics().getRenderBackend()).pass(camera, MAIN).build();
 
         roadSegments.add(new RoadSegment(new Vector2(0, 0), true));
         roadSegments.add(new RoadSegment(new Vector2(200, 0)));
@@ -160,55 +164,40 @@ public class RoadCarGame extends Game {
 
     @Override
     public void draw(DeltaTime delta) {
-        renderEngine.begin();
-        renderEngine.translate(cameraPosition);
-        renderEngine.scale(cameraZoom, cameraZoom);
+        Canvas canvas = pipeline.canvas(MAIN);
+        canvas.translate(cameraPosition.getX(), cameraPosition.getY());
+        canvas.scale(cameraZoom);
 
-        drawRoadSegments();
-        drawVehicles();
+        drawRoadSegments(canvas);
+        drawVehicles(canvas);
 
-        renderEngine.end();
+        pipeline.render();
     }
 
-    private void drawRoadSegments() {
+    private void drawRoadSegments(Canvas canvas) {
         for (RoadSegment roadSegment : roadSegments) {
-            renderEngine.push();
-
-            renderEngine.translate(roadSegment.getPosition());
-            renderEngine.beginPath();
-            renderEngine.circle(0, 0, 4);
-            renderEngine.fillColor(Color.GREEN);
-            renderEngine.fill();
-            renderEngine.endPath();
-
-            renderEngine.pop();
+            canvas.circle(roadSegment.getPosition().getX(), roadSegment.getPosition().getY(), 4).fill(Color.GREEN);
         }
     }
 
-    private void drawVehicles() {
+    private void drawVehicles(Canvas canvas) {
         for (Vehicle vehicle : vehicleList) {
-            renderEngine.push();
+            canvas.save();
+            canvas.translate(vehicle.getPosition().getX(), vehicle.getPosition().getY());
+            canvas.rotate(vehicle.getOrientation());
 
-            renderEngine.translate(vehicle.getPosition());
-            renderEngine.rotate(vehicle.getOrientation());
+            SizeInt size = vehicle.getSizeInt();
+            canvas.rect(-size.getHalfWidth(), -size.getHalfHeight(), size.getWidth(), size.getHeight())
+                    .fill(vehicle.getColor());
+            canvas.line(0, 0, size.getHalfWidth(), 0).width(1).color(Color.BLACK); // heading
 
-            renderEngine.beginPath();
-            renderEngine.rectangle(
-                    -vehicle.getSizeInt().getHalfWidth(), -vehicle.getSizeInt().getHalfHeight(),
-                    vehicle.getSizeInt().getWidth(), vehicle.getSizeInt().getHeight());
-            renderEngine.fillColor(vehicle.getColor());
-            renderEngine.fill();
-            renderEngine.endPath();
-
-            renderEngine.beginPath();
-            renderEngine.moveTo(0, 0);
-            renderEngine.lineTo(vehicle.getSizeInt().getHalfWidth(), 0);
-            renderEngine.strokeColor(Color.BLACK);
-            renderEngine.stroke();
-            renderEngine.endPath();
-
-            renderEngine.pop();
+            canvas.restore();
         }
+    }
+
+    @Override
+    public void dispose() {
+        pipeline.dispose();
     }
 
 
@@ -233,15 +222,13 @@ public class RoadCarGame extends Game {
     public static void main(String[] args) {
         final int width = 800;
         final int height = 600;
-        var settings = new WindowSettings(width / 2, height / 2);
+        var settings = new WindowSettings(width, height);
         settings.setWindowResizable(false);
-        settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setDevMode(false);
         settings.setWindowWidth(width);
         settings.setWindowHeight(height);
 
-        var window = new RoadCarGame(settings);
-        window.start();
+        DesktopLauncher.run(new RoadCarGame(), settings);
     }
 }

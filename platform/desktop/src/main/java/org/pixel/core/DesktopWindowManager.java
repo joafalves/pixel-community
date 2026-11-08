@@ -5,7 +5,21 @@
 
 package org.pixel.core;
 
-public abstract class DesktopWindowManager implements WindowManager {
+public abstract class DesktopWindowManager implements WindowManager, GameWindow {
+
+    /**
+     * Get the desktop window of a game, for desktop-only features (cursor, window mode, icon, ...).
+     *
+     * @param context The game context (running on the desktop host).
+     * @return The desktop window manager.
+     * @throws IllegalStateException If the game is not running on the desktop host.
+     */
+    public static DesktopWindowManager of(GameContext context) {
+        if (context.window() instanceof DesktopWindowManager window) {
+            return window;
+        }
+        throw new IllegalStateException("The game is not running on the desktop host.");
+    }
 
     /**
      * Set the window dimensions.
@@ -75,5 +89,35 @@ public abstract class DesktopWindowManager implements WindowManager {
      */
     public int getWindowHeight() {
         return getWindowDimensions().getWindowHeight();
+    }
+
+    /**
+     * Switch between windowed and fullscreen.
+     */
+    public abstract void toggleFullscreen();
+
+    @Override
+    public int getWidth() {
+        return getWindowWidth();
+    }
+
+    @Override
+    public int getHeight() {
+        return getWindowHeight();
+    }
+
+    @Override
+    public float getPixelRatio() {
+        return getWindowDimensions().getPixelRatio();
+    }
+
+    @Override
+    public boolean isFocused() {
+        return isWindowFocused();
+    }
+
+    @Override
+    public void setTitle(String title) {
+        setWindowTitle(title);
     }
 }

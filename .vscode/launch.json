@@ -152,13 +152,6 @@
         },
         {
             "type": "java",
-            "name": "SerializationDemo",
-            "request": "launch",
-            "mainClass": "org.pixel.demo.learning.misc.SerializationDemo",
-            "projectName": "demo-learning"
-        },
-        {
-            "type": "java",
             "name": "PostProcessingDemo",
             "request": "launch",
             "mainClass": "org.pixel.demo.learning.other.PostProcessingDemo",

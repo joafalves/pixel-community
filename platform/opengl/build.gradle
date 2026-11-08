@@ -1,0 +1,15 @@
+/*
+ * This software is available under Apache License
+ * Copyright (c) 2020
+ */
+// OpenGL renderer shared by the desktop (OpenGL 3.3 through LWJGL) and Android (OpenGL ES 3.0) platforms. Plain
+// Java: every GL call goes through org.pixel.graphics.opengl.GLApi, implemented by each platform.
+apply plugin: 'java-library'
+
+project.ext.mavenPublish = true
+
+dependencies {
+    api project(":${rootProject.name}-commons")
+    api project(":${rootProject.name}-content")
+    api project(":${rootProject.name}-graphics")
+}

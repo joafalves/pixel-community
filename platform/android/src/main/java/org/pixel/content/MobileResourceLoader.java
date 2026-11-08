@@ -10,6 +10,17 @@ import java.nio.file.Paths;
 
 public class MobileResourceLoader implements ResourceLoader {
 
+    private final android.content.Context context;
+
+    /**
+     * Constructor.
+     *
+     * @param context The Android context whose assets are loaded.
+     */
+    public MobileResourceLoader(android.content.Context context) {
+        this.context = context;
+    }
+
     private static final int BUFFER_SIZE = 16384; // 16KB buffer
 
     @Override
@@ -21,7 +32,7 @@ public class MobileResourceLoader implements ResourceLoader {
             throw new SecurityException("Invalid or potentially malicious file path: " + path);
         }
 
-        try (InputStream fileStream = FileUtils.loadAsset(canonicalPath)) {
+        try (InputStream fileStream = FileUtils.loadAsset(context, canonicalPath)) {
             if (fileStream == null) {
                 throw new FileNotFoundException("File not found: " + canonicalPath);
             }

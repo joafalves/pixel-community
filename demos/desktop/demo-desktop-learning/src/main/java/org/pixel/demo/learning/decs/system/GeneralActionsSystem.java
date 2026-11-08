@@ -1,7 +1,7 @@
 package org.pixel.demo.learning.decs.system;
 
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.Game;
+import org.pixel.core.GameApp;
 import org.pixel.ext.decs.System;
 import org.pixel.ext.decs.World;
 import org.pixel.input.keyboard.Keyboard;
@@ -20,7 +20,7 @@ public class GeneralActionsSystem extends System {
     @Override
     public void update(DeltaTime delta) {
         if (Keyboard.isKeyPressed(KeyboardKey.ESCAPE)) {
-            world.getProperties().get(Game.class).dispose();
+            world.getProperties().get(GameApp.class).context().exit();
         }
     }
 }

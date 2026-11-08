@@ -9,7 +9,7 @@ import java.util.Map;
 
 import org.pixel.commons.lifecycle.Disposable;
 
-public abstract class Font implements Disposable {
+public abstract class Font implements Disposable, SizedAsset {
 
     //region Fields & Properties
 
@@ -23,9 +23,16 @@ public abstract class Font implements Disposable {
 
     //region Public Functions
 
+    private final FontGlyph[] latin = new FontGlyph[256]; // chars below 256 without boxing a Character per lookup
+
     public Font(int fontSize, Map<Character, FontGlyph> glyphs) {
         this.fontSize = fontSize;
         this.glyphs = glyphs;
+        for (Map.Entry<Character, FontGlyph> entry : glyphs.entrySet()) {
+            if (entry.getKey() < 256) {
+                latin[entry.getKey()] = entry.getValue();
+            }
+        }
     }
 
     /**
@@ -70,13 +77,21 @@ public abstract class Font implements Disposable {
     }
 
     /**
+     * Get the texture (atlas) holding the glyph images. Glyph coordinates ({@link FontGlyph#getX()}, ...) are in
+     * pixels of this texture. Owned by the font: disposing the font disposes the texture.
+     *
+     * @return The glyph atlas texture.
+     */
+    public abstract Texture getTexture();
+
+    /**
      * Get glyph data for a given character.
      *
      * @param ch The character to get glyph data for.
      * @return The glyph data for the given character.
      */
     public FontGlyph getGlyph(char ch) {
-        return this.glyphs.get(ch);
+        return ch < 256 ? latin[ch] : this.glyphs.get(ch);
     }
 
     /**
@@ -116,4 +131,10 @@ public abstract class Font implements Disposable {
     }
 
     //endregion
+
+    /** @return The glyph table; platform fonts add their atlas. */
+    @Override
+    public long getMemorySize() {
+        return glyphs.size() * 64L;
+    }
 }

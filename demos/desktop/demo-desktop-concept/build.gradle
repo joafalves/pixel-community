@@ -5,7 +5,7 @@
 
 plugins {
     id "application"
-    id "edu.sc.seis.launch4j" version "2.5.0"
+    id "edu.sc.seis.launch4j" version "4.0.0"
 }
 
 dependencies {
@@ -23,4 +23,21 @@ application {
 launch4j {
     mainClassName = 'org.pixel.demo.concept.performance.PerformanceGame'
     // icon = "${projectDir}/icons/myApp.ico"
+}
+
+// Space Shooter (org.pixel.demo.concept.spaceshooter). Options (play-testing): -Dspaceshooter.autoplay=true,
+// -Dspaceshooter.wave=5, -Dspaceshooter.capture=<dir> -Dspaceshooter.captureAt=2,8 (screenshots, then exit).
+tasks.register('runSpaceShooter', JavaExec) {
+    group = 'application'
+    description = 'Runs the Space Shooter demo game.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.pixel.demo.concept.spaceshooter.SpaceShooterGame'
+    workingDir = projectDir
+    systemProperties System.properties.findAll { it.key.toString().startsWith('spaceshooter.') }
+    if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
+        jvmArgs '-XstartOnFirstThread'
+    }
+    if (JavaVersion.current() >= JavaVersion.VERSION_22) {
+        jvmArgs '--enable-native-access=ALL-UNNAMED' // LWJGL uses native access (JDK 22+ warns otherwise)
+    }
 }

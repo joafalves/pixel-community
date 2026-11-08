@@ -17,3 +17,49 @@ dependencies {
 application {
     mainClass.set('org.pixel.demo.learning.sprite.SingleSpriteDemo')
 }
+
+// Render benchmark (URP v2 baseline). Opens a window for ~1 minute and writes a CSV to build/benchmarks/.
+// Options: -Dbench.scale=1.0 -Dbench.warmup=2 -Dbench.measure=8 -Dbench.only=<scenario>
+tasks.register('renderBenchmark', JavaExec) {
+    group = 'benchmark'
+    description = 'Runs the render benchmark and writes results to build/benchmarks/.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.pixel.demo.learning.benchmark.RenderBenchmark'
+    workingDir = projectDir
+    systemProperties System.properties.findAll { it.key.toString().startsWith('bench.') }
+    if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
+        jvmArgs '-XstartOnFirstThread'
+    }
+    if (JavaVersion.current() >= JavaVersion.VERSION_22) {
+        jvmArgs '--enable-native-access=ALL-UNNAMED' // LWJGL uses native access (JDK 22+ warns otherwise)
+    }
+}
+
+// Golden-image render check (URP v2): renders fixed scenes into offscreen targets and compares them with golden/.
+// Add -Dgolden.record=true to rewrite the golden images after an intended visual change. Fails on a mismatch.
+tasks.register('renderGolden', JavaExec) {
+    group = 'verification'
+    description = 'Compares offscreen renders of fixed scenes with the golden images in golden/.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.pixel.demo.learning.benchmark.GoldenImageCheck'
+    workingDir = projectDir
+    systemProperties System.properties.findAll { it.key.toString().startsWith('golden.') }
+    if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
+        jvmArgs '-XstartOnFirstThread'
+    }
+    if (JavaVersion.current() >= JavaVersion.VERSION_22) {
+        jvmArgs '--enable-native-access=ALL-UNNAMED'
+    }
+}
+
+// Bakes the engine's built-in font (dev tools overlay) into modules/core/src/main/resources/engine/font/.
+tasks.register('bakeEngineFont', JavaExec) {
+    group = 'build'
+    description = 'Bakes the engine font atlas used by the dev tools (output is committed).'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.pixel.demo.learning.tools.BakeEngineFont'
+    args rootProject.file('modules/core/src/main/resources/engine/font').absolutePath
+    if (JavaVersion.current() >= JavaVersion.VERSION_22) {
+        jvmArgs '--enable-native-access=ALL-UNNAMED'
+    }
+}

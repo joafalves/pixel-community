@@ -1,52 +1,55 @@
 package org.pixel.content.opengl;
 
-import static org.lwjgl.opengl.GL11C.*;
-
 import java.util.Map;
 
-import org.pixel.commons.lifecycle.State;
 import org.pixel.content.Font;
 import org.pixel.content.FontGlyph;
 
+/**
+ * Bitmap font whose glyphs live in an OpenGL texture atlas.
+ */
 public class GLFont extends Font {
 
-    private final int textureId;
-    private final int textureSize;
-
-    private State state = State.NEW;
+    private final GLTexture texture;
 
     /**
-     * Constructor for GLFont.
+     * Constructor.
      *
-     * @param textureId   The OpenGL texture ID.
-     * @param textureSize The size of the texture.
-     * @param fontSize    The size of the font.
-     * @param glyphs      A map of characters to their corresponding FontGlyph objects.
+     * @param texture  The glyph atlas (owned by this font from now on).
+     * @param fontSize The font size the atlas was rasterized at.
+     * @param glyphs   The glyph metrics.
      */
-    public GLFont(int textureId, int textureSize, int fontSize, Map<Character, FontGlyph> glyphs) {
+    public GLFont(GLTexture texture, int fontSize, Map<Character, FontGlyph> glyphs) {
         super(fontSize, glyphs);
-        this.textureId = textureId;
-        this.textureSize = textureSize;
+        if (texture == null) {
+            throw new IllegalArgumentException("Font texture cannot be null.");
+        }
+        this.texture = texture;
+    }
+
+    @Override
+    public long getMemorySize() {
+        return texture.getMemorySize();
+    }
+
+    @Override
+    public GLTexture getTexture() {
+        return texture;
     }
 
     public int getTextureId() {
-        return textureId;
+        return texture.getId();
     }
 
+    /**
+     * @return The (square) atlas size in pixels.
+     */
     public int getTextureSize() {
-        return textureSize;
+        return texture.getWidth();
     }
 
     @Override
     public void dispose() {
-        if (state.isDisposed()) {
-            return;
-        }
-
-        if (this.textureId >= 0) {
-            glDeleteTextures(this.textureId);
-        }
-
-        this.state = State.DISPOSED;
+        texture.dispose(); // idempotent
     }
 }

@@ -5,9 +5,9 @@
 
 package org.pixel.demo.learning.input;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Texture;
@@ -31,18 +31,15 @@ public class GamePadInputDemo extends DemoGame {
     private Vector2 spritePos;
     private Vector2 spriteAnchor;
 
-    public GamePadInputDemo(WindowSettings settings) {
-        super(settings);
-    }
-
     @Override
     public void load() {
+        super.load();
         // game related changes & definitions
         gameCamera.setOrigin(Vector2.zero());
 
         // general game instances
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
-        content = ServiceProvider.get(ContentManager.class);
+        spriteBatch = graphics().createSpriteBatch();
+        content = content();
 
         // load texture into memory
         spriteTex = content.load("images/earth-48x48.png", Texture.class);
@@ -83,7 +80,6 @@ public class GamePadInputDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        content.dispose();
         spriteBatch.dispose();
         spriteTex.dispose();
 
@@ -98,7 +94,6 @@ public class GamePadInputDemo extends DemoGame {
         settings.setVsync(true);
         settings.setDevMode(true);
 
-        var window = new GamePadInputDemo(settings);
-        window.start();
+        DesktopLauncher.run(new GamePadInputDemo(), settings);
     }
 }

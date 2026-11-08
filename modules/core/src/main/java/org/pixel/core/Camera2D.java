@@ -21,28 +21,31 @@ public class Camera2D implements Camera, Serializable {
     private float zoom;
     private Matrix4 matrixCache;
     private boolean dirty;
+    private transient GameWindow window; // display density, for getPixelsPerUnit()
 
     //endregion
 
     //region constructors
 
     /**
-     * Constructor. Sets the camera properties based on the given game virtual size.
+     * Constructor. Sets the camera size to the game's virtual size.
      *
-     * @param game The game instance.
+     * @param context The game context.
      */
-    public Camera2D(GameContainer<?, ?> game) {
-        this(0, 0, game.getVirtualWidth(), game.getVirtualHeight());
+    public Camera2D(GameContext context) {
+        this(0, 0, context.settings().getVirtualWidth(), context.settings().getVirtualHeight());
+        this.window = context.window();
     }
 
     /**
-     * Constructor. Sets the camera properties based on the given game virtual size.
+     * Constructor. Sets the camera size to the game's virtual size.
      *
-     * @param game   The game instance.
-     * @param origin The camera view origin.
+     * @param context The game context.
+     * @param origin  The camera view origin.
      */
-    public Camera2D(GameContainer<?, ?> game, Vector2 origin) {
-        this(0, 0, game.getVirtualWidth(), game.getVirtualHeight(), 1.0f, origin);
+    public Camera2D(GameContext context, Vector2 origin) {
+        this(0, 0, context.settings().getVirtualWidth(), context.settings().getVirtualHeight(), 1.0f, origin);
+        this.window = context.window();
     }
 
     /**
@@ -101,7 +104,7 @@ public class Camera2D implements Camera, Serializable {
         this.height = height;
         this.zoom = zoom;
         this.dirty = true;
-        this.origin = origin;
+        this.origin = new Vector2(origin); // copy: origin is mutated by setOrigin()
     }
 
     //endregion
@@ -152,19 +155,32 @@ public class Camera2D implements Camera, Serializable {
 
     /**
      * Transforms a given screen position to virtual coordinates.
+     * <p>
+     * The screen position must be expressed in the camera's viewport space (0..width, 0..height), e.g. the
+     * mouse position from {@code Mouse.getVirtualPosition()} — not raw window coordinates, which differ when the
+     * window is resized or scaled by the OS.
      *
      * @param screenX The screen x position.
      * @param screenY The screen y position.
      * @return The virtual position.
      */
     public Vector2 screenToVirtualCoordinates(float screenX, float screenY) {
-        // normalize screen position:
-        float nx = 2.0f * screenX / getWidth() - 1.0f;
-        float ny = 1.0f - 2.0f * screenY / getHeight();
-        Matrix4 invertMatrix = new Matrix4(getViewMatrix());
-        invertMatrix.invert();
+        return screenToWorld(screenX, screenY, new Vector2());
+    }
 
-        return Vector2.transformMatrix4(new Vector2(nx, ny), invertMatrix);
+    /**
+     * Transform a screen position (the camera's viewport space, see {@link #screenToVirtualCoordinates(float, float)})
+     * to world coordinates, without allocating (e.g. to pick under the mouse every frame).
+     *
+     * @param out Receives the world position.
+     * @return {@code out}.
+     */
+    public Vector2 screenToWorld(float screenX, float screenY, Vector2 out) {
+        // the inverse of the orthographic view: the view's left/top plus the screen offset, unzoomed
+        float left = position.getX() - getWidth() / zoom * getOrigin().getX();
+        float top = position.getY() - getHeight() / zoom * getOrigin().getY();
+        out.set(left + screenX / zoom, top + screenY / zoom);
+        return out;
     }
 
     /**
@@ -274,6 +290,19 @@ public class Camera2D implements Camera, Serializable {
     public void setZoom(float zoom) {
         this.zoom = zoom;
         this.dirty = true;
+    }
+
+    /**
+     * Framebuffer pixels per world unit: the window's framebuffer size over the world area the camera shows
+     * ({@code size / zoom}), on the tighter axis. Cameras created without a game context don't know the window and
+     * assume one pixel per unit at zoom 1.
+     */
+    @Override
+    public float getPixelsPerUnit() {
+        if (window == null || width <= 0 || height <= 0) {
+            return zoom;
+        }
+        return Math.min(window.getWidth() * zoom / width, window.getHeight() * zoom / height);
     }
 
     /**

@@ -1,12 +1,12 @@
 package org.pixel.demo.learning.network;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.Timer;
 import org.pixel.commons.data.DataMap;
 import org.pixel.commons.logger.ConsoleLogger;
 import org.pixel.commons.logger.LogLevel;
-import org.pixel.commons.service.ServiceProvider;
 import org.pixel.commons.util.TextHelper;
 import org.pixel.content.ContentManager;
 import org.pixel.content.Font;
@@ -27,7 +27,7 @@ import org.pixel.network.message.DataMessage;
 import org.pixel.network.message.NetworkMessage;
 import org.pixel.network.security.AuthType;
 import org.pixel.network.security.BasicAuth;
-import org.pixel.network.service.NetworkServiceRegistrar;
+import org.pixel.network.Network;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -59,18 +59,9 @@ public class SimpleNetworkDemo extends DemoGame
     private Font debugFont;
     private boolean dirty = false; // Flag to indicate if we need to send a message
 
-    /**
-     * Constructor
-     *
-     * @param settings The game settings.
-     */
-    public SimpleNetworkDemo(WindowSettings settings) {
-        super(settings);
+    public SimpleNetworkDemo() {
         // Set log level to TRACE to see ALL logs:
         ConsoleLogger.setLogLevel(LogLevel.TRACE);
-        // Add the network services to the global service provider:
-        // Since this is an extension, we need to register the network services manually:
-        ServiceProvider.register(new NetworkServiceRegistrar());
     }
 
     @Override
@@ -83,7 +74,7 @@ public class SimpleNetworkDemo extends DemoGame
         // THE APPLICATION WON'T CRASH IF YOU TRY TO REBIND THE SAME SERVER PORT.
 
         // Create a new SERVER instance:
-        networkServer = ServiceProvider.get(NetworkServer.class, NetworkServerSettings.builder()
+        networkServer = Network.createServer(NetworkServerSettings.builder()
                 .serverListener(this)
                 .authenticator(this)
                 .bindAddress(new SocketAddress(SERVER_HOST, SERVER_PORT))
@@ -107,7 +98,7 @@ public class SimpleNetworkDemo extends DemoGame
                         .serverAddress(new SocketAddress(SERVER_HOST, SERVER_PORT))
                         .build()
         );
-        networkClient = ServiceProvider.get(NetworkClient.class, NetworkClientSettings.builder()
+        networkClient = Network.createClient(NetworkClientSettings.builder()
                 .channels(channels)
                 .clientListener(this)
                 .auth(new BasicAuth(localPlayer.username(), "doesnotmatter"))
@@ -123,8 +114,8 @@ public class SimpleNetworkDemo extends DemoGame
         }
 
         // Complementary assets:
-        content = ServiceProvider.get(ContentManager.class);
-        spriteBatch = ServiceProvider.get(SpriteBatch.class);
+        content = content();
+        spriteBatch = graphics().createSpriteBatch();
         gameCamera.setOrigin(Vector2.ZERO);
 
         debugFont = content.load("fonts/gidole-regular.ttf", Font.class, FontImporterSettings.builder()
@@ -285,7 +276,6 @@ public class SimpleNetworkDemo extends DemoGame
     public void dispose() {
         networkClient.dispose();
         networkServer.dispose();
-        content.dispose();
         super.dispose();
     }
 
@@ -396,8 +386,7 @@ public class SimpleNetworkDemo extends DemoGame
         settings.setTargetFps(60);
         settings.setIdleThrottle(false);
 
-        var game = new SimpleNetworkDemo(settings);
-        game.start();
+        DesktopLauncher.run(new SimpleNetworkDemo(), settings);
     }
 
 }

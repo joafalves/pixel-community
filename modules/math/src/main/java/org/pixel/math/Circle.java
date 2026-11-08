@@ -48,6 +48,11 @@ public class Circle implements Serializable {
     }
 
     @Override
+    public int hashCode() {
+        return 31 * java.util.Objects.hashCode(position) + Float.floatToIntBits(radius + 0.0f);
+    }
+
+    @Override
     public String toString() {
         return String.format("%s: [pos: '%s', rad: %f]",
                 this.getClass().getSimpleName(), getPosition().toString(), getRadius());

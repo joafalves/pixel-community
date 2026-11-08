@@ -8,7 +8,6 @@ import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 import org.pixel.content.Font;
 import org.pixel.content.Texture;
-import org.pixel.graphics.shader.Shader;
 
 public abstract class SpriteBatch implements Initializable, Disposable {
 
@@ -30,7 +29,7 @@ public abstract class SpriteBatch implements Initializable, Disposable {
      * @param color    The color overlay of the sprite.
      */
     public void draw(Texture texture, Vector2 position, Color color) {
-        draw(texture, position, color, new Vector2(0, 0));
+        draw(texture, position, color, Vector2.ZERO);
     }
 
     /**
@@ -70,7 +69,8 @@ public abstract class SpriteBatch implements Initializable, Disposable {
      * @param rotation The rotation of the sprite.
      */
     public void draw(Texture texture, Vector2 position, Color color, Vector2 anchor, float scaleX, float scaleY, float rotation) {
-        draw(texture, position, new Rectangle(0, 0, texture.getWidth(), texture.getHeight()), color, anchor, scaleX, scaleY, rotation);
+        // a null source means "the whole texture" (avoids allocating a Rectangle per draw call)
+        draw(texture, position, null, color, anchor, scaleX, scaleY, rotation);
     }
 
     /**
@@ -229,13 +229,6 @@ public abstract class SpriteBatch implements Initializable, Disposable {
     public abstract void drawText(Font font, String text, Vector2 position, Color color, int fontSize);
 
     /**
-     * Get the active shader.
-     *
-     * @return The active shader.
-     */
-    public abstract Shader getShader();
-
-    /**
      * Begin drawing phase.
      *
      * @param viewMatrix The view matrix.
@@ -256,7 +249,8 @@ public abstract class SpriteBatch implements Initializable, Disposable {
     public abstract void end();
 
     /**
-     * Resize the buffer batch size. This will reset the buffer write index - make sure to call outside of the drawing loop.
+     * Resize the buffer batch size (or, for draw-list implementations, pre-size the command storage so the given
+     * number of sprites per begin/end never needs to grow). Call outside of the drawing loop.
      *
      * @param newSize The new size.
      */

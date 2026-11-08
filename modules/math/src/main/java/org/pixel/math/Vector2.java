@@ -14,15 +14,17 @@ public class Vector2 implements Serializable {
 
     //region static
 
-    public static final Vector2 ZERO = zero();
-    public static final Vector2 ONE = one();
-    public static final Vector2 ZERO_ONE = zeroOne();
-    public static final Vector2 ONE_ZERO = oneZero();
-    public static final Vector2 HALF = half();
-    public static final Vector2 UP = zeroOne();
-    public static final Vector2 RIGHT = oneZero();
-    public static final Vector2 LEFT = new Vector2(-1, 0);
-    public static final Vector2 DOWN = new Vector2(0, -1);
+    // NOTE: shared constants are read-only; mutating them throws UnsupportedOperationException.
+    // Use the factory methods (zero(), one(), ...) or new Vector2(Vector2.X) to get a mutable copy.
+    public static final Vector2 ZERO = new ReadOnlyVector2(0, 0);
+    public static final Vector2 ONE = new ReadOnlyVector2(1, 1);
+    public static final Vector2 ZERO_ONE = new ReadOnlyVector2(0, 1);
+    public static final Vector2 ONE_ZERO = new ReadOnlyVector2(1, 0);
+    public static final Vector2 HALF = new ReadOnlyVector2(0.5f, 0.5f);
+    public static final Vector2 UP = new ReadOnlyVector2(0, 1);
+    public static final Vector2 RIGHT = new ReadOnlyVector2(1, 0);
+    public static final Vector2 LEFT = new ReadOnlyVector2(-1, 0);
+    public static final Vector2 DOWN = new ReadOnlyVector2(0, -1);
 
     //endregion
 
@@ -678,5 +680,168 @@ public class Vector2 implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(x, y);
+    }
+
+    /**
+     * Immutable vector used for the shared constants (ZERO, ONE, ...). Mutating them used to silently change the
+     * value for every user of the constant (e.g. anchors queued in a SpriteBatch).
+     */
+    private static final class ReadOnlyVector2 extends Vector2 {
+
+        private final transient boolean sealed;
+
+        private ReadOnlyVector2(float x, float y) {
+            super(x, y);
+            this.sealed = true;
+        }
+
+        private void checkWritable() {
+            if (sealed) {
+                throw new UnsupportedOperationException(
+                        "Vector2 constants are read-only; use new Vector2(constant) for a mutable copy.");
+            }
+        }
+
+        private Object writeReplace() {
+            return new Vector2(this); // serialize as a plain (mutable) Vector2
+        }
+
+        @Override
+        public void add(Vector2 vec2) {
+            checkWritable();
+            super.add(vec2);
+        }
+
+        @Override
+        public void add(float x, float y) {
+            checkWritable();
+            super.add(x, y);
+        }
+
+        @Override
+        public void add(float xy) {
+            checkWritable();
+            super.add(xy);
+        }
+
+        @Override
+        public void subtract(Vector2 vec2) {
+            checkWritable();
+            super.subtract(vec2);
+        }
+
+        @Override
+        public void subtract(float x, float y) {
+            checkWritable();
+            super.subtract(x, y);
+        }
+
+        @Override
+        public void subtract(float xy) {
+            checkWritable();
+            super.subtract(xy);
+        }
+
+        @Override
+        public void multiply(Vector2 vec2) {
+            checkWritable();
+            super.multiply(vec2);
+        }
+
+        @Override
+        public void multiply(float x, float y) {
+            checkWritable();
+            super.multiply(x, y);
+        }
+
+        @Override
+        public void multiply(float xy) {
+            checkWritable();
+            super.multiply(xy);
+        }
+
+        @Override
+        public void divide(Vector2 vec2) {
+            checkWritable();
+            super.divide(vec2);
+        }
+
+        @Override
+        public void divide(float x, float y) {
+            checkWritable();
+            super.divide(x, y);
+        }
+
+        @Override
+        public void divide(float xy) {
+            checkWritable();
+            super.divide(xy);
+        }
+
+        @Override
+        public void moveTo(Vector2 target, float amount) {
+            checkWritable();
+            super.moveTo(target, amount);
+        }
+
+        @Override
+        public void normalize() {
+            checkWritable();
+            super.normalize();
+        }
+
+        @Override
+        public void rotateAround(Vector2 origin, float angle) {
+            checkWritable();
+            super.rotateAround(origin, angle);
+        }
+
+        @Override
+        public void set(Vector2 o) {
+            checkWritable();
+            super.set(o);
+        }
+
+        @Override
+        public void set(Vector3 o) {
+            checkWritable();
+            super.set(o);
+        }
+
+        @Override
+        public void set(float xy) {
+            checkWritable();
+            super.set(xy);
+        }
+
+        @Override
+        public void set(float x, float y) {
+            checkWritable();
+            super.set(x, y);
+        }
+
+        @Override
+        public void transformMatrix4(Matrix4 mat) {
+            checkWritable();
+            super.transformMatrix4(mat);
+        }
+
+        @Override
+        public void clamp(float minX, float maxX, float minY, float maxY) {
+            checkWritable();
+            super.clamp(minX, maxX, minY, maxY);
+        }
+
+        @Override
+        public void setX(float x) {
+            checkWritable();
+            super.setX(x);
+        }
+
+        @Override
+        public void setY(float y) {
+            checkWritable();
+            super.setY(y);
+        }
     }
 }

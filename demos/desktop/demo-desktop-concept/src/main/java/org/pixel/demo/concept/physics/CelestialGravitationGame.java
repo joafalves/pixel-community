@@ -1,18 +1,22 @@
 package org.pixel.demo.concept.physics;
 
+import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.core.Game;
+import org.pixel.core.Camera2D;
+import org.pixel.core.GameApp;
 import org.pixel.core.WindowSettings;
-import org.pixel.graphics.render.RenderEngine2D;
-import org.pixel.graphics.render.nanovg.NvgRenderEngine;
+import org.pixel.graphics.canvas.Canvas;
+import org.pixel.graphics.draw.Layer;
+import org.pixel.graphics.pass.RenderPipeline;
+import org.pixel.math.Vector2;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CelestialGravitationGame extends Game {
+public class CelestialGravitationGame extends GameApp {
 
     // Gravitational constant G (N * m^2 / kg^2) - now using double for precision
     private static final double G = 6.67430e-11;
@@ -21,22 +25,18 @@ public class CelestialGravitationGame extends Game {
 
     private final List<PhysicsBody> bodies = new ArrayList<>();
 
-    private RenderEngine2D renderEngine;
-    private float displayScale; // Pixels per meter for rendering (can remain float)
+    private Camera2D camera;
+    private static final Layer MAIN = Layer.ordered("main");
 
-    /**
-     * Constructor
-     *
-     * @param settings The game settings.
-     */
-    public CelestialGravitationGame(WindowSettings settings) {
-        super(settings);
-    }
+    private RenderPipeline pipeline;
+    private float displayScale; // Pixels per meter for rendering (can remain float)
 
     @Override
     public void load() {
         // Initialize the game entities and components
-        renderEngine = new NvgRenderEngine(getSettings().getWindowWidth(), getSettings().getWindowHeight());
+        camera = new Camera2D(context());
+        camera.setOrigin(Vector2.zero());
+        pipeline = RenderPipeline.builder(graphics().getRenderBackend()).pass(camera, MAIN).build();
 
         // Sun
         double sunMass = 1.989e30; // kg - now using double
@@ -85,8 +85,6 @@ public class CelestialGravitationGame extends Game {
                 // Use double for distanceSq calculation to maintain precision
                 double distanceSq = r_vector.lengthSquared(); // Vector2.magnitudeSq() returns float, but we need double for precision here
 
-                System.out.println("Distance squared between bodies: " + distanceSq);
-
                 // Prevent division by zero if bodies are at the same position (e.g., collision)
                 if (distanceSq < 1e-10) { // Use double literal
                     distanceSq = 1e-10; // Set a tiny minimum distance
@@ -118,15 +116,11 @@ public class CelestialGravitationGame extends Game {
 
     @Override
     public void draw(DeltaTime delta) {
-        renderEngine.begin();
-        // Translates the render engine to the center of the window, so that the origin (0,0) is at the center
-        renderEngine.translate(
-                getSettings().getWindowWidth() / 2f,
-                getSettings().getWindowHeight() / 2f
-        );
+        Canvas canvas = pipeline.canvas(MAIN);
+        // origin (0, 0) at the center of the view
+        canvas.translate(camera.getWidth() / 2f, camera.getHeight() / 2f);
 
         for (var body : bodies) {
-            renderEngine.beginPath();
             // Scale the body's position from meters to pixels for rendering
             float sx = (float) (body.getPosition().getX() * displayScale);
             float sy = (float) (body.getPosition().getY() * displayScale);
@@ -137,12 +131,15 @@ public class CelestialGravitationGame extends Game {
                 visualRadius = 30f; // Larger radius for stars
             }
 
-            renderEngine.circle(sx, sy, visualRadius); // Draw a circle for each body
-            renderEngine.fill();
-            renderEngine.endPath();
+            canvas.circle(sx, sy, visualRadius).fill(Color.WHITE); // Draw a circle for each body
         }
 
-        renderEngine.end();
+        pipeline.render();
+    }
+
+    @Override
+    public void dispose() {
+        pipeline.dispose();
     }
 
     /**
@@ -175,14 +172,12 @@ public class CelestialGravitationGame extends Game {
         final var screenHeight = 720;
         final var settings = new WindowSettings(screenWidth, screenHeight);
         settings.setWindowResizable(false);
-        settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setDevMode(false);
         settings.setWindowWidth(screenWidth);
         settings.setWindowHeight(screenHeight);
         settings.setBackgroundColor(Color.BLACK);
 
-        final var window = new CelestialGravitationGame(settings);
-        window.start();
+        DesktopLauncher.run(new CelestialGravitationGame(), settings);
     }
 }
