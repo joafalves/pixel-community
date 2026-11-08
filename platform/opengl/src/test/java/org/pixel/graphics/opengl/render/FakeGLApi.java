@@ -53,6 +53,18 @@ final class FakeGLApi implements GLApi {
         return "#version 300 es\n";
     }
 
+    int generation;
+
+    @Override
+    public int contextGeneration() {
+        return generation;
+    }
+
+    @Override
+    public void contextRecreated() {
+        generation++;
+    }
+
     int queries; // getInteger/getIntegerv calls: synchronous GL queries, which stall the CPU
 
     /** A lost context: names start over (the new context reuses them). */

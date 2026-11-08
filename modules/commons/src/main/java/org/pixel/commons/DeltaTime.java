@@ -69,4 +69,13 @@ public class DeltaTime {
         lastTimestamp = now;
     }
 
+    /**
+     * Start measuring from now: the next {@link #tick()} measures only the time since this call. Hosts call it when
+     * the loop resumes after a pause (e.g. an Android app back from the background), so the first frame's elapsed
+     * time is not the whole pause (which would move everything far ahead at once).
+     */
+    public void restart() {
+        lastTimestamp = System.nanoTime();
+    }
+
 }

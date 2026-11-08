@@ -12,7 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class TextureImporterSettings implements ContentImporterSettings {
@@ -26,4 +26,9 @@ public class TextureImporterSettings implements ContentImporterSettings {
      */
     @Builder.Default
     private boolean premultiplyAlpha = true;
+
+    @Override
+    public TextureImporterSettings copy() {
+        return toBuilder().build();
+    }
 }

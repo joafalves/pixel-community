@@ -4,13 +4,15 @@ import org.pixel.content.Texture;
 import org.pixel.graphics.opengl.GLApi;
 
 /**
- * A texture stored in an OpenGL (ES) texture object; disposing it deletes the GL texture.
+ * A texture stored in an OpenGL (ES) texture object; disposing it deletes the GL texture, unless the texture was made
+ * in a GL context that has since been lost (its name may already belong to a texture of the new context).
  */
 public class GLTexture extends Texture {
 
     private final GLApi gl;
     private final int id;
     private final boolean premultiplied;
+    private final int generation; // the context generation the name was made in
     private boolean disposed;
 
     /**
@@ -37,6 +39,7 @@ public class GLTexture extends Texture {
         this.gl = gl;
         this.id = id;
         this.premultiplied = premultiplied;
+        this.generation = gl.contextGeneration();
     }
 
     /**
@@ -82,7 +85,9 @@ public class GLTexture extends Texture {
     public void dispose() {
         if (!disposed) {
             disposed = true;
-            gl.deleteTexture(id);
+            if (gl.contextGeneration() == generation) {
+                gl.deleteTexture(id);
+            }
         }
     }
 }

@@ -16,15 +16,28 @@ import static org.lwjgl.opengl.GL31C.glUniformBlockBinding;
 import static org.lwjgl.opengl.GL14C.glBlendFuncSeparate;
 
 /**
- * {@link GLApi} on desktop OpenGL 3.3 core through LWJGL. Stateless: use {@link #INSTANCE}.
+ * {@link GLApi} on desktop OpenGL 3.3 core through LWJGL. Use {@link #INSTANCE} (its only state is the context
+ * generation).
  */
 public final class LwjglGLApi implements GLApi {
 
     public static final LwjglGLApi INSTANCE = new LwjglGLApi();
 
+    private int generation; // GL thread only
+
     private static final String PREAMBLE = "#version 330 core\nprecision highp float;\nprecision highp int;\n";
 
     private LwjglGLApi() {
+    }
+
+    @Override
+    public int contextGeneration() {
+        return generation;
+    }
+
+    @Override
+    public void contextRecreated() {
+        generation++;
     }
 
     @Override

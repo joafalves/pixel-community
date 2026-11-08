@@ -18,8 +18,19 @@ public final class AndroidGLApi implements GLApi {
             + "precision highp sampler2D;\n";
 
     private final int[] scratch = new int[1];
+    private int generation; // GL thread only
 
     private AndroidGLApi() {
+    }
+
+    @Override
+    public int contextGeneration() {
+        return generation;
+    }
+
+    @Override
+    public void contextRecreated() {
+        generation++;
     }
 
     @Override

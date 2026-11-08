@@ -28,6 +28,7 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
     private final AndroidGameHost host;
     private GLRenderBackend renderBackend;
     private final float[] clearColor = new float[4];
+    private volatile boolean resumed; // set on the UI thread, read on the GL thread
 
     private State state;
 
@@ -76,6 +77,10 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
             @Override
             public void onDrawFrame(javax.microedition.khronos.opengles.GL10 gl) {
                 // android game loop (the host clears, updates, draws and ends the frame):
+                if (resumed) {
+                    resumed = false;
+                    delta.restart(); // the time in the background is not a frame
+                }
                 delta.tick();
                 host.onDrawFrame(delta);
             }
@@ -95,6 +100,16 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
         this.state = State.INITIALIZED;
 
         return true;
+    }
+
+    /**
+     * Resume the render thread (call from the activity's {@code onResume}); the first frame after it doesn't count
+     * the time spent paused.
+     */
+    @Override
+    public void onResume() {
+        resumed = true;
+        super.onResume();
     }
 
     @Override

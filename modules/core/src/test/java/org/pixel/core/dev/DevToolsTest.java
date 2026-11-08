@@ -154,6 +154,32 @@ class DevToolsTest {
     }
 
     @Test
+    void aDraggedSliderKeepsFollowingWhenAnEarlierEntryIsRemoved() {
+        tools = new DevTools(context(), true, true);
+        tools.showTab(DevTools.Tab.GAME);
+        tools.watch("hp", () -> 7, 0);                         // row 0, removed while dragging
+        DevTools.Slider speed = tools.addSlider("speed", 0, 100, 50); // label row 1, track below
+        frame(-1, -1, false);
+
+        float trackY = CONTENT_Y + DevUi.LINE * 2 + 6;
+        frame(COLUMN_X + 1, trackY, true); // grab it
+        tools.remove("hp");                // the slider moves up a row
+        frame(COLUMN_X + 400, trackY - DevUi.LINE, true);
+        assertEquals(100f, speed.get(), 1e-3f, "still the dragged slider");
+    }
+
+    @Test
+    void otherThreadsHitTestTheWindowAsLastDrawn() {
+        tools = new DevTools(context(), true, true);
+        assertFalse(tools.isOverUi(COLUMN_X + 4, CONTENT_Y), "not drawn yet");
+        frame(-1, -1, false);
+        assertTrue(tools.isOverUi(COLUMN_X + 4, CONTENT_Y));
+        assertFalse(tools.isOverUi(10, 600));
+        tools.setVisible(false);
+        assertFalse(tools.isOverUi(COLUMN_X + 4, CONTENT_Y), "hidden");
+    }
+
+    @Test
     void theTitleCollapsesAndDragsTheWindow() {
         tools = new DevTools(context(), true, true);
         frame(-1, -1, false);

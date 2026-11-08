@@ -1,7 +1,5 @@
 package org.pixel.core;
 
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.system.MemoryStack;
 import org.pixel.core.dev.DevTools;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
@@ -16,7 +14,6 @@ import org.pixel.graphics.GraphicsDevice;
 import java.util.concurrent.locks.LockSupport;
 
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
-import java.nio.IntBuffer;
 
 /**
  * Host base for windowed platforms: owns the window manager and the game loop.
@@ -166,22 +163,11 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
             devTools.pointer(-1f, -1f, false); // hidden: only the key matters (no window queries)
             return;
         }
-        // The window size is in framebuffer pixels and the mouse in screen coordinates: their ratio maps the mouse
-        // (2 on a Retina display, 1 on Windows/Linux). The OS content scale (2 on Retina, 1.5 at 150% on Windows) keeps
-        // the dev tools the same physical size everywhere.
-        float ratio = 1f, contentScale = 1f;
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer width = stack.mallocInt(1), height = stack.mallocInt(1);
-            long handle = windowManager.getWindowHandle();
-            GLFW.glfwGetWindowSize(handle, width, height);
-            if (width.get(0) > 0) {
-                ratio = window().getWidth() / (float) width.get(0);
-            }
-            java.nio.FloatBuffer scaleX = stack.mallocFloat(1), scaleY = stack.mallocFloat(1);
-            GLFW.glfwGetWindowContentScale(handle, scaleX, scaleY);
-            contentScale = scaleX.get(0) > 0f ? scaleX.get(0) : ratio;
-        }
-        devTools.setScale(contentScale);
+        // The dev tools work in framebuffer pixels and the mouse in screen coordinates: the framebuffer scale maps the
+        // mouse. The OS content scale keeps the dev tools the same physical size everywhere. Both are cached by the
+        // window manager (updated by its callbacks), so this costs no window queries.
+        float ratio = windowManager.getFramebufferScale();
+        devTools.setScale(windowManager.getContentScale());
         devTools.pointer(Mouse.getX() * ratio, Mouse.getY() * ratio, Mouse.isMouseButtonDown(MouseButton.LEFT));
         devTools.scroll(Mouse.getScrollY());
     }

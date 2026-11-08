@@ -246,7 +246,8 @@ public class ContentManager implements Disposable {
 
     /**
      * Asset cache key. The importer settings are part of the key: loading the same file with different settings
-     * (e.g. two font sizes) must produce different assets. Settings classes use value equality (Lombok @Data).
+     * (e.g. two font sizes) must produce different assets. Settings classes use value equality (Lombok @Data); a
+     * stored key holds a {@link ContentImporterSettings#copy() copy}, so the caller may change its settings later.
      */
     private record CacheKey(String filename, Class<?> type, ContentImporterSettings settings) {
     }
@@ -556,8 +557,9 @@ public class ContentManager implements Disposable {
         ImportContext ctx = new ImportContext(this, resourceData, filepath, settings);
         T asset = fileImporter.process(ctx);
         if (useCache && asset != null) {
-            assetCache.put(assetRef, asset);
-            if (disposed.get() && assetCache.remove(assetRef, asset)) { // disposed while this was loading
+            CacheKey stored = settings != null ? new CacheKey(filepath, type, settings.copy()) : assetRef;
+            assetCache.put(stored, asset);
+            if (disposed.get() && assetCache.remove(stored, asset)) { // disposed while this was loading
                 disposeQuietly(asset);
                 checkNotDisposed();
             }

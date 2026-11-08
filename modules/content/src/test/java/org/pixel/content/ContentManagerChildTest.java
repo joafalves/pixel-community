@@ -61,6 +61,23 @@ class ContentManagerChildTest {
     private final ContentManager root = new ContentManager(path -> path.getBytes(StandardCharsets.UTF_8), importer);
 
     @Test
+    void changingSettingsAfterALoadKeepsTheCachedAsset() {
+        // one settings object reused for several loads (a common pattern): the cache keeps its own copy
+        var settings = new org.pixel.content.importer.settings.FontImporterSettings();
+        settings.setFontSize(32);
+        Asset small = root.load("font", Asset.class, settings);
+        settings.setFontSize(48);
+        Asset large = root.load("font", Asset.class, settings);
+        settings.setFontSize(32);
+
+        assertNotSame(small, large);
+        assertSame(small, root.load("font", Asset.class, settings));
+        settings.setFontSize(48);
+        assertSame(large, root.load("font", Asset.class, settings));
+        assertEquals(2, importer.imports);
+    }
+
+    @Test
     void childrenShareWhatTheirAncestorsLoaded() {
         Asset shared = root.load("ui", Asset.class);
         ContentManager level = root.child("level-1");

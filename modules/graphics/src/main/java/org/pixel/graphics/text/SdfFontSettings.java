@@ -11,7 +11,7 @@ import org.pixel.content.importer.settings.ContentImporterSettings;
  * ({@code .json}) atlases, whose settings are fixed when they are baked.
  */
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class SdfFontSettings implements ContentImporterSettings {
@@ -55,5 +55,10 @@ public class SdfFontSettings implements ContentImporterSettings {
             sb.appendCodePoint(c);
         }
         return sb.toString();
+    }
+
+    @Override
+    public SdfFontSettings copy() {
+        return toBuilder().build();
     }
 }

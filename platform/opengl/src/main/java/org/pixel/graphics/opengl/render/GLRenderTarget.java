@@ -20,27 +20,25 @@ final class GLRenderTarget implements RenderTarget {
     private TargetTexture texture;
     private boolean disposed;
     private int generation; // context generation the GL objects belong to
-    private final java.util.function.IntSupplier currentGeneration; // the backend's
 
-    GLRenderTarget(GLApi gl, int width, int height, int generation, java.util.function.IntSupplier currentGeneration) {
+    GLRenderTarget(GLApi gl, int width, int height) {
         this.gl = gl;
-        this.generation = generation;
-        this.currentGeneration = currentGeneration;
+        this.generation = gl.contextGeneration();
         allocate(width, height);
     }
 
     /** Whether the GL names belong to a context that was lost (then they must never be deleted: they may be reused). */
     private boolean stale() {
-        return generation != currentGeneration.getAsInt();
+        return generation != gl.contextGeneration();
     }
 
     /**
      * After the context was recreated the GL names are dead: allocate new ones (the old ones are not deleted, they
      * may already belong to something else in the new context).
      */
-    void ensureGeneration(int current) {
-        if (generation != current) {
-            generation = current;
+    void ensureGeneration() {
+        if (stale()) {
+            generation = gl.contextGeneration();
             allocate(getWidth(), getHeight());
         }
     }
@@ -101,7 +99,7 @@ final class GLRenderTarget implements RenderTarget {
     public void resize(int width, int height) {
         checkActive();
         if (stale()) { // a new context: allocate there, at the new size (the old names died with their context)
-            generation = currentGeneration.getAsInt();
+            generation = gl.contextGeneration();
         } else if (width == getWidth() && height == getHeight()) {
             return;
         } else {

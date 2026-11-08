@@ -22,4 +22,13 @@ class DeltaTimeTest {
         }
         assertTrue(fractional, "intervals are not whole milliseconds");
     }
+
+    @Test
+    void restartLeavesThePauseOut() throws InterruptedException {
+        DeltaTime delta = new DeltaTime();
+        Thread.sleep(50); // e.g. the app in the background
+        delta.restart(); // resumed
+        delta.tick();
+        assertTrue(delta.getElapsed() < 0.04f, "elapsed " + delta.getElapsed());
+    }
 }

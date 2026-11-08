@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class FontImporterSettings implements ContentImporterSettings {
@@ -14,4 +14,9 @@ public class FontImporterSettings implements ContentImporterSettings {
     private int fontSize = 24;
     @Builder.Default
     private int oversampling = 1;
+
+    @Override
+    public FontImporterSettings copy() {
+        return toBuilder().build();
+    }
 }

@@ -63,7 +63,7 @@ public final class DevTools {
 
     private final GameContext context;
     private final boolean available;
-    private boolean visible;
+    private volatile boolean visible; // also read by the host's input thread (isOverUi)
     private boolean broken;
     private volatile boolean toggleRequested;
     private boolean rendered; // render() already ran this frame
@@ -95,7 +95,7 @@ public final class DevTools {
     private int linesTab = -1;
 
     // input (overlay units)
-    private float scale = 1f;
+    private volatile float scale = 1f;
     private float pointerX = -1, pointerY = -1;
     private boolean down, wasDown;
 
@@ -112,6 +112,10 @@ public final class DevTools {
 
     // window (overlay units); x < 0: placed at the top-right corner on first show
     private float windowX = -1, windowY = 12, windowWidth = WIDTH, windowHeight = HEIGHT;
+    // the window as last drawn, for other threads (isOverUi): x, y, width, height in whole units, 16 bits each, so one
+    // volatile write publishes all four at once (-1 = not drawn yet)
+    private volatile long hitBox = -1L;
+    private int nextItemId = 1; // widget ids of the Game tab's entries
     private float width = WIDTH, height = HEIGHT; // the size chosen by the user (the grip at the bottom-right)
     private boolean collapsed;
     private boolean dragging;
@@ -190,7 +194,22 @@ public final class DevTools {
      * or click from the game). Uses the window's last drawn position.
      */
     public boolean isOverUi(float windowX, float windowY) {
-        return visible && overWindow(windowX / scale, windowY / scale);
+        long box = hitBox;
+        if (!visible || box == -1L) {
+            return false;
+        }
+        float s = scale, x = windowX / s, y = windowY / s;
+        float left = (box >>> 48) & 0xFFFF, top = (box >>> 32) & 0xFFFF;
+        return x >= left && x < left + ((box >>> 16) & 0xFFFF) && y >= top && y < top + (box & 0xFFFF);
+    }
+
+    private static long packBox(float x, float y, float w, float h) {
+        return (u16((float) Math.floor(x)) << 48) | (u16((float) Math.floor(y)) << 32)
+                | (u16((float) Math.ceil(w)) << 16) | u16((float) Math.ceil(h));
+    }
+
+    private static long u16(float value) {
+        return (long) Math.max(0f, Math.min(65534f, value)); // 65535 in every field is the "none" value
     }
 
     private boolean overWindow(float x, float y) {
@@ -268,6 +287,7 @@ public final class DevTools {
     }
 
     private DevTools add(Item item) {
+        item.id = nextItemId++;
         items.add(item);
         return this;
     }
@@ -318,6 +338,7 @@ public final class DevTools {
         final Runnable action;
         final int decimals;
         final StringBuilder shown = new StringBuilder(); // the value as last refreshed
+        int id; // stable widget id, set by add() (an index would move when entries are removed)
         boolean failed; // its callback threw (logged once)
         Toggle toggle;
         Slider slider;
@@ -413,6 +434,7 @@ public final class DevTools {
             setVisible(!visible);
         }
         if (!visible) {
+            wheel = 0f; // scrolling while hidden never reaches a later frame
             return;
         }
         long start = System.nanoTime();
@@ -435,6 +457,7 @@ public final class DevTools {
             }
             view.refresh(); // one screen size query per frame, not one per command
             drawWindow(pipeline.canvas(LAYER));
+            wheel = 0f; // used: a frame the host passes no scrolling doesn't repeat it
             pipeline.render();
             refresh = false;
         } catch (Throwable e) {
@@ -615,6 +638,7 @@ public final class DevTools {
         }
         windowWidth = w;
         windowHeight = h;
+        hitBox = packBox(x, y, w, h);
         // background last, below everything (the layer is sorted: lower depth first)
         c.roundRect(x, y, w, h, 8).fill(DevUi.PANEL).stroke(1, DevUi.EDGE).depth(-2);
         c.roundRect(x + 1, y + 1, w - 2, TITLE - 1, 7).fill(DevUi.BAR).depth(-1);
@@ -1007,7 +1031,7 @@ public final class DevTools {
                 case Item.SLIDER -> {
                     sliderText.setLength(0);
                     DevUi.fixed(sliderText, item.slider.get(), 2);
-                    item.slider.set(ui.slider(1000 + i, item.name, sliderText, item.slider.get(), item.slider.min,
+                    item.slider.set(ui.slider(item.id, item.name, sliderText, item.slider.get(), item.slider.min,
                             item.slider.max));
                 }
                 default -> {

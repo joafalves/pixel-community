@@ -837,7 +837,8 @@ pipeline and core)
   white texture is reset once per frame instead of on every pass (binds counted only when real); vertex and uniform
   buffers grow geometrically and are orphaned at a constant size; textures used by consecutive batches keep their
   unit ("sticky" slots); no depth or stencil buffer (2D needs neither); texture importers premultiply alpha and
-  restore the binding they change; LWJGL's argument checks are configured before LWJGL loads.
+  restore the binding they change; LWJGL's argument checks are configured before LWJGL loads (on in dev mode, off
+  in release builds).
 - Draw core: commands added after a list was prepared are sorted again (a custom pass recording into a drawn
   layer); input already in order skips the sort; vertices are written with absolute puts; image-only lists use the
   sprite layout; commands outside their clip are culled and repeated clip rectangles share an entry; bitmap-font

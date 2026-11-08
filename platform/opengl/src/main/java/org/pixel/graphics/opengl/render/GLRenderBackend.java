@@ -79,7 +79,6 @@ public final class GLRenderBackend implements RenderBackend {
     private final int[] screen = new int[4];
     private int screenFramebuffer;
     private long screenFrame = Long.MIN_VALUE;
-    private int generation; // bumped when the context is recreated
     private long drawCallCount;
 
     /**
@@ -138,13 +137,13 @@ public final class GLRenderBackend implements RenderBackend {
         passTarget = null;
         targetBound = false;
         screenFrame = Long.MIN_VALUE;
-        generation++; // targets and effects made before rebuild themselves on next use
+        gl.contextRecreated(); // targets, effects and textures made before know their names are dead
         createGlObjects(); // the old names died with their context: nothing to delete
     }
 
     @Override
     public int getContextGeneration() {
-        return generation;
+        return gl.contextGeneration();
     }
 
     @Override
@@ -361,7 +360,7 @@ public final class GLRenderBackend implements RenderBackend {
                 ? GLShapeProgram.effect(gl, slots, MAX_CLIPS, MAX_STYLES, source)
                 : GLShapeProgram.raw(gl, slots, vertexSource, source);
         try {
-            return new GLMaterialProgram(gl, program, slots, generation);
+            return new GLMaterialProgram(gl, program, slots, gl.contextGeneration());
         } catch (RuntimeException e) {
             program.dispose();
             throw e;
@@ -372,7 +371,7 @@ public final class GLRenderBackend implements RenderBackend {
 
     private GLMaterialProgram materialProgram(Material material) {
         MaterialProgram program = material.program(this);
-        if (!(program instanceof GLMaterialProgram glProgram) || glProgram.generation != generation) {
+        if (!(program instanceof GLMaterialProgram glProgram) || glProgram.generation != gl.contextGeneration()) {
             throw new IllegalStateException("The material's program doesn't belong to this backend: " + material);
         }
         return glProgram;
@@ -385,7 +384,7 @@ public final class GLRenderBackend implements RenderBackend {
     @Override
     public RenderTarget createTarget(int width, int height) {
         checkActive();
-        return new GLRenderTarget(gl, width, height, generation, this::getContextGeneration);
+        return new GLRenderTarget(gl, width, height);
     }
 
     @Override
@@ -508,7 +507,7 @@ public final class GLRenderBackend implements RenderBackend {
         if (!(target instanceof GLRenderTarget glTarget) || glTarget.isDisposed()) {
             throw new IllegalArgumentException("Not a live render target of this backend: " + target);
         }
-        glTarget.ensureGeneration(generation); // made in a lost context: allocate again
+        glTarget.ensureGeneration(); // made in a lost context: allocate again
         return glTarget;
     }
 

@@ -15,7 +15,6 @@ import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.system.MemoryStack;
 import org.pixel.commons.data.ImageData;
-import org.pixel.commons.data.Pair;
 import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
@@ -41,6 +40,8 @@ public class GLFWWindowManager extends DesktopWindowManager {
     private long windowHandle;
     private long monitorHandle;
     private boolean isWindowFocused;
+    // kept up to date by the resize and content-scale callbacks (read every frame, e.g. by the dev tools)
+    private float framebufferScale = 1f, contentScale = 1f;
     private long cursorHandle = NULL;
     private WindowCursorType cursorType;
 
@@ -104,7 +105,7 @@ public class GLFWWindowManager extends DesktopWindowManager {
 
         // Setup window callbacks
         this.initWindowCallbacks();
-        this.updateMouseVirtualScale();
+        this.updateScales();
 
         this.state = State.INITIALIZED;
         //this.setWindowIcon(DEFAULT_WINDOW_ICON_PATH_64, DEFAULT_WINDOW_ICON_PATH_32);
@@ -446,10 +447,11 @@ public class GLFWWindowManager extends DesktopWindowManager {
     }
 
     /**
-     * Mouse events arrive in window (screen) coordinates; keep the factor to convert them into virtual coordinates
-     * up to date (differs from 1 when the window is resized or the OS scales the window, e.g. on Windows high DPI).
+     * Mouse events arrive in window (screen) coordinates; keep the factors that convert them into virtual coordinates
+     * and framebuffer pixels up to date (they differ from 1 when the window is resized or the OS scales the window,
+     * e.g. on Retina or Windows high DPI), and the OS content scale.
      */
-    private void updateMouseVirtualScale() {
+    private void updateScales() {
         try (MemoryStack stack = stackPush()) {
             IntBuffer winWidth = stack.mallocInt(1);
             IntBuffer winHeight = stack.mallocInt(1);
@@ -457,19 +459,25 @@ public class GLFWWindowManager extends DesktopWindowManager {
             if (winWidth.get(0) > 0 && winHeight.get(0) > 0) {
                 Mouse.setVirtualScale(windowDimensions.getVirtualWidth() / (float) winWidth.get(0),
                         windowDimensions.getVirtualHeight() / (float) winHeight.get(0));
+                framebufferScale = windowDimensions.getWindowWidth() / (float) winWidth.get(0);
             }
-        }
-    }
-
-    private Pair<Float, Float> getMonitorContentScale() {
-        // Note: On Linux this function may return unexpected values for fractional scaling as it depends on the
-        // window manager and compositor. For example, a fractional scaling of 125% might return 2.0f.
-        try (MemoryStack stack = stackPush()) {
+            // Note: on Linux this may be unexpected with fractional scaling, as it depends on the window manager and
+            // compositor (125% may read as 2).
             FloatBuffer xScale = stack.mallocFloat(1);
             FloatBuffer yScale = stack.mallocFloat(1);
             glfwGetWindowContentScale(windowHandle, xScale, yScale);
-            return new Pair<>(xScale.get(), yScale.get());
+            contentScale = xScale.get(0) > 0f ? xScale.get(0) : framebufferScale;
         }
+    }
+
+    @Override
+    public float getFramebufferScale() {
+        return framebufferScale;
+    }
+
+    @Override
+    public float getContentScale() {
+        return contentScale;
     }
 
     private void updateWindowMode() {
@@ -535,9 +543,12 @@ public class GLFWWindowManager extends DesktopWindowManager {
             if (this.windowSettings.getGraphicsBackend() == GraphicsBackend.OpenGL) {
                 glViewport(0, 0, fbWidth, fbHeight);
             }
-            this.updateMouseVirtualScale();
+            this.updateScales();
             this.game.onViewportChanged(fbWidth, fbHeight);
         });
+
+        // The OS scale changed (e.g. the window moved to a monitor with another DPI setting):
+        glfwSetWindowContentScaleCallback(windowHandle, (window, xScale, yScale) -> this.updateScales());
 
         // Window focus callback:
         glfwSetWindowFocusCallback(windowHandle, ((window, focused) -> {

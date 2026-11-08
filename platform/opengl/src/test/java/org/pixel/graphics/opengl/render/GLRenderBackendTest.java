@@ -289,6 +289,19 @@ class GLRenderBackendTest {
     }
 
     @Test
+    void texturesMadeBeforeALostContextNeverDeleteNamesOfTheNewOne() {
+        GLTexture before = new GLTexture(gl, gl.genTexture(), 8, 8); // e.g. a sprite imported at start
+        gl.loseContext();
+        backend.contextRecreated(); // the backend's new white texture may reuse that name
+        before.dispose(); // e.g. content().unload() after the resume
+        assertTrue(gl.deletedNames.isEmpty(), "deleted " + gl.deletedNames);
+
+        GLTexture after = new GLTexture(gl, gl.genTexture(), 8, 8);
+        after.dispose(); // a name of this context: deleted
+        assertEquals(1, gl.deletedNames.size());
+    }
+
+    @Test
     void postDrawsThatReplaceATargetClearItFirst() {
         RenderTarget target = backend.createTarget(64, 64);
         var program = backend.compilePost("vec4 effect(vec2 uv) { return vec4(1.0); }");

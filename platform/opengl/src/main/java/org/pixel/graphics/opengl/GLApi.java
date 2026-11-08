@@ -70,6 +70,18 @@ public interface GLApi {
      */
     String shaderPreamble();
 
+    /**
+     * @return The GL context generation, bumped by {@link #contextRecreated()}. GL names made in an older generation
+     * belong to a lost context: they must never be deleted, because the new context may already reuse them.
+     */
+    int contextGeneration();
+
+    /**
+     * The platform recreated the GL context (Android can, when the app is paused): every GL name made before is dead.
+     * Called by the render backend; GL thread only.
+     */
+    void contextRecreated();
+
     int getInteger(int name);
 
     /** Read an integer vector state (e.g. {@code GL_VIEWPORT}) into {@code out}. */
