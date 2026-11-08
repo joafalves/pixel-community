@@ -284,6 +284,7 @@ class GLRenderBackendTest {
         assertTrue(fragment.contains("#define PIXEL_MATERIAL") && fragment.contains("uniform vec4 uTint;"));
         assertTrue(fragment.contains("uniform sampler2D uTextures[12];")); // 16 units, 4 kept for material textures
         assertEquals(3, gl.draws.size());
+        assertEquals(3, backend.getDrawCallCount());
         int builtIn = gl.draws.get(0).program();
         assertNotEquals(builtIn, gl.draws.get(1).program());
         assertEquals(builtIn, gl.draws.get(2).program());

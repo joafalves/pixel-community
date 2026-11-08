@@ -70,6 +70,11 @@ public class RecordingBackend implements RenderBackend {
     }
 
     @Override
+    public long getDrawCallCount() {
+        return drawCalls;
+    }
+
+    @Override
     public BackendCapabilities capabilities() {
         return capabilities;
     }

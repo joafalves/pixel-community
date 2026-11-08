@@ -81,6 +81,7 @@ public final class Canvas {
     public void reset() {
         if (pending != null) {
             pending.material = null; // dropped without committing
+            pending.pickId = 0;
             pending = null;
         }
         transform.identity();
@@ -124,20 +125,23 @@ public final class Canvas {
             Command<?> command = pending;
             pending = null;
             Material material = command.material;
-            if (material == null) {
+            if (material == null && command.pickId == 0) {
                 command.commit();
                 return;
             }
-            if (command.hasMaterialData) {
+            if (material != null && command.hasMaterialData) {
                 list.setMaterial(material, command.data0, command.data1, command.data2, command.data3);
             } else {
                 list.setMaterial(material);
             }
+            list.setPickId(command.pickId);
             try {
                 command.commit();
             } finally {
                 list.setMaterial(null);
+                list.setPickId(0);
                 command.material = null;
+                command.pickId = 0;
             }
         }
     }
@@ -146,6 +150,7 @@ public final class Canvas {
     private void start(Command<?> command) {
         command.material = null;
         command.hasMaterialData = false;
+        command.pickId = 0;
         pending = command;
     }
 
@@ -425,7 +430,7 @@ public final class Canvas {
     }
 
     /**
-     * Settings shared by every command: the material.
+     * Settings shared by every command: the material and the pick id.
      *
      * @param <T> The concrete builder (for fluent chaining).
      */
@@ -433,8 +438,19 @@ public final class Canvas {
         Material material;
         boolean hasMaterialData;
         float data0, data1, data2, data3;
+        int pickId;
 
         abstract void commit();
+
+        /**
+         * Make this command pickable: after the frame is rendered, {@code pipeline.lastFrame().pick(layer, x, y)}
+         * returns the id of the top-most command at a point (0 = not pickable). Text, paths and nine-patches carry the
+         * id on all their parts.
+         */
+        public T pick(int id) {
+            pickId = id;
+            return self();
+        }
 
         @SuppressWarnings("unchecked")
         T self() {

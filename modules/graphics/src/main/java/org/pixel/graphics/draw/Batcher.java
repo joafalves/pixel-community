@@ -12,7 +12,7 @@ import java.util.Arrays;
 
 /**
  * Turns a prepared {@link DrawList} into vertices and batches. Walks the commands in final draw order and merges
- * consecutive commands into one batch until one of these breaks it:
+ * consecutive commands into one batch until one of these breaks it (recorded per batch as a {@link BatchBreak}):
  * <ul>
  *   <li>the vertex layout changes (sprite quads vs shape/canvas quads);</li>
  *   <li>the material changes;</li>
@@ -77,9 +77,20 @@ public final class Batcher {
             VertexStream vertices = out.vertices(layout);
             Material material = list.material(index);
 
-            if (batches.currentLayout() != layout || batches.currentMaterial() != material
-                    || batches.currentQuadCount() == maxQuads || !fits(list, index, batches, capabilities)) {
-                beginBatch(batches, layout, material, vertices.quadCount(), alignment, capabilities);
+            BatchBreak reason;
+            if (batches.size() == 0) {
+                reason = BatchBreak.FIRST;
+            } else if (batches.currentLayout() != layout) {
+                reason = BatchBreak.LAYOUT;
+            } else if (batches.currentMaterial() != material) {
+                reason = BatchBreak.MATERIAL;
+            } else if (batches.currentQuadCount() == maxQuads) {
+                reason = BatchBreak.QUAD_LIMIT;
+            } else {
+                reason = misfit(list, index, batches, capabilities);
+            }
+            if (reason != null) {
+                beginBatch(batches, layout, material, vertices.quadCount(), alignment, capabilities, reason);
             }
 
             Texture texture = list.texture(index);
@@ -112,32 +123,35 @@ public final class Batcher {
     }
 
     private void beginBatch(BatchList batches, VertexLayout layout, Material material, int firstQuad, int alignment,
-                            BackendCapabilities capabilities) {
+                            BackendCapabilities capabilities, BatchBreak reason) {
         int slots = material != null ? Math.min(capabilities.materialTextureSlots(), batches.getMaxTextureSlots())
                 : batches.getMaxTextureSlots();
-        batches.begin(layout, material, firstQuad, alignment, slots);
+        batches.begin(layout, material, firstQuad, alignment, slots, reason);
         batchSerial++;
     }
 
     /**
-     * Whether the command's texture, clip and style fit into the current batch (without changing it).
+     * What keeps the command's texture, clip or style out of the current batch, or {@code null} if they fit
+     * (without changing the batch).
      */
-    private boolean fits(DrawList list, int index, BatchList batches, BackendCapabilities capabilities) {
+    private BatchBreak misfit(DrawList list, int index, BatchList batches, BackendCapabilities capabilities) {
         Texture texture = list.texture(index);
         if (texture != null && batches.currentSlotsFull() && !hasTexture(batches, texture)) {
-            return false;
+            return BatchBreak.TEXTURE_SLOTS;
         }
         if (list.layout(index) == VertexLayout.FULL) {
             int clip = list.clipId(index);
             if (clip != 0 && clipStamp[clip] != batchSerial
                     && batches.currentClipCount() == capabilities.maxClipsPerBatch()) {
-                return false;
+                return BatchBreak.CLIP_TABLE;
             }
             int style = list.styleId(index);
-            return style == 0 || styleStamp[style] == batchSerial
-                    || batches.currentStyleCount() < capabilities.maxStylesPerBatch();
+            if (style != 0 && styleStamp[style] != batchSerial
+                    && batches.currentStyleCount() >= capabilities.maxStylesPerBatch()) {
+                return BatchBreak.STYLE_TABLE;
+            }
         }
-        return true;
+        return null;
     }
 
     private static boolean hasTexture(BatchList batches, Texture texture) {

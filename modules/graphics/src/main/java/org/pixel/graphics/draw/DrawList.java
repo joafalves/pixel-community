@@ -39,6 +39,7 @@ public final class DrawList {
     private int[] styleIds;    // StyleTable id, 0 = none (FULL only)
     private int[] clipIds;     // ClipTable id, 0 = none (FULL only)
     private Material[] materials; // null = built-in program (FULL only)
+    private int[] pickIds;     // 0 = not pickable
     private final StyleTable styles = new StyleTable();
     private final ClipTable clips = new ClipTable();
     private long[] keys;       // sorted modes: depth (high 32 bits), then material and texture group (low 32 bits)
@@ -49,6 +50,8 @@ public final class DrawList {
     private boolean needsSort;
     private long firstKey;
     private boolean prepared;
+
+    private int pickId; // pick id given to the commands being added
 
     // material applied to shape commands being added, and its per-command data
     private Material material;
@@ -91,6 +94,7 @@ public final class DrawList {
         Arrays.fill(materials, 0, size, null);
         size = 0;
         setMaterial(null);
+        pickId = 0;
         styles.clear();
         clips.clear();
         needsSort = false;
@@ -254,6 +258,20 @@ public final class DrawList {
     }
 
     /**
+     * Set the pick id of the commands added from now on (0 = not pickable). See {@code FrameInfo.pick}.
+     */
+    public void setPickId(int pickId) {
+        this.pickId = pickId;
+    }
+
+    /**
+     * @return The command's pick id (0 = not pickable).
+     */
+    public int pickId(int index) {
+        return pickIds[index];
+    }
+
+    /**
      * Set the material of the shape commands added from now on ({@code null} = the built-in program), without
      * material data.
      */
@@ -306,6 +324,7 @@ public final class DrawList {
         int i = size;
         textures[i] = texture;
         materials[i] = commandMaterial;
+        pickIds[i] = pickId;
 
         int p = i * 8;
         positions[p] = x0;
@@ -355,6 +374,13 @@ public final class DrawList {
         }
         needsSort = false;
         prepared = true;
+    }
+
+    /**
+     * @return Whether {@link #prepare()} was called since the last command was added.
+     */
+    public boolean isPrepared() {
+        return prepared;
     }
 
     /**
@@ -545,6 +571,7 @@ public final class DrawList {
         styleIds = new int[capacity];
         clipIds = new int[capacity];
         materials = new Material[capacity];
+        pickIds = new int[capacity];
         keys = new long[capacity];
         sequence = new int[capacity];
         keyBuffer = new long[capacity];
@@ -564,6 +591,7 @@ public final class DrawList {
         styleIds = Arrays.copyOf(styleIds, capacity);
         clipIds = Arrays.copyOf(clipIds, capacity);
         materials = Arrays.copyOf(materials, capacity);
+        pickIds = Arrays.copyOf(pickIds, capacity);
         keys = Arrays.copyOf(keys, capacity);
         sequence = Arrays.copyOf(sequence, capacity);
         keyBuffer = new long[capacity];

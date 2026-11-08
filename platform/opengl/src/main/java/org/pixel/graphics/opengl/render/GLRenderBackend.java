@@ -77,6 +77,7 @@ public final class GLRenderBackend implements RenderBackend {
     private final int[] viewport = new int[4];
     private int savedFramebuffer;
     private int generation; // bumped when the context is recreated
+    private long drawCallCount;
 
     /**
      * Constructor (requires a current OpenGL 3.3 or OpenGL ES 3.0 context).
@@ -137,6 +138,11 @@ public final class GLRenderBackend implements RenderBackend {
     @Override
     public int getContextGeneration() {
         return generation;
+    }
+
+    @Override
+    public long getDrawCallCount() {
+        return drawCallCount;
     }
 
     @Override
@@ -259,6 +265,7 @@ public final class GLRenderBackend implements RenderBackend {
             gl.drawElements(GL_TRIANGLES, count * 6, GL_UNSIGNED_SHORT,
                     (long) (first - pipeline.chunkStart) * 6 * Short.BYTES);
             stats.recordDrawCall(count, count * 4L);
+            drawCallCount++;
         }
     }
 
@@ -404,6 +411,7 @@ public final class GLRenderBackend implements RenderBackend {
         gl.bindVertexArray(emptyVao);
         gl.drawArrays(GL_TRIANGLES, 0, 3);
         stats.recordDrawCall(1, 3);
+        drawCallCount++;
 
         gl.bindVertexArray(0);
         gl.activeTexture(GL_TEXTURE0);

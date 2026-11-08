@@ -17,6 +17,11 @@ public interface RenderBackend extends Disposable {
     BackendCapabilities capabilities();
 
     /**
+     * @return How many draw calls this backend has made so far (only ever increases; differences measure a pass).
+     */
+    long getDrawCallCount();
+
+    /**
      * Start a pass: bind the program, apply the view matrix and blend mode.
      *
      * @param state The pass state.

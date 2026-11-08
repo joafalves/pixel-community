@@ -774,7 +774,31 @@ Each phase ends green (`./gradlew build`) and is reviewable on its own.
   by material (B compares with a plain sorted layer), hit flash and dissolve with per-command data, grass swaying
   through a raw material, an effect over the title text. Android: pulsing planets (data) and a raw material.
 
-*3d: inspection:* pick ids, last-frame snapshot and `pick()`, per pass/layer frame stats and batch break reasons.
+*3d: inspection* ✅
+- Pick ids: `.pick(id)` on every canvas command (0 = not pickable); all quads of a command (path triangles, glyphs,
+  nine-patch parts) carry it. The draw list stores one per command.
+- `pipeline.lastFrame()` returns a `FrameInfo`, updated in place by every `render()`:
+  - per pass: kind, target, draw calls, CPU time;
+  - per (pass, layer): commands, culled commands, batches, quads, draw calls and batch breaks by reason;
+  - the batch list in drawing order: layer, `BatchBreak` reason, material, quads, textures. Reasons: `FIRST`,
+    `LAYOUT`, `MATERIAL`, `QUAD_LIMIT`, `TEXTURE_SLOTS`, `CLIP_TABLE`, `STYLE_TABLE`, recorded by the batcher.
+  Draw calls come from `RenderBackend.getDrawCallCount()` (a running counter), so post and custom passes count too.
+- Picking: `lastFrame().pick(layer, x, y)` (top-most id, in layer coordinates) and `pickAll` (top-most first). The
+  pickable commands are copied before the layers are cleared, so the last frame stays queryable while the next one
+  is recorded (the game picks what the player sees). Hit tests follow the shader: the two triangles the GPU draws,
+  interpolated local and uv coordinates, the shape's distance function against its stroke's reach, path fill
+  coverage, path stroke width, dash gaps; glyphs by their boxes (not their shadow), images by their quads; clips
+  honoured. Picks are captured when a layer is prepared for drawing (again if a custom pass added commands before a
+  later pass drew it), so they are what was drawn, and `render()` can't fail while cleaning up.
+- `Material.setName` for readable statistics.
+- Tests: break reasons, culling, batch list and reset between frames; draw calls of layer, post and custom passes;
+  hits and misses on round corners, outside strokes, round caps, ellipses, a concave path, path strokes, text,
+  rotated images, clipped shapes, dashed lines and ellipses, nine-patches; top-most order and `pickAll`; picks kept
+  until the next frame; a custom pass recording into a drawn layer; a failing frame followed by a good one; a layer
+  in two passes and a fully culled pass; zero allocations with stats and picks.
+- Demo: `urp/InspectorDemo`: 60 props of every kind with pick ids; hover and click select with exact hits, the
+  selection drawn in an overlay layer (an editor's gizmo layer); a panel with the last frame's statistics and batch
+  breaks (the water material breaks y-sorted batches; M toggles it).
 
 **Phase 4: merge readiness**
 - Update docs and `AGENTS.md` (the legacy renderers are already removed).

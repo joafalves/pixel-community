@@ -5,6 +5,7 @@ import org.pixel.content.Texture;
 import org.pixel.graphics.backend.PassState;
 import org.pixel.graphics.backend.RenderBackend;
 import org.pixel.graphics.backend.RenderData;
+import org.pixel.graphics.backend.BatchList;
 import org.pixel.graphics.backend.RenderTarget;
 import org.pixel.graphics.canvas.Canvas;
 import org.pixel.graphics.draw.Batcher;
@@ -42,7 +43,9 @@ import java.util.List;
  *   <li><b>Custom passes</b> get direct backend access. Targets they draw into are not tracked: a later layer pass
  *   still clears them first if nothing else drew into them this frame.</li>
  * </ul>
- * Effects passed to the builder are disposed with the pipeline. No GL here: the pipeline talks to a
+ * {@link #lastFrame()} tells what the last frame did (statistics per pass and layer, batches and why they broke) and
+ * finds pickable commands ({@code .pick(id)}) at a point. Effects passed to the builder are disposed with the
+ * pipeline. No GL here: the pipeline talks to a
  * {@link RenderBackend}. Allocation-free per frame once warmed up. Not thread-safe; record and render on the render
  * thread.
  */
@@ -68,6 +71,7 @@ public final class RenderPipeline implements Disposable {
     private final Matrix4 inverse = new Matrix4();
     private final float[] bounds = new float[4];
     private final ShaderEffect copy = new ShaderEffect("vec4 effect(vec2 uv) {\n    return texture(uSource, uv);\n}\n");
+    private final FrameInfo frameInfo;
     private int frame;
     private boolean rendering;
     private boolean disposed;
@@ -79,6 +83,39 @@ public final class RenderPipeline implements Disposable {
         this.passes = builder.passes.toArray(new Pass[0]);
         this.effects = builder.effects.toArray(new PostEffect[0]);
         this.renderData = new RenderData(backend.capabilities().maxTextureSlots());
+
+        List<FrameInfo.PassStats> passStats = new ArrayList<>();
+        List<FrameInfo.LayerStats> layerStats = new ArrayList<>();
+        for (int p = 0; p < passes.length; p++) {
+            Pass pass = passes[p];
+            FrameInfo.LayerStats[] stats = new FrameInfo.LayerStats[pass.kind == Kind.LAYERS ? pass.layers.length : 0];
+            for (int i = 0; i < stats.length; i++) {
+                stats[i] = new FrameInfo.LayerStats(pass.layers[i].layer, p);
+                layerStats.add(stats[i]);
+            }
+            pass.layerStats = stats;
+            FrameInfo.PassKind kind = switch (pass.kind) {
+                case LAYERS -> FrameInfo.PassKind.LAYERS;
+                case POST -> FrameInfo.PassKind.POST;
+                default -> FrameInfo.PassKind.CUSTOM;
+            };
+            pass.stats = new FrameInfo.PassStats(p, kind, pass.target != null ? pass.target.target : null, stats);
+            passStats.add(pass.stats);
+        }
+        Layer[] pickLayers = new Layer[layers.length];
+        for (int i = 0; i < layers.length; i++) {
+            pickLayers[i] = layers[i].layer;
+        }
+        this.frameInfo = new FrameInfo(passStats.toArray(new FrameInfo.PassStats[0]),
+                layerStats.toArray(new FrameInfo.LayerStats[0]), pickLayers);
+    }
+
+    /**
+     * What the last {@link #render()} did, and its pickable commands. The same object every time, updated in place
+     * by each {@code render()}.
+     */
+    public FrameInfo lastFrame() {
+        return frameInfo;
     }
 
     /**
@@ -118,6 +155,8 @@ public final class RenderPipeline implements Disposable {
         }
         rendering = true;
         frame++;
+        long start = System.nanoTime();
+        frameInfo.begin(frame);
         try {
             int screenWidth = backend.getScreenWidth(), screenHeight = backend.getScreenHeight();
             for (TargetState target : targets) {
@@ -130,18 +169,29 @@ public final class RenderPipeline implements Disposable {
                 layer.canvas.flush();
             }
             for (Pass pass : passes) {
-                switch (pass.kind) {
-                    case LAYERS -> renderLayers(pass);
-                    case POST -> renderPost(pass);
-                    default -> pass.custom.render(backend);
+                long passStart = System.nanoTime();
+                long drawCalls = backend.getDrawCallCount();
+                try {
+                    switch (pass.kind) {
+                        case LAYERS -> renderLayers(pass);
+                        case POST -> renderPost(pass);
+                        default -> pass.custom.render(backend);
+                    }
+                } finally {
+                    pass.stats.drawCalls = backend.getDrawCallCount() - drawCalls;
+                    pass.stats.nanos = System.nanoTime() - passStart;
                 }
             }
         } finally {
-            for (LayerState layer : layers) {
-                layer.list.clear();
-                layer.canvas.reset();
+            try {
+                for (LayerState layer : layers) {
+                    layer.list.clear();
+                    layer.canvas.reset();
+                }
+                frameInfo.end(System.nanoTime() - start);
+            } finally {
+                rendering = false;
             }
-            rendering = false;
         }
     }
 
@@ -152,27 +202,39 @@ public final class RenderPipeline implements Disposable {
         if (pass.target != null) {
             pass.target.writtenFrame = frame;
         }
-        for (LayerState layer : pass.layers) {
+        for (int l = 0; l < pass.layers.length; l++) {
+            LayerState layer = pass.layers[l];
+            FrameInfo.LayerStats stats = pass.layerStats[l];
             DrawList list = layer.list;
+            layer.canvas.flush(); // anything recorded since the start of render() (e.g. by a custom pass)
+            stats.commands = list.size();
             if (list.size() == 0) {
                 continue;
             }
-            if (layer.preparedFrame != frame) { // sort once per frame, even when several passes draw the layer
-                layer.canvas.flush(); // anything recorded since the start of render() (e.g. by a custom pass)
+            // sort once per frame, even when several passes draw the layer (again if a custom pass added commands)
+            if (layer.preparedFrame != frame || !list.isPrepared()) {
                 list.prepare();
                 layer.preparedFrame = frame;
+                frameInfo.capturePicks(layer.layer, list); // what is drawn is what can be picked
             }
-            batcher.build(list, backend.capabilities(), renderData, cull);
-            if (renderData.batches().size() == 0) {
+            stats.culled = batcher.build(list, backend.capabilities(), renderData, cull);
+            BatchList batches = renderData.batches();
+            if (batches.size() == 0) {
                 continue; // everything culled
+            }
+            for (int b = 0, n = batches.size(); b < n; b++) {
+                frameInfo.addBatch(stats, batches.reason(b), batches.material(b), batches.quadCount(b),
+                        batches.textureCount(b));
             }
             passState.set(pass.view.getViewMatrix(), layer.layer.getBlendMode()).target(target, clear);
             clear = false;
+            long drawCalls = backend.getDrawCallCount();
             backend.beginPass(passState);
             try {
                 backend.submit(renderData);
             } finally {
                 backend.endPass();
+                stats.drawCalls = backend.getDrawCallCount() - drawCalls;
             }
         }
         if (clear) { // nothing drawn into the target this frame: still clear last frame's contents
@@ -262,6 +324,7 @@ public final class RenderPipeline implements Disposable {
             return;
         }
         disposed = true;
+        frameInfo.begin(0); // no references to the last frame's materials
         for (LayerState layer : layers) {
             layer.list.clear();
             layer.canvas.reset();
@@ -322,6 +385,8 @@ public final class RenderPipeline implements Disposable {
         PostEffect[] effects;
         Context context; // post passes: their own scratch targets
         CustomPass custom;
+        FrameInfo.PassStats stats;
+        FrameInfo.LayerStats[] layerStats; // layer passes: one per layer
 
         Pass(Kind kind) {
             this.kind = kind;

@@ -82,6 +82,7 @@ public final class Material implements Disposable {
 
     private final Kind kind;
     private final int id;
+    private String name;
     private String source;        // effect function, or the raw fragment shader
     private String vertexSource;  // raw only
     private int version;
@@ -130,6 +131,21 @@ public final class Material implements Disposable {
     public static Material raw(String vertexSource, String fragmentSource) {
         checkRaw(vertexSource, fragmentSource);
         return new Material(Kind.RAW, vertexSource, fragmentSource);
+    }
+
+    /**
+     * Name the material for debugging (frame statistics, logs).
+     */
+    public Material setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    /**
+     * @return The name given with {@link #setName}, or {@code null}.
+     */
+    public String getName() {
+        return name;
     }
 
     // region values
@@ -406,6 +422,6 @@ public final class Material implements Disposable {
 
     @Override
     public String toString() {
-        return "Material[" + kind + " #" + id + "]";
+        return "Material[" + (name != null ? name + ", " : "") + kind + " #" + id + "]";
     }
 }

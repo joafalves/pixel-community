@@ -1,6 +1,7 @@
 package org.pixel.graphics.backend;
 
 import org.pixel.content.Texture;
+import org.pixel.graphics.draw.BatchBreak;
 import org.pixel.graphics.material.Material;
 
 import java.util.Arrays;
@@ -34,6 +35,7 @@ public final class BatchList {
     private int size;
     private VertexLayout[] layout = new VertexLayout[16];
     private Material[] materials = new Material[16];
+    private BatchBreak[] reasons = new BatchBreak[16];
     private int[] slotLimit = new int[16];
     private int[] firstQuad = new int[16];
     private int[] quadCount = new int[16];
@@ -85,14 +87,14 @@ public final class BatchList {
     }
 
     /**
-     * Start a new batch with the built-in program and every texture slot.
+     * Start a new batch with the built-in program and every texture slot (recorded as {@link BatchBreak#FIRST}).
      *
      * @param batchLayout    The vertex layout of the batch.
      * @param first          The first quad of the batch in the stream of that layout.
      * @param alignmentFloats Alignment of the batch's table slices (in floats).
      */
     public void begin(VertexLayout batchLayout, int first, int alignmentFloats) {
-        begin(batchLayout, null, first, alignmentFloats, maxTextureSlots);
+        begin(batchLayout, null, first, alignmentFloats, maxTextureSlots, BatchBreak.FIRST);
     }
 
     /**
@@ -103,8 +105,10 @@ public final class BatchList {
      * @param first           The first quad of the batch in the stream of that layout.
      * @param alignmentFloats Alignment of the batch's table slices (in floats).
      * @param slots           Texture slots the batch may use (1 to {@link #getMaxTextureSlots()}).
+     * @param reason          Why the previous batch ended ({@link BatchBreak#FIRST} for the first one).
      */
-    public void begin(VertexLayout batchLayout, Material material, int first, int alignmentFloats, int slots) {
+    public void begin(VertexLayout batchLayout, Material material, int first, int alignmentFloats, int slots,
+                      BatchBreak reason) {
         if (slots < 1 || slots > maxTextureSlots) {
             throw new IllegalArgumentException("Slots must be 1 to " + maxTextureSlots + ".");
         }
@@ -112,6 +116,7 @@ public final class BatchList {
             int capacity = size * 2;
             layout = Arrays.copyOf(layout, capacity);
             materials = Arrays.copyOf(materials, capacity);
+            reasons = Arrays.copyOf(reasons, capacity);
             slotLimit = Arrays.copyOf(slotLimit, capacity);
             firstQuad = Arrays.copyOf(firstQuad, capacity);
             quadCount = Arrays.copyOf(quadCount, capacity);
@@ -124,6 +129,7 @@ public final class BatchList {
         }
         layout[size] = batchLayout;
         materials[size] = material;
+        reasons[size] = reason;
         slotLimit[size] = slots;
         firstQuad[size] = first;
         quadCount[size] = 0;
@@ -242,6 +248,13 @@ public final class BatchList {
      */
     public Material material(int batch) {
         return materials[batch];
+    }
+
+    /**
+     * @return Why the batch before it ended ({@link BatchBreak#FIRST} for the first batch).
+     */
+    public BatchBreak reason(int batch) {
+        return reasons[batch];
     }
 
     /**
