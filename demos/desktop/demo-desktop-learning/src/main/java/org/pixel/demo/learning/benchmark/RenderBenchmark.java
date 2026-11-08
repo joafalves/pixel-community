@@ -15,7 +15,6 @@ import org.pixel.core.WindowSettings;
 import org.pixel.graphics.RenderStats;
 import org.pixel.graphics.render.DrawListSpriteBatch;
 import org.pixel.graphics.render.SpriteBatch;
-import org.pixel.graphics.render.opengl.GLSpriteBatch;
 import org.pixel.math.Vector2;
 
 import java.io.IOException;
@@ -26,9 +25,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Locale;
 import java.util.Random;
 
@@ -38,14 +35,12 @@ import static org.lwjgl.opengl.GL11C.glGetString;
 /**
  * Render benchmark for URP v2 (see docs/design/urp-v2.md and urp-v2-baseline.md).
  * <p>
- * Runs every scenario on every renderer in the same session (warm-up + measurement each), prints a side-by-side
- * table and writes a CSV to {@code build/benchmarks/}. Scenarios only use the public {@link SpriteBatch} API, so the
- * classic {@link GLSpriteBatch} and the draw-list {@link DrawListSpriteBatch} run identical workloads.
+ * Runs every scenario in one session (warm-up + measurement each) on the {@link DrawListSpriteBatch}, prints a
+ * table and writes a CSV to {@code build/benchmarks/}. Scenarios only use the public {@link SpriteBatch} API.
  * <p>
  * Run with: {@code ./gradlew :pixel-demo-desktop-learning:renderBenchmark}
  * <br>Options (system properties): {@code -Dbench.scale=1.0} (object counts), {@code -Dbench.warmup=2}
- * and {@code -Dbench.measure=8} (seconds), {@code -Dbench.only=name} (single scenario),
- * {@code -Dbench.renderers=legacy,drawlist} (which renderers to run).
+ * and {@code -Dbench.measure=8} (seconds), {@code -Dbench.only=name} (single scenario).
  */
 public class RenderBenchmark extends GameApp {
 
@@ -57,19 +52,15 @@ public class RenderBenchmark extends GameApp {
     private final float warmupSeconds = Float.parseFloat(System.getProperty("bench.warmup", "2"));
     private final float measureSeconds = Float.parseFloat(System.getProperty("bench.measure", "8"));
     private final String only = System.getProperty("bench.only");
-    private final List<String> rendererNames =
-            List.of(System.getProperty("bench.renderers", "legacy,drawlist").split(","));
 
     private ContentManager content;
-    private final Map<String, SpriteBatch> renderers = new LinkedHashMap<>();
-    private SpriteBatch spriteBatch; // renderer of the current run
+    private SpriteBatch spriteBatch;
     private Camera2D camera;
     private GpuTimer gpuTimer;
     private Texture[] textures;
     private Font font;
 
     private final List<Scenario> scenarios = new ArrayList<>();
-    private final List<Run> runs = new ArrayList<>();
     private final List<Result> results = new ArrayList<>();
     private int runIndex = -1;
     private boolean measuring;
@@ -84,15 +75,8 @@ public class RenderBenchmark extends GameApp {
     @Override
     public void load() {
         content = content();
-        for (String name : rendererNames) {
-            SpriteBatch renderer = switch (name.trim()) {
-                case "legacy" -> new GLSpriteBatch(graphics().getStats());
-                case "drawlist" -> new DrawListSpriteBatch(graphics().getRenderBackend());
-                default -> throw new IllegalArgumentException("Unknown renderer '" + name + "' (legacy, drawlist).");
-            };
-            renderer.init();
-            renderers.put(name.trim(), renderer);
-        }
+        spriteBatch = new DrawListSpriteBatch(graphics().getRenderBackend());
+        spriteBatch.init();
         camera = new Camera2D(context());
         camera.setOrigin(0, 0);
         gpuTimer = new GpuTimer();
@@ -121,18 +105,13 @@ public class RenderBenchmark extends GameApp {
             }
         }
 
-        for (Scenario scenario : scenarios) {
-            for (Map.Entry<String, SpriteBatch> renderer : renderers.entrySet()) {
-                runs.add(new Run(scenario, renderer.getKey(), renderer.getValue()));
-            }
-        }
-        log.info("Renderers: {0} ({1})", renderers.keySet(), glGetString(GL_RENDERER));
+        log.info("GPU: {0}", glGetString(GL_RENDERER));
         nextRun(0);
     }
 
     @Override
     public void update(DeltaTime delta) {
-        if (runIndex >= runs.size()) {
+        if (runIndex >= scenarios.size()) {
             return;
         }
         // The device publishes a frame's counters once it ends, so the previous frame is complete now.
@@ -147,16 +126,16 @@ public class RenderBenchmark extends GameApp {
             phaseStart = now;
             resetMeasurements();
         } else if (measuring && elapsed >= measureSeconds) {
-            results.add(collect(runs.get(runIndex)));
+            results.add(collect(scenarios.get(runIndex)));
             nextRun(now);
             return;
         }
-        runs.get(runIndex).scenario.update(delta.getElapsed());
+        scenarios.get(runIndex).update(delta.getElapsed());
     }
 
     @Override
     public void draw(DeltaTime delta) {
-        if (runIndex >= runs.size()) {
+        if (runIndex >= scenarios.size()) {
             return;
         }
         long frameStart = System.nanoTime();
@@ -166,7 +145,7 @@ public class RenderBenchmark extends GameApp {
         lastFrameStart = frameStart;
 
         gpuTimer.begin();
-        runs.get(runIndex).scenario.draw(spriteBatch);
+        scenarios.get(runIndex).draw(spriteBatch);
         gpuTimer.end();
         long cpuEnd = System.nanoTime();
 
@@ -194,7 +173,9 @@ public class RenderBenchmark extends GameApp {
         if (gpuTimer != null) {
             gpuTimer.dispose();
         }
-        renderers.values().forEach(SpriteBatch::dispose);
+        if (spriteBatch != null) {
+            spriteBatch.dispose();
+        }
         if (content != null) {
             for (Texture texture : textures) {
                 texture.dispose(); // not cached (loaded with useCache=false), so not released by the content manager
@@ -210,11 +191,10 @@ public class RenderBenchmark extends GameApp {
         measuring = false;
         phaseStart = now;
         lastFrameStart = 0;
-        if (runIndex < runs.size()) {
-            Run run = runs.get(runIndex);
-            run.scenario.setup(new Random(42)); // same seed: every renderer gets the identical workload
-            spriteBatch = run.renderer;
-            log.info("Run {0}/{1}: {2} on {3}", runIndex + 1, runs.size(), run.scenario.name, run.rendererName);
+        if (runIndex < scenarios.size()) {
+            Scenario scenario = scenarios.get(runIndex);
+            scenario.setup(new Random(42)); // fixed seed: the same workload on every run of the benchmark
+            log.info("Run {0}/{1}: {2}", runIndex + 1, scenarios.size(), scenario.name);
         } else {
             report();
             exit();
@@ -230,9 +210,9 @@ public class RenderBenchmark extends GameApp {
         gpuTimer.discardPending(); // in-flight queries may still cover warm-up or previous-scenario frames
     }
 
-    private Result collect(Run run) {
+    private Result collect(Scenario scenario) {
         double f = Math.max(1, statFrames);
-        return new Result(run.scenario.name, run.rendererName, run.scenario.objectCount(), cpuMs.size(),
+        return new Result(scenario.name, scenario.objectCount(), cpuMs.size(),
                 frameMs.mean(), frameMs.percentile(0.5), frameMs.percentile(0.95), frameMs.percentile(0.99),
                 cpuMs.mean(), gpuMs.size() > 0 ? gpuMs.mean() : -1,
                 drawCalls / f, primitives / f, vertices / f, textureBinds / f, uploadedBytes / f / 1024.0);
@@ -244,13 +224,13 @@ public class RenderBenchmark extends GameApp {
         table.append(String.format(Locale.ROOT, "%nRender benchmark: %s | LWJGL %s | Java %s | %s %s%n",
                 gpu, org.lwjgl.Version.getVersion(), System.getProperty("java.version"),
                 System.getProperty("os.name"), System.getProperty("os.arch")));
-        table.append(String.format(Locale.ROOT, "%-26s %-9s %8s %7s %8s %8s %8s %8s %8s %8s %9s %9s %8s %10s%n",
-                "scenario", "renderer", "objects", "frames", "fps", "frame ms", "p95 ms", "p99 ms", "cpu ms",
+        table.append(String.format(Locale.ROOT, "%-26s %8s %7s %8s %8s %8s %8s %8s %8s %9s %9s %8s %10s%n",
+                "scenario", "objects", "frames", "fps", "frame ms", "p95 ms", "p99 ms", "cpu ms",
                 "gpu ms", "draws/f", "prims/f", "binds/f", "upload KB/f"));
         for (Result r : results) {
             table.append(String.format(Locale.ROOT,
-                    "%-26s %-9s %8d %7d %8.1f %8.3f %8.3f %8.3f %8.3f %8s %9.1f %9.0f %8.1f %10.1f%n",
-                    r.name, r.renderer, r.objects, r.frames, r.meanFrameMs > 0 ? 1000 / r.meanFrameMs : 0, r.meanFrameMs,
+                    "%-26s %8d %7d %8.1f %8.3f %8.3f %8.3f %8.3f %8s %9.1f %9.0f %8.1f %10.1f%n",
+                    r.name, r.objects, r.frames, r.meanFrameMs > 0 ? 1000 / r.meanFrameMs : 0, r.meanFrameMs,
                     r.p95FrameMs, r.p99FrameMs, r.meanCpuMs, r.meanGpuMs >= 0 ? String.format(Locale.ROOT, "%.3f",
                             r.meanGpuMs) : "n/a", r.drawCallsPerFrame, r.primitivesPerFrame, r.textureBindsPerFrame,
                     r.uploadKbPerFrame));
@@ -266,13 +246,13 @@ public class RenderBenchmark extends GameApp {
             String stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
             Path file = dir.resolve("render-" + stamp + ".csv");
             try (PrintWriter out = new PrintWriter(Files.newBufferedWriter(file))) {
-                out.println("renderer,gpu,lwjgl,scenario,objects,frames,mean_frame_ms,p50_frame_ms,p95_frame_ms,"
+                out.println("gpu,lwjgl,scenario,objects,frames,mean_frame_ms,p50_frame_ms,p95_frame_ms,"
                         + "p99_frame_ms,mean_cpu_ms,mean_gpu_ms,draw_calls_per_frame,primitives_per_frame,"
                         + "vertices_per_frame,texture_binds_per_frame,upload_kb_per_frame");
                 for (Result r : results) {
                     out.printf(Locale.ROOT,
-                            "%s,\"%s\",%s,%s,%d,%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.2f,%.1f,%.1f,%.2f,%.2f%n",
-                            r.renderer, gpu, org.lwjgl.Version.getVersion(), r.name, r.objects, r.frames,
+                            "\"%s\",%s,%s,%d,%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.2f,%.1f,%.1f,%.2f,%.2f%n",
+                            gpu, org.lwjgl.Version.getVersion(), r.name, r.objects, r.frames,
                             r.meanFrameMs, r.p50FrameMs, r.p95FrameMs, r.p99FrameMs, r.meanCpuMs, r.meanGpuMs,
                             r.drawCallsPerFrame, r.primitivesPerFrame, r.verticesPerFrame, r.textureBindsPerFrame,
                             r.uploadKbPerFrame);
@@ -454,10 +434,7 @@ public class RenderBenchmark extends GameApp {
 
     // region measurement helpers
 
-    private record Run(Scenario scenario, String rendererName, SpriteBatch renderer) {
-    }
-
-    private record Result(String name, String renderer, int objects, long frames, double meanFrameMs, double p50FrameMs,
+    private record Result(String name, int objects, long frames, double meanFrameMs, double p50FrameMs,
                           double p95FrameMs, double p99FrameMs, double meanCpuMs, double meanGpuMs,
                           double drawCallsPerFrame, double primitivesPerFrame, double verticesPerFrame,
                           double textureBindsPerFrame, double uploadKbPerFrame) {

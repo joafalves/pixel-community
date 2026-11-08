@@ -8,7 +8,6 @@ import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 import org.pixel.content.Font;
 import org.pixel.content.Texture;
-import org.pixel.graphics.shader.Shader;
 
 public abstract class SpriteBatch implements Initializable, Disposable {
 
@@ -228,18 +227,6 @@ public abstract class SpriteBatch implements Initializable, Disposable {
      * @param fontSize The size of the font.
      */
     public abstract void drawText(Font font, String text, Vector2 position, Color color, int fontSize);
-
-    /**
-     * Get the active shader.
-     *
-     * @return The active shader, or {@code null} if the implementation does not expose one.
-     * @deprecated renderers built on the draw list don't expose their GPU program; custom shaders become materials
-     * (see docs/design/urp-v2.md §4.4).
-     */
-    @Deprecated
-    public Shader getShader() {
-        return null;
-    }
 
     /**
      * Begin drawing phase.

@@ -3,12 +3,13 @@ package org.pixel.graphics.shader.opengl;
 import android.opengl.GLES30;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.graphics.shader.Shader;
+import org.pixel.commons.lifecycle.Disposable;
+import org.pixel.commons.lifecycle.Initializable;
 
 import java.util.HashMap;
 import java.util.List;
 
-public abstract class GLES30Shader implements Shader {
+public abstract class GLES30Shader implements Initializable, Disposable {
 
     private static final Logger log = LoggerFactory.getLogger(GLES30Shader.class);
 
@@ -74,14 +75,8 @@ public abstract class GLES30Shader implements Shader {
         return true;
     }
 
-    @Override
     public void use() {
         GLES30.glUseProgram(programId);
-    }
-
-    @Override
-    public void apply() {
-        // intentionally empty
     }
 
     @Override

@@ -1,104 +1,66 @@
 package org.pixel.demo.learning.render;
 
-import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
-import org.pixel.demo.learning.common.DemoGame;
+import org.pixel.core.DesktopLauncher;
 import org.pixel.core.WindowSettings;
-import org.pixel.graphics.render.RenderEngine2D;
-import org.pixel.graphics.render.nanovg.NvgRenderEngine;
+import org.pixel.demo.learning.common.DemoGame;
+import org.pixel.graphics.canvas.Canvas;
+import org.pixel.graphics.canvas.CanvasBatch;
+import org.pixel.math.Vector2;
 
+/**
+ * Basic filled and stroked primitives with {@link Canvas}: rectangles, rounded rectangles, circles, triangles and
+ * quadratic curves.
+ */
 public class PrimitivesRenderDemo extends DemoGame {
 
-    private RenderEngine2D re;
+    private static final float STROKE = 6f;
+
+    private CanvasBatch canvasBatch;
 
     @Override
     public void load() {
         super.load();
-        re = new NvgRenderEngine(window().getWidth(), window().getHeight());
+        gameCamera.setOrigin(Vector2.zero());
+        canvasBatch = new CanvasBatch(graphics().getRenderBackend());
     }
 
     @Override
     public void draw(DeltaTime delta) {
-        re.begin();
-        re.strokeWidth(6);
+        Canvas c = canvasBatch.begin(gameCamera.getViewMatrix());
 
-        // rectangle
-        re.beginPath();
-        re.rectangle(10, 10, 280, 180);
-        re.endPath();
-        re.stroke();
-        re.fillColor(Color.RED);
-        re.fill();
-
-        // rounded-rectangle
-        re.beginPath();
-        re.roundedRectangle(20, 20, 260, 160, 16);
-        re.endPath();
-        re.stroke();
-        re.fillColor(Color.YELLOW);
-        re.fill();
+        // rectangle and rounded rectangle
+        c.rect(10, 10, 280, 180).fill(Color.RED).stroke(STROKE, Color.WHITE);
+        c.roundRect(20, 20, 260, 160, 16).fill(Color.YELLOW).stroke(STROKE, Color.WHITE);
 
         // circle
-        re.beginPath();
-        re.circle(450, 100, 80);
-        re.endPath();
-        re.stroke();
-        re.fillColor(Color.GREEN);
-        re.fill();
+        c.circle(450, 100, 80).fill(Color.GREEN).stroke(STROKE, Color.WHITE);
 
-        // triangle left
-        re.beginPath();
-        re.moveTo(10, 210);
-        re.lineTo(260, 210);
-        re.lineTo(10, 390);
-        re.endPath();
-        re.stroke();
-        re.fillColor(Color.BLUE);
-        re.fill();
+        // triangles
+        c.path().moveTo(10, 210).lineTo(260, 210).lineTo(10, 390).close()
+                .fill(Color.BLUE).stroke(STROKE, Color.WHITE);
+        c.path().moveTo(290, 210).lineTo(290, 390).lineTo(40, 390).close()
+                .fill(Color.CORAL).stroke(STROKE, Color.WHITE);
 
-        // triangle right
-        re.beginPath();
-        re.moveTo(290, 210);
-        re.lineTo(290, 390);
-        re.lineTo(40, 390);
-        re.endPath();
-        re.stroke();
-        re.fillColor(Color.CORAL);
-        re.fill();
+        // quadratic curves closed by a straight line
+        c.path().moveTo(310, 390).quadTo(450, 200, 590, 390).close()
+                .fill(Color.ROYAL).stroke(STROKE, Color.WHITE);
+        c.path().moveTo(310, 210).quadTo(450, 400, 590, 210).close()
+                .fill(Color.MAROON).stroke(STROKE, Color.WHITE);
 
-        // line examples:
-        re.beginPath();
-        re.moveTo(310, 390);
-        re.quadraticCurveTo(450, 200, 590, 390);
-        re.lineTo(310, 390);
-        re.endPath();
-        re.stroke();
-        re.fillColor(Color.ROYAL);
-        re.fill();
-
-        re.beginPath();
-        re.moveTo(310, 210);
-        re.quadraticCurveTo(450, 400, 590, 210);
-        re.lineTo(310, 210);
-        re.endPath();
-        re.stroke();
-        re.fillColor(Color.MAROON);
-        re.fill();
-
-        re.end();
+        canvasBatch.end();
     }
 
     @Override
     public void dispose() {
-        re.dispose();
+        canvasBatch.dispose();
         super.dispose();
     }
 
     public static void main(String[] args) {
         var settings = new WindowSettings(600, 400);
         settings.setWindowResizable(false);
-        settings.setMultisampling(2);
         settings.setVsync(true);
 
         DesktopLauncher.run(new PrimitivesRenderDemo(), settings);

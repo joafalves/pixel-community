@@ -9,7 +9,6 @@ import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.content.Font;
 import org.pixel.content.Texture;
 import org.pixel.content.opengl.GLES30Texture;
-import org.pixel.graphics.shader.Shader;
 import org.pixel.graphics.shader.opengl.GLES30Shader;
 import org.pixel.graphics.shader.opengl.GLES30TextureShader;
 import org.pixel.graphics.shader.opengl.GLES30VertexArrayObject;
@@ -148,11 +147,6 @@ public class GLES30SpriteBatch extends SpriteBatch {
     @Override
     public void drawText(Font font, String text, Vector2 position, Color color, int fontSize) {
         throw new UnsupportedOperationException("Not implemented yet.");
-    }
-
-    @Override
-    public Shader getShader() {
-        return shader;
     }
 
     @Override

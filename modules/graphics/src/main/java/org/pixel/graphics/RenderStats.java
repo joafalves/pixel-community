@@ -3,7 +3,7 @@ package org.pixel.graphics;
 /**
  * Per-frame rendering counters owned by the {@link GraphicsDevice}.
  * <p>
- * Renderers that talk to the GPU (today {@code GLSpriteBatch}, later the render backend) <b>record</b> into the
+ * The render backend, which talks to the GPU, <b>records</b> into the
  * frame in progress; the device publishes it at the end of every frame ({@link #endFrame()}). Readers always see the
  * last <b>completed</b> frame through {@link #lastFrame()}, so values are stable for the whole frame and nobody has
  * to reset anything.

@@ -3,10 +3,12 @@ package org.pixel.demo.concept.physics;
 import org.pixel.core.DesktopLauncher;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
+import org.pixel.core.Camera2D;
 import org.pixel.core.GameApp;
 import org.pixel.core.WindowSettings;
-import org.pixel.graphics.render.RenderEngine2D;
-import org.pixel.graphics.render.nanovg.NvgRenderEngine;
+import org.pixel.graphics.canvas.Canvas;
+import org.pixel.graphics.canvas.CanvasBatch;
+import org.pixel.math.Vector2;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,13 +24,16 @@ public class CelestialGravitationGame extends GameApp {
 
     private final List<PhysicsBody> bodies = new ArrayList<>();
 
-    private RenderEngine2D renderEngine;
+    private Camera2D camera;
+    private CanvasBatch canvasBatch;
     private float displayScale; // Pixels per meter for rendering (can remain float)
 
     @Override
     public void load() {
         // Initialize the game entities and components
-        renderEngine = new NvgRenderEngine(window().getWidth(), window().getHeight());
+        camera = new Camera2D(context());
+        camera.setOrigin(Vector2.zero());
+        canvasBatch = new CanvasBatch(graphics().getRenderBackend());
 
         // Sun
         double sunMass = 1.989e30; // kg - now using double
@@ -77,8 +82,6 @@ public class CelestialGravitationGame extends GameApp {
                 // Use double for distanceSq calculation to maintain precision
                 double distanceSq = r_vector.lengthSquared(); // Vector2.magnitudeSq() returns float, but we need double for precision here
 
-                System.out.println("Distance squared between bodies: " + distanceSq);
-
                 // Prevent division by zero if bodies are at the same position (e.g., collision)
                 if (distanceSq < 1e-10) { // Use double literal
                     distanceSq = 1e-10; // Set a tiny minimum distance
@@ -110,15 +113,11 @@ public class CelestialGravitationGame extends GameApp {
 
     @Override
     public void draw(DeltaTime delta) {
-        renderEngine.begin();
-        // Translates the render engine to the center of the window, so that the origin (0,0) is at the center
-        renderEngine.translate(
-                window().getWidth() / 2f,
-                window().getHeight() / 2f
-        );
+        Canvas canvas = canvasBatch.begin(camera.getViewMatrix());
+        // origin (0, 0) at the center of the view
+        canvas.translate(camera.getWidth() / 2f, camera.getHeight() / 2f);
 
         for (var body : bodies) {
-            renderEngine.beginPath();
             // Scale the body's position from meters to pixels for rendering
             float sx = (float) (body.getPosition().getX() * displayScale);
             float sy = (float) (body.getPosition().getY() * displayScale);
@@ -129,12 +128,15 @@ public class CelestialGravitationGame extends GameApp {
                 visualRadius = 30f; // Larger radius for stars
             }
 
-            renderEngine.circle(sx, sy, visualRadius); // Draw a circle for each body
-            renderEngine.fill();
-            renderEngine.endPath();
+            canvas.circle(sx, sy, visualRadius).fill(Color.WHITE); // Draw a circle for each body
         }
 
-        renderEngine.end();
+        canvasBatch.end();
+    }
+
+    @Override
+    public void dispose() {
+        canvasBatch.dispose();
     }
 
     /**
@@ -167,7 +169,6 @@ public class CelestialGravitationGame extends GameApp {
         final var screenHeight = 720;
         final var settings = new WindowSettings(screenWidth, screenHeight);
         settings.setWindowResizable(false);
-        settings.setMultisampling(2);
         settings.setVsync(true);
         settings.setDevMode(false);
         settings.setWindowWidth(screenWidth);

@@ -15,18 +15,6 @@ public class ALSound extends Sound {
      * Constructor
      *
      * @param sourcePointer The source pointer
-     * @deprecated the OpenAL buffer is not owned (and therefore never released) with this constructor; use
-     * {@link #ALSound(int, int)}.
-     */
-    @Deprecated
-    public ALSound(int sourcePointer) {
-        this(sourcePointer, 0);
-    }
-
-    /**
-     * Constructor
-     *
-     * @param sourcePointer The source pointer
      * @param bufferPointer The buffer holding the audio data, owned (and released) by this sound; 0 if none.
      */
     public ALSound(int sourcePointer, int bufferPointer) {

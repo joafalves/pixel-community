@@ -444,7 +444,7 @@ Each phase ends green (`./gradlew build`) and is reviewable on its own.
 - `org.pixel.graphics.backend`: `RenderBackend` (`capabilities`, `beginPass`, `submit`, `endPass`; targets and
   materials join in Phase 3), `BackendCapabilities`, `PassState`, `VertexLayout.SPRITE`, `VertexStream`, `BatchList`.
 - `DrawListSpriteBatch` + `DrawListSpriteBatchServiceFactory`: the default `SpriteBatch` service since the gates
-  passed. `GLSpriteBatch` remains only for the benchmark and parity check until Phase 4.
+  passed. (`GLSpriteBatch` was kept for the benchmark and parity check until the legacy cleanup.)
 - `platform/desktop`: `GLRenderBackend` (indexed quads from a static 16-bit index buffer, at most 16,384 quads per
   draw, chunked uploads by address with index offsets so no base-vertex call is needed and it stays GLES 3.0
   compatible) and the sprite program (`engine/shader/opengl/urp/sprite.*.glsl`, version preamble added in code).
@@ -563,7 +563,32 @@ Each phase ends green (`./gradlew build`) and is reviewable on its own.
   stay available for pixel-art UI), no runtime generation on Android yet (pre-baked atlases are the path there;
   the Android importer comes with the Android backend work).
 
-*2e:* port the NanoVG demos to `Canvas`, with a Retina check of clipping and text sharpness.
+*2e: NanoVG demos ported* ✅
+- `render/PrimitivesRenderDemo`, `render/IsometricGridDemo`, `concept/physics/CelestialGravitationGame` and
+  `concept/roadcar/RoadCarGame` draw with `Canvas` through the camera's view matrix; no demo uses NanoVG any more.
+- The isometric grid is drawn as 84 lines along the two axes instead of 1,681 outlined diamonds: 84 primitives in 1
+  draw call (the per-tile path version was 33,620 primitives in 3 draw calls and 7 MB of vertices per frame). Every
+  other port is 1 draw call.
+- RoadCar's virtual resolution is now its window size (800x600): NanoVG drew in window units, so the half-size
+  virtual resolution only showed part of the road. CelestialGravitation no longer prints on every update.
+- Retina (2x framebuffer): clipping (the scrolling panel of `urp/CanvasShapesDemo`) and text from 8 to 220 px
+  (`urp/CanvasTextDemo`) checked on screenshots at full framebuffer resolution: clip edges land on the right
+  framebuffer pixels and glyph edges stay one pixel soft.
+
+**Legacy cleanup** ✅ (done after 2e instead of in Phase 4: nothing used the old code any more)
+- **Removed:** NanoVG (`NvgRenderEngine` and the `lwjgl-nanovg` dependency); `RenderEngine`, `StatefulRenderEngine`,
+  `RenderEngine2D`, `DrawBatch`, `PostProcessor`; the classic `GLSpriteBatch` with its program and buffer classes
+  (`GLMultiTextureShader`, `GLTextureShader`, `GLPrimitiveShader`, `GLRenderBufferShader`, `GLVertexArrayObject`,
+  `GLVertexBufferObject`, `GLElementBufferObject`) and their GLSL; the five `GL*EffectShader` classes (border,
+  noise, overlay, pixeler, sepia; none had a user); `GLTextureExporter`, `GLPrimitiveType`; the `Shader` interface
+  and `SpriteBatch.getShader()`. Outside graphics: `DataArray` (deprecated for removal), `DataSerializer` (Java
+  serialization helper) with its demo, `KeyboardState.downKeys()` and the non-owning `ALSound(int)` constructor.
+- `GLShader` stays as the base of the URP programs (compile, link, uniform lookup).
+- The `renderParity` check is gone with the classic batch it compared against; it did its job as the Phase 1
+  gate. Its successor is golden-image render tests on an offscreen `RenderTarget` of fixed size (Phase 3), which
+  also makes them independent of the display's pixel ratio. `renderBenchmark` now measures the draw list only.
+- Android (experimental, not compiled) still has its own `GLES30SpriteBatch`; it only lost the `Shader`
+  interface. Its renderer is replaced when the GLES backend for URP v2 is written.
 
 **Phase 3.0: game model (prerequisite of the pipeline)** ✅
 - **Blueprint removed.** It was reflection-based DI with classpath scanning at startup (fragile in jars, needs
@@ -592,13 +617,15 @@ Each phase ends green (`./gradlew build`) and is reviewable on its own.
   only. That is not caused by this change.)
 
 **Phase 3: pipeline**
-- Layers, passes, views, `RenderTarget`, post effects (port the 5 existing effects plus bloom and vignette),
-  custom materials, culling.
+- Layers, passes, views, `RenderTarget`, post effects (sepia, pixelate, noise, border and overlay again, plus
+  bloom and vignette), custom materials, culling.
+- Golden-image render tests: scenes rendered into a fixed-size offscreen target and compared with stored images
+  (the successor of the removed parity check).
 - Pick ids, last-frame snapshot, `pick()`.
 - Tests: pass ordering and target routing (fake backend), picking.
 
 **Phase 4: merge readiness**
-- Remove `GLSpriteBatch`, NanoVG and the old effect shaders. Update docs and `AGENTS.md`.
+- Update docs and `AGENTS.md` (the legacy renderers are already removed).
 - Rebase onto `devel`, then open the PR.
 
 ## 9. Editor-readiness constraints
@@ -655,7 +682,7 @@ designed on top of `Canvas`/`TextLayout`. From `task/urp` it will consider Weave
    with a logged warning, and a stencil can be added later. OK?
 3. **Depth type.** Proposal: `float` depth (natural for y-sorting) in a 32-bit key slot. The alternative is `int`
    like today's `SpriteBatch`, and the compat path maps `int` → `float` either way.
-4. **NanoVG removal.** Proposal: removed in Phase 4 once the 4 demos are ported. Keep it longer?
+4. **NanoVG removal.** Done: removed with the legacy cleanup after the 4 demos were ported.
 5. **Bitmap fonts.** Proposal: keep them, for pixel-art and very small text (§4.9). OK?
 7. **Font atlas defaults.** 48 px glyphs, 8 px distance range, ASCII + Latin-1 by default; other sets are opt-in per
    import. OK as defaults?

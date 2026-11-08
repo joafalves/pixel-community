@@ -19,11 +19,9 @@ import org.pixel.math.Vector2;
 /**
  * {@link SpriteBatch} built on the URP v2 draw list (docs/design/urp-v2.md).
  * <p>
- * Same API and visual result as the classic sprite batch, with these differences:
  * <ul>
  *   <li>Everything between {@code begin} and {@code end} is recorded, sorted by depth as a whole (stable: equal
- *   depth keeps submission order) and then drawn with as few draw calls as texture slots allow. The classic batch
- *   only sorted within each 256-sprite chunk.</li>
+ *   depth keeps submission order) and then drawn with as few draw calls as texture slots allow.</li>
  *   <li>Sprites and bitmap-font text share batches (the font atlas is just another texture).</li>
  *   <li>Positions, colors and source rectangles are copied when recorded, so callers may reuse their objects.</li>
  * </ul>
@@ -132,7 +130,7 @@ public class DrawListSpriteBatch extends SpriteBatch {
         float atlasHeight = atlas.getHeight();
         int rgba = Colors.pack(color != null ? color : Color.WHITE);
 
-        // same glyph placement as the classic sprite batch (integer pen position)
+        // integer pen positions keep bitmap glyphs on whole pixels
         float scale = fontSize / (float) font.getFontSize();
         int lineHeight = (int) (font.getFontSize() * scale + font.getVerticalSpacing());
         int x = (int) position.getX();

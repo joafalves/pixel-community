@@ -32,7 +32,7 @@ class DrawListSpriteBatchTest {
     }
 
     /**
-     * The classic GLSpriteBatch vertex math (computeSpriteDataViewMatrix + transformMatrix4 of the unit quad).
+     * The vertex math of the former GLSpriteBatch (computeSpriteDataViewMatrix + transformMatrix4 of the unit quad).
      */
     private static float[] legacyCorners(float x, float y, float w, float h, float ax, float ay, float rotation) {
         Matrix4 m = new Matrix4();

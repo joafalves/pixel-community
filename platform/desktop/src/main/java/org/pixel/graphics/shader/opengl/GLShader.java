@@ -2,7 +2,8 @@ package org.pixel.graphics.shader.opengl;
 
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
-import org.pixel.graphics.shader.Shader;
+import org.pixel.commons.lifecycle.Disposable;
+import org.pixel.commons.lifecycle.Initializable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
 import static org.lwjgl.opengl.GL11C.GL_TRUE;
 import static org.lwjgl.opengl.GL20C.*;
 
-public abstract class GLShader implements Shader {
+public abstract class GLShader implements Initializable, Disposable {
 
     private static final Logger log = LoggerFactory.getLogger(GLShader.class);
 
@@ -79,19 +80,12 @@ public abstract class GLShader implements Shader {
         return true;
     }
 
-    @Override
     public void bind() {
         glUseProgram(programId);
     }
 
-    @Override
     public void unbind() {
         glUseProgram(0);
-    }
-
-    @Override
-    public void apply() {
-       // intentionally empty
     }
 
     @Override
