@@ -28,11 +28,12 @@ final class GLShapeProgram extends GLProgram {
         bindUniformBlock("StyleBlock", STYLE_BINDING);
     }
 
-    /** {@code case i: return texture(uTextures[i], uv);} per slot (sampler arrays need constant indices). */
+    /** {@code case i: texel = texture(uTextures[i], uv);} per slot (sampler arrays need constant indices). */
     private static String sampleSwitch(int slots) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < slots; i++) {
-            sb.append("        case ").append(i).append(": return texture(uTextures[").append(i).append("], uv);\n");
+            sb.append("        case ").append(i).append(": texel = texture(uTextures[").append(i)
+                    .append("], uv); break;\n");
         }
         return sb.toString();
     }

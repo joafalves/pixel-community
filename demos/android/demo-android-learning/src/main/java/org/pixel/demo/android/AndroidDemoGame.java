@@ -11,14 +11,17 @@ import org.pixel.ext.tween.TweenLoopMode;
 import org.pixel.ext.tween.TweenSequencer;
 import org.pixel.graphics.canvas.Canvas;
 import org.pixel.graphics.draw.Layer;
+import org.pixel.graphics.backend.RenderTarget;
+import org.pixel.graphics.pass.Effects;
 import org.pixel.graphics.pass.RenderPipeline;
 import org.pixel.graphics.canvas.LineJoin;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Vector2;
 
 /**
- * Android demo on the URP v2 renderer (the same GL backend as desktop): tweened sprites through the sprite batch,
- * and Canvas shapes, gradients, a soft shadow and a path, with the origin at the center of the screen.
+ * Android demo on the URP v2 renderer (the same GL backend as desktop): Canvas shapes, gradients, a soft shadow and
+ * a path drawn into a screen-sized render target and post-processed (vignette), then tweened sprites on top
+ * through the sprite batch. The origin is at the center of the screen.
  */
 public class AndroidDemoGame extends GameApp {
 
@@ -45,7 +48,11 @@ public class AndroidDemoGame extends GameApp {
         spriteBatch = graphics().createSpriteBatch();
         camera = new Camera2D(context());
         camera.setOrigin(0.5f);
-        pipeline = RenderPipeline.builder(graphics().getRenderBackend()).pass(camera, MAIN).build();
+        // the canvas goes through a screen-sized target and a vignette (render targets + post effects on GLES)
+        RenderPipeline.Builder builder = RenderPipeline.builder(graphics().getRenderBackend());
+        RenderTarget scene = builder.screenTarget(1f);
+        scene.setClearColor(settings().getBackgroundColor()); // opaque: the vignette covers the whole screen
+        pipeline = builder.pass(camera, scene, MAIN).post(scene, Effects.vignette(0.7f)).build();
 
         spriteTexture = content().loadTexture("images/earth-48x48.png");
 

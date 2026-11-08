@@ -33,4 +33,56 @@ public interface RenderBackend extends Disposable {
      * End the pass and restore shared GPU state other renderers rely on.
      */
     void endPass();
+
+    // region render targets and post effects
+
+    /**
+     * Create an offscreen target (owned by the caller).
+     *
+     * @param width  Width in pixels.
+     * @param height Height in pixels.
+     */
+    RenderTarget createTarget(int width, int height);
+
+    /**
+     * @return The width in pixels of the screen area being drawn (the window's drawable area).
+     */
+    int getScreenWidth();
+
+    /**
+     * @return The height in pixels of the screen area being drawn (the window's drawable area).
+     */
+    int getScreenHeight();
+
+    /**
+     * Increases whenever the GPU context was lost and recreated (Android can do that when the app is paused): GPU
+     * objects made before, such as compiled effects, must then be made again.
+     */
+    int getContextGeneration();
+
+    /**
+     * Compile a full-screen effect. The source defines {@code vec4 effect(vec2 uv)} and may declare its own
+     * uniforms; the backend provides {@code uSource}, {@code uInput1..3}, {@code uTexel} (1 / source size in pixels)
+     * and {@code uResolution} (destination size). Colors are premultiplied.
+     *
+     * @param effectSource The GLSL of the effect function (no {@code #version}, no {@code main}).
+     */
+    PostProgram compilePost(String effectSource);
+
+    /**
+     * Draw an effect over the whole destination (outside a pass).
+     *
+     * @param program     The effect.
+     * @param params      Its inputs and uniforms.
+     * @param destination The target to write, or {@code null} for the screen.
+     * @param blend       {@code false} replaces the destination; {@code true} composites over it (premultiplied).
+     */
+    void drawPost(PostProgram program, PostParams params, RenderTarget destination, boolean blend);
+
+    /**
+     * Read a target's pixels: RGBA8, rows from top to bottom, premultiplied (outside a pass).
+     */
+    byte[] readPixels(RenderTarget target);
+
+    // endregion
 }

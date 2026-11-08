@@ -34,9 +34,85 @@ public final class AndroidGLApi implements GLApi {
     }
 
     @Override
+    public void getIntegerv(int name, int[] out) {
+        GLES30.glGetIntegerv(name, out, 0);
+    }
+
+    @Override
     public void blendFunc(int sourceFactor, int destinationFactor) {
         GLES30.glBlendFunc(sourceFactor, destinationFactor);
     }
+
+    @Override
+    public void blendFuncSeparate(int sourceRgb, int destinationRgb, int sourceAlpha, int destinationAlpha) {
+        GLES30.glBlendFuncSeparate(sourceRgb, destinationRgb, sourceAlpha, destinationAlpha);
+    }
+
+    @Override
+    public void enable(int capability) {
+        GLES30.glEnable(capability);
+    }
+
+    @Override
+    public void disable(int capability) {
+        GLES30.glDisable(capability);
+    }
+
+    @Override
+    public void viewport(int x, int y, int width, int height) {
+        GLES30.glViewport(x, y, width, height);
+    }
+
+    @Override
+    public void clearColor(float r, float g, float b, float a) {
+        GLES30.glClearColor(r, g, b, a);
+    }
+
+    @Override
+    public void clear(int mask) {
+        GLES30.glClear(mask);
+    }
+
+    @Override
+    public void readPixels(int x, int y, int width, int height, ByteBuffer pixels) {
+        GLES30.glReadPixels(x, y, width, height, GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, pixels);
+    }
+
+    // region framebuffers
+
+    @Override
+    public int genFramebuffer() {
+        GLES30.glGenFramebuffers(1, scratch, 0);
+        return scratch[0];
+    }
+
+    @Override
+    public void deleteFramebuffer(int framebuffer) {
+        scratch[0] = framebuffer;
+        GLES30.glDeleteFramebuffers(1, scratch, 0);
+    }
+
+    @Override
+    public void bindFramebuffer(int target, int framebuffer) {
+        GLES30.glBindFramebuffer(target, framebuffer);
+    }
+
+    @Override
+    public void framebufferTexture2D(int target, int attachment, int textureTarget, int texture, int level) {
+        GLES30.glFramebufferTexture2D(target, attachment, textureTarget, texture, level);
+    }
+
+    @Override
+    public int checkFramebufferStatus(int target) {
+        return GLES30.glCheckFramebufferStatus(target);
+    }
+
+    @Override
+    public void drawArrays(int mode, int first, int count) {
+        GLES30.glDrawArrays(mode, first, count);
+    }
+
+    // endregion
 
     // region buffers
 
@@ -258,6 +334,26 @@ public final class AndroidGLApi implements GLApi {
     @Override
     public void uniform1iv(int location, int[] values) {
         GLES30.glUniform1iv(location, values.length, values, 0);
+    }
+
+    @Override
+    public void uniform1i(int location, int value) {
+        GLES30.glUniform1i(location, value);
+    }
+
+    @Override
+    public void uniform1f(int location, float x) {
+        GLES30.glUniform1f(location, x);
+    }
+
+    @Override
+    public void uniform2f(int location, float x, float y) {
+        GLES30.glUniform2f(location, x, y);
+    }
+
+    @Override
+    public void uniform4f(int location, float x, float y, float z, float w) {
+        GLES30.glUniform4f(location, x, y, z, w);
     }
 
     @Override

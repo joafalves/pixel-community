@@ -1,4 +1,5 @@
 // URP v2 shape fragment shader (VertexLayout.FULL). No #version: the backend prepends the GL / GLES preamble.
+// Output colors are premultiplied (rgb * a); the backend blends with (ONE, ONE_MINUS_SRC_ALPHA).
 // Shapes are signed distance fields (negative inside) in shape-local units; coverage uses fwidth, so edges stay
 // one pixel soft at any scale or rotation. Shape type codes match org.pixel.graphics.draw.ShapeType; the style
 // record layout matches org.pixel.graphics.draw.StyleTable.
@@ -33,11 +34,28 @@ const int PATH_FILL = 4;   // local x = coverage, uv = path coordinates
 const int PATH_STROKE = 5; // local y = distance across the line, uv.x = half width
 const int GLYPH = 6;       // MTSDF atlas glyph: params = (range, weight, layer, has true distance)
 
-vec4 sampleSlot(int slot, vec2 uv) {
+uniform int uPremultiplied; // bit per slot: textures already holding premultiplied colors (render targets)
+
+// the texel as stored (glyph atlases hold distances, not colors)
+vec4 sampleRaw(int slot, vec2 uv) {
+    vec4 texel = vec4(1.0);
     switch (slot) {
 /*$sampleSwitchCase*/
     }
-    return vec4(1.0);
+    return texel;
+}
+
+// the texel as a premultiplied color
+vec4 sampleSlot(int slot, vec2 uv) {
+    vec4 texel = sampleRaw(slot, uv);
+    if (((uPremultiplied >> slot) & 1) == 0) {
+        texel.rgb *= texel.a; // straight-alpha image
+    }
+    return texel;
+}
+
+vec4 premultiply(vec4 c) {
+    return vec4(c.rgb * c.a, c.a);
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -166,10 +184,6 @@ vec4 fillAndStroke(vec4 fill, vec4 stroke, float cf, float d, float dOuter, floa
     return f * ci + (s + f * (1.0 - s.a)) * (cf - ci) + s * (co - cf);
 }
 
-vec4 unpremultiply(vec4 c) {
-    return c.a > 0.0 ? vec4(c.rgb / c.a, c.a) : vec4(0.0);
-}
-
 // ---------------------------------------------------------------------------------------------------------------
 // dashes
 
@@ -191,7 +205,7 @@ float median(vec3 v) {
 // One layer of a glyph. Text draws all shadows, then all strokes, then all fills, so a glyph's outline or shadow
 // never covers a neighbouring glyph. Distances are in text units (negative inside), like the other shapes.
 vec4 glyphColor() {
-    vec4 field = sampleSlot(vSlot, vTexCoord);
+    vec4 field = sampleRaw(vSlot, vTexCoord);
     float range = vParams.x;
     float weight = vParams.y;
     int layer = int(vParams.z + 0.5);
@@ -229,7 +243,7 @@ vec4 glyphColor() {
             float d = dTrue - (strokeColor.a > 0.0 ? max(strokeOuter, 0.0) : 0.0) - shadow.w;
             float sigma = shadow.z * 0.5;
             float a = sigma < 0.25 ? coverage(d, pixel) : 0.5 - 0.5 * erf2(vec2(d * 0.70710678 / sigma, 0.0)).x;
-            return vec4(shadowColor.rgb, shadowColor.a * a);
+            return premultiply(vec4(shadowColor.rgb, shadowColor.a * a));
         }
     }
 
@@ -240,8 +254,8 @@ vec4 glyphColor() {
     if (layer == 1 ? cf > 0.0 : cf <= 0.0) {
         return vec4(0.0);
     }
-    return unpremultiply(fillAndStroke(fill, strokeColor, cf, dEdge, strokeOuter > 0.0 ? dTrue : dEdge,
-                                       strokeInner, strokeOuter, 1.0, pixel));
+    return fillAndStroke(fill, strokeColor, cf, dEdge, strokeOuter > 0.0 ? dTrue : dEdge,
+                         strokeInner, strokeOuter, 1.0, pixel);
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -257,7 +271,7 @@ void main() {
 
     vec4 color;
     if (vType == TEXTURED) {
-        color = vColor * sampleSlot(vSlot, vTexCoord);
+        color = premultiply(vColor) * sampleSlot(vSlot, vTexCoord);
     } else if (vType == GLYPH) {
         color = glyphColor();
     } else {
@@ -332,11 +346,11 @@ void main() {
 
         // premultiplied: fill and stroke, over the shadow
         vec4 shape = fillAndStroke(fill, strokeColor, fillCoverage, d, d, strokeInner, strokeOuter, strokeMask, pixel);
-        color = unpremultiply(shape + shadowResult * (1.0 - shape.a));
+        color = shape + shadowResult * (1.0 - shape.a);
     }
 
-    if (clipMask == 0.0 || color.a <= 0.0) {
-        discard;
+    if (clipMask == 0.0 || (color.a <= 0.0 && max(color.r, max(color.g, color.b)) <= 0.0)) {
+        discard; // nothing to add (alpha 0 with color is light: premultiplied emission)
     }
     oFragColor = color;
 }

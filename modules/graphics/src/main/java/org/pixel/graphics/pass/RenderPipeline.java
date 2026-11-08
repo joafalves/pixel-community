@@ -1,34 +1,50 @@
 package org.pixel.graphics.pass;
 
 import org.pixel.commons.lifecycle.Disposable;
+import org.pixel.content.Texture;
 import org.pixel.graphics.backend.PassState;
 import org.pixel.graphics.backend.RenderBackend;
 import org.pixel.graphics.backend.RenderData;
+import org.pixel.graphics.backend.RenderTarget;
 import org.pixel.graphics.canvas.Canvas;
 import org.pixel.graphics.draw.Batcher;
 import org.pixel.graphics.draw.DrawList;
 import org.pixel.graphics.draw.Layer;
+import org.pixel.graphics.render.BlendMode;
 import org.pixel.math.Matrix4;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * An ordered list of render passes over layers, built once and rendered every frame:
+ * An ordered list of render passes, built once and rendered every frame:
  * <pre>
- * pipeline = RenderPipeline.builder(graphics().getRenderBackend())
- *         .pass(camera, WORLD, FX)        // world layers, through the camera
- *         .pass(screen, HUD)              // HUD in screen space
+ * RenderPipeline.Builder builder = RenderPipeline.builder(graphics().getRenderBackend());
+ * RenderTarget scene = builder.screenTarget(1f);   // follows the window size
+ * pipeline = builder
+ *         .pass(camera, scene, WORLD, FX)          // world layers into the scene target
+ *         .post(scene, bloom, vignette)            // effects, then to the screen
+ *         .pass(screen, HUD)                       // HUD on top, unaffected by the effects
  *         .build();
- * Canvas world = pipeline.canvas(WORLD);  // record during draw(), then:
- * pipeline.render();                      // sort, cull, batch and submit; layers are cleared for the next frame
+ * Canvas world = pipeline.canvas(WORLD);           // record during draw(), then:
+ * pipeline.render();                               // layers are cleared for the next frame
  * </pre>
- * Each frame, every layer is sorted once (sorted layers) and batched once per pass that draws it, with commands
- * outside that pass's view culled. A layer can be drawn by several passes (e.g. the world again through a minimap
- * view). Layers in a pass are drawn in the listed order, each with its own blend mode.
- * <p>
- * No GL here: the pipeline talks to a {@link RenderBackend}. Allocation-free per frame once warmed up. Not
- * thread-safe; record and render on the render thread.
+ * <ul>
+ *   <li><b>Layer passes</b> draw layers through a view, to the screen or into a target. Each layer is sorted once per
+ *   frame and batched once per pass that draws it, with commands outside the view culled; layers keep their own
+ *   blend mode. A layer can be drawn by several passes (e.g. the world again into a minimap target).</li>
+ *   <li><b>Targets</b> are cleared to their clear color the first time a pass draws into them in a frame. Targets
+ *   created by the builder ({@link Builder#screenTarget}, {@link Builder#target}) belong to the pipeline; targets
+ *   created with the backend belong to the caller.</li>
+ *   <li><b>Post passes</b> run effects in a chain from a target to the screen or another target. To the screen, the
+ *   result composites over it, so whatever the target leaves transparent shows the screen behind it; into a
+ *   target, it replaces the target's contents.</li>
+ *   <li><b>Custom passes</b> get direct backend access. Targets they draw into are not tracked: a later layer pass
+ *   still clears them first if nothing else drew into them this frame.</li>
+ * </ul>
+ * Effects passed to the builder are disposed with the pipeline. No GL here: the pipeline talks to a
+ * {@link RenderBackend}. Allocation-free per frame once warmed up. Not thread-safe; record and render on the render
+ * thread.
  */
 public final class RenderPipeline implements Disposable {
 
@@ -43,20 +59,25 @@ public final class RenderPipeline implements Disposable {
 
     private final RenderBackend backend;
     private final LayerState[] layers;
+    private final TargetState[] targets;
     private final Pass[] passes;
+    private final PostEffect[] effects;
     private final Batcher batcher = new Batcher();
     private final RenderData renderData;
     private final PassState passState = new PassState();
     private final Matrix4 inverse = new Matrix4();
     private final float[] bounds = new float[4];
+    private final ShaderEffect copy = new ShaderEffect("vec4 effect(vec2 uv) {\n    return texture(uSource, uv);\n}\n");
     private int frame;
     private boolean rendering;
     private boolean disposed;
 
-    private RenderPipeline(RenderBackend backend, List<LayerState> layers, List<Pass> passes) {
-        this.backend = backend;
-        this.layers = layers.toArray(new LayerState[0]);
-        this.passes = passes.toArray(new Pass[0]);
+    private RenderPipeline(Builder builder) {
+        this.backend = builder.backend;
+        this.layers = builder.layers.toArray(new LayerState[0]);
+        this.targets = builder.targets.toArray(new TargetState[0]);
+        this.passes = builder.passes.toArray(new Pass[0]);
+        this.effects = builder.effects.toArray(new PostEffect[0]);
         this.renderData = new RenderData(backend.capabilities().maxTextureSlots());
     }
 
@@ -80,9 +101,7 @@ public final class RenderPipeline implements Disposable {
      * @throws IllegalStateException    While rendering, or after {@link #dispose()}.
      */
     public Canvas canvas(Layer layer) {
-        if (disposed) {
-            throw new IllegalStateException("Render pipeline has been disposed.");
-        }
+        checkActive();
         if (rendering) {
             throw new IllegalStateException("Record into layers before render(), not while rendering.");
         }
@@ -93,23 +112,28 @@ public final class RenderPipeline implements Disposable {
      * Render every pass in order, then clear the layers for the next frame.
      */
     public void render() {
-        if (disposed) {
-            throw new IllegalStateException("Render pipeline has been disposed.");
-        }
+        checkActive();
         if (rendering) {
             throw new IllegalStateException("render() called from inside a render pass.");
         }
         rendering = true;
         frame++;
         try {
+            int screenWidth = backend.getScreenWidth(), screenHeight = backend.getScreenHeight();
+            for (TargetState target : targets) {
+                if (target.screenScale > 0f) {
+                    target.target.resize(Builder.scaled(screenWidth, target.screenScale),
+                            Builder.scaled(screenHeight, target.screenScale));
+                }
+            }
             for (LayerState layer : layers) {
                 layer.canvas.flush();
             }
             for (Pass pass : passes) {
-                if (pass.custom != null) {
-                    pass.custom.render(backend);
-                } else {
-                    renderLayers(pass);
+                switch (pass.kind) {
+                    case LAYERS -> renderLayers(pass);
+                    case POST -> renderPost(pass);
+                    default -> pass.custom.render(backend);
                 }
             }
         } finally {
@@ -123,6 +147,11 @@ public final class RenderPipeline implements Disposable {
 
     private void renderLayers(Pass pass) {
         float[] cull = cullBounds(pass.view.getViewMatrix());
+        RenderTarget target = pass.target != null ? pass.target.target : null;
+        boolean clear = pass.target != null && pass.target.writtenFrame != frame;
+        if (pass.target != null) {
+            pass.target.writtenFrame = frame;
+        }
         for (LayerState layer : pass.layers) {
             DrawList list = layer.list;
             if (list.size() == 0) {
@@ -137,13 +166,41 @@ public final class RenderPipeline implements Disposable {
             if (renderData.batches().size() == 0) {
                 continue; // everything culled
             }
-            passState.set(pass.view.getViewMatrix(), layer.layer.getBlendMode());
+            passState.set(pass.view.getViewMatrix(), layer.layer.getBlendMode()).target(target, clear);
+            clear = false;
             backend.beginPass(passState);
             try {
                 backend.submit(renderData);
             } finally {
                 backend.endPass();
             }
+        }
+        if (clear) { // nothing drawn into the target this frame: still clear last frame's contents
+            passState.set(pass.view.getViewMatrix(), BlendMode.NORMAL_BLEND).target(target, true);
+            backend.beginPass(passState);
+            backend.endPass();
+        }
+    }
+
+    private void renderPost(Pass pass) {
+        RenderTarget source = pass.source.target;
+        RenderTarget destination = pass.target != null ? pass.target.target : null;
+        PostEffect[] chain = pass.effects;
+        Context context = pass.context; // scratch targets of this pass: sizes stay stable, nothing reallocates
+        Texture input = source.getTexture();
+        int count = Math.max(1, chain.length);
+        for (int i = 0; i < count; i++) {
+            PostEffect effect = chain.length > 0 ? chain[i] : copy;
+            boolean last = i == count - 1;
+            RenderTarget output = last ? destination
+                    : context.chain(i % 2, source.getWidth(), source.getHeight());
+            effect.apply(context, input, output, last && destination == null);
+            if (output != null) {
+                input = output.getTexture();
+            }
+        }
+        if (pass.target != null) {
+            pass.target.writtenFrame = frame; // fully written: no clear needed by later passes
         }
     }
 
@@ -190,6 +247,15 @@ public final class RenderPipeline implements Disposable {
         throw new IllegalArgumentException("No pass of this pipeline draws " + layer + ".");
     }
 
+    private void checkActive() {
+        if (disposed) {
+            throw new IllegalStateException("Render pipeline has been disposed.");
+        }
+    }
+
+    /**
+     * Release the pipeline's own targets and scratch targets and the effects it was built with.
+     */
     @Override
     public void dispose() {
         if (disposed) {
@@ -200,9 +266,25 @@ public final class RenderPipeline implements Disposable {
             layer.list.clear();
             layer.canvas.reset();
         }
+        for (TargetState target : targets) {
+            if (target.owned) {
+                target.target.dispose();
+            }
+        }
+        for (PostEffect effect : effects) {
+            effect.dispose();
+        }
+        copy.dispose();
+        for (Pass pass : passes) {
+            if (pass.context != null) {
+                pass.context.dispose();
+            }
+        }
     }
 
     // region model
+
+    private enum Kind {LAYERS, POST, CUSTOM}
 
     private static final class LayerState {
         final Layer layer;
@@ -218,15 +300,126 @@ public final class RenderPipeline implements Disposable {
         }
     }
 
-    private static final class Pass {
-        final View view;
-        final LayerState[] layers;
-        final CustomPass custom;
+    private static final class TargetState {
+        final RenderTarget target;
+        final boolean owned;
+        final float screenScale; // > 0: resized to the screen size times this every frame
+        int writtenFrame;
 
-        Pass(View view, LayerState[] layers, CustomPass custom) {
+        TargetState(RenderTarget target, boolean owned, float screenScale) {
+            this.target = target;
+            this.owned = owned;
+            this.screenScale = screenScale;
+        }
+    }
+
+    private static final class Pass {
+        final Kind kind;
+        View view;
+        LayerState[] layers;
+        TargetState target; // layer pass: drawn into; post pass: written to (null = screen)
+        TargetState source;
+        PostEffect[] effects;
+        Context context; // post passes: their own scratch targets
+        CustomPass custom;
+
+        Pass(Kind kind) {
+            this.kind = kind;
+        }
+    }
+
+    /**
+     * A view drawing into a target: same matrix, pixels per unit measured against the target's size (for screen
+     * targets, the size they are about to get, since canvases record before {@code render()} resizes them).
+     */
+    private static final class TargetView implements View {
+        private final View view;
+        private final TargetState target;
+        private final RenderBackend backend;
+
+        TargetView(View view, TargetState target, RenderBackend backend) {
             this.view = view;
-            this.layers = layers;
-            this.custom = custom;
+            this.target = target;
+            this.backend = backend;
+        }
+
+        @Override
+        public Matrix4 getViewMatrix() {
+            return view.getViewMatrix();
+        }
+
+        @Override
+        public float getPixelsPerUnit() {
+            float[][] m = view.getViewMatrix().toUnsafeArray(); // clip units per layer unit, per axis
+            float width = target.screenScale > 0f ? backend.getScreenWidth() * target.screenScale
+                    : target.target.getWidth();
+            float height = target.screenScale > 0f ? backend.getScreenHeight() * target.screenScale
+                    : target.target.getHeight();
+            float sx = (float) Math.hypot(m[0][0], m[0][1]) * width * 0.5f;
+            float sy = (float) Math.hypot(m[1][0], m[1][1]) * height * 0.5f;
+            return Math.min(sx, sy);
+        }
+    }
+
+    /**
+     * Post effect context of one post pass: the backend plus its scratch targets (chain ping-pong and per-slot
+     * temporaries).
+     */
+    private static final class Context implements PostContext {
+        private final RenderBackend backend;
+        private final RenderTarget[] chain = new RenderTarget[2];
+        private RenderTarget[] temporaries = new RenderTarget[4];
+
+        Context(RenderBackend backend) {
+            this.backend = backend;
+        }
+
+        @Override
+        public RenderBackend backend() {
+            return backend;
+        }
+
+        @Override
+        public void apply(PostEffect effect, Texture source, RenderTarget destination, boolean blend) {
+            effect.apply(this, source, destination, blend);
+        }
+
+        @Override
+        public RenderTarget temporary(int slot, int width, int height) {
+            if (slot < 0) {
+                throw new IllegalArgumentException("Slot must be positive.");
+            }
+            if (slot >= temporaries.length) {
+                temporaries = java.util.Arrays.copyOf(temporaries, Math.max(slot + 1, temporaries.length * 2));
+            }
+            return sized(temporaries, slot, width, height);
+        }
+
+        RenderTarget chain(int slot, int width, int height) {
+            return sized(chain, slot, width, height);
+        }
+
+        private RenderTarget sized(RenderTarget[] pool, int slot, int width, int height) {
+            RenderTarget target = pool[slot];
+            if (target == null) {
+                target = pool[slot] = backend.createTarget(width, height);
+            } else {
+                target.resize(width, height);
+            }
+            return target;
+        }
+
+        void dispose() {
+            for (RenderTarget target : chain) {
+                if (target != null) {
+                    target.dispose();
+                }
+            }
+            for (RenderTarget target : temporaries) {
+                if (target != null) {
+                    target.dispose();
+                }
+            }
         }
     }
 
@@ -236,23 +429,60 @@ public final class RenderPipeline implements Disposable {
     public static final class Builder {
         private final RenderBackend backend;
         private final List<LayerState> layers = new ArrayList<>();
+        private final List<TargetState> targets = new ArrayList<>();
         private final List<Pass> passes = new ArrayList<>();
+        private final List<PostEffect> effects = new ArrayList<>();
 
         private Builder(RenderBackend backend) {
             this.backend = backend;
         }
 
         /**
-         * Draw layers through a view, in the given order.
+         * A target that follows the screen size (times {@code scale}, e.g. 0.5 for a half-resolution pixel-art
+         * scene), owned by the pipeline.
+         */
+        public RenderTarget screenTarget(float scale) {
+            if (!(scale > 0f)) {
+                throw new IllegalArgumentException("Scale must be positive.");
+            }
+            RenderTarget target = backend.createTarget(scaled(backend.getScreenWidth(), scale),
+                    scaled(backend.getScreenHeight(), scale)); // and resized by render() when the screen changes
+            targets.add(new TargetState(target, true, scale));
+            return target;
+        }
+
+        /**
+         * A fixed-size target owned by the pipeline (e.g. a minimap).
+         */
+        public RenderTarget target(int width, int height) {
+            RenderTarget target = backend.createTarget(width, height);
+            targets.add(new TargetState(target, true, 0f));
+            return target;
+        }
+
+        /**
+         * Draw layers through a view to the screen, in the given order.
          *
          * @param view   The view (e.g. a camera, or screen space for a HUD).
          * @param layers The layers (at least one; a layer may also appear in other passes).
          */
         public Builder pass(View view, Layer... layers) {
+            return pass(view, null, layers);
+        }
+
+        /**
+         * Draw layers through a view into a target ({@code null} = the screen), in the given order. The target is
+         * cleared the first time a pass draws into it in a frame.
+         */
+        public Builder pass(View view, RenderTarget target, Layer... layers) {
             if (view == null || layers == null || layers.length == 0) {
                 throw new IllegalArgumentException("A pass needs a view and at least one layer.");
             }
-            LayerState[] states = new LayerState[layers.length];
+            Pass pass = new Pass(Kind.LAYERS);
+            pass.view = view;
+            pass.target = target != null ? stateFor(target) : null;
+            View scaled = target != null ? new TargetView(view, pass.target, backend) : view; // the target's pixels
+            pass.layers = new LayerState[layers.length];
             for (int i = 0; i < layers.length; i++) {
                 if (layers[i] == null) {
                     throw new IllegalArgumentException("Layers cannot be null.");
@@ -262,20 +492,57 @@ public final class RenderPipeline implements Disposable {
                         throw new IllegalArgumentException(layers[i] + " is listed twice in one pass.");
                     }
                 }
-                states[i] = stateFor(layers[i], view);
+                pass.layers[i] = stateFor(layers[i], scaled);
             }
-            passes.add(new Pass(view, states, null));
+            passes.add(pass);
+            return this;
+        }
+
+        /**
+         * Run effects on a target and composite the result over the screen (no effects: a plain copy).
+         */
+        public Builder post(RenderTarget source, PostEffect... effects) {
+            return post(source, null, effects);
+        }
+
+        /**
+         * Run effects on a target and write the result to another target ({@code null} = composite over the
+         * screen).
+         */
+        public Builder post(RenderTarget source, RenderTarget destination, PostEffect... effects) {
+            if (source == null) {
+                throw new IllegalArgumentException("A post pass needs a source target.");
+            }
+            if (source == destination) {
+                throw new IllegalArgumentException("A post pass can't write the target it reads.");
+            }
+            Pass pass = new Pass(Kind.POST);
+            pass.source = stateFor(source);
+            pass.target = destination != null ? stateFor(destination) : null;
+            pass.effects = effects != null ? effects.clone() : new PostEffect[0];
+            pass.context = new Context(backend);
+            for (PostEffect effect : pass.effects) {
+                if (effect == null) {
+                    throw new IllegalArgumentException("Effects cannot be null.");
+                }
+                if (!this.effects.contains(effect)) {
+                    this.effects.add(effect);
+                }
+            }
+            passes.add(pass);
             return this;
         }
 
         /**
          * Run custom code with direct backend access at this point of the frame.
          */
-        public Builder custom(CustomPass pass) {
-            if (pass == null) {
+        public Builder custom(CustomPass custom) {
+            if (custom == null) {
                 throw new IllegalArgumentException("Custom pass cannot be null.");
             }
-            passes.add(new Pass(null, null, pass));
+            Pass pass = new Pass(Kind.CUSTOM);
+            pass.custom = custom;
+            passes.add(pass);
             return this;
         }
 
@@ -286,7 +553,22 @@ public final class RenderPipeline implements Disposable {
             for (LayerState state : layers) {
                 state.canvas.setViews(state.views.toArray(new View[0]));
             }
-            return new RenderPipeline(backend, layers, passes);
+            return new RenderPipeline(this);
+        }
+
+        private static int scaled(int size, float scale) {
+            return Math.max(1, Math.round(size * scale));
+        }
+
+        private TargetState stateFor(RenderTarget target) {
+            for (TargetState state : targets) {
+                if (state.target == target) {
+                    return state;
+                }
+            }
+            TargetState state = new TargetState(target, false, 0f); // created by the caller: theirs to dispose
+            targets.add(state);
+            return state;
         }
 
         private LayerState stateFor(Layer layer, View view) {

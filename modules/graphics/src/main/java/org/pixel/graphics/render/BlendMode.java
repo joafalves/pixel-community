@@ -11,8 +11,11 @@ package org.pixel.graphics.render;
 public enum BlendMode {
     /** Alpha blending: {@code src * a + dst * (1 - a)}. */
     NORMAL_BLEND,
-    /** Light accumulation (glows, fire, particles): {@code dst + src * a}; alpha still fades and anti-aliases. */
+    /**
+     * Light accumulation (glows, fire, particles): {@code dst + src * a}; alpha still fades and anti-aliases. Light
+     * doesn't cover what is behind it: drawn into a transparent target, it stays light when the target is drawn.
+     */
     ADDITIVE,
-    /** Darkening (shadows, tints): {@code src * dst}. Alpha is not applied, so edges are not anti-aliased. */
+    /** Darkening (shadows, tints): {@code dst * src}, weighted by alpha (soft edges and fades work). */
     MULTIPLY
 }

@@ -11,6 +11,7 @@ final class GLSpriteProgram extends GLProgram {
 
     static final String U_MATRIX = "uMatrix";
     static final String U_TEXTURES = "uTextures";
+    static final String U_PREMULTIPLIED = "uPremultiplied";
 
     private static final String VERTEX_PATH = "engine/shader/opengl/urp/sprite.vert.glsl";
     private static final String FRAGMENT_PATH = "engine/shader/opengl/urp/sprite.frag.glsl";
@@ -22,12 +23,12 @@ final class GLSpriteProgram extends GLProgram {
                         .replace("/*$textureSwitchCase*/", textureSwitch(textureSlots)));
     }
 
-    /** {@code case i: color *= texture(uTextures[i], vTexCoord);} per slot (sampler arrays need constant indices). */
+    /** {@code case i: texel = texture(uTextures[i], uv);} per slot (sampler arrays need constant indices). */
     private static String textureSwitch(int slots) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < slots; i++) {
-            sb.append("        case ").append(i).append(": color *= texture(uTextures[").append(i)
-                    .append("], vTexCoord); break;\n");
+            sb.append("        case ").append(i).append(": texel = texture(uTextures[").append(i)
+                    .append("], uv); break;\n");
         }
         return sb.toString();
     }

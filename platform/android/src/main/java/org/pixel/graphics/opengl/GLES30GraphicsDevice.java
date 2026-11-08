@@ -27,6 +27,7 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
 
     private final AndroidGameHost host;
     private GLRenderBackend renderBackend;
+    private final float[] clearColor = new float[4];
 
     private State state;
 
@@ -122,12 +123,18 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
 
     @Override
     public void clear() {
+        // set every time: render passes clearing targets change the GL clear color
+        GLES30.glClearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
     }
 
     @Override
     public void setClearColor(Color color) {
-        GLES30.glClearColor(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        clearColor[0] = color.getRed();
+        clearColor[1] = color.getGreen();
+        clearColor[2] = color.getBlue();
+        clearColor[3] = color.getAlpha();
+        GLES30.glClearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
     }
 
     @Override

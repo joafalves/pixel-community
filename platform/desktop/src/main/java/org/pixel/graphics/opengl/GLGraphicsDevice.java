@@ -55,6 +55,7 @@ public class GLGraphicsDevice implements GraphicsDevice {
 
     private final RenderStats stats = new RenderStats();
     private GLRenderBackend renderBackend;
+    private final float[] clearColor = new float[4];
 
     private State state;
     private Callback debugLocalCallback;
@@ -153,12 +154,18 @@ public class GLGraphicsDevice implements GraphicsDevice {
 
     @Override
     public void clear() {
+        // set every time: render passes clearing targets change the GL clear color
+        glClearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 
     @Override
     public void setClearColor(Color color) {
-        glClearColor(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        clearColor[0] = color.getRed();
+        clearColor[1] = color.getGreen();
+        clearColor[2] = color.getBlue();
+        clearColor[3] = color.getAlpha();
+        glClearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
     }
 
     @Override

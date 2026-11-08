@@ -7,6 +7,7 @@ import org.pixel.content.opengl.GLTexture;
 import org.pixel.graphics.RenderStats;
 import org.pixel.graphics.backend.VertexLayout;
 import org.pixel.graphics.canvas.Canvas;
+import org.pixel.graphics.backend.RenderTarget;
 import org.pixel.graphics.draw.Layer;
 import org.pixel.graphics.pass.RenderPipeline;
 import org.pixel.graphics.opengl.GLApi;
@@ -146,6 +147,71 @@ class GLRenderBackendTest {
         assertNotEquals(before.program(), gl.draws.get(0).program());
         assertNotEquals(before.vertexArray(), gl.draws.get(0).vertexArray());
         batch.dispose();
+    }
+
+    @Test
+    void passesIntoTargetsBindTheirFramebufferAndRestoreTheScreen() {
+        RenderTarget target = backend.createTarget(256, 128);
+        RenderPipeline.Builder builder = RenderPipeline.builder(backend);
+        RenderPipeline pipeline = builder.pass(() -> WIDE, target, LAYER).build();
+        pipeline.canvas(LAYER).rect(0, 0, 10, 10).fill(org.pixel.commons.Color.WHITE);
+        gl.clear();
+        pipeline.render();
+
+        int fbo = ((GLRenderTarget) target).framebuffer();
+        assertEquals(List.of("bind fb" + fbo, "viewport 256x128", "clear fb" + fbo, "bind fb0", "viewport 800x600"),
+                gl.calls);
+        assertEquals(1, gl.draws.size());
+        assertEquals(fbo, gl.draws.get(0).framebuffer()); // drawn into the target
+        assertEquals(0, gl.framebuffer);
+        assertEquals(800, backend.getScreenWidth());
+        pipeline.dispose();
+        target.dispose();
+    }
+
+    @Test
+    void postEffectsDrawAFullScreenTriangleIntoTheirDestination() {
+        RenderPipeline.Builder builder = RenderPipeline.builder(backend);
+        RenderTarget scene = builder.screenTarget(1f);
+        RenderPipeline pipeline = builder.pass(() -> WIDE, scene, LAYER).post(scene,
+                org.pixel.graphics.pass.Effects.sepia(1f)).build();
+        gl.clear();
+        pipeline.render();
+
+        int fbo = ((GLRenderTarget) scene).framebuffer();
+        assertTrue(gl.calls.contains("clear fb" + fbo));
+        assertEquals("drawArrays fb0", gl.calls.stream().filter(c -> c.startsWith("drawArrays")).findFirst()
+                .orElseThrow()); // the effect writes the screen
+        assertEquals(800, scene.getWidth()); // screen-sized
+        assertTrue(gl.shaderSources.stream().anyMatch(src -> src.contains("vec4 effect(vec2 uv)")
+                && src.contains("oFragColor = effect(vUv);")));
+        pipeline.dispose();
+    }
+
+    @Test
+    void targetsMadeBeforeAContextLossAreAllocatedAgainWithoutDeletingDeadNames() {
+        RenderTarget target = backend.createTarget(64, 32);
+        int before = ((GLRenderTarget) target).framebuffer();
+        backend.contextRecreated();
+        assertEquals(1, backend.getContextGeneration());
+        gl.clear();
+        backend.readPixels(target);
+        int after = ((GLRenderTarget) target).framebuffer();
+        assertNotEquals(before, after);
+        assertEquals(64, target.getWidth());
+        assertTrue(gl.calls.contains("bind fb" + after));
+        target.dispose();
+    }
+
+    @Test
+    void readPixelsReadsTheTargetAndRestoresTheFramebuffer() {
+        RenderTarget target = backend.createTarget(4, 2);
+        gl.clear();
+        assertEquals(4 * 2 * 4, backend.readPixels(target).length);
+        int fbo = ((GLRenderTarget) target).framebuffer();
+        assertEquals(List.of("bind fb" + fbo, "read fb" + fbo, "bind fb0"), gl.calls);
+        target.dispose();
+        assertThrows(IllegalArgumentException.class, () -> backend.readPixels(target)); // disposed
     }
 
     @Test

@@ -35,6 +35,16 @@ public final class Screenshot {
      * Write RGBA pixels read from OpenGL (rows bottom-up) as a PNG.
      */
     public static void writePng(Path file, byte[] rgba, int width, int height) throws IOException {
+        writePng(file, rgba, width, height, true);
+    }
+
+    /**
+     * Write RGBA pixels as a PNG.
+     *
+     * @param bottomUp Whether the rows go from bottom to top (screen reads) or top to bottom (render targets).
+     */
+    public static void writePng(Path file, byte[] rgba, int width, int height, boolean bottomUp)
+            throws IOException {
         Path parent = file.toAbsolutePath().getParent();
         if (parent != null) {
             Files.createDirectories(parent);
@@ -42,7 +52,7 @@ public final class Screenshot {
         ByteBuffer buffer = MemoryUtil.memAlloc(rgba.length);
         try {
             buffer.put(rgba).flip();
-            STBImageWrite.stbi_flip_vertically_on_write(true);
+            STBImageWrite.stbi_flip_vertically_on_write(bottomUp);
             if (!STBImageWrite.stbi_write_png(file.toString(), width, height, 4, buffer, width * 4)) {
                 throw new IOException("Unable to write " + file);
             }

@@ -11,6 +11,10 @@ import org.pixel.graphics.backend.VertexStream;
 import org.pixel.graphics.render.BlendMode;
 
 import java.nio.ByteBuffer;
+import org.pixel.commons.Color;
+import org.pixel.graphics.backend.PostParams;
+import org.pixel.graphics.backend.PostProgram;
+import org.pixel.graphics.backend.RenderTarget;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,7 +37,7 @@ public class RecordingBackend implements RenderBackend {
     }
 
     public record Pass(BlendMode blendMode, List<Batch> batches, List<Vertex> vertices, List<FullVertex> shapes,
-                       float[] viewMatrix) {
+                       float[] viewMatrix, RenderTarget target) {
         /** Translation x of the view matrix (column-major m[3][0]): identifies which view drew the pass. */
         public float viewTranslationX() {
             return viewMatrix[12];
@@ -48,6 +52,11 @@ public class RecordingBackend implements RenderBackend {
     private boolean inPass;
     private BlendMode blendMode;
     private final float[] viewMatrix = new float[16];
+    private RenderTarget target;
+    /** Target and post events in order, e.g. "clear scene", "post fx scene->screen blend". */
+    public final List<String> events = new ArrayList<>();
+    public int screenWidth = 800;
+    public int screenHeight = 600;
 
     public RecordingBackend(int maxTextureSlots, int maxQuadsPerBatch, boolean capture) {
         this(new BackendCapabilities(maxTextureSlots, maxQuadsPerBatch, 256, 256, 64), capture);
@@ -68,6 +77,10 @@ public class RecordingBackend implements RenderBackend {
         if (inPass) throw new IllegalStateException("nested pass");
         inPass = true;
         blendMode = state.getBlendMode();
+        target = state.getTarget();
+        if (state.isClearTarget() && capture) {
+            events.add("clear " + target);
+        }
         float[][] m = state.getViewMatrix().toUnsafeArray();
         for (int i = 0; i < 4; i++) {
             System.arraycopy(m[i], 0, viewMatrix, i * 4, 4);
@@ -103,7 +116,7 @@ public class RecordingBackend implements RenderBackend {
                     clips, styles));
         }
         passes.add(new Pass(blendMode, recordedBatches, readSprites(data.vertices(VertexLayout.SPRITE)),
-                readShapes(data.vertices(VertexLayout.FULL)), viewMatrix.clone()));
+                readShapes(data.vertices(VertexLayout.FULL)), viewMatrix.clone(), target));
     }
 
     @Override
@@ -115,6 +128,129 @@ public class RecordingBackend implements RenderBackend {
     @Override
     public void dispose() {
     }
+
+    // region targets and post effects
+
+    /** A target that only records its name and size. */
+    public static final class Target implements RenderTarget {
+        public final String name;
+        private final TestTexture texture;
+        private final Color clearColor = new Color(0f, 0f, 0f, 0f);
+        public boolean disposed;
+
+        Target(String name, int width, int height) {
+            this.name = name;
+            this.texture = new TestTexture(width, height);
+        }
+
+        @Override
+        public int getWidth() {
+            return texture.getWidth();
+        }
+
+        @Override
+        public int getHeight() {
+            return texture.getHeight();
+        }
+
+        @Override
+        public Texture getTexture() {
+            return texture;
+        }
+
+        @Override
+        public void resize(int width, int height) {
+            texture.setWidth(width);
+            texture.setHeight(height);
+        }
+
+        @Override
+        public Color getClearColor() {
+            return clearColor;
+        }
+
+        @Override
+        public void setClearColor(Color color) {
+            clearColor.set(color);
+        }
+
+        @Override
+        public void dispose() {
+            disposed = true;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    /** A post program that only records its source. */
+    public record Program(String source) implements PostProgram {
+        @Override
+        public void dispose() {
+        }
+    }
+
+    public final List<Target> targets = new ArrayList<>();
+
+    @Override
+    public RenderTarget createTarget(int width, int height) {
+        Target target = new Target("t" + targets.size(), width, height);
+        targets.add(target);
+        return target;
+    }
+
+    @Override
+    public int getScreenWidth() {
+        return screenWidth;
+    }
+
+    @Override
+    public int getScreenHeight() {
+        return screenHeight;
+    }
+
+    public int contextGeneration;
+
+    @Override
+    public int getContextGeneration() {
+        return contextGeneration;
+    }
+
+    public int compiledPrograms;
+
+    @Override
+    public PostProgram compilePost(String effectSource) {
+        compiledPrograms++;
+        return new Program(effectSource);
+    }
+
+    @Override
+    public void drawPost(PostProgram program, PostParams params, RenderTarget destination, boolean blend) {
+        if (inPass) throw new IllegalStateException("drawPost inside a pass");
+        drawCalls++;
+        if (capture) {
+            String source = params.input(0) == null ? "?" : sourceName(params.input(0));
+            events.add("post " + source + "->" + (destination == null ? "screen" : destination) + (blend ? " blend" : ""));
+        }
+    }
+
+    private String sourceName(Texture texture) {
+        for (Target t : targets) {
+            if (t.getTexture() == texture) {
+                return t.name;
+            }
+        }
+        return "texture";
+    }
+
+    @Override
+    public byte[] readPixels(RenderTarget target) {
+        return new byte[target.getWidth() * target.getHeight() * 4];
+    }
+
+    // endregion
 
     public Pass lastPass() {
         return passes.get(passes.size() - 1);

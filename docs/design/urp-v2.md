@@ -688,9 +688,46 @@ Each phase ends green (`./gradlew build`) and is reviewable on its own.
 - Demo: `urp/PipelineDemo`: a 4000 x 3000 y-sorted world through a panning, zooming camera, additive glow and a
   screen-space HUD in 3 draw calls at normal zoom (3812 commands recorded, ~460 quads drawn after culling).
 
-*3b: render targets and post effects:* `RenderTarget` (FBO, logical size at the pixel ratio), passes into targets,
-`PostPass` with ping-pong targets, effects (sepia, pixelate, noise, border, overlay, bloom, vignette), and
-golden-image render tests into fixed-size targets (the successor of the removed parity check).
+*3b: render targets and post effects* ✅
+- `RenderTarget` (backend SPI): an FBO with an RGBA8 texture that draws like any image (minimaps, portals). Contents
+  are stored top row first (the backend flips clip-space y for passes into targets) and **premultiplied**.
+- Premultiplied output everywhere: the sprite and shape shaders premultiply straight textures (a per-batch slot
+  bitmask says which textures already are, e.g. targets) and write premultiplied colors; glyph atlases are sampled
+  raw so the distance field stays intact. NORMAL is `ONE, ONE_MINUS_SRC_ALPHA`; ADDITIVE is pure emission (adds
+  color, leaves alpha), so light drawn into a transparent target still shows when the target is composited;
+  MULTIPLY keeps the destination alpha. Fragments are discarded only when they carry neither coverage nor light.
+- Pipeline: `builder.pass(view, target, layers...)`, `builder.screenTarget(scale)` (follows the screen size, owned
+  by the pipeline), `builder.target(w, h)`, `builder.post(source[, destination], effects...)`. A target is cleared
+  to its clear color the first time a pass draws into it in a frame (also when nothing is drawn). Passes into
+  targets measure pixels per unit against the target, so a 320 px minimap of a 2400-unit world gets correct edges.
+- Post effects: `PostEffect` (a chain step), `ShaderEffect` (one GLSL function `vec4 effect(vec2 uv)` with named
+  uniforms; the same source on GL 3.3 and GLES 3.0), and `Effects`: sepia, tint (was "overlay"), pixelate (was
+  "pixeler"), noise (film grain), border, vignette, and bloom (bright pass, two separable 9-tap Gaussian blurs at
+  half resolution, combine; light is added without coverage). Effects have setters, so they animate without
+  rebuilding the pipeline. Each post pass has its own `PostContext` with scratch targets (chains ping-pong between
+  two; multi-pass effects ask for temporaries by slot), so passes of different sizes do not reallocate every
+  frame. User effects chain steps through `PostContext.apply(effect, source, destination, blend)`. The last step
+  composites over the screen (premultiplied), or replaces a destination target's contents. Custom passes manage
+  their own clearing. The backend draws them as one full-screen
+  triangle from `gl_VertexID` (no vertex buffers).
+- Devices set their clear color in `clear()` (target clears change the GL clear color).
+- Golden-image check (successor of the removed parity check): `./gradlew :pixel-demo-desktop-learning:renderGolden`
+  renders 9 scenes (shapes, paints, paths, text, images, blend modes, an effect chain, bloom, and transparency: a
+  transparent target with normal and additive layers composited twice over a checkerboard) into 480 x 320 targets
+  through context-free cameras (independent of the display's pixel ratio), compares them with `golden/*.png`
+  (6/255 per channel, at most 0.2% of pixels beyond) and fails the build step on a mismatch, writing diffs to
+  `build/golden/`. `-Dgolden.record=true` re-records after an intended change.
+- Tests: pipeline routing (clear once per frame, clears without content, effect chains into screen vs targets,
+  screen target resizing, target pixel scale, bloom scratch targets, ownership on dispose, zero allocations with
+  targets, a minimap and a bloom + vignette + sepia chain) and backend framebuffer handling (bind, viewport,
+  clear, restore, post draw destination, read back) against the fake GL.
+- Demo: `urp/PostEffectsDemo`: a neon world into a screen target, bloom and vignette, keys 1-5 for sepia, pixelate,
+  grain, tint and border, a crisp HUD on top and a live minimap from the same world layer. Android: the demo's
+  canvas goes through a screen target and a vignette.
+- Context loss: the backend counts context generations (`getContextGeneration`); targets reallocate their GL objects
+  on first use in a new context (without deleting the dead names), and effect programs recompile per backend and
+  generation. Screen targets start at the screen size, so the first frame already has the right pixel scale.
+- Not yet: image textures are not reloaded after a lost context (lifecycle work).
 
 *3c: materials:* effect materials (one GLSL function injected into the shape program), raw materials, uniforms,
 material batching (`batchByMaterial`), hot reload.

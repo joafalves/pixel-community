@@ -13,6 +13,7 @@ import static org.lwjgl.opengl.GL20C.*;
 import static org.lwjgl.opengl.GL30C.*;
 import static org.lwjgl.opengl.GL31C.glGetUniformBlockIndex;
 import static org.lwjgl.opengl.GL31C.glUniformBlockBinding;
+import static org.lwjgl.opengl.GL14C.glBlendFuncSeparate;
 
 /**
  * {@link GLApi} on desktop OpenGL 3.3 core through LWJGL. Stateless: use {@link #INSTANCE}.
@@ -37,9 +38,83 @@ public final class LwjglGLApi implements GLApi {
     }
 
     @Override
+    public void getIntegerv(int name, int[] out) {
+        glGetIntegerv(name, out);
+    }
+
+    @Override
     public void blendFunc(int sourceFactor, int destinationFactor) {
         glBlendFunc(sourceFactor, destinationFactor);
     }
+
+    @Override
+    public void blendFuncSeparate(int sourceRgb, int destinationRgb, int sourceAlpha, int destinationAlpha) {
+        glBlendFuncSeparate(sourceRgb, destinationRgb, sourceAlpha, destinationAlpha);
+    }
+
+    @Override
+    public void enable(int capability) {
+        glEnable(capability);
+    }
+
+    @Override
+    public void disable(int capability) {
+        glDisable(capability);
+    }
+
+    @Override
+    public void viewport(int x, int y, int width, int height) {
+        glViewport(x, y, width, height);
+    }
+
+    @Override
+    public void clearColor(float r, float g, float b, float a) {
+        glClearColor(r, g, b, a);
+    }
+
+    @Override
+    public void clear(int mask) {
+        glClear(mask);
+    }
+
+    @Override
+    public void readPixels(int x, int y, int width, int height, ByteBuffer pixels) {
+        glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    }
+
+    // region framebuffers
+
+    @Override
+    public int genFramebuffer() {
+        return glGenFramebuffers();
+    }
+
+    @Override
+    public void deleteFramebuffer(int framebuffer) {
+        glDeleteFramebuffers(framebuffer);
+    }
+
+    @Override
+    public void bindFramebuffer(int target, int framebuffer) {
+        glBindFramebuffer(target, framebuffer);
+    }
+
+    @Override
+    public void framebufferTexture2D(int target, int attachment, int textureTarget, int texture, int level) {
+        glFramebufferTexture2D(target, attachment, textureTarget, texture, level);
+    }
+
+    @Override
+    public int checkFramebufferStatus(int target) {
+        return glCheckFramebufferStatus(target);
+    }
+
+    @Override
+    public void drawArrays(int mode, int first, int count) {
+        glDrawArrays(mode, first, count);
+    }
+
+    // endregion
 
     // region buffers
 
@@ -248,6 +323,26 @@ public final class LwjglGLApi implements GLApi {
     @Override
     public void uniform1iv(int location, int[] values) {
         glUniform1iv(location, values);
+    }
+
+    @Override
+    public void uniform1i(int location, int value) {
+        glUniform1i(location, value);
+    }
+
+    @Override
+    public void uniform1f(int location, float x) {
+        glUniform1f(location, x);
+    }
+
+    @Override
+    public void uniform2f(int location, float x, float y) {
+        glUniform2f(location, x, y);
+    }
+
+    @Override
+    public void uniform4f(int location, float x, float y, float z, float w) {
+        glUniform4f(location, x, y, z, w);
     }
 
     @Override

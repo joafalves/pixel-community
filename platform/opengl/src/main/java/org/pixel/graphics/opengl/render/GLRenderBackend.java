@@ -7,6 +7,9 @@ import org.pixel.graphics.RenderStats;
 import org.pixel.graphics.backend.BackendCapabilities;
 import org.pixel.graphics.backend.BatchList;
 import org.pixel.graphics.backend.PassState;
+import org.pixel.graphics.backend.PostParams;
+import org.pixel.graphics.backend.PostProgram;
+import org.pixel.graphics.backend.RenderTarget;
 import org.pixel.graphics.backend.RenderBackend;
 import org.pixel.graphics.backend.RenderData;
 import org.pixel.graphics.backend.VertexLayout;
@@ -53,6 +56,7 @@ public final class GLRenderBackend implements RenderBackend {
     private int ebo;
     private int clipUbo;
     private int styleUbo;
+    private int emptyVao; // bound for attribute-less full-screen draws
     private final int clipBlockBytes = MAX_CLIPS * BatchList.CLIP_FLOATS * Float.BYTES;
     private final int styleBlockBytes = MAX_STYLES * BatchList.STYLE_FLOATS * Float.BYTES;
     private int whiteTexture;
@@ -63,6 +67,11 @@ public final class GLRenderBackend implements RenderBackend {
     private State state = State.INITIALIZED;
     private boolean inPass;
     private LayoutPipeline current;
+    private GLRenderTarget passTarget;           // target of the current pass (null = screen)
+    private final int[] savedViewport = new int[4];
+    private final int[] viewport = new int[4];
+    private int savedFramebuffer;
+    private int generation; // bumped when the context is recreated
 
     /**
      * Constructor (requires a current OpenGL 3.3 or OpenGL ES 3.0 context).
@@ -102,6 +111,7 @@ public final class GLRenderBackend implements RenderBackend {
 
         clipUbo = gl.genBuffer();
         styleUbo = gl.genBuffer();
+        emptyVao = gl.genVertexArray();
     }
 
     /**
@@ -113,7 +123,14 @@ public final class GLRenderBackend implements RenderBackend {
         checkActive();
         inPass = false;
         current = null;
+        passTarget = null;
+        generation++; // targets and effects made before rebuild themselves on next use
         createGlObjects(); // the old names died with their context: nothing to delete
+    }
+
+    @Override
+    public int getContextGeneration() {
+        return generation;
     }
 
     @Override
@@ -127,18 +144,39 @@ public final class GLRenderBackend implements RenderBackend {
         if (inPass) {
             throw new IllegalStateException("beginPass() called twice without endPass().");
         }
+        RenderTarget target = passState.getTarget();
+        passTarget = target != null ? glTarget(target) : null;
         inPass = true;
+        if (passTarget != null) {
+            bindTarget(passTarget);
+            if (passState.isClearTarget()) {
+                var c = passTarget.getClearColor(); // stored premultiplied, like everything drawn into targets
+                gl.clearColor(c.getRed() * c.getAlpha(), c.getGreen() * c.getAlpha(), c.getBlue() * c.getAlpha(),
+                        c.getAlpha());
+                gl.clear(GL_COLOR_BUFFER_BIT);
+            }
+        }
 
         matrixBuffer.clear();
         passState.getViewMatrix().writeBuffer(matrixBuffer);
+        if (passTarget != null) {
+            // targets store rows top-down (so their texture samples like an image): flip clip-space y
+            for (int column = 0; column < 4; column++) {
+                matrixBuffer.put(column * 4 + 1, -matrixBuffer.get(column * 4 + 1));
+            }
+        }
         spritePipeline.setMatrix(matrixBuffer);
         shapePipeline.setMatrix(matrixBuffer);
+        spritePipeline.premultipliedMask = -1;
+        shapePipeline.premultipliedMask = -1;
         current = null;
 
+        // the programs output premultiplied colors, so targets always hold valid premultiplied content
         switch (passState.getBlendMode()) {
-            case ADDITIVE -> gl.blendFunc(GL_SRC_ALPHA, GL_ONE); // alpha still weights (fades, soft edges)
-            case MULTIPLY -> gl.blendFunc(GL_DST_COLOR, GL_ZERO);
-            default -> gl.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            // light: color adds up, coverage doesn't change (premultiplied emission, visible even where alpha is 0)
+            case ADDITIVE -> gl.blendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE);
+            case MULTIPLY -> gl.blendFuncSeparate(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
+            default -> gl.blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         }
 
         // Other renderers may have changed texture bindings since the last pass: forget what we think is bound, and
@@ -177,9 +215,15 @@ public final class GLRenderBackend implements RenderBackend {
             }
             pipeline.ensureUploaded(data.vertices(batches.layout(b)), first, count);
 
+            int premultiplied = 0;
             for (int slot = 0, t = batches.textureCount(b); slot < t; slot++) {
-                bindTexture(slot, textureId(batches.texture(b, slot)));
+                Texture texture = batches.texture(b, slot);
+                bindTexture(slot, textureId(texture));
+                if (texture instanceof GLTexture glTexture && glTexture.isPremultiplied()) {
+                    premultiplied |= 1 << slot;
+                }
             }
+            pipeline.setPremultiplied(premultiplied);
             if (pipeline == shapePipeline) {
                 gl.bindBufferRange(GL_UNIFORM_BUFFER, GLShapeProgram.CLIP_BINDING, clipUbo,
                         (long) batches.clipOffset(b) * Float.BYTES, clipBlockBytes);
@@ -208,7 +252,150 @@ public final class GLRenderBackend implements RenderBackend {
         gl.activeTexture(GL_TEXTURE0);
         gl.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         gl.useProgram(0);
+        if (passTarget != null) {
+            restoreFramebuffer();
+            passTarget = null;
+        }
     }
+
+    // region render targets and post effects
+
+    @Override
+    public RenderTarget createTarget(int width, int height) {
+        checkActive();
+        return new GLRenderTarget(gl, width, height, generation);
+    }
+
+    @Override
+    public int getScreenWidth() {
+        return screenViewport()[2];
+    }
+
+    @Override
+    public int getScreenHeight() {
+        return screenViewport()[3];
+    }
+
+    private int[] screenViewport() {
+        if (passTarget != null) {
+            return savedViewport;
+        }
+        gl.getIntegerv(GL_VIEWPORT, viewport);
+        return viewport;
+    }
+
+    @Override
+    public PostProgram compilePost(String effectSource) {
+        checkActive();
+        return new GLPostProgram(gl, effectSource);
+    }
+
+    @Override
+    public void drawPost(PostProgram program, PostParams params, RenderTarget destination, boolean blend) {
+        checkActive();
+        if (inPass) {
+            throw new IllegalStateException("drawPost() called inside a pass.");
+        }
+        if (!(program instanceof GLPostProgram post)) {
+            throw new IllegalArgumentException("Not a post program of this backend.");
+        }
+        GLRenderTarget target = destination != null ? glTarget(destination) : null;
+        int width, height;
+        if (target != null) {
+            bindTarget(target);
+            width = target.getWidth();
+            height = target.getHeight();
+        } else {
+            int[] screen = screenViewport();
+            width = screen[2];
+            height = screen[3];
+        }
+        if (blend) {
+            gl.blendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // premultiplied over
+        } else {
+            gl.disable(GL_BLEND);
+        }
+
+        post.bind();
+        Texture source = params.input(0);
+        gl.uniform1f(post.flipYLocation, target == null ? 1f : 0f);
+        if (source != null) {
+            gl.uniform2f(post.texelLocation, 1f / source.getWidth(), 1f / source.getHeight());
+        }
+        gl.uniform2f(post.resolutionLocation, width, height);
+        for (int i = 0; i < PostParams.MAX_INPUTS; i++) {
+            Texture input = params.input(i);
+            if (input != null) {
+                gl.activeTexture(GL_TEXTURE0 + i);
+                gl.bindTexture(GL_TEXTURE_2D, textureId(input));
+            }
+        }
+        for (int u = 0, n = params.uniformCount(); u < n; u++) {
+            int location = post.location(params.uniformName(u));
+            if (location < 0) {
+                continue;
+            }
+            switch (params.uniformSize(u)) {
+                case 1 -> gl.uniform1f(location, params.uniformValue(u, 0));
+                case 2 -> gl.uniform2f(location, params.uniformValue(u, 0), params.uniformValue(u, 1));
+                default -> gl.uniform4f(location, params.uniformValue(u, 0), params.uniformValue(u, 1),
+                        params.uniformValue(u, 2), params.uniformValue(u, 3));
+            }
+        }
+        gl.bindVertexArray(emptyVao);
+        gl.drawArrays(GL_TRIANGLES, 0, 3);
+        stats.recordDrawCall(1, 3);
+
+        gl.bindVertexArray(0);
+        gl.activeTexture(GL_TEXTURE0);
+        gl.useProgram(0);
+        gl.enable(GL_BLEND);
+        gl.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        Arrays.fill(boundTextures, -1); // units 0..3 changed
+        if (target != null) {
+            restoreFramebuffer();
+        }
+    }
+
+    @Override
+    public byte[] readPixels(RenderTarget target) {
+        checkActive();
+        if (inPass) {
+            throw new IllegalStateException("readPixels() called inside a pass.");
+        }
+        GLRenderTarget glTarget = glTarget(target);
+        int width = glTarget.getWidth(), height = glTarget.getHeight();
+        ByteBuffer pixels = ByteBuffer.allocateDirect(width * height * 4).order(ByteOrder.nativeOrder());
+        int previous = gl.getInteger(GL_FRAMEBUFFER_BINDING);
+        gl.bindFramebuffer(GL_FRAMEBUFFER, glTarget.framebuffer());
+        gl.readPixels(0, 0, width, height, pixels); // targets store rows top-down: already in image order
+        gl.bindFramebuffer(GL_FRAMEBUFFER, previous);
+        byte[] out = new byte[width * height * 4];
+        pixels.get(out);
+        return out;
+    }
+
+    private GLRenderTarget glTarget(RenderTarget target) {
+        if (!(target instanceof GLRenderTarget glTarget) || glTarget.isDisposed()) {
+            throw new IllegalArgumentException("Not a live render target of this backend: " + target);
+        }
+        glTarget.ensureGeneration(generation); // made in a lost context: allocate again
+        return glTarget;
+    }
+
+    private void bindTarget(GLRenderTarget target) {
+        savedFramebuffer = gl.getInteger(GL_FRAMEBUFFER_BINDING);
+        gl.getIntegerv(GL_VIEWPORT, savedViewport);
+        gl.bindFramebuffer(GL_FRAMEBUFFER, target.framebuffer());
+        gl.viewport(0, 0, target.getWidth(), target.getHeight());
+    }
+
+    private void restoreFramebuffer() {
+        gl.bindFramebuffer(GL_FRAMEBUFFER, savedFramebuffer);
+        gl.viewport(savedViewport[0], savedViewport[1], savedViewport[2], savedViewport[3]);
+    }
+
+    // endregion
 
     @Override
     public void dispose() {
@@ -222,6 +409,7 @@ public final class GLRenderBackend implements RenderBackend {
         gl.deleteBuffer(clipUbo);
         gl.deleteBuffer(styleUbo);
         gl.deleteTexture(whiteTexture);
+        gl.deleteVertexArray(emptyVao);
     }
 
     /**
@@ -347,6 +535,8 @@ public final class GLRenderBackend implements RenderBackend {
         private final VertexLayout layout;
         private final GLProgram program;
         private final int uMatrixLocation;
+        private final int uPremultipliedLocation;
+        int premultipliedMask = -1; // last value sent (-1 = unknown)
         private final int vao;
         private final int vbo;
         int chunkStart = -1;
@@ -359,6 +549,7 @@ public final class GLRenderBackend implements RenderBackend {
             this.layout = layout;
             this.program = program;
             this.uMatrixLocation = program.uniformLocation(GLSpriteProgram.U_MATRIX);
+            this.uPremultipliedLocation = program.uniformLocation(GLSpriteProgram.U_PREMULTIPLIED);
             program.bind();
             int[] samplerUnits = new int[slots];
             for (int i = 0; i < slots; i++) {
@@ -377,6 +568,14 @@ public final class GLRenderBackend implements RenderBackend {
         void setMatrix(FloatBuffer matrix) {
             program.bind();
             gl.uniformMatrix4fv(uMatrixLocation, matrix);
+        }
+
+        /** Which texture slots of the batch hold premultiplied colors (bit per slot); the shader un-premultiplies them. */
+        void setPremultiplied(int mask) {
+            if (mask != premultipliedMask) {
+                gl.uniform1i(uPremultipliedLocation, mask);
+                premultipliedMask = mask;
+            }
         }
 
         void bind() {

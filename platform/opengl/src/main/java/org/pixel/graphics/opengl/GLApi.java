@@ -37,6 +37,7 @@ public interface GLApi {
     int GL_TEXTURE_WRAP_S = 0x2802;
     int GL_TEXTURE_WRAP_T = 0x2803;
     int GL_TEXTURE_2D = 0x0DE1;
+    int GL_TEXTURE_BINDING_2D = 0x8069;
     int GL_CLAMP_TO_EDGE = 0x812F;
     int GL_TEXTURE0 = 0x84C0;
     int GL_ARRAY_BUFFER = 0x8892;
@@ -52,6 +53,14 @@ public interface GLApi {
     int GL_MAX_UNIFORM_BLOCK_SIZE = 0x8A30;
     int GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT = 0x8A34;
     int GL_INVALID_INDEX = 0xFFFFFFFF;
+    int GL_BLEND = 0x0BE2;
+    int GL_VIEWPORT = 0x0BA2;
+    int GL_COLOR_BUFFER_BIT = 0x4000;
+    int GL_FRAMEBUFFER = 0x8D40;
+    int GL_FRAMEBUFFER_BINDING = 0x8CA6;
+    int GL_FRAMEBUFFER_COMPLETE = 0x8CD5;
+    int GL_COLOR_ATTACHMENT0 = 0x8CE0;
+    int GL_PACK_ALIGNMENT = 0x0D05;
 
     // endregion
 
@@ -63,7 +72,25 @@ public interface GLApi {
 
     int getInteger(int name);
 
+    /** Read an integer vector state (e.g. {@code GL_VIEWPORT}) into {@code out}. */
+    void getIntegerv(int name, int[] out);
+
     void blendFunc(int sourceFactor, int destinationFactor);
+
+    void blendFuncSeparate(int sourceRgb, int destinationRgb, int sourceAlpha, int destinationAlpha);
+
+    void enable(int capability);
+
+    void disable(int capability);
+
+    void viewport(int x, int y, int width, int height);
+
+    void clearColor(float r, float g, float b, float a);
+
+    void clear(int mask);
+
+    /** Read RGBA8 pixels of the bound framebuffer (rows bottom to top) into {@code pixels} (position to limit). */
+    void readPixels(int x, int y, int width, int height, ByteBuffer pixels);
 
     // region buffers
 
@@ -107,6 +134,23 @@ public interface GLApi {
     void vertexAttribIPointer(int index, int size, int type, int stride, long offset);
 
     void drawElements(int mode, int count, int type, long offset);
+
+    // endregion
+
+    // region framebuffers
+
+    int genFramebuffer();
+
+    void deleteFramebuffer(int framebuffer);
+
+    void bindFramebuffer(int target, int framebuffer);
+
+    void framebufferTexture2D(int target, int attachment, int textureTarget, int texture, int level);
+
+    int checkFramebufferStatus(int target);
+
+    /** Draw {@code count} vertices without vertex buffers (the shader uses {@code gl_VertexID}). */
+    void drawArrays(int mode, int first, int count);
 
     // endregion
 
@@ -163,6 +207,14 @@ public interface GLApi {
     void uniformBlockBinding(int program, int blockIndex, int binding);
 
     void uniform1iv(int location, int[] values);
+
+    void uniform1i(int location, int value);
+
+    void uniform1f(int location, float x);
+
+    void uniform2f(int location, float x, float y);
+
+    void uniform4f(int location, float x, float y, float z, float w);
 
     /** Set a mat4 uniform from 16 floats (column-major, position to limit). */
     void uniformMatrix4fv(int location, FloatBuffer matrix);

@@ -14,7 +14,7 @@ import java.util.List;
  */
 final class FakeGLApi implements GLApi {
 
-    record Draw(int program, int vertexArray, int count, long offset) {
+    record Draw(int program, int vertexArray, int count, long offset, int framebuffer) {
     }
 
     record Upload(int target, int buffer, int offset, int size) {
@@ -45,6 +45,7 @@ final class FakeGLApi implements GLApi {
         ranges.clear();
         drawCount = 0;
         textureBinds = 0;
+        calls.clear();
     }
 
     @Override
@@ -57,12 +58,111 @@ final class FakeGLApi implements GLApi {
         return switch (name) {
             case GL_MAX_TEXTURE_IMAGE_UNITS -> 16;
             case GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT -> 256;
+            case GL_FRAMEBUFFER_BINDING -> framebuffer;
             default -> 0;
         };
     }
 
     @Override
     public void blendFunc(int sourceFactor, int destinationFactor) {
+    }
+
+    final List<String> calls = new ArrayList<>(); // framebuffer, viewport and post calls (when capturing)
+    int framebuffer;
+    final int[] viewportState = {0, 0, 800, 600};
+
+    private void log(String call) {
+        if (capture) {
+            calls.add(call);
+        }
+    }
+
+    @Override
+    public void getIntegerv(int name, int[] out) {
+        if (name == GL_VIEWPORT) {
+            System.arraycopy(viewportState, 0, out, 0, 4);
+        }
+    }
+
+    @Override
+    public void blendFuncSeparate(int sourceRgb, int destinationRgb, int sourceAlpha, int destinationAlpha) {
+    }
+
+    @Override
+    public void enable(int capability) {
+    }
+
+    @Override
+    public void disable(int capability) {
+    }
+
+    @Override
+    public void viewport(int x, int y, int width, int height) {
+        viewportState[0] = x;
+        viewportState[1] = y;
+        viewportState[2] = width;
+        viewportState[3] = height;
+        log("viewport " + width + "x" + height);
+    }
+
+    @Override
+    public void clearColor(float r, float g, float b, float a) {
+    }
+
+    @Override
+    public void clear(int mask) {
+        log("clear fb" + framebuffer);
+    }
+
+    @Override
+    public void readPixels(int x, int y, int width, int height, ByteBuffer pixels) {
+        log("read fb" + framebuffer);
+    }
+
+    @Override
+    public int genFramebuffer() {
+        return nextName++;
+    }
+
+    @Override
+    public void deleteFramebuffer(int framebuffer) {
+    }
+
+    @Override
+    public void bindFramebuffer(int target, int framebuffer) {
+        this.framebuffer = framebuffer;
+        log("bind fb" + framebuffer);
+    }
+
+    @Override
+    public void framebufferTexture2D(int target, int attachment, int textureTarget, int texture, int level) {
+    }
+
+    @Override
+    public int checkFramebufferStatus(int target) {
+        return GL_FRAMEBUFFER_COMPLETE;
+    }
+
+    @Override
+    public void drawArrays(int mode, int first, int count) {
+        drawCount++;
+        log("drawArrays fb" + framebuffer);
+    }
+
+    @Override
+    public void uniform1i(int location, int value) {
+    }
+
+    @Override
+    public void uniform1f(int location, float x) {
+    }
+
+    @Override
+    public void uniform2f(int location, float x, float y) {
+    }
+
+    @Override
+    public void uniform4f(int location, float x, float y, float z, float w) {
     }
 
     @Override
@@ -140,7 +240,7 @@ final class FakeGLApi implements GLApi {
     public void drawElements(int mode, int count, int type, long offset) {
         drawCount++;
         if (capture) {
-            draws.add(new Draw(program, vertexArray, count, offset));
+            draws.add(new Draw(program, vertexArray, count, offset, framebuffer));
         }
     }
 
