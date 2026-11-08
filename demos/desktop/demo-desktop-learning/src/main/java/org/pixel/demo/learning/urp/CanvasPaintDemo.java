@@ -8,7 +8,8 @@ import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.demo.learning.common.Screenshot;
 import org.pixel.graphics.canvas.Canvas;
-import org.pixel.graphics.canvas.CanvasBatch;
+import org.pixel.graphics.draw.Layer;
+import org.pixel.graphics.pass.RenderPipeline;
 import org.pixel.graphics.canvas.LineCap;
 import org.pixel.graphics.canvas.StrokeAlign;
 import org.pixel.math.Vector2;
@@ -35,7 +36,9 @@ public class CanvasPaintDemo extends DemoGame {
     private static final Color TRANSPARENT_TEAL = new Color(0.20f, 0.75f, 0.70f, 0f);
 
     private final String screenshot = System.getProperty("pixel.screenshot");
-    private CanvasBatch canvasBatch;
+    private static final Layer MAIN = Layer.ordered("main");
+
+    private RenderPipeline pipeline;
     private Texture frame;
     private float time;
     private int frames;
@@ -44,7 +47,7 @@ public class CanvasPaintDemo extends DemoGame {
     public void load() {
         super.load();
         gameCamera.setOrigin(Vector2.zero());
-        canvasBatch = new CanvasBatch(graphics().getRenderBackend());
+        pipeline = RenderPipeline.builder(graphics().getRenderBackend()).pass(gameCamera, MAIN).build();
         frame = content().loadTexture("images/frame-ninepatch-24x24.png");
     }
 
@@ -56,7 +59,7 @@ public class CanvasPaintDemo extends DemoGame {
 
     @Override
     public void draw(DeltaTime delta) {
-        Canvas c = canvasBatch.begin(gameCamera.getViewMatrix());
+        Canvas c = pipeline.canvas(MAIN);
 
         // cards with soft shadows (blur and offset grow left to right)
         for (int i = 0; i < 4; i++) {
@@ -94,7 +97,7 @@ public class CanvasPaintDemo extends DemoGame {
         c.ninePatch(frame, 590, 460, 470, 60).insets(8).tint(TEAL);
         c.image(frame, 590, 540).size(96, 96); // the same texture just stretched, for comparison
 
-        canvasBatch.end();
+        pipeline.render();
 
         if (screenshot != null && ++frames == 3) {
             try {
@@ -110,7 +113,7 @@ public class CanvasPaintDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        canvasBatch.dispose();
+        pipeline.dispose();
         super.dispose();
     }
 

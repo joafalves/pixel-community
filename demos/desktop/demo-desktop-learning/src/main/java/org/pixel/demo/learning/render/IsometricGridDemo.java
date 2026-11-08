@@ -10,7 +10,8 @@ import org.pixel.core.WindowCursorType;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.graphics.canvas.Canvas;
-import org.pixel.graphics.canvas.CanvasBatch;
+import org.pixel.graphics.draw.Layer;
+import org.pixel.graphics.pass.RenderPipeline;
 import org.pixel.input.mouse.Mouse;
 import org.pixel.input.mouse.MouseButton;
 import org.pixel.math.Vector2;
@@ -30,7 +31,9 @@ public class IsometricGridDemo extends DemoGame {
     private static final int TILE_HEIGHT = TILE_WIDTH / 2;
     private static final Color GRID = new Color(0.33f, 0.33f, 0.36f, 1f);
 
-    private CanvasBatch canvasBatch;
+    private static final Layer MAIN = Layer.ordered("main");
+
+    private RenderPipeline pipeline;
     private final Vector2 gridOffset = new Vector2();
     private final Vector2 dragStart = new Vector2();
     private final Vector2 mouse = new Vector2();
@@ -42,7 +45,7 @@ public class IsometricGridDemo extends DemoGame {
     public void load() {
         super.load();
         gameCamera.setOrigin(Vector2.zero());
-        canvasBatch = new CanvasBatch(graphics().getRenderBackend());
+        pipeline = RenderPipeline.builder(graphics().getRenderBackend()).pass(gameCamera, MAIN).build();
         gridOffset.set(gameCamera.getWidth() / 2f, gameCamera.getHeight() / 2f);
         log.info("{0} tiles, drawn as {1} lines.", (COLUMNS * 2 + 1) * (ROWS * 2 + 1),
                 (COLUMNS * 2 + 2) + (ROWS * 2 + 2));
@@ -74,7 +77,7 @@ public class IsometricGridDemo extends DemoGame {
 
     @Override
     public void draw(DeltaTime delta) {
-        Canvas c = canvasBatch.begin(gameCamera.getViewMatrix());
+        Canvas c = pipeline.canvas(MAIN);
         c.translate(gridOffset.getX(), gridOffset.getY());
 
         // highlighted tile below the grid lines
@@ -97,7 +100,7 @@ public class IsometricGridDemo extends DemoGame {
             float col = k - 0.5f;
             c.line(isoX(col, first), isoY(col, first), isoX(col, last), isoY(col, last)).width(1).color(GRID);
         }
-        canvasBatch.end();
+        pipeline.render();
     }
 
     private static float isoX(float col, float row) {
@@ -110,7 +113,7 @@ public class IsometricGridDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        canvasBatch.dispose();
+        pipeline.dispose();
         super.dispose();
     }
 

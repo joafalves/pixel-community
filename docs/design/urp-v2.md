@@ -659,13 +659,43 @@ Each phase ends green (`./gradlew build`) and is reviewable on its own.
   unchanged. (`ImGuiDemo` cannot start on Apple Silicon because `imgui-java` 1.86.2 ships x86_64 macOS natives
   only. That is not caused by this change.)
 
-**Phase 3: pipeline**
-- Layers, passes, views, `RenderTarget`, post effects (sepia, pixelate, noise, border and overlay again, plus
-  bloom and vignette), custom materials, culling.
-- Golden-image render tests: scenes rendered into a fixed-size offscreen target and compared with stored images
-  (the successor of the removed parity check).
-- Pick ids, last-frame snapshot, `pick()`.
-- Tests: pass ordering and target routing (fake backend), picking.
+**Phase 3: pipeline** (split into reviewable slices)
+
+*3a: pipeline core* ✅
+- `Layer` (`org.pixel.graphics.draw`): immutable, `Layer.sorted(name)` / `Layer.ordered(name)`, optional
+  `.blend(mode)`. `View` (`org.pixel.graphics.pass`): the view matrix plus framebuffer pixels per unit; `Camera`
+  extends it, so every `Camera2D` is a view (pixels per unit = display density × zoom), and `ScreenSpace(context)`
+  is the virtual-resolution view for HUDs.
+- `RenderPipeline.builder(backend).pass(view, layers...).custom(callback).build()`; `pipeline.canvas(layer)`
+  records, `pipeline.render()` runs the passes in order and clears the layers (canvases are reset). Each layer is
+  sorted once per frame and batched once per pass that draws it (a layer can be in several passes, e.g. a minimap),
+  with its own blend mode. Commands whose quad (margins, strokes, shadows included) misses the view are culled; the
+  bounds come from the inverse view matrix, so any affine view works.
+- Canvases take their pixel scale from their views, which fixes the soft-edge cut-off under camera zoom noted in
+  2a: quad margins, path fringes (one framebuffer pixel, also on Retina) and curve flattening (a quarter pixel) all
+  follow it. A camera's pixels per unit come from the window's framebuffer over the area it shows (camera size and
+  zoom, tighter axis), so cameras in metres work too; cameras built without a context assume one pixel per unit.
+  When several passes draw a layer, margins follow the coarsest view (edges never cut) and fringes and curves the
+  finest (the sharpest view stays sharp).
+- Recording is only allowed outside `render()` (`canvas()` throws while rendering and after `dispose()`).
+- `CanvasBatch` is removed; every demo and test records through a pipeline.
+- Also fixed: text commands copy their characters (a reused `StringBuilder` drew its final contents for every
+  pending line), and `ADDITIVE` blends with `(SRC_ALPHA, ONE)`, so fades and anti-aliased edges work in additive
+  layers (it was `(ONE, ONE)`, which ignored alpha).
+- Tests: `RenderPipelineTest` (pass and layer order, blend per layer, view per pass, empty and culled layers, culling
+  at edges and margins, one layer in two passes, anti-aliasing per view scale, reset between frames, custom passes,
+  misuse, zero allocations across three passes); canvas and backend tests run through the pipeline.
+- Demo: `urp/PipelineDemo`: a 4000 x 3000 y-sorted world through a panning, zooming camera, additive glow and a
+  screen-space HUD in 3 draw calls at normal zoom (3812 commands recorded, ~460 quads drawn after culling).
+
+*3b: render targets and post effects:* `RenderTarget` (FBO, logical size at the pixel ratio), passes into targets,
+`PostPass` with ping-pong targets, effects (sepia, pixelate, noise, border, overlay, bloom, vignette), and
+golden-image render tests into fixed-size targets (the successor of the removed parity check).
+
+*3c: materials:* effect materials (one GLSL function injected into the shape program), raw materials, uniforms,
+material batching (`batchByMaterial`), hot reload.
+
+*3d: inspection:* pick ids, last-frame snapshot and `pick()`, per pass/layer frame stats and batch break reasons.
 
 **Phase 4: merge readiness**
 - Update docs and `AGENTS.md` (the legacy renderers are already removed).

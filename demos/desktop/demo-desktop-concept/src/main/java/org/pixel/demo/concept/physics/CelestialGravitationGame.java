@@ -7,7 +7,8 @@ import org.pixel.core.Camera2D;
 import org.pixel.core.GameApp;
 import org.pixel.core.WindowSettings;
 import org.pixel.graphics.canvas.Canvas;
-import org.pixel.graphics.canvas.CanvasBatch;
+import org.pixel.graphics.draw.Layer;
+import org.pixel.graphics.pass.RenderPipeline;
 import org.pixel.math.Vector2;
 
 import java.util.ArrayList;
@@ -25,7 +26,9 @@ public class CelestialGravitationGame extends GameApp {
     private final List<PhysicsBody> bodies = new ArrayList<>();
 
     private Camera2D camera;
-    private CanvasBatch canvasBatch;
+    private static final Layer MAIN = Layer.ordered("main");
+
+    private RenderPipeline pipeline;
     private float displayScale; // Pixels per meter for rendering (can remain float)
 
     @Override
@@ -33,7 +36,7 @@ public class CelestialGravitationGame extends GameApp {
         // Initialize the game entities and components
         camera = new Camera2D(context());
         camera.setOrigin(Vector2.zero());
-        canvasBatch = new CanvasBatch(graphics().getRenderBackend());
+        pipeline = RenderPipeline.builder(graphics().getRenderBackend()).pass(camera, MAIN).build();
 
         // Sun
         double sunMass = 1.989e30; // kg - now using double
@@ -113,7 +116,7 @@ public class CelestialGravitationGame extends GameApp {
 
     @Override
     public void draw(DeltaTime delta) {
-        Canvas canvas = canvasBatch.begin(camera.getViewMatrix());
+        Canvas canvas = pipeline.canvas(MAIN);
         // origin (0, 0) at the center of the view
         canvas.translate(camera.getWidth() / 2f, camera.getHeight() / 2f);
 
@@ -131,12 +134,12 @@ public class CelestialGravitationGame extends GameApp {
             canvas.circle(sx, sy, visualRadius).fill(Color.WHITE); // Draw a circle for each body
         }
 
-        canvasBatch.end();
+        pipeline.render();
     }
 
     @Override
     public void dispose() {
-        canvasBatch.dispose();
+        pipeline.dispose();
     }
 
     /**

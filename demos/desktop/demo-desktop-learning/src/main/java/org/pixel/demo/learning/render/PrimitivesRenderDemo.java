@@ -6,7 +6,8 @@ import org.pixel.core.DesktopLauncher;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.graphics.canvas.Canvas;
-import org.pixel.graphics.canvas.CanvasBatch;
+import org.pixel.graphics.draw.Layer;
+import org.pixel.graphics.pass.RenderPipeline;
 import org.pixel.math.Vector2;
 
 /**
@@ -17,18 +18,20 @@ public class PrimitivesRenderDemo extends DemoGame {
 
     private static final float STROKE = 6f;
 
-    private CanvasBatch canvasBatch;
+    private static final Layer MAIN = Layer.ordered("main");
+
+    private RenderPipeline pipeline;
 
     @Override
     public void load() {
         super.load();
         gameCamera.setOrigin(Vector2.zero());
-        canvasBatch = new CanvasBatch(graphics().getRenderBackend());
+        pipeline = RenderPipeline.builder(graphics().getRenderBackend()).pass(gameCamera, MAIN).build();
     }
 
     @Override
     public void draw(DeltaTime delta) {
-        Canvas c = canvasBatch.begin(gameCamera.getViewMatrix());
+        Canvas c = pipeline.canvas(MAIN);
 
         // rectangle and rounded rectangle
         c.rect(10, 10, 280, 180).fill(Color.RED).stroke(STROKE, Color.WHITE);
@@ -49,12 +52,12 @@ public class PrimitivesRenderDemo extends DemoGame {
         c.path().moveTo(310, 210).quadTo(450, 400, 590, 210).close()
                 .fill(Color.MAROON).stroke(STROKE, Color.WHITE);
 
-        canvasBatch.end();
+        pipeline.render();
     }
 
     @Override
     public void dispose() {
-        canvasBatch.dispose();
+        pipeline.dispose();
         super.dispose();
     }
 

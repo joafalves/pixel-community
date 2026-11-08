@@ -32,7 +32,12 @@ public class RecordingBackend implements RenderBackend {
                              float p0, float p1, float p2, float p3, int type, int slot, int clip, int style) {
     }
 
-    public record Pass(BlendMode blendMode, List<Batch> batches, List<Vertex> vertices, List<FullVertex> shapes) {
+    public record Pass(BlendMode blendMode, List<Batch> batches, List<Vertex> vertices, List<FullVertex> shapes,
+                       float[] viewMatrix) {
+        /** Translation x of the view matrix (column-major m[3][0]): identifies which view drew the pass. */
+        public float viewTranslationX() {
+            return viewMatrix[12];
+        }
     }
 
     private final BackendCapabilities capabilities;
@@ -42,6 +47,7 @@ public class RecordingBackend implements RenderBackend {
     public long drawCalls;
     private boolean inPass;
     private BlendMode blendMode;
+    private final float[] viewMatrix = new float[16];
 
     public RecordingBackend(int maxTextureSlots, int maxQuadsPerBatch, boolean capture) {
         this(new BackendCapabilities(maxTextureSlots, maxQuadsPerBatch, 256, 256, 64), capture);
@@ -62,6 +68,10 @@ public class RecordingBackend implements RenderBackend {
         if (inPass) throw new IllegalStateException("nested pass");
         inPass = true;
         blendMode = state.getBlendMode();
+        float[][] m = state.getViewMatrix().toUnsafeArray();
+        for (int i = 0; i < 4; i++) {
+            System.arraycopy(m[i], 0, viewMatrix, i * 4, 4);
+        }
     }
 
     @Override
@@ -93,7 +103,7 @@ public class RecordingBackend implements RenderBackend {
                     clips, styles));
         }
         passes.add(new Pass(blendMode, recordedBatches, readSprites(data.vertices(VertexLayout.SPRITE)),
-                readShapes(data.vertices(VertexLayout.FULL))));
+                readShapes(data.vertices(VertexLayout.FULL)), viewMatrix.clone()));
     }
 
     @Override

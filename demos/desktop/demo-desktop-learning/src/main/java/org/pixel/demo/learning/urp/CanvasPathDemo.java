@@ -7,7 +7,8 @@ import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.demo.learning.common.Screenshot;
 import org.pixel.graphics.canvas.Canvas;
-import org.pixel.graphics.canvas.CanvasBatch;
+import org.pixel.graphics.draw.Layer;
+import org.pixel.graphics.pass.RenderPipeline;
 import org.pixel.graphics.canvas.LineCap;
 import org.pixel.graphics.canvas.LineJoin;
 import org.pixel.math.Vector2;
@@ -31,7 +32,9 @@ public class CanvasPathDemo extends DemoGame {
     private static final Color PANEL = new Color(0.16f, 0.18f, 0.24f, 1f);
 
     private final String screenshot = System.getProperty("pixel.screenshot");
-    private CanvasBatch canvasBatch;
+    private static final Layer MAIN = Layer.ordered("main");
+
+    private RenderPipeline pipeline;
     private float time;
     private int frames;
 
@@ -39,7 +42,7 @@ public class CanvasPathDemo extends DemoGame {
     public void load() {
         super.load();
         gameCamera.setOrigin(Vector2.zero());
-        canvasBatch = new CanvasBatch(graphics().getRenderBackend());
+        pipeline = RenderPipeline.builder(graphics().getRenderBackend()).pass(gameCamera, MAIN).build();
     }
 
     @Override
@@ -50,7 +53,7 @@ public class CanvasPathDemo extends DemoGame {
 
     @Override
     public void draw(DeltaTime delta) {
-        Canvas c = canvasBatch.begin(gameCamera.getViewMatrix());
+        Canvas c = pipeline.canvas(MAIN);
 
         // star: concave polygon, filled with a stroke
         star(c, 120, 130, 90, 38, 5).fill(GOLD).stroke(4, ORANGE).join(LineJoin.ROUND);
@@ -114,7 +117,7 @@ public class CanvasPathDemo extends DemoGame {
                 .close().fillLinear(900, 380, new Color(0.25f, 0.45f, 0.95f, 1f), 1060, 560, TEAL)
                 .stroke(2, Color.WHITE);
 
-        canvasBatch.end();
+        pipeline.render();
 
         if (screenshot != null && ++frames == 3) {
             try {
@@ -145,7 +148,7 @@ public class CanvasPathDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        canvasBatch.dispose();
+        pipeline.dispose();
         super.dispose();
     }
 

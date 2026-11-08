@@ -11,7 +11,8 @@ import org.pixel.core.Camera2D;
 import org.pixel.core.WindowSettings;
 import org.pixel.core.GameApp;
 import org.pixel.graphics.canvas.Canvas;
-import org.pixel.graphics.canvas.CanvasBatch;
+import org.pixel.graphics.draw.Layer;
+import org.pixel.graphics.pass.RenderPipeline;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 import org.pixel.math.MathHelper;
@@ -34,7 +35,9 @@ public class RoadCarGame extends GameApp {
     protected final List<RoadSegment> roadSegments = new ArrayList<>();
 
     private Camera2D camera;
-    private CanvasBatch canvasBatch;
+    private static final Layer MAIN = Layer.ordered("main");
+
+    private RenderPipeline pipeline;
     private Vector2 cameraPosition;
     private float cameraZoom;
     private float spawnElapsed = 0f;
@@ -47,7 +50,7 @@ public class RoadCarGame extends GameApp {
         cameraZoom = 0.75f;
         camera = new Camera2D(context());
         camera.setOrigin(Vector2.zero());
-        canvasBatch = new CanvasBatch(graphics().getRenderBackend());
+        pipeline = RenderPipeline.builder(graphics().getRenderBackend()).pass(camera, MAIN).build();
 
         roadSegments.add(new RoadSegment(new Vector2(0, 0), true));
         roadSegments.add(new RoadSegment(new Vector2(200, 0)));
@@ -161,14 +164,14 @@ public class RoadCarGame extends GameApp {
 
     @Override
     public void draw(DeltaTime delta) {
-        Canvas canvas = canvasBatch.begin(camera.getViewMatrix());
+        Canvas canvas = pipeline.canvas(MAIN);
         canvas.translate(cameraPosition.getX(), cameraPosition.getY());
         canvas.scale(cameraZoom);
 
         drawRoadSegments(canvas);
         drawVehicles(canvas);
 
-        canvasBatch.end();
+        pipeline.render();
     }
 
     private void drawRoadSegments(Canvas canvas) {
@@ -194,7 +197,7 @@ public class RoadCarGame extends GameApp {
 
     @Override
     public void dispose() {
-        canvasBatch.dispose();
+        pipeline.dispose();
     }
 
 

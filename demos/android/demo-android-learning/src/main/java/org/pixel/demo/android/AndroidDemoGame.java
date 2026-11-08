@@ -10,7 +10,8 @@ import org.pixel.ext.tween.TweenEasingMode;
 import org.pixel.ext.tween.TweenLoopMode;
 import org.pixel.ext.tween.TweenSequencer;
 import org.pixel.graphics.canvas.Canvas;
-import org.pixel.graphics.canvas.CanvasBatch;
+import org.pixel.graphics.draw.Layer;
+import org.pixel.graphics.pass.RenderPipeline;
 import org.pixel.graphics.canvas.LineJoin;
 import org.pixel.graphics.render.SpriteBatch;
 import org.pixel.math.Vector2;
@@ -29,7 +30,9 @@ public class AndroidDemoGame extends GameApp {
     private static final Color SHADOW = new Color(0f, 0f, 0f, 0.45f);
 
     private SpriteBatch spriteBatch;
-    private CanvasBatch canvasBatch;
+    private static final Layer MAIN = Layer.ordered("main");
+
+    private RenderPipeline pipeline;
     private Camera2D camera;
     private Texture spriteTexture;
     private Vector2 spritePositionA;
@@ -40,9 +43,9 @@ public class AndroidDemoGame extends GameApp {
     @Override
     public void load() {
         spriteBatch = graphics().createSpriteBatch();
-        canvasBatch = new CanvasBatch(graphics().getRenderBackend());
         camera = new Camera2D(context());
         camera.setOrigin(0.5f);
+        pipeline = RenderPipeline.builder(graphics().getRenderBackend()).pass(camera, MAIN).build();
 
         spriteTexture = content().loadTexture("images/earth-48x48.png");
 
@@ -74,7 +77,7 @@ public class AndroidDemoGame extends GameApp {
 
     @Override
     public void draw(DeltaTime delta) {
-        Canvas c = canvasBatch.begin(camera.getViewMatrix());
+        Canvas c = pipeline.canvas(MAIN);
 
         // a panel with a soft shadow, a gradient bar, a stroked circle and a rotating star
         c.roundRect(-420, -620, 840, 380, 36).fill(PANEL).shadow(0, 12, 30, SHADOW).stroke(3, TEAL);
@@ -85,7 +88,7 @@ public class AndroidDemoGame extends GameApp {
         c.rotate(time);
         star(c, 95, 40, 5).fillLinear(-95, 0, TEAL, 95, 0, GOLD).stroke(5, Color.WHITE).join(LineJoin.ROUND);
         c.restore();
-        canvasBatch.end();
+        pipeline.render();
 
         spriteBatch.begin(camera.getViewMatrix());
         spriteBatch.draw(spriteTexture, spritePositionA, Color.WHITE, Vector2.HALF, 4f);
@@ -119,7 +122,7 @@ public class AndroidDemoGame extends GameApp {
 
     @Override
     public void dispose() {
-        canvasBatch.dispose();
+        pipeline.dispose();
         spriteBatch.dispose(); // the content manager belongs to the host, which disposes it
     }
 }

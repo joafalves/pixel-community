@@ -21,6 +21,7 @@ public class Camera2D implements Camera, Serializable {
     private float zoom;
     private Matrix4 matrixCache;
     private boolean dirty;
+    private transient GameWindow window; // display density, for getPixelsPerUnit()
 
     //endregion
 
@@ -33,6 +34,7 @@ public class Camera2D implements Camera, Serializable {
      */
     public Camera2D(GameContext context) {
         this(0, 0, context.settings().getVirtualWidth(), context.settings().getVirtualHeight());
+        this.window = context.window();
     }
 
     /**
@@ -43,6 +45,7 @@ public class Camera2D implements Camera, Serializable {
      */
     public Camera2D(GameContext context, Vector2 origin) {
         this(0, 0, context.settings().getVirtualWidth(), context.settings().getVirtualHeight(), 1.0f, origin);
+        this.window = context.window();
     }
 
     /**
@@ -278,6 +281,19 @@ public class Camera2D implements Camera, Serializable {
     public void setZoom(float zoom) {
         this.zoom = zoom;
         this.dirty = true;
+    }
+
+    /**
+     * Framebuffer pixels per world unit: the window's framebuffer size over the world area the camera shows
+     * ({@code size / zoom}), on the tighter axis. Cameras created without a game context don't know the window and
+     * assume one pixel per unit at zoom 1.
+     */
+    @Override
+    public float getPixelsPerUnit() {
+        if (window == null || width <= 0 || height <= 0) {
+            return zoom;
+        }
+        return Math.min(window.getWidth() * zoom / width, window.getHeight() * zoom / height);
     }
 
     /**

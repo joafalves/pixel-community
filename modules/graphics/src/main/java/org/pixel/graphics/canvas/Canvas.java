@@ -8,6 +8,7 @@ import org.pixel.graphics.draw.Colors;
 import org.pixel.graphics.draw.DrawList;
 import org.pixel.graphics.draw.ShapeType;
 import org.pixel.graphics.draw.StyleTable;
+import org.pixel.graphics.pass.View;
 import org.pixel.graphics.text.SdfFont;
 import org.pixel.graphics.text.TextAlign;
 import org.pixel.graphics.text.TextBaseline;
@@ -55,6 +56,8 @@ public final class Canvas {
     private final float[] cornerPos = new float[8], cornerLayer = new float[8], cornerUv = new float[8],
             cornerLocal = new float[8];
     private Command pending;
+    private View[] views = NO_VIEWS;
+    private static final View[] NO_VIEWS = new View[0];
     private boolean warnedRotatedClip;
     private boolean warnedTextRange;
 
@@ -79,6 +82,34 @@ public final class Canvas {
         transform.identity();
         clipId = 0;
         depth = 0;
+    }
+
+    /**
+     * The views this canvas is drawn with (set by the pipeline; usually one). Their pixels per unit keep
+     * anti-aliased edges about one framebuffer pixel wide and curves smooth under any zoom or display density. With
+     * several views, quad margins follow the coarsest (soft edges are never cut) and path fringes and curve
+     * flattening follow the finest (the sharpest view stays sharp).
+     *
+     * @param views The views (none = one unit per pixel).
+     */
+    public void setViews(View... views) {
+        this.views = views != null && views.length > 0 ? views.clone() : NO_VIEWS;
+    }
+
+    /**
+     * Framebuffer pixels per user unit under the current transform, for the coarsest or the finest view.
+     */
+    private float pixelScale(boolean coarsest) {
+        float viewScale = 1f;
+        if (views.length > 0) {
+            viewScale = views[0].getPixelsPerUnit();
+            for (int i = 1; i < views.length; i++) {
+                float s = views[i].getPixelsPerUnit();
+                viewScale = coarsest ? Math.min(viewScale, s) : Math.max(viewScale, s);
+            }
+        }
+        float scale = transform.minScale() * viewScale;
+        return scale > 1e-6f ? scale : 1f;
     }
 
     /**
@@ -293,7 +324,7 @@ public final class Canvas {
 
     /**
      * Start a text command with a distance-field font: {@code canvas.text(font, "Score", 20, 20).size(32)}. The
-     * text is laid out when the command is committed, so the character sequence must not change before that.
+     * characters are copied (into a reused buffer), so a {@code StringBuilder} can be reused right away.
      * <p>
      * By default (x, y) is the top-left of the text block; {@link Text#align} and {@link Text#baseline} move the
      * anchor. Effects: fill (solid or gradient, in canvas coordinates), outline ({@link Text#stroke}, outside the
@@ -340,9 +371,14 @@ public final class Canvas {
 
     // endregion
 
+    /** Quad margin around shapes for the anti-aliased edge (about two pixels in the coarsest view). */
     private float aaMargin() {
-        float scale = transform.minScale();
-        return scale > 1e-6f ? AA_MARGIN / scale : AA_MARGIN;
+        return AA_MARGIN / pixelScale(true);
+    }
+
+    /** Width of path anti-aliasing fringes: one pixel in the finest view. */
+    private float fringeWidth() {
+        return AA_MARGIN * 0.5f / pixelScale(false);
     }
 
     private void addShapeQuad(ShapeType type, float cx, float cy, float ux, float uy, float ex, float ey,
@@ -1114,8 +1150,7 @@ public final class Canvas {
         }
 
         private float tolerance() {
-            float scale = transform.minScale();
-            return 0.25f / (scale > 1e-6f ? scale : 1f); // a quarter pixel
+            return 0.25f / pixelScale(false); // a quarter pixel in the finest view
         }
 
         // endregion
@@ -1203,7 +1238,7 @@ public final class Canvas {
         @Override
         void commit() {
             open = false;
-            float aa = aaMargin() * 0.5f; // ~1 pixel fringe
+            float aa = fringeWidth();
             if (hasFill) {
                 int styleId = paintStyle();
                 for (int s = 0; s < subCount; s++) {
@@ -1470,7 +1505,7 @@ public final class Canvas {
      */
     public final class Text extends Shape<Text> {
         private SdfFont font;
-        private CharSequence string;
+        private final StringBuilder chars = new StringBuilder(64); // copy of the text: callers may reuse theirs
         private TextLayout prepared;
         private float x, y, size, maxWidth, letterSpacing, lineSpacing, weight;
         private TextAlign align;
@@ -1484,7 +1519,10 @@ public final class Canvas {
             resetStyle();
             strokeAlign = StrokeAlign.OUTSIDE;
             this.font = font;
-            this.string = string;
+            this.chars.setLength(0);
+            if (string != null) {
+                this.chars.append(string);
+            }
             this.prepared = prepared;
             this.x = x;
             this.y = y;
@@ -1573,14 +1611,13 @@ public final class Canvas {
         @Override
         void commit() {
             SdfFont f = font;
-            CharSequence s = string;
             TextLayout l = prepared;
             font = null; // don't keep these reachable after the command is committed
-            string = null;
             prepared = null;
             if (l == null) {
                 l = textLayout.reset().maxWidth(maxWidth).wrap(wrap).maxLines(maxLines).ellipsis(ellipsis)
-                        .align(align).letterSpacing(letterSpacing).lineSpacing(lineSpacing).layout(f, s, size);
+                        .align(align).letterSpacing(letterSpacing).lineSpacing(lineSpacing)
+                        .layout(f, chars, size);
             }
             float textSize = l.size();
             if (!isVisible() || l.glyphCount() == 0 || textSize <= 0f) {

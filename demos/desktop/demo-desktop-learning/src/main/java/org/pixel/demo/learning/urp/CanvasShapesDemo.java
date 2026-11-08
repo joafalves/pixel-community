@@ -9,7 +9,8 @@ import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.demo.learning.common.Screenshot;
 import org.pixel.graphics.canvas.Canvas;
-import org.pixel.graphics.canvas.CanvasBatch;
+import org.pixel.graphics.draw.Layer;
+import org.pixel.graphics.pass.RenderPipeline;
 import org.pixel.graphics.canvas.LineCap;
 import org.pixel.graphics.canvas.StrokeAlign;
 import org.pixel.math.Vector2;
@@ -33,7 +34,9 @@ public class CanvasShapesDemo extends DemoGame {
     private static final Color SHADOW = new Color(0f, 0f, 0f, 0.35f);
 
     private final String screenshot = System.getProperty("pixel.screenshot");
-    private CanvasBatch canvasBatch;
+    private static final Layer MAIN = Layer.ordered("main");
+
+    private RenderPipeline pipeline;
     private ContentManager content;
     private Texture earth;
     private float time;
@@ -43,7 +46,7 @@ public class CanvasShapesDemo extends DemoGame {
     public void load() {
         super.load();
         gameCamera.setOrigin(Vector2.zero());
-        canvasBatch = new CanvasBatch(graphics().getRenderBackend());
+        pipeline = RenderPipeline.builder(graphics().getRenderBackend()).pass(gameCamera, MAIN).build();
         content = content();
         earth = content.load("images/earth-48x48.png", Texture.class);
     }
@@ -56,7 +59,7 @@ public class CanvasShapesDemo extends DemoGame {
 
     @Override
     public void draw(DeltaTime delta) {
-        Canvas c = canvasBatch.begin(gameCamera.getViewMatrix());
+        Canvas c = pipeline.canvas(MAIN);
 
         // fill / stroke alignment
         c.rect(40, 40, 140, 90).fill(TEAL);
@@ -115,7 +118,7 @@ public class CanvasShapesDemo extends DemoGame {
             }
         });
 
-        canvasBatch.end();
+        pipeline.render();
 
         if (screenshot != null && ++frames == 3) {
             try {
@@ -131,7 +134,7 @@ public class CanvasShapesDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        canvasBatch.dispose();
+        pipeline.dispose();
         super.dispose();
     }
 

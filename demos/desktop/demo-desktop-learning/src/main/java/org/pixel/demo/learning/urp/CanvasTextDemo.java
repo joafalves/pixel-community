@@ -7,7 +7,8 @@ import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.demo.learning.common.Screenshot;
 import org.pixel.graphics.canvas.Canvas;
-import org.pixel.graphics.canvas.CanvasBatch;
+import org.pixel.graphics.draw.Layer;
+import org.pixel.graphics.pass.RenderPipeline;
 import org.pixel.graphics.canvas.StrokeAlign;
 import org.pixel.graphics.text.SdfFont;
 import org.pixel.graphics.text.SdfFontSettings;
@@ -41,7 +42,9 @@ public class CanvasTextDemo extends DemoGame {
             + "inside a fixed width, is centered, and keeps kerning (AV, To, Wa) intact. Olá, ação, über, café!";
 
     private final String screenshot = System.getProperty("pixel.screenshot");
-    private CanvasBatch canvasBatch;
+    private static final Layer MAIN = Layer.ordered("main");
+
+    private RenderPipeline pipeline;
     private SdfFont font;
     private SdfFont wideFont;
     private float time;
@@ -51,7 +54,7 @@ public class CanvasTextDemo extends DemoGame {
     public void load() {
         super.load();
         gameCamera.setOrigin(Vector2.zero());
-        canvasBatch = new CanvasBatch(graphics().getRenderBackend());
+        pipeline = RenderPipeline.builder(graphics().getRenderBackend()).pass(gameCamera, MAIN).build();
         long start = System.nanoTime();
         font = content().load("fonts/gidole-regular.ttf", SdfFont.class);
         log.info("MTSDF font ready in {0} ms ({1} glyphs, {2}x{3} atlas).", (System.nanoTime() - start) / 1_000_000,
@@ -70,7 +73,7 @@ public class CanvasTextDemo extends DemoGame {
 
     @Override
     public void draw(DeltaTime delta) {
-        Canvas c = canvasBatch.begin(gameCamera.getViewMatrix());
+        Canvas c = pipeline.canvas(MAIN);
 
         // size ramp: 8 to 64 px
         float y = 24;
@@ -127,7 +130,7 @@ public class CanvasTextDemo extends DemoGame {
                 .fill(GOLD).stroke(1, INK);
         c.restore();
 
-        canvasBatch.end();
+        pipeline.render();
 
         if (screenshot != null && ++frames == 3) {
             try {
@@ -143,7 +146,7 @@ public class CanvasTextDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        canvasBatch.dispose();
+        pipeline.dispose();
         super.dispose();
     }
 

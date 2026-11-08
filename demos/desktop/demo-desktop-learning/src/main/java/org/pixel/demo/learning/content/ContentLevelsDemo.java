@@ -9,7 +9,8 @@ import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.demo.learning.common.Screenshot;
 import org.pixel.graphics.canvas.Canvas;
-import org.pixel.graphics.canvas.CanvasBatch;
+import org.pixel.graphics.draw.Layer;
+import org.pixel.graphics.pass.RenderPipeline;
 import org.pixel.graphics.text.SdfFont;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
@@ -35,7 +36,9 @@ public class ContentLevelsDemo extends DemoGame {
     private static final Color MUTED = new Color(0.65f, 0.70f, 0.78f, 1f);
 
     private final String screenshot = System.getProperty("pixel.screenshot");
-    private CanvasBatch canvasBatch;
+    private static final Layer MAIN = Layer.ordered("main");
+
+    private RenderPipeline pipeline;
     private SdfFont font;
     private ContentManager level;
     private int levelIndex = -1;
@@ -48,7 +51,7 @@ public class ContentLevelsDemo extends DemoGame {
     public void load() {
         super.load();
         gameCamera.setOrigin(Vector2.zero());
-        canvasBatch = new CanvasBatch(graphics().getRenderBackend());
+        pipeline = RenderPipeline.builder(graphics().getRenderBackend()).pass(gameCamera, MAIN).build();
         font = content().load("fonts/gidole-regular.ttf", SdfFont.class); // shared: lives as long as the game
         loadLevel(0);
     }
@@ -79,7 +82,7 @@ public class ContentLevelsDemo extends DemoGame {
 
     @Override
     public void draw(DeltaTime delta) {
-        Canvas c = canvasBatch.begin(gameCamera.getViewMatrix());
+        Canvas c = pipeline.canvas(MAIN);
 
         // the level: its textures bouncing in a row
         for (int i = 0; i < textures.length; i++) {
@@ -97,7 +100,7 @@ public class ContentLevelsDemo extends DemoGame {
             c.text(font, "Previous level's textures disposed with its child.", 580, 206).size(15).fill(MUTED)
                     .maxWidth(340);
         }
-        canvasBatch.end();
+        pipeline.render();
 
         if (screenshot != null && ++frames == 5) {
             try {
@@ -112,7 +115,7 @@ public class ContentLevelsDemo extends DemoGame {
 
     @Override
     public void dispose() {
-        canvasBatch.dispose();
+        pipeline.dispose();
         // the level child is disposed with the game's content manager; disposing it here is fine too
         super.dispose();
     }

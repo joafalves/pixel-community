@@ -7,7 +7,8 @@ import org.pixel.content.opengl.GLTexture;
 import org.pixel.graphics.RenderStats;
 import org.pixel.graphics.backend.VertexLayout;
 import org.pixel.graphics.canvas.Canvas;
-import org.pixel.graphics.canvas.CanvasBatch;
+import org.pixel.graphics.draw.Layer;
+import org.pixel.graphics.pass.RenderPipeline;
 import org.pixel.graphics.opengl.GLApi;
 import org.pixel.graphics.render.DrawListSpriteBatch;
 import org.pixel.math.Matrix4;
@@ -31,6 +32,8 @@ class GLRenderBackendTest {
     private final GLRenderBackend backend = new GLRenderBackend(gl, stats);
     private final GLTexture texture = new GLTexture(gl, 1000, 32, 32);
     private final Matrix4 view = new Matrix4();
+    private static final Matrix4 WIDE = Matrix4.orthographic(-1e5f, 1e5f, 1e5f, -1e5f, 0f, 1f); // nothing culled
+    private static final Layer LAYER = Layer.ordered("test");
 
     @AfterEach
     void dispose() {
@@ -96,11 +99,11 @@ class GLRenderBackendTest {
 
     @Test
     void shapeBatchesBindTheirSlicesOfTheClipAndStyleTables() {
-        CanvasBatch canvasBatch = new CanvasBatch(backend);
-        Canvas c = canvasBatch.begin(view);
+        RenderPipeline pipeline = RenderPipeline.builder(backend).pass(() -> WIDE, LAYER).build();
+        Canvas c = pipeline.canvas(LAYER);
         c.clip(0, 0, 50, 50);
         c.rect(0, 0, 10, 10).fill(Color.RED).stroke(2, Color.WHITE);
-        canvasBatch.end();
+        pipeline.render();
 
         assertEquals(1, gl.draws.size());
         assertEquals(2, gl.ranges.size());
@@ -111,7 +114,7 @@ class GLRenderBackendTest {
         assertEquals(256L * 4 * Float.BYTES, clips.size());   // 256 clips of one vec4
         assertEquals(128L * 28 * Float.BYTES, styles.size()); // 128 styles of 7 vec4
         assertNotEquals(gl.draws.get(0).program(), 0);
-        canvasBatch.dispose();
+        pipeline.dispose();
     }
 
     @Test
@@ -152,7 +155,7 @@ class GLRenderBackendTest {
         GLTexture countingTexture = new GLTexture(counting, 2000, 32, 32);
         DrawListSpriteBatch sprites = new DrawListSpriteBatch(countingBackend);
         sprites.init();
-        CanvasBatch canvasBatch = new CanvasBatch(countingBackend);
+        RenderPipeline pipeline = RenderPipeline.builder(countingBackend).pass(() -> WIDE, LAYER).build();
         Vector2 position = new Vector2();
         Runnable frame = () -> {
             sprites.begin(view);
@@ -161,11 +164,11 @@ class GLRenderBackendTest {
                 sprites.draw(countingTexture, position);
             }
             sprites.end();
-            Canvas c = canvasBatch.begin(view);
+            Canvas c = pipeline.canvas(LAYER);
             for (int i = 0; i < 500; i++) {
                 c.roundRect(i, i, 20, 10, 3).fill(Color.RED).stroke(1, Color.WHITE).shadow(0, 2, 4, Color.BLACK);
             }
-            canvasBatch.end();
+            pipeline.render();
         };
         for (int i = 0; i < 20; i++) {
             frame.run();
@@ -180,7 +183,7 @@ class GLRenderBackendTest {
         assertEquals(0, threads.getThreadAllocatedBytes(thread) - before, "bytes allocated by 20 frames");
         assertEquals(40 * 3, counting.drawCount); // per frame: 20,000 sprites in 2 chunks + 1 shape batch
         sprites.dispose();
-        canvasBatch.dispose();
+        pipeline.dispose();
         countingBackend.dispose();
     }
 }

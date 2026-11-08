@@ -4,9 +4,12 @@ import org.junit.jupiter.api.Test;
 import org.pixel.commons.Color;
 import org.pixel.content.Texture;
 import org.pixel.graphics.draw.Colors;
+import org.pixel.graphics.draw.Layer;
 import org.pixel.graphics.draw.LayerMode;
 import org.pixel.graphics.draw.ShapeType;
 import org.pixel.graphics.draw.StyleTable;
+import org.pixel.graphics.pass.RenderPipeline;
+import org.pixel.graphics.pass.View;
 import org.pixel.graphics.testing.RecordingBackend;
 import org.pixel.graphics.testing.RecordingBackend.Batch;
 import org.pixel.graphics.testing.RecordingBackend.FullVertex;
@@ -30,16 +33,19 @@ class CanvasTest {
     private static final float AA = 2f; // Canvas.AA_MARGIN at scale 1
 
     private final RecordingBackend backend = new RecordingBackend(16, 16384, true);
+    // a view covering far more than any test draws (nothing culled), one unit per pixel
+    private static final Matrix4 WIDE = Matrix4.orthographic(-1e5f, 1e5f, 1e5f, -1e5f, 0f, 1f);
+    private static final View VIEW = () -> WIDE;
 
     private RecordingBackend.Pass draw(Consumer<Canvas> body) {
         return draw(LayerMode.ORDERED, body);
     }
 
     private RecordingBackend.Pass draw(LayerMode mode, Consumer<Canvas> body) {
-        CanvasBatch batch = new CanvasBatch(backend, mode);
-        Canvas canvas = batch.begin(new Matrix4());
-        body.accept(canvas);
-        batch.end();
+        Layer layer = mode == LayerMode.SORTED ? Layer.sorted("test") : Layer.ordered("test");
+        RenderPipeline pipeline = RenderPipeline.builder(backend).pass(VIEW, layer).build();
+        body.accept(pipeline.canvas(layer));
+        pipeline.render();
         return backend.lastPass();
     }
 
@@ -413,14 +419,14 @@ class CanvasTest {
     @Test
     void steadyStateCanvasFramesDoNotAllocate() {
         RecordingBackend counting = new RecordingBackend(16, 16384, false);
-        CanvasBatch batch = new CanvasBatch(counting);
+        Layer layer = Layer.ordered("frame");
+        RenderPipeline pipeline = RenderPipeline.builder(counting).pass(VIEW, layer).build();
         Texture texture = new TestTexture(32, 32);
         SdfFont font = TestFonts.mono();
-        Matrix4 view = new Matrix4();
         Color fill = new Color(0.2f, 0.4f, 0.8f, 1f);
 
         Runnable frame = () -> {
-            Canvas c = batch.begin(view);
+            Canvas c = pipeline.canvas(layer);
             for (int i = 0; i < 2000; i++) {
                 c.save();
                 c.translate(i % 100, i / 100f);
@@ -445,7 +451,7 @@ class CanvasTest {
                 }
                 c.restore();
             }
-            batch.end();
+            pipeline.render();
         };
         for (int i = 0; i < 30; i++) {
             frame.run();
@@ -494,6 +500,20 @@ class CanvasTest {
         assertEquals(font.v0(a), v.get(0).v(), EPS);
         assertEquals(font.u1(a), v.get(2).u(), EPS);
         assertEquals(font.v1(a), v.get(2).v(), EPS);
+    }
+
+    @Test
+    void textCanReuseAStringBuilder() {
+        StringBuilder line = new StringBuilder();
+        List<FullVertex> v = draw(c -> {
+            line.setLength(0);
+            line.append("ab");
+            c.text(font, line, 0, 0).size(10);
+            line.setLength(0);
+            line.append("c"); // the first command is still pending: its text must not change
+            c.text(font, line, 0, 20).size(10);
+        }).shapes();
+        assertEquals(3 * 4, v.size()); // "ab" + "c"
     }
 
     @Test

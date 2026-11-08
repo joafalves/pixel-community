@@ -38,6 +38,19 @@ public final class Batcher {
      * @param out          The output (cleared first).
      */
     public void build(DrawList list, BackendCapabilities capabilities, RenderData out) {
+        build(list, capabilities, out, null);
+    }
+
+    /**
+     * Build vertices and batches for a draw list, skipping commands entirely outside the given bounds.
+     *
+     * @param list         The prepared draw list.
+     * @param capabilities The backend limits.
+     * @param out          The output (cleared first).
+     * @param cullBounds   Visible area in layer coordinates ({@code x0, y0, x1, y1}), or {@code null} to keep all.
+     * @return The number of commands culled.
+     */
+    public int build(DrawList list, BackendCapabilities capabilities, RenderData out, float[] cullBounds) {
         BatchList batches = out.batches();
         if (batches.getMaxTextureSlots() > capabilities.maxTextureSlots()) {
             throw new IllegalArgumentException("Batch list allows more texture slots than the backend supports.");
@@ -45,14 +58,19 @@ public final class Batcher {
         out.clear();
         int count = list.size();
         if (count == 0) {
-            return;
+            return 0;
         }
+        int culled = 0;
         ensureScratch(list.clips().size() + 1, list.styles().size() + 1);
 
         int maxQuads = capabilities.maxQuadsPerBatch();
         int alignment = capabilities.tableAlignmentFloats();
         for (int order = 0; order < count; order++) {
             int index = list.orderedIndex(order);
+            if (cullBounds != null && outside(list, index, cullBounds)) {
+                culled++;
+                continue;
+            }
             VertexLayout layout = list.layout(index);
             VertexStream vertices = out.vertices(layout);
 
@@ -73,6 +91,21 @@ public final class Batcher {
             }
             batches.addQuad();
         }
+        return culled;
+    }
+
+    /** Whether the command's quad (anti-aliasing margin, strokes and shadows included) misses the bounds. */
+    private static boolean outside(DrawList list, int index, float[] bounds) {
+        float minX = Float.POSITIVE_INFINITY, minY = Float.POSITIVE_INFINITY;
+        float maxX = Float.NEGATIVE_INFINITY, maxY = Float.NEGATIVE_INFINITY;
+        for (int corner = 0; corner < 4; corner++) {
+            float x = list.x(index, corner), y = list.y(index, corner);
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+        }
+        return maxX < bounds[0] || minX > bounds[2] || maxY < bounds[1] || minY > bounds[3];
     }
 
     private void beginBatch(BatchList batches, VertexLayout layout, int firstQuad, int alignment) {

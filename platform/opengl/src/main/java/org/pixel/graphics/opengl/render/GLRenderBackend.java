@@ -136,7 +136,7 @@ public final class GLRenderBackend implements RenderBackend {
         current = null;
 
         switch (passState.getBlendMode()) {
-            case ADDITIVE -> gl.blendFunc(GL_ONE, GL_ONE);
+            case ADDITIVE -> gl.blendFunc(GL_SRC_ALPHA, GL_ONE); // alpha still weights (fades, soft edges)
             case MULTIPLY -> gl.blendFunc(GL_DST_COLOR, GL_ZERO);
             default -> gl.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         }
