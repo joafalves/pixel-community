@@ -158,6 +158,15 @@ public final class LwjglGLApi implements GLApi {
     }
 
     @Override
+    public void bufferSubData(int target, long offset, ByteBuffer data, int dataOffset, int size) {
+        if (dataOffset < 0 || size < 0 || dataOffset + size > data.capacity()) {
+            throw new IndexOutOfBoundsException("Range " + dataOffset + "+" + size + " outside a "
+                    + data.capacity() + " byte buffer.");
+        }
+        nglBufferSubData(target, offset, size, MemoryUtil.memAddress0(data) + dataOffset); // by address: no views
+    }
+
+    @Override
     public void bindBufferRange(int target, int index, int buffer, long offset, long size) {
         glBindBufferRange(target, index, buffer, offset, size);
     }

@@ -165,13 +165,22 @@ public class Camera2D implements Camera, Serializable {
      * @return The virtual position.
      */
     public Vector2 screenToVirtualCoordinates(float screenX, float screenY) {
-        // normalize screen position:
-        float nx = 2.0f * screenX / getWidth() - 1.0f;
-        float ny = 1.0f - 2.0f * screenY / getHeight();
-        Matrix4 invertMatrix = new Matrix4(getViewMatrix());
-        invertMatrix.invert();
+        return screenToWorld(screenX, screenY, new Vector2());
+    }
 
-        return Vector2.transformMatrix4(new Vector2(nx, ny), invertMatrix);
+    /**
+     * Transform a screen position (the camera's viewport space, see {@link #screenToVirtualCoordinates(float, float)})
+     * to world coordinates, without allocating (e.g. to pick under the mouse every frame).
+     *
+     * @param out Receives the world position.
+     * @return {@code out}.
+     */
+    public Vector2 screenToWorld(float screenX, float screenY, Vector2 out) {
+        // the inverse of the orthographic view: the view's left/top plus the screen offset, unzoomed
+        float left = position.getX() - getWidth() / zoom * getOrigin().getX();
+        float top = position.getY() - getHeight() / zoom * getOrigin().getY();
+        out.set(left + screenX / zoom, top + screenY / zoom);
+        return out;
     }
 
     /**

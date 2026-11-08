@@ -21,14 +21,6 @@ final class Affine {
         ty = 0;
     }
 
-    void set(Affine other) {
-        a = other.a;
-        b = other.b;
-        c = other.c;
-        d = other.d;
-        tx = other.tx;
-        ty = other.ty;
-    }
 
     void translate(float x, float y) {
         tx += a * x + c * y;

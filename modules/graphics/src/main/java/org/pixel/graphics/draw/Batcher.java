@@ -67,13 +67,14 @@ public final class Batcher {
 
         int maxQuads = capabilities.maxQuadsPerBatch();
         int alignment = capabilities.tableAlignmentFloats();
+        boolean spritesOnly = list.isSpritesOnly(); // images without style or clip: the lighter layout for all
         for (int order = 0; order < count; order++) {
             int index = list.orderedIndex(order);
-            if (cullBounds != null && outside(list, index, cullBounds)) {
+            if ((cullBounds != null && outside(list, index, cullBounds)) || clippedAway(list, index)) {
                 culled++;
                 continue;
             }
-            VertexLayout layout = list.layout(index);
+            VertexLayout layout = spritesOnly ? VertexLayout.SPRITE : list.layout(index);
             VertexStream vertices = out.vertices(layout);
             Material material = list.material(index);
 
@@ -97,7 +98,11 @@ public final class Batcher {
             int slot = texture != null ? batches.slotOf(texture) : 0;
             vertices.reserve(4);
             if (layout == VertexLayout.SPRITE) {
-                writeSprite(list, index, slot, vertices);
+                if (list.layout(index) == VertexLayout.SPRITE) {
+                    writeSprite(list, index, slot, vertices);
+                } else {
+                    writeSpriteCorners(list, index, slot, vertices); // a textured shape quad, drawn as a sprite
+                }
             } else {
                 int clip = resolveClip(list, index, batches);
                 int style = resolveStyle(list, index, batches);
@@ -106,6 +111,28 @@ public final class Batcher {
             batches.addQuad();
         }
         return culled;
+    }
+
+    /** Whether the command lies entirely outside its clip rectangle (nothing of it would be drawn). */
+    private static boolean clippedAway(DrawList list, int index) {
+        if (list.layout(index) != VertexLayout.FULL) {
+            return false;
+        }
+        int clip = list.clipId(index);
+        if (clip == 0) {
+            return false;
+        }
+        ClipTable clips = list.clips();
+        float minX = Float.POSITIVE_INFINITY, minY = Float.POSITIVE_INFINITY;
+        float maxX = Float.NEGATIVE_INFINITY, maxY = Float.NEGATIVE_INFINITY;
+        for (int corner = 0; corner < 4; corner++) {
+            float x = list.x(index, corner), y = list.y(index, corner);
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+        }
+        return maxX <= clips.x0(clip) || minX >= clips.x1(clip) || maxY <= clips.y0(clip) || minY >= clips.y1(clip);
     }
 
     /** Whether the command's quad (anti-aliasing margin, strokes and shadows included) misses the bounds. */
@@ -142,7 +169,7 @@ public final class Batcher {
         if (list.layout(index) == VertexLayout.FULL) {
             int clip = list.clipId(index);
             if (clip != 0 && clipStamp[clip] != batchSerial
-                    && batches.currentClipCount() == capabilities.maxClipsPerBatch()) {
+                    && batches.currentClipCount() >= capabilities.maxClipsPerBatch()) {
                 return BatchBreak.CLIP_TABLE;
             }
             int style = list.styleId(index);
@@ -198,6 +225,15 @@ public final class Batcher {
         vertices.putSpriteVertex(list.x(index, 1), list.y(index, 1), u1, v0, rgba, slot);
         vertices.putSpriteVertex(list.x(index, 2), list.y(index, 2), u1, v1, rgba, slot);
         vertices.putSpriteVertex(list.x(index, 3), list.y(index, 3), u0, v1, rgba, slot);
+    }
+
+    /** A textured shape quad as a sprite quad: its corners' texture coordinates, tint and slot. */
+    private static void writeSpriteCorners(DrawList list, int index, int slot, VertexStream vertices) {
+        int rgba = list.color(index);
+        for (int corner = 0; corner < 4; corner++) {
+            vertices.putSpriteVertex(list.x(index, corner), list.y(index, corner), list.cornerU(index, corner),
+                    list.cornerV(index, corner), rgba, slot);
+        }
     }
 
     private static void writeFull(DrawList list, int index, int slot, int clip, int style, VertexStream vertices) {

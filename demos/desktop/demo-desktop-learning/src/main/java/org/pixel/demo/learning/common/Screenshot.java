@@ -19,13 +19,15 @@ public final class Screenshot {
     }
 
     /**
-     * Capture the back buffer of the game window (call at the end of {@code draw()}).
+     * Capture the back buffer of the game window (call at the end of {@code draw()}). The dev tools are drawn by the
+     * host after {@code draw()}, so when they are shown they are drawn first here to appear in the image.
      *
      * @param context The game context.
      * @param file    The PNG file to write.
      * @throws IOException If the directory cannot be created.
      */
     public static void capture(GameContext context, Path file) throws IOException {
+        context.devTools().render();
         int width = context.window().getWidth();   // framebuffer pixels (HiDPI aware)
         int height = context.window().getHeight();
         writePng(file, context.graphics().readPixels(0, 0, width, height, true), width, height);

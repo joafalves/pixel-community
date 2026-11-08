@@ -55,7 +55,7 @@ final class GLShapeProgram extends GLProgram {
                 + "uniform int uPremultiplied;\n"
                 + "vec4 pixelSample(int slot, vec2 uv) {\n"
                 + "    vec4 texel = vec4(1.0);\n"
-                + "    switch (slot) {\n" + sampleSwitch(textureSlots) + "    }\n"
+                + "    switch (slot) {\n" + GLSpriteProgram.textureSwitch(textureSlots) + "    }\n"
                 + "    if (((uPremultiplied >> slot) & 1) == 0) {\n"
                 + "        texel.rgb *= texel.a;\n"
                 + "    }\n"
@@ -71,7 +71,7 @@ final class GLShapeProgram extends GLProgram {
                 .replace("/*$numTextures*/", String.valueOf(textureSlots))
                 .replace("/*$maxClips*/", String.valueOf(maxClips))
                 .replace("/*$maxStyleVec4*/", String.valueOf(maxStyles * BatchList.STYLE_FLOATS / 4))
-                .replace("/*$sampleSwitchCase*/", sampleSwitch(textureSlots))
+                .replace("/*$sampleSwitchCase*/", GLSpriteProgram.textureSwitch(textureSlots))
                 .replace("/*$material*/", effectSource != null ? "#line 1\n" + effectSource : "");
     }
 
@@ -79,15 +79,5 @@ final class GLShapeProgram extends GLProgram {
         if (required || hasUniformBlock(name)) {
             bindUniformBlock(name, binding);
         }
-    }
-
-    /** {@code case i: texel = texture(uTextures[i], uv);} per slot (sampler arrays need constant indices). */
-    private static String sampleSwitch(int slots) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < slots; i++) {
-            sb.append("        case ").append(i).append(": texel = texture(uTextures[").append(i)
-                    .append("], uv); break;\n");
-        }
-        return sb.toString();
     }
 }

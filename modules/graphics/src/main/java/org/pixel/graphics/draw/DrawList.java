@@ -48,10 +48,12 @@ public final class DrawList {
     private int[] sequenceBuffer;
     private final int[] radixCounts = new int[256];
     private boolean needsSort;
-    private long firstKey;
+    private long lastKey; // the largest key so far, in final order (the sort must run if a smaller one comes)
     private boolean prepared;
 
     private int pickId; // pick id given to the commands being added
+    private int pickable; // commands with a pick id
+    private boolean spritesOnly = true; // every command so far can be drawn with the lighter sprite layout
 
     // material applied to shape commands being added, and its per-command data
     private Material material;
@@ -95,6 +97,8 @@ public final class DrawList {
         size = 0;
         setMaterial(null);
         pickId = 0;
+        pickable = 0;
+        spritesOnly = true;
         styles.clear();
         clips.clear();
         needsSort = false;
@@ -168,7 +172,7 @@ public final class DrawList {
      * @param p2        Shape parameter 2.
      * @param p3        Shape parameter 3.
      * @param rgba      Packed fill color.
-     * @param styleId   Id in {@link #styles()} (0 = no stroke).
+     * @param styleId   Id in {@link #styles()} (0 = none: no stroke, gradient, shadow or material data).
      * @param clipId    Id in {@link #clips()} (0 = no clip).
      * @param depth     The depth (only used by {@link LayerMode#SORTED}).
      */
@@ -206,6 +210,9 @@ public final class DrawList {
         params[p + 3] = p3;
         styleIds[i] = withMaterialData(styleId);
         clipIds[i] = clipId;
+        if (spritesOnly && (type != ShapeType.TEXTURED || styleIds[i] != 0 || clipId != 0 || material != null)) {
+            spritesOnly = false;
+        }
     }
 
     /**
@@ -255,6 +262,9 @@ public final class DrawList {
         params[p + 3] = p3;
         styleIds[i] = withMaterialData(styleId);
         clipIds[i] = clipId;
+        if (spritesOnly && (type != ShapeType.TEXTURED || styleIds[i] != 0 || clipId != 0 || material != null)) {
+            spritesOnly = false;
+        }
     }
 
     /**
@@ -262,6 +272,13 @@ public final class DrawList {
      */
     public void setPickId(int pickId) {
         this.pickId = pickId;
+    }
+
+    /**
+     * @return How many commands have a pick id.
+     */
+    public int pickableCount() {
+        return pickable;
     }
 
     /**
@@ -325,6 +342,9 @@ public final class DrawList {
         textures[i] = texture;
         materials[i] = commandMaterial;
         pickIds[i] = pickId;
+        if (pickId != 0) {
+            pickable++;
+        }
 
         int p = i * 8;
         positions[p] = x0;
@@ -353,11 +373,10 @@ public final class DrawList {
             }
             keys[i] = key;
             sequence[i] = i;
-            if (i == 0) {
-                firstKey = key;
-            } else if (key != firstKey) {
-                needsSort = true;
+            if (i > 0 && key < lastKey) {
+                needsSort = true; // out of order (input that is already in order needs no sort at all)
             }
+            lastKey = key;
         }
 
         size++;
@@ -369,8 +388,9 @@ public final class DrawList {
      * Establish the final draw order. Must be called after recording and before {@link #orderedIndex(int)}.
      */
     public void prepare() {
-        if (needsSort) { // otherwise every key is equal: submission order is already the final order
+        if (needsSort) { // otherwise the keys came in order: submission order is already the final order
             sortKeys(mode == LayerMode.SORTED_BY_MATERIAL ? 0 : 32);
+            lastKey = keys[size - 1];
         }
         needsSort = false;
         prepared = true;
@@ -381,6 +401,15 @@ public final class DrawList {
      */
     public boolean isPrepared() {
         return prepared;
+    }
+
+    /**
+     * @return Whether every command can be drawn with {@link VertexLayout#SPRITE}: sprite quads, and textured shape
+     * quads (canvas images, nine-patches) without style, clip or material, which the sprite program draws the same.
+     * The batcher then uses the lighter layout (96 instead of 208 bytes per quad) for the whole list.
+     */
+    public boolean isSpritesOnly() {
+        return spritesOnly;
     }
 
     /**
@@ -572,10 +601,12 @@ public final class DrawList {
         clipIds = new int[capacity];
         materials = new Material[capacity];
         pickIds = new int[capacity];
-        keys = new long[capacity];
-        sequence = new int[capacity];
-        keyBuffer = new long[capacity];
-        sequenceBuffer = new int[capacity];
+        if (mode != LayerMode.ORDERED) { // ordered lists never sort: no sort arrays
+            keys = new long[capacity];
+            sequence = new int[capacity];
+            keyBuffer = new long[capacity];
+            sequenceBuffer = new int[capacity];
+        }
     }
 
     private void grow(int capacity) {
@@ -592,9 +623,11 @@ public final class DrawList {
         clipIds = Arrays.copyOf(clipIds, capacity);
         materials = Arrays.copyOf(materials, capacity);
         pickIds = Arrays.copyOf(pickIds, capacity);
-        keys = Arrays.copyOf(keys, capacity);
-        sequence = Arrays.copyOf(sequence, capacity);
-        keyBuffer = new long[capacity];
-        sequenceBuffer = new int[capacity];
+        if (mode != LayerMode.ORDERED) {
+            keys = Arrays.copyOf(keys, capacity);
+            sequence = Arrays.copyOf(sequence, capacity);
+            keyBuffer = new long[capacity];
+            sequenceBuffer = new int[capacity];
+        }
     }
 }

@@ -1,7 +1,10 @@
 package org.pixel.graphics.backend;
 
 import org.pixel.commons.lifecycle.Disposable;
+import org.pixel.content.Texture;
 import org.pixel.graphics.material.Material;
+
+import java.nio.ByteBuffer;
 
 /**
  * The only layer that talks to the GPU API. Everything above it (draw lists, batching, front-ends) is GL-free.
@@ -39,6 +42,21 @@ public interface RenderBackend extends Disposable {
      * End the pass and restore shared GPU state other renderers rely on.
      */
     void endPass();
+
+    /**
+     * Create a texture from pixels (owned by the caller), e.g. a generated pattern or an atlas decoded by the game.
+     * Like image textures, it is not restored after a lost context.
+     *
+     * @param width  Width in pixels.
+     * @param height Height in pixels.
+     * @param pixels RGBA8 with straight alpha, rows from top to bottom ({@code width * height * 4} bytes from its
+     *               position; not modified).
+     * @param smooth Linear filtering ({@code true}) or nearest ({@code false}); edges are clamped.
+     * @throws UnsupportedOperationException If the backend can't create textures (the default).
+     */
+    default Texture createTexture(int width, int height, ByteBuffer pixels, boolean smooth) {
+        throw new UnsupportedOperationException(getClass().getSimpleName() + " can't create textures.");
+    }
 
     // region render targets and post effects
 

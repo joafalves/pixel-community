@@ -94,4 +94,32 @@ class DrawListTest {
         add(list, 0, 0);
         assertThrows(IllegalStateException.class, () -> list.orderedIndex(0));
     }
+
+    @Test
+    void commandsAddedAfterPreparingAreSortedAgain() {
+        // e.g. a custom pass records into a layer an earlier pass already drew
+        DrawList list = new DrawList(LayerMode.SORTED);
+        add(list, 5, 0);
+        add(list, 1, 1);
+        add(list, 9, 2);
+        list.prepare();
+        add(list, 5, 3); // equal to the first command's depth: must still land before 9
+        list.prepare();
+        float[] expected = {1, 0, 3, 2};
+        for (int i = 0; i < expected.length; i++) {
+            assertEquals(expected[i], list.x(list.orderedIndex(i), 0), "position " + i);
+        }
+    }
+
+    @Test
+    void inputAlreadyInOrderIsNotReordered() {
+        DrawList list = new DrawList(LayerMode.SORTED);
+        for (int i = 0; i < 10; i++) {
+            add(list, i / 3, i); // non-decreasing depths
+        }
+        list.prepare();
+        for (int i = 0; i < 10; i++) {
+            assertEquals(i, list.x(list.orderedIndex(i), 0));
+        }
+    }
 }

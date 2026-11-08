@@ -15,9 +15,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 /**
- * Loads images into OpenGL ES textures. Like the desktop importer, pixels keep straight (non-premultiplied) alpha,
- * so blending looks the same on every platform, and the defaults are repeat wrapping with nearest filtering
- * (override with {@link TextureImporterSettings}).
+ * Loads images into OpenGL ES textures. Like the desktop importer, colors are stored premultiplied by alpha (no
+ * fringes with smooth filtering; {@link TextureImporterSettings#isPremultiplyAlpha()} turns it off for data textures),
+ * and the defaults are repeat wrapping with nearest filtering (override with {@link TextureImporterSettings}).
  */
 @ContentImporterInfo(type = Texture.class, extension = {".png", ".jpeg", ".jpg", ".bmp"})
 public class GLES30TextureImporter implements ContentImporter<Texture> {
@@ -52,14 +52,20 @@ public class GLES30TextureImporter implements ContentImporter<Texture> {
         int wrapT = GLES30.GL_REPEAT;
         int minFilter = GLES30.GL_NEAREST;
         int magFilter = GLES30.GL_NEAREST;
+        boolean premultiply = true;
         if (ctx.getSettings() instanceof TextureImporterSettings settings) {
             wrapS = settings.getWrapSMode();
             wrapT = settings.getWrapTMode();
             minFilter = settings.getMinFilterMode();
             magFilter = settings.getMagFilterMode();
+            premultiply = settings.isPremultiplyAlpha();
+        }
+        if (premultiply) {
+            GLTexture.premultiply(pixels); // no fringes with smooth filtering (decoded straight, premultiplied here)
         }
 
         AndroidGLApi gl = AndroidGLApi.INSTANCE;
+        int previous = gl.getInteger(GLES30.GL_TEXTURE_BINDING_2D); // the renderer caches unit bindings: restore it
         int id = gl.genTexture();
         gl.bindTexture(GLES30.GL_TEXTURE_2D, id);
         GLES30.glPixelStorei(GLES30.GL_UNPACK_ALIGNMENT, 4);
@@ -69,7 +75,7 @@ public class GLES30TextureImporter implements ContentImporter<Texture> {
         gl.texParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_WRAP_T, wrapT);
         gl.texParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MIN_FILTER, minFilter);
         gl.texParameteri(GLES30.GL_TEXTURE_2D, GLES30.GL_TEXTURE_MAG_FILTER, magFilter);
-        gl.bindTexture(GLES30.GL_TEXTURE_2D, 0);
-        return new GLTexture(gl, id, width, height);
+        gl.bindTexture(GLES30.GL_TEXTURE_2D, previous);
+        return new GLTexture(gl, id, width, height, premultiply);
     }
 }

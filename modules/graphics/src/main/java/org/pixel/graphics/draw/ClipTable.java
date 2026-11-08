@@ -32,6 +32,12 @@ public final class ClipTable {
      * @return The 1-based clip id.
      */
     public int add(float x0, float y0, float x1, float y1) {
+        if (size > 0) { // the same rectangle again (e.g. every row of a list clipping to its pane): reuse it
+            int last = (size - 1) * 4;
+            if (rects[last] == x0 && rects[last + 1] == y0 && rects[last + 2] == x1 && rects[last + 3] == y1) {
+                return size;
+            }
+        }
         if ((size + 1) * 4 > rects.length) {
             rects = Arrays.copyOf(rects, rects.length * 2);
         }

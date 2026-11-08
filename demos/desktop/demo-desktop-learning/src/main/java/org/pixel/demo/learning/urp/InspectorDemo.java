@@ -5,14 +5,13 @@ import org.pixel.commons.DeltaTime;
 import org.pixel.content.Texture;
 import org.pixel.core.DesktopLauncher;
 import org.pixel.core.ScreenSpace;
+import org.pixel.core.dev.DevTools;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.demo.learning.common.Screenshot;
 import org.pixel.graphics.canvas.Canvas;
-import org.pixel.graphics.draw.BatchBreak;
 import org.pixel.graphics.draw.Layer;
 import org.pixel.graphics.material.Material;
-import org.pixel.graphics.pass.FrameInfo;
 import org.pixel.graphics.pass.RenderPipeline;
 import org.pixel.graphics.text.SdfFont;
 import org.pixel.input.keyboard.Keyboard;
@@ -28,11 +27,13 @@ import java.nio.file.Path;
  * URP v2 frame inspection, the base of an editor: every prop is drawn with a pick id ({@code .pick(id)}), and the
  * last frame finds the top-most one under the mouse ({@code pipeline.lastFrame().pick(layer, x, y)}), with exact
  * shapes (round corners, path outlines, glyph boxes, rotated images). Hover highlights, a click selects; the outline
- * is drawn in an overlay layer, as an editor's gizmos would be. The panel shows what the last frame did: per pass and
- * layer, commands, culled commands, batches, draw calls and why batches broke.
+ * is drawn in an overlay layer, as an editor's gizmos would be. What the last frame did (per pass and layer:
+ * commands, culled commands, batches, draw calls and why batches broke) is in the engine's dev tools, open at start.
  * <p>
- * Keys: arrows pan, Q/E zoom, M toggles the water material (watch the "material changed" breaks). Run with
- * {@code -Dpixel.screenshot=build/inspector.png} to save a PNG and exit.
+ * Keys: arrows pan, Q/E zoom, M toggles the water material (watch the "material changed" breaks), F1 shows the
+ * engine's dev tools (this pipeline is tracked in their Render tab; hover and selection are watched in their Game
+ * tab). Run with {@code -Dpixel.screenshot=build/inspector.png} to save a PNG and exit;
+ * {@code -Dpixel.devtools=render} (or perf, assets, log, game) opens the dev tools on that tab.
  */
 public class InspectorDemo extends DemoGame {
 
@@ -46,10 +47,8 @@ public class InspectorDemo extends DemoGame {
     private static final Color MUTED = new Color(0.68f, 0.72f, 0.82f, 1f);
     private static final Color HOVER = new Color(1f, 1f, 1f, 0.7f);
     private static final Color SELECTED = new Color(1f, 0.8f, 0.25f, 1f);
-    private static final Color WARN = new Color(1f, 0.6f, 0.4f, 1f);
     private static final Color[] PALETTE = {new Color(0.93f, 0.35f, 0.55f, 1f), new Color(0.2f, 0.78f, 0.72f, 1f),
             new Color(0.97f, 0.75f, 0.28f, 1f), new Color(0.55f, 0.6f, 0.95f, 1f), new Color(0.6f, 0.85f, 0.4f, 1f)};
-    private static final BatchBreak[] REASONS = BatchBreak.values(); // values() copies the array every call
     private static final String[] KINDS = {"crate", "barrel", "planet", "star", "pond", "sign"};
 
     private final String screenshot = System.getProperty("pixel.screenshot");
@@ -85,13 +84,38 @@ public class InspectorDemo extends DemoGame {
         if (screenshot != null) {
             selected = 13;
         }
+
+        // the engine's dev tools (F1): this pipeline in the Render tab, the game's own values in the Game tab
+        devTools().track(pipeline, "inspector");
+        devTools().watch("hovered", () -> hovered, 0).watch("selected", () -> selected, 0)
+                .watch("zoom", gameCamera::getZoom);
+        outlines = devTools().addToggle("selection outlines", true);
+        panSpeed = devTools().addSlider("pan speed", 100, 2000, 600);
+        devTools().addAction("reset camera", () -> {
+            gameCamera.setPosition(800, 500);
+            gameCamera.setZoom(1f);
+        });
+        String tab = System.getProperty("pixel.devtools");
+        if (tab != null) {
+            devTools().setVisible(true);
+            devTools().showTab(switch (tab) {
+                case "perf" -> DevTools.Tab.PERFORMANCE;
+                case "assets" -> DevTools.Tab.ASSETS;
+                case "log" -> DevTools.Tab.LOG;
+                case "game" -> DevTools.Tab.GAME;
+                default -> DevTools.Tab.RENDERING;
+            });
+        }
     }
+
+    private DevTools.Toggle outlines;
+    private DevTools.Slider panSpeed;
 
     @Override
     public void update(DeltaTime delta) {
         super.update(delta);
         time += delta.getElapsed();
-        float pan = 600f * delta.getElapsed() / gameCamera.getZoom();
+        float pan = panSpeed.get() * delta.getElapsed() / gameCamera.getZoom();
         if (Keyboard.isKeyDown(KeyboardKey.LEFT)) gameCamera.translate(-pan, 0);
         if (Keyboard.isKeyDown(KeyboardKey.RIGHT)) gameCamera.translate(pan, 0);
         if (Keyboard.isKeyDown(KeyboardKey.UP)) gameCamera.translate(0, -pan);
@@ -108,8 +132,9 @@ public class InspectorDemo extends DemoGame {
             Mouse.getVirtualPosition(mouse);
             mouse.set(gameCamera.screenToVirtualCoordinates(mouse));
         }
-        hovered = pipeline.lastFrame().pick(WORLD, mouse.getX(), mouse.getY());
-        boolean down = Mouse.isMouseButtonDown(MouseButton.LEFT);
+        // the dev tools window takes the clicks over it
+        hovered = devTools().isPointerOverUi() ? 0 : pipeline.lastFrame().pick(WORLD, mouse.getX(), mouse.getY());
+        boolean down = Mouse.isMouseButtonDown(MouseButton.LEFT) && !devTools().isPointerOverUi();
         if (down && !wasDown) {
             selected = hovered;
         }
@@ -188,6 +213,9 @@ public class InspectorDemo extends DemoGame {
     private final StringBuilder sign = new StringBuilder();
 
     private void drawOverlay(Canvas c) {
+        if (!outlines.isOn()) {
+            return;
+        }
         if (hovered != 0 && hovered != selected) {
             outline(c, hovered - 1, HOVER, 2f);
         }
@@ -207,40 +235,13 @@ public class InspectorDemo extends DemoGame {
     }
 
     private void drawHud(Canvas hud) {
-        FrameInfo frame = pipeline.lastFrame();
-        float y = 28;
-        hud.roundRect(16, 16, 470, 250, 12).fill(PANEL).stroke(1, MUTED);
-        line.setLength(0);
-        line.append("Frame ").append(frame.getFrameNumber()).append(": ").append(frame.getDrawCalls())
-                .append(" draw calls, ").append(frame.getBatchCount()).append(" batches, ")
-                .append(frame.getNanos() / 1000).append(" us");
-        hud.text(font, line, 32, y).size(17).fill(Color.WHITE);
-        y += 30;
-        for (FrameInfo.LayerStats layer : frame.getLayers()) {
-            line.setLength(0);
-            line.append("pass ").append(layer.getPass()).append("  ").append(layer.getLayer().getName())
-                    .append(": ").append(layer.getCommands()).append(" commands, ").append(layer.getCulled())
-                    .append(" culled, ").append(layer.getBatches()).append(" batches");
-            hud.text(font, line, 32, y).size(14).fill(MUTED);
-            y += 20;
-            for (BatchBreak reason : REASONS) {
-                int count = layer.getBreaks(reason);
-                if (reason != BatchBreak.FIRST && count > 0) {
-                    line.setLength(0);
-                    line.append("    ").append(count).append(" x ").append(reason.getDescription());
-                    hud.text(font, line, 32, y).size(14).fill(WARN);
-                    y += 20;
-                }
-            }
-        }
-        y += 8;
+        hud.roundRect(16, 16, 340, 78, 12).fill(PANEL).stroke(1, MUTED);
         line.setLength(0);
         line.append("hover: ").append(name(hovered)).append("   selected: ").append(name(selected));
-        hud.text(font, line, 32, y).size(15).fill(Color.WHITE);
-        y += 24;
-        hud.text(font, useMaterial ? "M: water material on" : "M: water material off", 32, y).size(14)
+        hud.text(font, line, 32, 28).size(15).fill(Color.WHITE);
+        hud.text(font, useMaterial ? "M: water material on" : "M: water material off", 32, 50).size(14)
                 .fill(MUTED);
-        hud.text(font, "arrows pan, Q/E zoom, click selects", 32, y + 20).size(14).fill(MUTED);
+        hud.text(font, "arrows pan, Q/E zoom, click selects, F1 dev tools", 32, 70).size(14).fill(MUTED);
     }
 
     private StringBuilder name(int pickId) {
@@ -270,6 +271,6 @@ public class InspectorDemo extends DemoGame {
         settings.setWindowResizable(true);
         settings.setVsync(true);
         settings.setBackgroundColor(GROUND);
-        DesktopLauncher.run(new InspectorDemo(), settings);
+        DesktopLauncher.run(new InspectorDemo(), withDevTools(settings));
     }
 }

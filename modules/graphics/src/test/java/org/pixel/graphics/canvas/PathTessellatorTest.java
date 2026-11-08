@@ -87,4 +87,35 @@ class PathTessellatorTest {
         float a = mt * mt * mt, b = 3 * mt * mt * t, c = 3 * mt * t * t, d = t * t * t;
         return new float[]{a * x0 + b * c1x + c * c2x + d * x1, a * y0 + b * c1y + c * c2y + d * y1};
     }
+
+    @Test
+    void largeConvexPolygonsAreFannedInLinearTime() {
+        int n = 2000;
+        float[] xy = new float[n * 2];
+        for (int i = 0; i < n; i++) {
+            double a = i * 2 * Math.PI / n;
+            xy[i * 2] = (float) Math.cos(a) * 100;
+            xy[i * 2 + 1] = (float) Math.sin(a) * 100;
+        }
+        PathTessellator tessellator = new PathTessellator();
+        tessellator.triangulate(xy, 0, n); // warm up
+        long start = System.nanoTime();
+        assertEquals(n - 2, tessellator.triangulate(xy, 0, n));
+        assertTrue(System.nanoTime() - start < 5_000_000, "well under a millisecond, not O(n^2)");
+    }
+
+    @Test
+    void selfIntersectingInputIsCoveredAndBounded() {
+        java.util.Random random = new java.util.Random(7);
+        int n = 400;
+        float[] xy = new float[n * 2];
+        for (int i = 0; i < xy.length; i++) {
+            xy[i] = random.nextFloat() * 100;
+        }
+        PathTessellator tessellator = new PathTessellator();
+        long start = System.nanoTime();
+        int triangles = tessellator.triangulate(xy, 0, n);
+        assertTrue(System.nanoTime() - start < 200_000_000, "bounded time");
+        assertEquals(n - 2, triangles, "every vertex ends up in a triangle (the rest is fanned)");
+    }
 }

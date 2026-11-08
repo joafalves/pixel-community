@@ -58,7 +58,7 @@ public class AndroidDemoGame extends GameApp {
         pipeline = builder.pass(camera, scene, MAIN).post(scene, Effects.vignette(0.7f)).build();
 
         spriteTexture = content().loadTexture("images/earth-48x48.png");
-        pulse = Material.effect(PULSE);
+        pulse = Material.effect(PULSE).setName("pulse");
         sway = Material.raw(SWAY_VERTEX, SWAY_FRAGMENT);
 
         spritePositionA = new Vector2(200, 200);
@@ -76,6 +76,9 @@ public class AndroidDemoGame extends GameApp {
                 .duration(1f)
                 .loopMode(TweenLoopMode.LOOP_REVERSE)
                 .easing(TweenEasingMode.ELASTIC);
+
+        devTools().track(pipeline, "demo");
+        devTools().watch("time", () -> time, 1);
 
         sequencer = new TweenSequencer(tweenA, tweenB);
         sequencer.onComplete(sequencer::restart);

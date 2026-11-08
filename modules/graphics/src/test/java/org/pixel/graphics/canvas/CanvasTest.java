@@ -3,6 +3,7 @@ package org.pixel.graphics.canvas;
 import org.junit.jupiter.api.Test;
 import org.pixel.commons.Color;
 import org.pixel.content.Texture;
+import org.pixel.graphics.backend.VertexLayout;
 import org.pixel.graphics.draw.Colors;
 import org.pixel.graphics.draw.Layer;
 import org.pixel.graphics.draw.LayerMode;
@@ -30,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class CanvasTest {
 
     private static final float EPS = 1e-4f;
-    private static final float AA = 2f; // Canvas.AA_MARGIN at scale 1
+    private static final float AA = 1f; // Canvas.AA_MARGIN at scale 1
 
     private final RecordingBackend backend = new RecordingBackend(16, 16384, true);
     // a view covering far more than any test draws (nothing culled), one unit per pixel
@@ -180,9 +181,12 @@ class CanvasTest {
     @Test
     void ninePatchSplitsIntoNineQuads() {
         Texture texture = new TestTexture(30, 30);
-        List<FullVertex> v = draw(c -> c.ninePatch(texture, 0, 0, 100, 60).insets(10)).shapes();
+        List<FullVertex> v = draw(c -> {
+            c.ninePatch(texture, 0, 0, 100, 60).insets(10);
+            c.rect(0, 0, 1, 1).depth(1); // a shape: the layer keeps the full layout
+        }).shapes();
 
-        assertEquals(36, v.size());
+        assertEquals(36 + 4, v.size()); // 9 quads, and the rect
         // top-left corner keeps its 10x10 texture pixels
         assertCorner(v.get(0), 0, 0);
         assertCorner(v.get(2), 10, 10);
@@ -198,9 +202,12 @@ class CanvasTest {
     @Test
     void ninePatchCornersShrinkWhenTheTargetIsSmall() {
         Texture texture = new TestTexture(30, 30);
-        List<FullVertex> v = draw(c -> c.ninePatch(texture, 0, 0, 10, 10).insets(10)).shapes();
+        List<FullVertex> v = draw(c -> {
+            c.ninePatch(texture, 0, 0, 10, 10).insets(10);
+            c.rect(0, 0, 1, 1).depth(1); // a shape: the layer keeps the full layout
+        }).shapes();
         // 10 px for two 10 px borders: corners scale to 5 px; the empty middle row/column is skipped
-        assertEquals(16, v.size());
+        assertEquals(16 + 4, v.size()); // 4 quads, and the rect
         assertCorner(v.get(2), 5, 5);
     }
 
@@ -226,9 +233,9 @@ class CanvasTest {
 
         List<FullVertex> v = pass.shapes();
         assertCorner(v.get(0), -AA, -AA);
-        // second rect: user-space top-left corner (-2, -2) maps to (100 + 2, -2)
-        assertCorner(v.get(4), 102, -2);
-        assertCorner(v.get(6), 100 - 12, 12); // user (12, 12) -> (-12 + 100, 12)
+        // second rect: user-space top-left corner (-AA, -AA) maps to (100 + AA, -AA)
+        assertCorner(v.get(4), 100 + AA, -AA);
+        assertCorner(v.get(6), 100 - 10 - AA, 10 + AA); // user (10 + AA, 10 + AA) -> (-(10 + AA) + 100, 10 + AA)
         assertEquals(-5 - AA, v.get(4).localX(), EPS); // local coordinates are untouched by the transform
     }
 
@@ -238,7 +245,7 @@ class CanvasTest {
             c.scale(4);
             c.rect(0, 0, 10, 10);
         }).shapes();
-        assertEquals(-5 - AA / 4, v.get(0).localX(), EPS); // margin stays ~2 pixels after scaling
+        assertEquals(-5 - AA / 4, v.get(0).localX(), EPS); // margin stays ~1 pixel after scaling
         assertCorner(v.get(0), -AA, -AA);
     }
 
@@ -249,7 +256,7 @@ class CanvasTest {
             c.translate(10, 10);
             c.clip(0, 0, 100, 100);    // (10, 10)-(110, 110)
             c.clip(50, 50, 200, 200);  // intersect: (60, 60)-(110, 110)
-            c.rect(0, 0, 5, 5);
+            c.rect(55, 55, 5, 5);      // at (65, 65): inside the clip (outside, it would be culled)
             c.restore();
             c.rect(0, 0, 5, 5);        // no clip after restore
             c.clip(0, 0, 10, 10, () -> c.circle(0, 0, 1));
@@ -264,6 +271,46 @@ class CanvasTest {
         List<float[]> clips = pass.batches().get(0).clips();
         assertArrayEquals(new float[]{60, 60, 110, 110}, clips.get(0), EPS);
         assertArrayEquals(new float[]{0, 0, 10, 10}, clips.get(1), EPS);
+    }
+
+    @Test
+    void commandsEntirelyOutsideTheirClipAreCulled() {
+        RecordingBackend.Pass pass = draw(c -> {
+            c.clip(0, 0, 100, 100);
+            c.rect(10, 10, 5, 5);       // inside
+            c.rect(500, 500, 5, 5);     // outside: never uploaded
+            c.rect(98, 98, 10, 10);     // partly inside: kept
+        });
+        assertEquals(8, pass.shapes().size());
+    }
+
+    @Test
+    void theSameClipTwiceIsOneEntry() {
+        RecordingBackend.Pass pass = draw(c -> {
+            for (int i = 0; i < 300; i++) { // e.g. list rows clipping to their pane
+                c.clip(0, 0, 100, 100, () -> c.rect(10, 10, 5, 5));
+            }
+        });
+        assertEquals(1, pass.batches().size(), "no clip-table breaks");
+        assertEquals(1, pass.batches().get(0).clips().size());
+    }
+
+    @Test
+    void imageOnlyLayersUseTheSpriteLayout() {
+        Texture texture = new TestTexture(16, 16);
+        RecordingBackend.Pass images = draw(c -> {
+            c.image(texture, 0, 0);
+            c.ninePatch(texture, 0, 0, 40, 40).insets(4);
+        });
+        assertEquals(VertexLayout.SPRITE, images.batches().get(0).layout());
+        assertEquals(40, images.vertices().size()); // 1 + 9 quads, 24 bytes per vertex instead of 52
+        assertTrue(images.shapes().isEmpty());
+        RecordingBackend.Pass mixed = draw(c -> {
+            c.image(texture, 0, 0);
+            c.rect(0, 0, 4, 4);
+        });
+        assertEquals(VertexLayout.FULL, mixed.batches().get(0).layout(), "with shapes: one layout, one batch");
+        assertEquals(1, mixed.batches().size());
     }
 
     @Test
@@ -294,8 +341,10 @@ class CanvasTest {
     @Test
     void imagesUseSourceSizeAnchorAndTint() {
         Texture texture = new TestTexture(64, 32);
-        RecordingBackend.Pass pass = draw(c -> c.image(texture, 100, 100).source(16, 8, 32, 16).size(64, 32)
-                .anchor(0.5f, 0.5f).tint(Color.RED));
+        RecordingBackend.Pass pass = draw(c -> {
+            c.image(texture, 100, 100).source(16, 8, 32, 16).size(64, 32).anchor(0.5f, 0.5f).tint(Color.RED);
+            c.rect(0, 0, 1, 1); // a shape: the layer keeps the full layout
+        });
 
         List<FullVertex> v = pass.shapes();
         assertCorner(v.get(0), 68, 84);
@@ -606,4 +655,30 @@ class CanvasTest {
     }
 
     // endregion
+
+    @Test
+    void strokedCurvesUseOneTriangleForSlightTurns() {
+        int miter = draw(c -> c.path().arc(0, 0, 100, 0, (float) (2 * Math.PI)).close().stroke(4, Color.WHITE))
+                .shapes().size() / 4;
+        int round = draw(c -> c.path().arc(0, 0, 100, 0, (float) (2 * Math.PI)).close().stroke(4, Color.WHITE)
+                .join(org.pixel.graphics.canvas.LineJoin.ROUND)).shapes().size() / 4;
+        // per flattened vertex: a segment quad, a bevel triangle and its fringe (was 5 quads with miters)
+        assertTrue(miter < 160, miter + " quads");
+        assertTrue(Math.abs(miter - round) <= 4, "slight turns look the same with every join (only the closing one differs)");
+    }
+
+    @Test
+    void notANumberDrawsNothingInsteadOfBrokenGeometry() {
+        RecordingBackend.Pass pass = draw(c -> {
+            c.rect(0, 0, Float.NaN, 10);
+            c.circle(0, 0, Float.NaN);
+            c.line(0, 0, Float.POSITIVE_INFINITY, 0);
+            c.path().moveTo(0, 0).lineTo(10, 0).lineTo(Float.NaN, 5).lineTo(10, 10).close().fill(Color.WHITE);
+            c.rect(0, 0, 4, 4); // still drawn
+        });
+        for (FullVertex v : pass.shapes()) {
+            assertTrue(Float.isFinite(v.x()) && Float.isFinite(v.y()), "finite vertex");
+        }
+        assertFalse(pass.shapes().isEmpty());
+    }
 }

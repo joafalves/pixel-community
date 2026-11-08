@@ -7,6 +7,7 @@ package org.pixel.input.mouse;
 
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
+import org.lwjgl.glfw.GLFWScrollCallback;
 import org.pixel.math.Rectangle;
 import org.pixel.math.Vector2;
 
@@ -33,6 +34,7 @@ public class Mouse {
     private static volatile float virtualScaleX = 1f;
     private static volatile float virtualScaleY = 1f;
     private static final Rectangle positionBox;
+    private static volatile float scrollX, scrollY; // wheel/trackpad scrolling since the last frame
 
     //endregion
 
@@ -166,6 +168,30 @@ public class Mouse {
     }
 
     /**
+     * @return Vertical scrolling (mouse wheel or trackpad) during the last frame: positive away from the user ("up"),
+     * in wheel steps (trackpads report fractions).
+     */
+    public static float getScrollY() {
+        return scrollY;
+    }
+
+    /**
+     * @return Horizontal scrolling during the last frame (positive to the right).
+     */
+    public static float getScrollX() {
+        return scrollX;
+    }
+
+    /**
+     * Forget the scrolling of the frame that ended. Called by the window manager at the end of each frame; not meant
+     * to be called by game code.
+     */
+    public static void clearScroll() {
+        scrollX = 0f;
+        scrollY = 0f;
+    }
+
+    /**
      * Set the factor between window (screen) coordinates and virtual coordinates. Called by the window manager
      * whenever the window size changes; not meant to be called by game code.
      *
@@ -205,6 +231,18 @@ public class Mouse {
             position.set((float) x, (float) y);
             virtualPosition.set((float) x * virtualScaleX, (float) y * virtualScaleY);
             positionBox.set((float) x, (float) y, 1, 1);
+        }
+    }
+
+    /**
+     * Scroll Handler: adds up the scrolling until the frame ends.
+     */
+    public static class ScrollHandler extends GLFWScrollCallback {
+
+        @Override
+        public void invoke(long window, double x, double y) {
+            scrollX += (float) x;
+            scrollY += (float) y;
         }
     }
 

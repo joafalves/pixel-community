@@ -19,8 +19,11 @@ final class GLSpriteProgram extends GLProgram {
                         .replace("/*$textureSwitchCase*/", textureSwitch(textureSlots)));
     }
 
-    /** {@code case i: texel = texture(uTextures[i], uv);} per slot (sampler arrays need constant indices). */
-    private static String textureSwitch(int slots) {
+    /**
+     * {@code case i: texel = texture(uTextures[i], uv);} per slot (sampler arrays need constant indices); shared by
+     * every URP program.
+     */
+    static String textureSwitch(int slots) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < slots; i++) {
             sb.append("        case ").append(i).append(": texel = texture(uTextures[").append(i)

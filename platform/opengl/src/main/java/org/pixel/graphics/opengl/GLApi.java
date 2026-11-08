@@ -115,6 +115,9 @@ public interface GLApi {
     /** Write {@code data} (position to limit) at byte {@code offset} of the bound buffer. */
     void bufferSubData(int target, long offset, FloatBuffer data);
 
+    /** Replace {@code size} bytes at {@code offset} of the bound buffer with bytes {@code [dataOffset, +size)} of data. */
+    void bufferSubData(int target, long offset, ByteBuffer data, int dataOffset, int size);
+
     void bindBufferRange(int target, int index, int buffer, long offset, long size);
 
     // endregion

@@ -23,49 +23,59 @@ available extensions (or how to create your own).
 
 Check the :file_folder: [demos folder](https://github.com/joafalves/pixel-community/tree/devel/demos) for examples.
 
-##### Basic example (Drawing a Sprite) #####
+##### Basic example #####
 
 ```java
-public class SingleSpriteDemo extends GameApp {
+public class HelloPixel extends GameApp {
 
-    private Camera2D gameCamera;
-    private SpriteBatch spriteBatch;
-    private Texture spriteTex;
+    private static final Layer WORLD = Layer.sorted("world"); // drawn by depth
+    private static final Layer HUD = Layer.ordered("hud");    // drawn in order, on top
+
+    private RenderPipeline pipeline;
+    private Camera2D camera;
+    private Texture hero;
+    private SdfFont font;
 
     @Override
     public void load() {
         // the game context is available from load() on: graphics(), content(), audio(), window(), settings()
-        spriteBatch = graphics().createSpriteBatch(); // created by you: you dispose it
-        gameCamera = new Camera2D(context());
-
+        camera = new Camera2D(context());
+        pipeline = RenderPipeline.builder(graphics().getRenderBackend())
+                .pass(camera, WORLD)                     // the world, through the camera
+                .pass(new ScreenSpace(context()), HUD)   // the HUD, in screen units
+                .build();
         // the content manager is shared by the whole game and released by the framework
-        spriteTex = content().load("<texture_path>", Texture.class);
-        // ... or with the built-in 'texture' method: content().loadTexture(...)
-    }
-
-    @Override
-    public void update(DeltaTime delta) {
-        // game update logic goes here
+        hero = content().loadTexture("images/hero.png");
+        font = content().load("fonts/ui.ttf", SdfFont.class);
     }
 
     @Override
     public void draw(DeltaTime delta) {
-        spriteBatch.begin(gameCamera.getViewMatrix(), BlendMode.NORMAL_BLEND);
-        spriteBatch.draw(spriteTex, Vector2.ZERO, Color.WHITE);
-        spriteBatch.end();
+        Canvas world = pipeline.canvas(WORLD);
+        world.roundRect(-100, 40, 200, 24, 12).fill(Color.GOLD).shadow(0, 6, 12, Color.BLACK);
+        world.image(hero, 0, 40).anchor(0.5f, 1f).depth(40);
+        pipeline.canvas(HUD).text(font, "Hello, Pixel", 16, 16).size(28).stroke(2, Color.BLACK);
+        pipeline.render();
     }
 
     @Override
     public void dispose() {
-        spriteBatch.dispose();
+        pipeline.dispose(); // created by you: you dispose it
     }
 
     public static void main(String[] args) {
+        var settings = new WindowSettings("Hello", 800, 600);
+        settings.setDevMode(true); // F1: the built-in dev tools
         // the same GameApp runs on other platforms through their launcher (e.g. AndroidLauncher)
-        DesktopLauncher.run(new SingleSpriteDemo(), new WindowSettings("Sprite demo", 800, 600));
+        DesktopLauncher.run(new HelloPixel(), settings);
     }
 }
 ```
+
+The [rendering guide](docs/rendering.md) covers layers, pipelines, the canvas (shapes, paths, text, images), render
+targets and post effects, materials (custom shaders) and frame inspection. The [dev tools](docs/dev-tools.md) show
+frame times, draw calls, assets, the log and your own values while the game runs. `graphics().createSpriteBatch()`
+is still there for XNA-style sprite drawing.
 
 > Looking for ECS support? Check [this built-in extension!](https://github.com/joafalves/pixel-community/wiki/E1.-ECS-(Entity-Component-System))
 
@@ -77,6 +87,7 @@ The framework functionality is divided into multiple modules which can be import
 
     .demos/                         # Feature showroom and learning examples
     .extensions/                    # Extensions for the framework (optional)
+        ├── ext-decs                # Alternative ECS (worlds, groups, systems)
         ├── ext-ecs                 # Entity component system extension
         ├── ext-ecs-extra           # ECS utility components
         ├── ext-log4j2              # Log4j2 extension
@@ -110,6 +121,17 @@ The framework functionality is divided into multiple modules which can be import
             │   └── test             # Module Test Source classes
             └── build.gradle         # Module Gradle build file (contains inner dependency definitions)
 
+### Documentation ###
+
+- [Rendering guide](docs/rendering.md): layers, pipelines, the canvas, text, render targets and post effects,
+  materials (custom shaders), frame inspection and picking.
+- [Dev tools](docs/dev-tools.md): the in-game overlay (F1) with frame times, rendering statistics, assets, the log
+  and your own watches and switches.
+- [URP v2 design](docs/design/urp-v2.md): how the renderer is built, phase by phase, with the decisions behind it.
+
+To check rendering changes: `./gradlew :pixel-demo-desktop-learning:renderGolden` compares fixed scenes with
+reference images, and `./gradlew :pixel-demo-desktop-learning:renderBenchmark` measures throughput.
+
 ### Runtime requirements ###
 
 - Java 17.x+
@@ -130,7 +152,9 @@ For desktop, the same support as the [LWJGL](https://www.lwjgl.org/) dependency,
 > Requires OpenGL 3.3+ support.
 
 There is also an Android platform implementation available (OpenGL ES 3.0, Android 11 / API 30+) - **Experimental**.
-It uses the same renderer as desktop. Audio and touch input are not implemented on Android yet.
+It uses the same renderer as desktop. Audio and game touch input are not implemented on Android yet (the activity
+passes touches to the dev tools first, see [docs/dev-tools.md](docs/dev-tools.md)). Fonts can't be generated on Android: bake them on desktop with `SdfFontBaker` and load the
+pre-baked `.json` + `.png`.
 
 #### Building for Android ####
 

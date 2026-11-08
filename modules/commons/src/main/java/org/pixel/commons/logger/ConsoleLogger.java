@@ -110,6 +110,16 @@ public class ConsoleLogger extends Logger {
             if (sb.capacity() > 4096) {
                 sb.setLength(4096); // prevent overflow!
             }
+            if (hasListeners()) {
+                sb.setLength(0);
+                formatMessage(sb, message, params);
+                for (Object param : params) {
+                    if (param instanceof Exception ex) {
+                        sb.append(" (").append(ex).append(')');
+                    }
+                }
+                notifyListeners(level, context, sb.toString());
+            }
 
         } catch (Exception e) {
             System.out.println("LOGGER FAILURE: " + e);

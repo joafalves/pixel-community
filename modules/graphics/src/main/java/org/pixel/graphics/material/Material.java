@@ -166,6 +166,9 @@ public final class Material implements Disposable {
      * Set a vec4 uniform to a color (straight alpha).
      */
     public Material set(String uniform, Color color) {
+        if (color == null) {
+            throw new IllegalArgumentException("Color cannot be null.");
+        }
         return set(uniform, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
     }
 

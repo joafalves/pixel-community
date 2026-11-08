@@ -55,6 +55,7 @@ public class CanvasTextDemo extends DemoGame {
         super.load();
         gameCamera.setOrigin(Vector2.zero());
         pipeline = RenderPipeline.builder(graphics().getRenderBackend()).pass(gameCamera, MAIN).build();
+        devTools().track(pipeline, "canvas"); // its passes and layers in the dev tools' Render tab
         long start = System.nanoTime();
         font = content().load("fonts/gidole-regular.ttf", SdfFont.class);
         log.info("MTSDF font ready in {0} ms ({1} glyphs, {2}x{3} atlas).", (System.nanoTime() - start) / 1_000_000,
@@ -155,6 +156,6 @@ public class CanvasTextDemo extends DemoGame {
         settings.setWindowResizable(false);
         settings.setVsync(true);
         settings.setBackgroundColor(new Color(0.08f, 0.09f, 0.12f, 1f));
-        DesktopLauncher.run(new CanvasTextDemo(), settings);
+        DesktopLauncher.run(new CanvasTextDemo(), withDevTools(settings));
     }
 }

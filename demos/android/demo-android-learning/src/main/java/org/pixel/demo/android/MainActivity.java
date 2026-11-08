@@ -2,6 +2,7 @@ package org.pixel.demo.android;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import org.pixel.commons.Color;
@@ -23,6 +24,8 @@ public class MainActivity extends Activity {
         var metrics = getResources().getDisplayMetrics();
         var settings = new MobileGameSettings("Pixel Engine Demo", metrics.widthPixels, metrics.heightPixels);
         settings.setBackgroundColor(Color.CORNFLOWER_BLUE);
+        settings.setDevMode(true);         // dev tools available: a three-finger tap shows or hides them
+        settings.setDevToolsVisible(true); // shown from the start in this demo
 
         host = AndroidLauncher.create(new AndroidDemoGame(), settings, this);
         setContentView(host.graphics());
@@ -32,6 +35,11 @@ public class MainActivity extends Activity {
             insets.hide(WindowInsets.Type.systemBars());
             insets.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
         }
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        return host.onTouch(event) || super.dispatchTouchEvent(event); // dev tools first, then the views
     }
 
     @Override

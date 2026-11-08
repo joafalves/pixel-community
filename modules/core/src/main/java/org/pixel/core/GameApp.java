@@ -3,6 +3,7 @@ package org.pixel.core;
 import org.pixel.audio.AudioPlayer;
 import org.pixel.commons.DeltaTime;
 import org.pixel.content.ContentManager;
+import org.pixel.core.dev.DevTools;
 import org.pixel.graphics.GraphicsDevice;
 
 /**
@@ -101,6 +102,10 @@ public abstract class GameApp {
 
     protected final GameWindow window() {
         return context().window();
+    }
+
+    protected final DevTools devTools() {
+        return context().devTools();
     }
 
     protected final GameSettings settings() {

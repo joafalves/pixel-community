@@ -106,6 +106,7 @@ public class PerformanceGame extends GameApp {
         settings.setVsync(false);
         settings.setIdleThrottle(false);
         settings.setWindowResizable(true);
+        settings.setDevMode(true);
 
         ConsoleLogger.setLogLevel(LogLevel.TRACE);
 

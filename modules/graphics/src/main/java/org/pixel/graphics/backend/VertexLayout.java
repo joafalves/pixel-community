@@ -27,7 +27,7 @@ public enum VertexLayout {
      * offset 44: shape type  u8
      * offset 45: tex slot    u8
      * offset 46: clip        u16      (batch-local, 1-based; 0 = no clip)
-     * offset 48: style       u16      (batch-local, 1-based; 0 = no stroke)
+     * offset 48: style       u16      (batch-local, 1-based; 0 = no style: stroke, gradient, shadow, material data)
      * offset 50: reserved    u16
      * </pre>
      */

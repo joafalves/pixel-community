@@ -22,25 +22,4 @@ public final class SortKeys {
         int bits = Float.floatToIntBits(depth + 0.0f); // + 0.0f folds -0.0 into 0.0
         return bits ^ ((bits >> 31) & 0x7FFFFFFF);
     }
-
-    /**
-     * Build a key ordered by depth first and by submission sequence second, i.e. a stable depth order.
-     *
-     * @param depth    The depth.
-     * @param sequence The submission index (non-negative).
-     * @return The key.
-     */
-    public static long depthThenSequence(float depth, int sequence) {
-        return ((long) orderedDepth(depth) << 32) | (sequence & 0xFFFFFFFFL);
-    }
-
-    /**
-     * Extract the submission index from a key built by {@link #depthThenSequence(float, int)}.
-     *
-     * @param key The key.
-     * @return The submission index.
-     */
-    public static int sequence(long key) {
-        return (int) key;
-    }
 }

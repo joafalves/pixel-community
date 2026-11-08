@@ -12,7 +12,7 @@ import org.pixel.math.Vector2;
 
 @Getter
 @Setter
-public abstract class Sound implements Disposable {
+public abstract class Sound implements Disposable, SizedAsset {
     private float gain = 1.0f;
     private float offset = 0.0f;
     private float pitch = 1.0f;

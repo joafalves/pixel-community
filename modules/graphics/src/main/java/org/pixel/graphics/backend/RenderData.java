@@ -1,7 +1,7 @@
 package org.pixel.graphics.backend;
 
 /**
- * Everything a backend needs to draw one pass: one vertex stream per layout and the batches that reference them.
+ * Everything a backend needs to draw one layer in a pass: one vertex stream per layout and the batches that reference them.
  * Reused across frames.
  */
 public final class RenderData {

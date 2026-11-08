@@ -51,3 +51,15 @@ tasks.register('renderGolden', JavaExec) {
         jvmArgs '--enable-native-access=ALL-UNNAMED'
     }
 }
+
+// Bakes the engine's built-in font (dev tools overlay) into modules/core/src/main/resources/engine/font/.
+tasks.register('bakeEngineFont', JavaExec) {
+    group = 'build'
+    description = 'Bakes the engine font atlas used by the dev tools (output is committed).'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.pixel.demo.learning.tools.BakeEngineFont'
+    args rootProject.file('modules/core/src/main/resources/engine/font').absolutePath
+    if (JavaVersion.current() >= JavaVersion.VERSION_22) {
+        jvmArgs '--enable-native-access=ALL-UNNAMED'
+    }
+}

@@ -218,7 +218,8 @@ class GLRenderBackendTest {
     @Test
     void steadyStateFramesDoNotAllocate() {
         FakeGLApi counting = new FakeGLApi(false);
-        GLRenderBackend countingBackend = new GLRenderBackend(counting, new RenderStats());
+        RenderStats countingStats = new RenderStats();
+        GLRenderBackend countingBackend = new GLRenderBackend(counting, countingStats);
         GLTexture countingTexture = new GLTexture(counting, 2000, 32, 32);
         DrawListSpriteBatch sprites = new DrawListSpriteBatch(countingBackend);
         sprites.init();
@@ -255,10 +256,50 @@ class GLRenderBackendTest {
         }
         assertEquals(0, threads.getThreadAllocatedBytes(thread) - before, "bytes allocated by 20 frames");
         assertEquals(40 * 4, counting.drawCount); // per frame: 20,000 sprites in 2 chunks, shapes, material images
+        countingStats.endFrame();
+        counting.queries = 0;
+        for (int i = 0; i < 10; i++) {
+            frame.run();
+            countingStats.endFrame(); // what the graphics device does at the end of each frame
+        }
+        assertEquals(10 * 2, counting.queries, "GL queries: the screen viewport and framebuffer, once per frame");
         flash.dispose();
         sprites.dispose();
         pipeline.dispose();
         countingBackend.dispose();
+    }
+
+    @Test
+    void targetsMadeBeforeALostContextNeverDeleteNamesOfTheNewOne() {
+        RenderTarget target = backend.createTarget(64, 64);
+        int oldNames = 0;
+        gl.loseContext();
+        backend.contextRecreated();
+        target.resize(128, 128); // e.g. the screen target after a rotation while paused
+        assertTrue(gl.deletedNames.isEmpty(), "deleted " + gl.deletedNames);
+        assertEquals(128, target.getWidth());
+        target.dispose(); // its new names (this context): deleted
+        assertEquals(2, gl.deletedNames.size());
+
+        RenderTarget lost = backend.createTarget(32, 32);
+        gl.loseContext();
+        backend.contextRecreated();
+        lost.dispose(); // made in the lost context: nothing to delete
+        assertTrue(gl.deletedNames.isEmpty(), "deleted " + gl.deletedNames + oldNames);
+    }
+
+    @Test
+    void postDrawsThatReplaceATargetClearItFirst() {
+        RenderTarget target = backend.createTarget(64, 64);
+        var program = backend.compilePost("vec4 effect(vec2 uv) { return vec4(1.0); }");
+        gl.calls.clear();
+        backend.drawPost(program, new org.pixel.graphics.backend.PostParams(), target, false);
+        assertTrue(gl.calls.stream().anyMatch(c -> c.startsWith("clear")), gl.calls.toString());
+        gl.calls.clear();
+        backend.drawPost(program, new org.pixel.graphics.backend.PostParams(), target, true); // composites: keep
+        assertFalse(gl.calls.stream().anyMatch(c -> c.startsWith("clear")), gl.calls.toString());
+        program.dispose();
+        target.dispose();
     }
 
     // region materials

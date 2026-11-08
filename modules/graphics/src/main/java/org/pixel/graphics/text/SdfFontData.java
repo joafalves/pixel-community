@@ -152,7 +152,8 @@ public final class SdfFontData {
     }
 
     /**
-     * Sort glyphs and kerning pairs (lookups use binary search) and reject duplicates. Called by {@link SdfFont}.
+     * Sort glyphs and kerning pairs (lookups use binary search); duplicated glyphs are rejected, a kerning pair given
+     * twice keeps its last value. Called by {@link SdfFont}.
      */
     void finish() {
         if (sorted) {
@@ -189,12 +190,20 @@ public final class SdfFontData {
         Arrays.sort(kOrder, (a, b) -> Long.compare(kerningPairs[a], kerningPairs[b]));
         long[] keys = new long[kerningCount];
         float[] values = new float[kerningCount];
+        int unique = 0;
         for (int i = 0; i < kerningCount; i++) {
-            keys[i] = kerningPairs[kOrder[i]];
-            values[i] = kerningValues[kOrder[i]];
+            long pair = kerningPairs[kOrder[i]];
+            if (unique > 0 && keys[unique - 1] == pair) {
+                values[unique - 1] = kerningValues[kOrder[i]]; // a pair given twice: the last one wins
+                continue;
+            }
+            keys[unique] = pair;
+            values[unique] = kerningValues[kOrder[i]];
+            unique++;
         }
-        kerningPairs = keys;
-        kerningValues = values;
+        kerningPairs = Arrays.copyOf(keys, unique);
+        kerningValues = Arrays.copyOf(values, unique);
+        kerningCount = unique;
         sorted = true;
     }
 

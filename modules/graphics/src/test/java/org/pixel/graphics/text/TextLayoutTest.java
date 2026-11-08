@@ -203,4 +203,17 @@ class TextLayoutTest {
         }
         assertEquals(0, threads.getThreadAllocatedBytes(thread) - before);
     }
+
+    @Test
+    void measureAgreesWithTheLayout() {
+        SdfFont font = org.pixel.graphics.testing.TestFonts.mono();
+        for (String text : new String[]{"ab", "a\nbcd", "a\tb", "a\r\nb", "ab ab"}) {
+            TextLayout layout = new TextLayout();
+            layout.layout(font, text, 10f);
+            assertEquals(layout.width(), font.measure(text, 10f), 1e-3f, '"' + text + '"');
+        }
+        TextLayout spaced = new TextLayout().letterSpacing(2f);
+        spaced.layout(font, "abc", 10f);
+        assertEquals(spaced.width(), font.measure("abc", 10f, 2f), 1e-3f);
+    }
 }

@@ -367,6 +367,9 @@ public final class FrameInfo {
     void capturePicks(Layer layer, DrawList list) {
         PickSet set = pickSet(layer);
         set.size = 0;
+        if (list.pickableCount() == 0) {
+            return; // nothing pickable: no walk through the commands
+        }
         for (int order = 0, n = list.size(); order < n; order++) {
             int index = list.orderedIndex(order);
             if (list.pickId(index) != 0) {

@@ -21,7 +21,8 @@ import org.pixel.math.Vector2;
  * <p>
  * <ul>
  *   <li>Everything between {@code begin} and {@code end} is recorded, sorted by depth as a whole (stable: equal
- *   depth keeps submission order) and then drawn with as few draw calls as texture slots allow.</li>
+ *   depth keeps submission order) and then drawn with as few draw calls as texture slots allow. Depths are sorted as
+ *   floats: integers beyond &plusmn;2<sup>24</sup> that differ only in the lowest bits compare equal.</li>
  *   <li>Sprites and bitmap-font text share batches (the font atlas is just another texture).</li>
  *   <li>Positions, colors and source rectangles are copied when recorded, so callers may reuse their objects.</li>
  * </ul>

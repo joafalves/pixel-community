@@ -7,7 +7,7 @@ import org.pixel.graphics.material.Material;
 import java.util.Arrays;
 
 /**
- * The batches of one pass. A batch is a consecutive quad range of the vertex stream of its {@link VertexLayout}
+ * The batches of one layer as drawn by a pass (rebuilt by the batcher for each). A batch is a consecutive quad range of the vertex stream of its {@link VertexLayout}
  * that is drawn with one draw call, plus:
  * <ul>
  *   <li>its {@link Material} ({@code null} = the built-in program);</li>
@@ -39,7 +39,10 @@ public final class BatchList {
     private int[] slotLimit = new int[16];
     private int[] firstQuad = new int[16];
     private int[] quadCount = new int[16];
-    private int[] textureCount = new int[16];
+    private int[] textureCount = new int[16]; // highest used slot + 1 (slots can have holes, see slotOf)
+    private int[] slotsUsed = new int[16];
+    private Texture lastTexture; // slotOf cache: consecutive commands usually share a texture
+    private int lastSlot;
     private int[] clipOffset = new int[16];
     private int[] clipCount = new int[16];
     private int[] styleOffset = new int[16];
@@ -72,6 +75,7 @@ public final class BatchList {
      * Remove all batches and table data (capacity is kept).
      */
     public void clear() {
+        lastTexture = null;
         Arrays.fill(textures, 0, size * maxTextureSlots, null);
         Arrays.fill(materials, 0, size, null);
         size = 0;
@@ -121,6 +125,7 @@ public final class BatchList {
             firstQuad = Arrays.copyOf(firstQuad, capacity);
             quadCount = Arrays.copyOf(quadCount, capacity);
             textureCount = Arrays.copyOf(textureCount, capacity);
+            slotsUsed = Arrays.copyOf(slotsUsed, capacity);
             clipOffset = Arrays.copyOf(clipOffset, capacity);
             clipCount = Arrays.copyOf(clipCount, capacity);
             styleOffset = Arrays.copyOf(styleOffset, capacity);
@@ -134,6 +139,8 @@ public final class BatchList {
         firstQuad[size] = first;
         quadCount[size] = 0;
         textureCount[size] = 0;
+        slotsUsed[size] = 0;
+        lastTexture = null;
         clipDataSize = align(clipDataSize, alignmentFloats);
         styleDataSize = align(styleDataSize, alignmentFloats);
         clipOffset[size] = clipDataSize;
@@ -144,26 +151,57 @@ public final class BatchList {
     }
 
     /**
-     * Find or assign the slot of a texture in the current (last) batch.
+     * Find or assign the slot of a texture in the current (last) batch. A texture the previous batch also used keeps
+     * its slot when it is free, so the backend doesn't bind it again; slots can therefore have holes
+     * ({@link #texture} returns {@code null} there).
      *
      * @param texture The texture.
      * @return The slot, or -1 if the batch has no free slot left.
      */
     public int slotOf(Texture texture) {
+        if (texture == lastTexture) {
+            return lastSlot;
+        }
         int batch = size - 1;
         int base = batch * maxTextureSlots;
         int count = textureCount[batch];
         for (int s = 0; s < count; s++) {
             if (textures[base + s] == texture) {
-                return s;
+                return remember(texture, s);
             }
         }
-        if (count == slotLimit[batch]) {
+        int limit = slotLimit[batch];
+        if (slotsUsed[batch] == limit) {
             return -1;
         }
-        textures[base + count] = texture;
-        textureCount[batch] = count + 1;
-        return count;
+        int slot = -1;
+        if (batch > 0) { // sticky: the slot it had in the previous batch, if free here
+            int previousBase = (batch - 1) * maxTextureSlots;
+            for (int s = 0, n = Math.min(textureCount[batch - 1], limit); s < n; s++) {
+                if (textures[previousBase + s] == texture) {
+                    if (s >= count || textures[base + s] == null) {
+                        slot = s;
+                    }
+                    break;
+                }
+            }
+        }
+        if (slot < 0) { // the first free slot
+            slot = 0;
+            while (slot < count && textures[base + slot] != null) {
+                slot++;
+            }
+        }
+        textures[base + slot] = texture;
+        slotsUsed[batch]++;
+        textureCount[batch] = Math.max(count, slot + 1);
+        return remember(texture, slot);
+    }
+
+    private int remember(Texture texture, int slot) {
+        lastTexture = texture;
+        lastSlot = slot;
+        return slot;
     }
 
     /**
@@ -236,7 +274,7 @@ public final class BatchList {
      * @return Whether the current (last) batch has no free texture slot left.
      */
     public boolean currentSlotsFull() {
-        return textureCount[size - 1] == slotLimit[size - 1];
+        return slotsUsed[size - 1] == slotLimit[size - 1];
     }
 
     public VertexLayout layout(int batch) {
@@ -272,6 +310,9 @@ public final class BatchList {
         return quadCount[batch];
     }
 
+    /**
+     * @return The slots the batch spans: its highest used slot + 1 (some below may be empty, see {@link #slotOf}).
+     */
     public int textureCount(int batch) {
         return textureCount[batch];
     }

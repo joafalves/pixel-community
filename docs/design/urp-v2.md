@@ -800,8 +800,75 @@ Each phase ends green (`./gradlew build`) and is reviewable on its own.
   selection drawn in an overlay layer (an editor's gizmo layer); a panel with the last frame's statistics and batch
   breaks (the water material breaks y-sorted batches; M toggles it).
 
+*Dev tools (in-game)* ✅ (added during Phase 4, on this branch)
+- `context().devTools()`: an engine-owned window drawn after the game's `draw()` in its own pipeline (unaffected by
+  the game's cameras, targets and effects), toggled by F1 (desktop) or a three-finger tap (Android). Available in dev
+  mode by default (`GameSettings.setDevToolsMode(DevToolsMode)`, `setDevToolsVisible`).
+- Tabs: performance (frame interval graph with update and draw time, the overlay's own cost, heap, GC on desktop),
+  rendering (device counters with the overlay's draw calls apart; per tracked pipeline its `FrameInfo`: layers,
+  culling, batches, break reasons), assets (each content manager and child), log (a ring buffer fed by
+  `Logger.addListener`), game (watches, toggles, sliders, actions registered by the game).
+- A small immediate-mode UI (`DevUi`, internal) on `Canvas`: rows, text cut to fit, buttons, check boxes, sliders,
+  tabs, bar graphs; a sorted layer puts the background under the content. Window dragging and collapsing; the game
+  checks `isPointerOverUi()`.
+- Bundled font: JetBrains Mono (OFL 1.1), baked by `bakeEngineFont` into `engine/font/` as a JSON layout plus
+  zlib-compressed RGBA, turned into a texture by the new `RenderBackend.createTexture`: no image decoder needed, the
+  same on every platform. `SdfFontBaker` (desktop) bakes any font to `.json` + `.png`; `PrebakedSdfFontImporter`
+  loads those on Android.
+- Input: hosts feed the pointer (`DevTools.pointer`) and the toggle. Desktop: mouse in screen points scaled to the
+  framebuffer (HiDPI). Android: touches from the surface view (UI thread, volatile hand-off to the GL thread, quick
+  taps latched), one unit per density-independent pixel.
+- Never breaks the game: a failure inside is logged and turns the tools off. Hidden: a few timers per frame, nothing
+  loaded, no allocation.
+- Found on Android: canvases ask their views for pixels per unit on every command, and the overlay's view and the
+  pipeline's target views measured the screen with `glGetIntegerv(GL_VIEWPORT)` each time, a synchronous GPU query
+  (47 ms per frame for the overlay on the emulator). Both now use the screen size measured once per frame (1.4 ms).
+- Tests: availability, nothing touched while hidden, every tab drawing, widgets driven by the pointer (check box,
+  slider drag, button, collapse, drag), failures turning the tools off, no allocation while hidden, the log buffer,
+  log listeners, number formatting; the pre-baked font importer.
+- Demos: `urp/InspectorDemo` tracks its pipeline and adds watches, a toggle, a slider and an action; the Android
+  demo starts with the tools shown. Guide: [docs/dev-tools.md](../dev-tools.md).
+
+*Quality and performance pass* ✅ (before merging; four independent reviews: draw core, canvas and text, GL backend,
+pipeline and core)
+- GL: the screen's viewport and framebuffer are queried once per frame (passes, post draws and target binds used
+  to query several times per frame); render targets made before a lost context never delete names of the new one;
+  post draws that replace a target clear it first (tile-based mobile GPUs then don't load the old contents); the
+  white texture is reset once per frame instead of on every pass (binds counted only when real); vertex and uniform
+  buffers grow geometrically and are orphaned at a constant size; textures used by consecutive batches keep their
+  unit ("sticky" slots); no depth or stencil buffer (2D needs neither); texture importers premultiply alpha and
+  restore the binding they change; LWJGL's argument checks are configured before LWJGL loads.
+- Draw core: commands added after a list was prepared are sorted again (a custom pass recording into a drawn
+  layer); input already in order skips the sort; vertices are written with absolute puts; image-only lists use the
+  sprite layout; commands outside their clip are culled and repeated clip rectangles share an entry; bitmap-font
+  glyphs below 256 are looked up without boxing; ordered lists have no sort arrays.
+- Canvas and text: the tessellator fans convex polygons in linear time, tests only reflex vertices and fans what a
+  non-simple polygon leaves (no more seconds-long stalls or dropped triangles); slight turns of stroked curves get a
+  bevel (94 instead of 226 quads for a stroked circle path, no translucent "beads"); `SdfFont.measure` follows
+  `TextLayout` (newlines, tabs, letter spacing); the generator orients contours like msdf-atlas-gen (CFF fonts no
+  longer render inside out); the anti-aliasing margin is 1 px (it was 2: twice the overdraw needed); NaN and infinite
+  inputs draw nothing; invisible text is not laid out, inside outlines emit no outline layer, prepared layouts keep
+  their alignment; zero-length round-cap strokes draw a dot; duplicated kerning pairs keep the last value; the paint
+  record and `depth()` are shared code.
+- Pipeline and core: pick capture is skipped for layers without pick ids; builders build once; a pipeline can't be
+  disposed while it renders; `ShaderEffect` keeps its program across failed reloads and lost contexts like
+  `Material` (with `setSource`/`getError`); `Camera2D.screenToWorld(x, y, out)` without allocation;
+  `DeltaTime` has nanosecond precision (frame times were whole milliseconds: at high frame rates games jittered and
+  frame statistics swung by a factor of two); mouse wheel input (`Mouse.getScrollY()`).
+- Dev tools: numbers refresh four times a second; FPS history; frames scaled to what happens; a fixed size the user
+  resizes from any edge; scrolling; asset memory with sorting; an Android touch hand-off that leaves the game its
+  touches.
+- Render benchmark after the pass (same machine): 20k sprites 223 fps (Phase 0: 165), GPU 2.4 ms (3.9), 1 texture
+  bind per frame (was 17 after Phase 1); 32 textures 114 fps (85), 10k binds (14k); depth-sorted 146 fps (121);
+  rotated 138 fps (120).
+- Follow-ups (not done): per-axis anti-aliasing margins under non-uniform scale; asymmetric shadow quads; path fills
+  straddling their edge (NanoVG-style) and anti-aliased butt caps; one post-effect scratch pool per pipeline; shader
+  variants without the style or glyph code for plain image batches (to be measured on mobile GPUs).
+
 **Phase 4: merge readiness**
-- Update docs and `AGENTS.md` (the legacy renderers are already removed).
+- User docs: the README's example now uses the pipeline and canvas; [docs/rendering.md](../rendering.md) and
+  [docs/dev-tools.md](../dev-tools.md) are the guides; `AGENTS.md` describes the renderer's layers, invariants and
+  checks for agents working on the code.
 - Rebase onto `devel`, then open the PR.
 
 ## 9. Editor-readiness constraints

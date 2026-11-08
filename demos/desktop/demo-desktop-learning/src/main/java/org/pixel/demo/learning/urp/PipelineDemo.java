@@ -7,7 +7,6 @@ import org.pixel.core.ScreenSpace;
 import org.pixel.core.WindowSettings;
 import org.pixel.demo.learning.common.DemoGame;
 import org.pixel.demo.learning.common.Screenshot;
-import org.pixel.graphics.RenderStats;
 import org.pixel.graphics.canvas.Canvas;
 import org.pixel.graphics.canvas.LineJoin;
 import org.pixel.graphics.draw.Layer;
@@ -26,8 +25,10 @@ import java.util.Random;
  *   <li>{@code world} (sorted by y): a 4000 x 3000 world of trees, rocks and crystals seen through a camera that pans
  *   and zooms by itself. Objects outside the view are culled; edges stay one pixel soft at every zoom.</li>
  *   <li>{@code glow} (additive blending): drifting particles, drawn after the world through the same camera.</li>
- *   <li>{@code hud}: screen space, unaffected by the camera, with the live counters.</li>
+ *   <li>{@code hud}: screen space, unaffected by the camera.</li>
  * </ul>
+ * The engine's dev tools are open: the Render tab shows each layer's commands, culling and batches; the Game tab the
+ * zoom and the commands recorded.
  * Run with {@code -Dpixel.screenshot=build/pipeline.png} to save a PNG and exit ({@code -Dpixel.time=13.5} picks
  * the camera's moment; 13.5 is the most zoomed out).
  */
@@ -75,6 +76,8 @@ public class PipelineDemo extends DemoGame {
                 .pass(gameCamera, WORLD, GLOW)
                 .pass(new ScreenSpace(context()), HUD)
                 .build();
+        devTools().track(pipeline, "pipeline"); // its passes and layers in the dev tools' Render tab
+        devTools().watch("zoom", gameCamera::getZoom).watch("commands recorded", () -> recorded, 0);
 
         Random random = new Random(7);
         for (int i = 0; i < OBJECTS; i++) {
@@ -166,17 +169,9 @@ public class PipelineDemo extends DemoGame {
     }
 
     private void drawHud(Canvas c) {
-        RenderStats.Frame stats = graphics().getStats().lastFrame();
-        c.roundRect(16, 16, 360, 132, 12).fill(PANEL).stroke(1, MUTED);
+        c.roundRect(16, 16, 360, 84, 12).fill(PANEL).stroke(1, MUTED);
         c.text(font, "Render pipeline", 32, 28).size(24).fill(Color.WHITE);
-        line.setLength(0);
-        line.append(recorded).append(" commands recorded, ").append(stats.getPrimitives()).append(" quads drawn");
-        c.text(font, line, 32, 66).size(16).fill(MUTED);
-        line.setLength(0);
-        line.append(stats.getDrawCalls()).append(" draw calls, zoom ")
-                .append(Math.round(gameCamera.getZoom() * 100) / 100f).append('x');
-        c.text(font, line, 32, 90).size(16).fill(MUTED);
-        c.text(font, "world (sorted) + glow (additive) + hud", 32, 114).size(16).fill(MUTED);
+        c.text(font, "world (sorted) + glow (additive) + hud", 32, 66).size(16).fill(MUTED);
     }
 
     @Override
@@ -190,6 +185,6 @@ public class PipelineDemo extends DemoGame {
         settings.setWindowResizable(false);
         settings.setVsync(true);
         settings.setBackgroundColor(new Color(0.05f, 0.06f, 0.08f, 1f));
-        DesktopLauncher.run(new PipelineDemo(), settings);
+        DesktopLauncher.run(new PipelineDemo(), withDevTools(settings));
     }
 }

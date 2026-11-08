@@ -3,14 +3,11 @@ package org.pixel.graphics.opengl;
 import static org.lwjgl.opengl.GL11C.GL_BLEND;
 import static org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11C.GL_CULL_FACE;
-import static org.lwjgl.opengl.GL11C.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11C.GL_DEPTH_TEST;
 import static org.lwjgl.opengl.GL11C.GL_ONE_MINUS_SRC_ALPHA;
 import static org.lwjgl.opengl.GL11C.GL_RENDERER;
 import static org.lwjgl.opengl.GL11C.GL_RGBA;
 import static org.lwjgl.opengl.GL11C.GL_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11C.GL_STENCIL_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11C.GL_STENCIL_TEST;
 import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_BYTE;
 import static org.lwjgl.opengl.GL11C.GL_VENDOR;
 import static org.lwjgl.opengl.GL11C.GL_VERSION;
@@ -33,7 +30,6 @@ import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.Callback;
-import org.lwjgl.system.Configuration;
 import org.pixel.commons.Color;
 import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
@@ -89,10 +85,7 @@ public class GLGraphicsDevice implements GraphicsDevice {
         // Debug-specific initialization
         if (this.windowSettings.isGlfwDebugMode()) {
             this.debugLocalCallback = GLUtil.setupDebugMessageCallback(); // must be called after "createCapabilities()"
-            Configuration.DISABLE_CHECKS.set(false);
-        } else {
-            Configuration.DISABLE_CHECKS.set(true);
-        }
+        } // LWJGL's argument checks are configured by DesktopLauncher, before LWJGL loads
 
         // URP v2 render backend (needs the GL context created above)
         this.renderBackend = new GLRenderBackend(LwjglGLApi.INSTANCE, stats);
@@ -156,7 +149,7 @@ public class GLGraphicsDevice implements GraphicsDevice {
     public void clear() {
         // set every time: render passes clearing targets change the GL clear color
         glClearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT); // 2D: no depth or stencil buffer
     }
 
     @Override
@@ -206,7 +199,6 @@ public class GLGraphicsDevice implements GraphicsDevice {
         } else {
             glDisable(GL_MULTISAMPLE);
         }
-        glEnable(GL_STENCIL_TEST);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 }

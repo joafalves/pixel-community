@@ -48,12 +48,15 @@ final class PathTessellator {
 
     private int[] prev = new int[64];
     private int[] next = new int[64];
+    private boolean[] reflex = new boolean[64];
     private int[] triangles = new int[64 * 3];
     private int triangleCount;
 
     /**
      * Triangulate a simple polygon (convex or concave, either winding, no holes, no self-intersections).
-     * Self-intersecting input produces a partial result instead of looping.
+     * Convex polygons are fanned (linear time). Others are ear-clipped, testing only reflex vertices against each ear;
+     * input that isn't simple (self-intersecting) is clipped as far as possible and the rest is fanned, so it is
+     * always covered and never loops.
      *
      * @param xy     Vertex coordinates (x0, y0, x1, y1, ...).
      * @param offset Index of the first vertex (in vertices, not floats).
@@ -66,31 +69,49 @@ final class PathTessellator {
             return 0;
         }
         ensure(count);
+        boolean ccw = signedArea(xy, offset, count) > 0; // y down: positive = clockwise on screen
+        int reflexCount = 0;
         for (int i = 0; i < count; i++) {
             prev[i] = i == 0 ? count - 1 : i - 1;
             next[i] = i == count - 1 ? 0 : i + 1;
         }
-        boolean ccw = signedArea(xy, offset, count) > 0; // y down: positive = clockwise on screen
+        for (int i = 0; i < count; i++) {
+            reflex[i] = isReflex(xy, offset, prev[i], i, next[i], ccw);
+            if (reflex[i]) {
+                reflexCount++;
+            }
+        }
+        if (reflexCount == 0) { // convex: a fan
+            for (int i = 1; i < count - 1; i++) {
+                addTriangle(0, i, i + 1);
+            }
+            return triangleCount;
+        }
 
         int remaining = count;
         int current = 0;
-        int guard = 0;
-        while (remaining > 3 && guard < remaining * remaining + 10) {
+        int misses = 0;
+        while (remaining > 3 && misses < remaining) { // a full lap without an ear: not a simple polygon
             int a = prev[current], b = current, c = next[current];
-            if (isEar(xy, offset, a, b, c, ccw)) {
+            if (!reflex[b] && isEar(xy, offset, a, b, c)) {
                 addTriangle(a, b, c);
                 next[a] = c;
                 prev[c] = a;
                 remaining--;
+                // clipping an ear can only make its neighbours convex
+                reflex[a] = reflex[a] && isReflex(xy, offset, prev[a], a, c, ccw);
+                reflex[c] = reflex[c] && isReflex(xy, offset, a, c, next[c], ccw);
                 current = c;
-                guard = 0;
+                misses = 0;
             } else {
                 current = next[current];
-                guard++;
+                misses++;
             }
         }
-        if (remaining == 3) {
-            addTriangle(prev[current], current, next[current]);
+        // the last triangle, or what a non-simple polygon left: fanned from one vertex
+        int start = current;
+        for (int v = next[start]; next[v] != start; v = next[v]) {
+            addTriangle(start, v, next[v]);
         }
         return triangleCount;
     }
@@ -118,15 +139,23 @@ final class PathTessellator {
         return (float) (area * 0.5);
     }
 
-    private boolean isEar(float[] xy, int offset, int a, int b, int c, boolean ccw) {
+    private static boolean isReflex(float[] xy, int offset, int a, int b, int c, boolean ccw) {
         float ax = xy[(offset + a) * 2], ay = xy[(offset + a) * 2 + 1];
         float bx = xy[(offset + b) * 2], by = xy[(offset + b) * 2 + 1];
         float cx = xy[(offset + c) * 2], cy = xy[(offset + c) * 2 + 1];
         float cross = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
-        if (ccw ? cross <= 0 : cross >= 0) {
-            return false; // reflex (or degenerate) vertex
-        }
+        return ccw ? cross <= 0 : cross >= 0; // reflex (or degenerate)
+    }
+
+    /** Whether triangle (a, b, c), b convex, contains no reflex vertex of the remaining polygon. */
+    private boolean isEar(float[] xy, int offset, int a, int b, int c) {
+        float ax = xy[(offset + a) * 2], ay = xy[(offset + a) * 2 + 1];
+        float bx = xy[(offset + b) * 2], by = xy[(offset + b) * 2 + 1];
+        float cx = xy[(offset + c) * 2], cy = xy[(offset + c) * 2 + 1];
         for (int p = next[c]; p != a; p = next[p]) {
+            if (!reflex[p]) {
+                continue; // only reflex vertices can lie inside an ear
+            }
             float px = xy[(offset + p) * 2], py = xy[(offset + p) * 2 + 1];
             if ((px == ax && py == ay) || (px == bx && py == by) || (px == cx && py == cy)) {
                 continue; // duplicated vertex: not an obstacle
@@ -163,6 +192,7 @@ final class PathTessellator {
             int capacity = Math.max(count, prev.length * 2);
             prev = new int[capacity];
             next = new int[capacity];
+            reflex = new boolean[capacity];
         }
         if (count * 3 > triangles.length) {
             triangles = Arrays.copyOf(triangles, count * 3);

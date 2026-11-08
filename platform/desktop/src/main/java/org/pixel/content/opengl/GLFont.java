@@ -28,6 +28,11 @@ public class GLFont extends Font {
     }
 
     @Override
+    public long getMemorySize() {
+        return texture.getMemorySize();
+    }
+
+    @Override
     public GLTexture getTexture() {
         return texture;
     }

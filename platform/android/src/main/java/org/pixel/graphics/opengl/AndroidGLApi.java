@@ -163,6 +163,20 @@ public final class AndroidGLApi implements GLApi {
     }
 
     @Override
+    public void bufferSubData(int target, long offset, ByteBuffer data, int dataOffset, int size) {
+        if (dataOffset < 0 || size < 0 || dataOffset + size > data.capacity()) {
+            throw new IndexOutOfBoundsException("Range " + dataOffset + "+" + size + " outside a "
+                    + data.capacity() + " byte buffer.");
+        }
+        // GLES reads from the buffer's position: move it to the range, then restore it (no views allocated)
+        int position = data.position();
+        int limit = data.limit();
+        data.limit(data.capacity()).position(dataOffset);
+        GLES30.glBufferSubData(target, (int) offset, size, data);
+        data.limit(limit).position(position);
+    }
+
+    @Override
     public void bindBufferRange(int target, int index, int buffer, long offset, long size) {
         GLES30.glBindBufferRange(target, index, buffer, (int) offset, (int) size);
     }

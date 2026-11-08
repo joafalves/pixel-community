@@ -5,6 +5,8 @@
 
 package org.pixel.core;
 
+import org.pixel.core.dev.DevTools;
+import org.pixel.core.dev.DevToolsMode;
 import org.pixel.audio.AudioPlayer;
 import org.pixel.commons.Color;
 import org.pixel.commons.DeltaTime;
@@ -33,6 +35,7 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
     protected ContentManager contentManager;
     protected AudioPlayer audioPlayer;
     protected State state;
+    protected DevTools devTools;
 
     private boolean appLoaded;
     private float elapsed;
@@ -75,6 +78,10 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
         }
         this.contentManager = createContentManager();
         this.audioPlayer = createAudioPlayer();
+        DevToolsMode mode = settings.getDevToolsMode();
+        boolean devToolsAvailable = mode == DevToolsMode.ON
+                || (mode == DevToolsMode.DEV_MODE && settings.isDevMode());
+        this.devTools = new DevTools(this, devToolsAvailable, settings.isDevToolsVisible());
         app.attach(this);
         return true;
     }
@@ -99,7 +106,17 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
             elapsed = 0;
             frameCount = 0;
         }
+        updateDevToolsInput(devTools);
+        long start = System.nanoTime();
         app.update(delta);
+        devTools.recordUpdate(System.nanoTime() - start);
+    }
+
+    /**
+     * Pass the pointer and the toggle key or gesture to the dev tools, once per frame (hosts with input override
+     * this; see {@link DevTools#pointer} and {@link DevTools#requestToggle}).
+     */
+    protected void updateDevToolsInput(DevTools devTools) {
     }
 
     /**
@@ -109,7 +126,11 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
         if (settings.isAutoClear()) {
             graphicsDevice.clear();
         }
+        devTools.beginFrame();
+        long start = System.nanoTime();
         app.draw(delta);
+        devTools.recordDraw(System.nanoTime() - start, delta.getElapsed());
+        devTools.render(); // over the game, unaffected by its pipelines
         graphicsDevice.endFrame();
     }
 
@@ -130,6 +151,13 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
                 app.dispose();
             }
         } finally {
+            if (devTools != null) {
+                try {
+                    devTools.dispose(); // GPU resources: before the device goes
+                } catch (RuntimeException e) {
+                    log.error("Unable to release the dev tools.", e);
+                }
+            }
             if (contentManager != null) {
                 contentManager.dispose();
             }
@@ -167,6 +195,11 @@ public abstract class GameContainer<S extends GraphicsDevice, Z extends GameSett
     @Override
     public Z settings() {
         return settings;
+    }
+
+    @Override
+    public DevTools devTools() {
+        return devTools;
     }
 
     @Override

@@ -7,8 +7,46 @@ package org.pixel.commons.logger;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class Logger {
+
+    private static final CopyOnWriteArrayList<LogListener> LISTENERS = new CopyOnWriteArrayList<>();
+
+    /**
+     * Receive every message logged from now on (at or above each logger's level), in addition to its normal output.
+     */
+    public static void addListener(LogListener listener) {
+        if (listener == null) {
+            throw new IllegalArgumentException("Listener cannot be null.");
+        }
+        LISTENERS.addIfAbsent(listener);
+    }
+
+    public static void removeListener(LogListener listener) {
+        LISTENERS.remove(listener);
+    }
+
+    /**
+     * @return Whether anyone listens (so loggers only format for them when needed).
+     */
+    protected static boolean hasListeners() {
+        return !LISTENERS.isEmpty();
+    }
+
+    /**
+     * Pass a logged message to the listeners (implementations call this for every message they output). A failing
+     * listener never breaks logging.
+     */
+    protected static void notifyListeners(LogLevel level, String context, String message) {
+        for (LogListener listener : LISTENERS) {
+            try {
+                listener.onLog(level, context, message);
+            } catch (RuntimeException e) {
+                // a broken listener must not break the caller's logging
+            }
+        }
+    }
 
     //region Internal Functions
 

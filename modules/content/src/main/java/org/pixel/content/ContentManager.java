@@ -124,6 +124,44 @@ public class ContentManager implements Disposable {
     }
 
     /**
+     * @return How many assets this manager holds (not counting its children's).
+     */
+    public int getAssetCount() {
+        return assetCache.size();
+    }
+
+    /**
+     * Receives the assets of {@link #forEachAsset}.
+     */
+    @FunctionalInterface
+    public interface AssetVisitor {
+        /**
+         * @param path  The asset's path.
+         * @param type  The type it was loaded as.
+         * @param asset The asset ({@link SizedAsset} for those that know their memory size).
+         */
+        void visit(String path, Class<?> type, Object asset);
+    }
+
+    /**
+     * Visit the assets this manager holds (not its children's), e.g. to list them in dev tools.
+     */
+    public void forEachAsset(AssetVisitor visitor) {
+        for (java.util.Map.Entry<CacheKey, Object> entry : assetCache.entrySet()) {
+            visitor.visit(entry.getKey().filename(), entry.getKey().type(), entry.getValue());
+        }
+    }
+
+    /**
+     * Visit the live children created with {@link #child()} (one level down).
+     */
+    public void forEachChild(java.util.function.Consumer<ContentManager> visitor) {
+        for (ContentManager child : children) {
+            visitor.accept(child);
+        }
+    }
+
+    /**
      * @return The name given to {@link #child(String)} ({@code "root"} for a root manager).
      */
     public String getName() {

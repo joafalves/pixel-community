@@ -48,6 +48,7 @@ public class CanvasPaintDemo extends DemoGame {
         super.load();
         gameCamera.setOrigin(Vector2.zero());
         pipeline = RenderPipeline.builder(graphics().getRenderBackend()).pass(gameCamera, MAIN).build();
+        devTools().track(pipeline, "canvas"); // its passes and layers in the dev tools' Render tab
         frame = content().loadTexture("images/frame-ninepatch-24x24.png");
     }
 
@@ -122,6 +123,6 @@ public class CanvasPaintDemo extends DemoGame {
         settings.setWindowResizable(false);
         settings.setVsync(true);
         settings.setBackgroundColor(new Color(0.08f, 0.09f, 0.12f, 1f));
-        DesktopLauncher.run(new CanvasPaintDemo(), settings);
+        DesktopLauncher.run(new CanvasPaintDemo(), withDevTools(settings));
     }
 }

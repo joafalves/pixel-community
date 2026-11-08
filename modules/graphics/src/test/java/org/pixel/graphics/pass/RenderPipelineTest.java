@@ -102,11 +102,11 @@ class RenderPipelineTest {
         assertEquals(2 * 4, backend.passes.get(0).shapes().size());
         List<FullVertex> all = backend.passes.get(1).shapes();
         assertEquals(3 * 4, all.size());
-        // sorted by depth in both passes: blue (0), red (1), white (5); margins are 2 px in the coarsest view
-        // (the minimap, 0.1 px per unit), so 20 units
-        assertEquals(30, minX(all.subList(0, 4)) + 20, EPS);
-        assertEquals(500, minX(all.subList(4, 8)) + 20, EPS);
-        assertEquals(10, minX(all.subList(8, 12)) + 20, EPS);
+        // sorted by depth in both passes: blue (0), red (1), white (5); margins are 1 px in the coarsest view
+        // (the minimap, 0.1 px per unit), so 10 units
+        assertEquals(30, minX(all.subList(0, 4)) + 10, EPS);
+        assertEquals(500, minX(all.subList(4, 8)) + 10, EPS);
+        assertEquals(10, minX(all.subList(8, 12)) + 10, EPS);
     }
 
     @Test
@@ -114,12 +114,12 @@ class RenderPipelineTest {
         RenderPipeline sharp = RenderPipeline.builder(backend).pass(view(0, 0, 100, 100, 4f), hud).build();
         sharp.canvas(hud).rect(10, 10, 10, 10).fill(Color.WHITE);
         sharp.render();
-        assertEquals(10 - 0.5f, minX(backend.lastPass().shapes()), EPS); // 2 pixels at 4 pixels per unit
+        assertEquals(10 - 0.25f, minX(backend.lastPass().shapes()), EPS); // 1 pixel at 4 pixels per unit
 
         RenderPipeline zoomedOut = RenderPipeline.builder(backend).pass(view(0, 0, 1000, 1000, 0.25f), hud).build();
         zoomedOut.canvas(hud).rect(10, 10, 10, 10).fill(Color.WHITE);
         zoomedOut.render();
-        assertEquals(10 - 8f, minX(backend.lastPass().shapes()), EPS); // 2 pixels at 0.25 pixels per unit
+        assertEquals(10 - 4f, minX(backend.lastPass().shapes()), EPS); // 1 pixel at 0.25 pixels per unit
     }
 
     @Test
@@ -136,7 +136,7 @@ class RenderPipelineTest {
             pipeline.render();
 
             List<FullVertex> shapes = backend.passes.get(0).shapes();
-            assertEquals(10 - 20f, minX(shapes.subList(0, 4)), EPS, "margin: 2 px in the minimap (0.1 px/unit)");
+            assertEquals(10 - 10f, minX(shapes.subList(0, 4)), EPS, "margin: 1 px in the minimap (0.1 px/unit)");
             float fringeLeft = Float.MAX_VALUE;
             for (FullVertex v : shapes.subList(4, shapes.size())) {
                 fringeLeft = Math.min(fringeLeft, v.x());
@@ -158,7 +158,7 @@ class RenderPipelineTest {
         c.rect(10, 10, 10, 10).fill(Color.WHITE);
         pipeline.render();
         assertEquals(4, backend.lastPass().shapes().size()); // only this frame's command
-        assertEquals(10 - 2f, minX(backend.lastPass().shapes()), EPS); // no translation left
+        assertEquals(10 - 1f, minX(backend.lastPass().shapes()), EPS); // no translation left
         assertEquals(0, backend.lastPass().shapes().get(0).clip());   // no clip left
     }
 
@@ -349,8 +349,8 @@ class RenderPipelineTest {
         RenderPipeline pipeline = builder.pass(view(0, 0, 1000, 1000, 1f), minimap, hud).build();
         pipeline.canvas(hud).rect(500, 500, 50, 50).fill(Color.WHITE);
         pipeline.render();
-        // 1000 units on 100 pixels: 0.1 px per unit, so the 2 px margin is 20 units (the view's own 1 is ignored)
-        assertEquals(500 - 20f, minX(backend.lastPass().shapes()), EPS);
+        // 1000 units on 100 pixels: 0.1 px per unit, so the 1 px margin is 10 units (the view's own 1 is ignored)
+        assertEquals(500 - 10f, minX(backend.lastPass().shapes()), EPS);
     }
 
     @Test

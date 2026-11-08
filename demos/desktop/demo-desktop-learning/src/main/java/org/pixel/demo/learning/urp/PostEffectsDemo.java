@@ -85,6 +85,7 @@ public class PostEffectsDemo extends DemoGame {
                         border)
                 .pass(new ScreenSpace(context()), HUD)
                 .build();
+        devTools().track(pipeline, "post effects"); // its passes and layers in the dev tools' Render tab
 
         if (screenshot != null) {
             List<String> on = List.of(System.getProperty("pixel.effects", "").split(","));
@@ -194,6 +195,6 @@ public class PostEffectsDemo extends DemoGame {
         settings.setWindowResizable(true);
         settings.setVsync(true);
         settings.setBackgroundColor(BACKGROUND);
-        DesktopLauncher.run(new PostEffectsDemo(), settings);
+        DesktopLauncher.run(new PostEffectsDemo(), withDevTools(settings));
     }
 }

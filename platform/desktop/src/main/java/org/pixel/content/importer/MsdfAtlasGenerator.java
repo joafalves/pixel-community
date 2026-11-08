@@ -7,6 +7,7 @@ import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.util.msdfgen.MSDFGenBitmap;
 import org.lwjgl.util.msdfgen.MSDFGenBounds;
 import org.lwjgl.util.msdfgen.MSDFGenTransform;
+import org.lwjgl.util.msdfgen.MSDFGenVector2;
 import org.pixel.graphics.text.GlyphPacker;
 import org.pixel.graphics.text.SdfFontData;
 import org.pixel.graphics.text.SdfFontSettings;
@@ -121,11 +122,12 @@ final class MsdfAtlasGenerator {
                 continue; // blank glyph
             }
             check(msdf_shape_normalize(shape), "msdf_shape_normalize");
-            check(msdf_shape_edge_colors_simple(shape, EDGE_COLORING_ANGLE), "msdf_shape_edge_colors_simple");
             check(msdf_shape_get_bounds(shape, bounds), "msdf_shape_get_bounds");
             if (!(bounds.r() > bounds.l()) || !(bounds.t() > bounds.b())) {
                 continue;
             }
+            orient(stack, shape, bounds, count.get(0));
+            check(msdf_shape_edge_colors_simple(shape, EDGE_COLORING_ANGLE), "msdf_shape_edge_colors_simple");
             int x0 = (int) Math.floor((bounds.l() - pad) * size), x1 = (int) Math.ceil((bounds.r() + pad) * size);
             int y0 = (int) Math.floor((bounds.b() - pad) * size), y1 = (int) Math.ceil((bounds.t() + pad) * size);
             cells[i * 4] = x0;
@@ -220,6 +222,25 @@ final class MsdfAtlasGenerator {
                 }
             } finally {
                 msdf_bitmap_free(bitmap);
+            }
+        }
+    }
+
+    /**
+     * Fonts don't agree on contour winding (CFF outlines usually run the other way): measure the distance at a point
+     * well outside the glyph and, if it reads as inside, reverse every contour (what msdf-atlas-gen does), so no glyph
+     * renders inside out.
+     */
+    private static void orient(MemoryStack stack, long shape, MSDFGenBounds bounds, long contours) {
+        MSDFGenVector2 outside = MSDFGenVector2.malloc(stack).set(bounds.l() - (bounds.r() - bounds.l()) - 1,
+                bounds.b() - (bounds.t() - bounds.b()) - 1);
+        DoubleBuffer distance = stack.mallocDouble(1);
+        check(msdf_shape_one_shot_distance(shape, outside, distance), "msdf_shape_one_shot_distance");
+        if (distance.get(0) > 0) {
+            PointerBuffer contour = stack.mallocPointer(1);
+            for (long c = 0; c < contours; c++) {
+                check(msdf_shape_get_contour(shape, c, contour), "msdf_shape_get_contour");
+                check(msdf_contour_reverse(contour.get(0)), "msdf_contour_reverse");
             }
         }
     }

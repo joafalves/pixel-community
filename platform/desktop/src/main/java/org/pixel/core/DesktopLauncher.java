@@ -22,6 +22,8 @@ public final class DesktopLauncher {
      * @param settings The window and game settings.
      */
     public static void run(GameApp app, WindowSettings settings) {
+        // LWJGL reads this once, when it loads: argument checks only while debugging GL
+        org.lwjgl.system.Configuration.DISABLE_CHECKS.set(!settings.isGlfwDebugMode());
         new DesktopGameHost(app, settings).start();
     }
 }

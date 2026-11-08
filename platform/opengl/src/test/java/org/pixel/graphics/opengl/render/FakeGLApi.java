@@ -53,8 +53,19 @@ final class FakeGLApi implements GLApi {
         return "#version 300 es\n";
     }
 
+    int queries; // getInteger/getIntegerv calls: synchronous GL queries, which stall the CPU
+
+    /** A lost context: names start over (the new context reuses them). */
+    void loseContext() {
+        nextName = 1;
+        deletedNames.clear();
+    }
+
+    final java.util.Set<Integer> deletedNames = new java.util.HashSet<>(); // textures and framebuffers
+
     @Override
     public int getInteger(int name) {
+        queries++;
         return switch (name) {
             case GL_MAX_TEXTURE_IMAGE_UNITS -> 16;
             case GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT -> 256;
@@ -93,6 +104,7 @@ final class FakeGLApi implements GLApi {
 
     @Override
     public void getIntegerv(int name, int[] out) {
+        queries++;
         if (name == GL_VIEWPORT) {
             System.arraycopy(viewportState, 0, out, 0, 4);
         }
@@ -140,6 +152,9 @@ final class FakeGLApi implements GLApi {
 
     @Override
     public void deleteFramebuffer(int framebuffer) {
+        if (capture) {
+            deletedNames.add(framebuffer);
+        }
     }
 
     @Override
@@ -230,6 +245,16 @@ final class FakeGLApi implements GLApi {
     }
 
     @Override
+    public void bufferSubData(int target, long offset, ByteBuffer data, int dataOffset, int size) {
+        if (dataOffset < 0 || dataOffset + size > data.capacity()) {
+            throw new IndexOutOfBoundsException();
+        }
+        if (capture) {
+            uploads.add(new Upload(target, target == GL_ARRAY_BUFFER ? arrayBuffer : 0, dataOffset, size));
+        }
+    }
+
+    @Override
     public void bindBufferRange(int target, int index, int buffer, long offset, long size) {
         if (capture) {
             ranges.add(new Range(index, buffer, offset, size));
@@ -277,6 +302,9 @@ final class FakeGLApi implements GLApi {
 
     @Override
     public void deleteTexture(int texture) {
+        if (capture) {
+            deletedNames.add(texture);
+        }
     }
 
     @Override

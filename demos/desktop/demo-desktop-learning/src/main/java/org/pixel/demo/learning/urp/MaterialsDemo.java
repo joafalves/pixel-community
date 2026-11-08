@@ -139,6 +139,7 @@ public class MaterialsDemo extends DemoGame {
                 .pass(gameCamera, TILES, TILES_PLAIN, WORLD)
                 .pass(new ScreenSpace(context()), HUD)
                 .build();
+        devTools().track(pipeline, "materials"); // its passes and layers in the dev tools' Render tab
     }
 
     @Override
@@ -220,7 +221,7 @@ public class MaterialsDemo extends DemoGame {
         hud.roundRect(16, 16, 470, 150, 12).fill(PANEL).stroke(1, MUTED);
         line.setLength(0);
         line.append("B  tiles ").append(grouped ? "grouped by material" : "in a plain sorted layer")
-                .append(": ").append(graphics().getStats().lastFrame().getDrawCalls()).append(" draw calls");
+                .append(" (draw calls: dev tools)");
         hud.text(font, line, 32, 28).size(17).fill(Color.WHITE);
         hud.text(font, "flash and dissolve: per-command data, one batch each", 32, 56).size(15).fill(MUTED);
         hud.text(font, "grass: raw material (vertex shader)", 32, 80).size(15).fill(MUTED);
@@ -256,6 +257,6 @@ public class MaterialsDemo extends DemoGame {
         settings.setWindowResizable(true);
         settings.setVsync(true);
         settings.setBackgroundColor(BACKGROUND);
-        DesktopLauncher.run(new MaterialsDemo(), settings);
+        DesktopLauncher.run(new MaterialsDemo(), withDevTools(settings));
     }
 }

@@ -112,7 +112,9 @@ public class RecordingBackend implements RenderBackend {
         for (int b = 0; b < batches.size(); b++) {
             List<Texture> textures = new ArrayList<>();
             for (int s = 0; s < batches.textureCount(b); s++) {
-                textures.add(batches.texture(b, s));
+                if (batches.texture(b, s) != null) { // sticky slots can leave holes
+                    textures.add(batches.texture(b, s));
+                }
             }
             List<float[]> clips = new ArrayList<>();
             for (int c = 0; c < batches.clipCount(b); c++) {
@@ -263,6 +265,11 @@ public class RecordingBackend implements RenderBackend {
     }
 
     // endregion
+
+    @Override
+    public Texture createTexture(int width, int height, ByteBuffer pixels, boolean smooth) {
+        return new TestTexture(width, height);
+    }
 
     // region materials
 

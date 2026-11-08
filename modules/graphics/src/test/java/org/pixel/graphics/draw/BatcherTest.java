@@ -217,4 +217,40 @@ class BatcherTest {
         DrawList list = new DrawList(LayerMode.SORTED);
         assertEquals(0, build(list).batches().size());
     }
+
+    @Test
+    void texturesKeepTheirSlotInTheNextBatchSoTheyArentBoundAgain() {
+        BatchList batches = new BatchList(3);
+        batches.begin(VertexLayout.SPRITE, 0, 8);
+        assertEquals(0, batches.slotOf(a));
+        assertEquals(1, batches.slotOf(b));
+        assertEquals(2, batches.slotOf(c));
+        assertEquals(-1, batches.slotOf(new TestTexture(8, 8))); // full
+        batches.begin(VertexLayout.SPRITE, 3, 8);
+        assertEquals(2, batches.slotOf(c), "c keeps slot 2");
+        Texture d = new TestTexture(8, 8);
+        assertEquals(0, batches.slotOf(d), "a new texture takes the first free slot");
+        assertEquals(1, batches.slotOf(b), "b keeps slot 1");
+        assertEquals(3, batches.textureCount(1));
+        assertFalse(batches.slotOf(a) >= 0, "three used: full");
+
+        batches.begin(VertexLayout.SPRITE, 6, 8);
+        assertEquals(1, batches.slotOf(b));
+        assertEquals(2, batches.textureCount(2));
+        assertNull(batches.texture(2, 0), "a hole below the kept slot");
+        assertEquals(0, batches.slotOf(a), "filled by the next new texture");
+    }
+
+    @Test
+    void aFullClipTableStartsABatch() {
+        DrawList list = new DrawList(LayerMode.ORDERED); // CAPS: 2 clips per batch
+        for (int i = 0; i < 3; i++) {
+            int clip = list.clips().add(-i, 0, i + 10, 10); // three different rectangles, all around the shape
+            shape(list, 0, clip);
+        }
+        BatchList batches = build(list).batches();
+        assertEquals(2, batches.size());
+        assertEquals(BatchBreak.CLIP_TABLE, batches.reason(1));
+        assertEquals(2, batches.clipCount(0));
+    }
 }

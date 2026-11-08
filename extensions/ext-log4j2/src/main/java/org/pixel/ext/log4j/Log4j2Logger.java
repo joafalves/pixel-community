@@ -61,25 +61,51 @@ public class Log4j2Logger extends Logger {
     @Override
     public void trace(String message, Object... params) {
         this.logger.trace(message, params);
+        if (hasListeners() && this.logger.isTraceEnabled()) {
+            notify(org.pixel.commons.logger.LogLevel.TRACE, message, params);
+        }
     }
 
     @Override
     public void debug(String message, Object... params) {
         this.logger.debug(message, params);
+        if (hasListeners() && this.logger.isDebugEnabled()) {
+            notify(org.pixel.commons.logger.LogLevel.DEBUG, message, params);
+        }
     }
 
     @Override
     public void info(String message, Object... params) {
         this.logger.info(message, params);
+        if (hasListeners() && this.logger.isInfoEnabled()) {
+            notify(org.pixel.commons.logger.LogLevel.INFO, message, params);
+        }
     }
 
     @Override
     public void warn(String message, Object... params) {
         this.logger.warn(message, params);
+        if (hasListeners() && this.logger.isWarnEnabled()) {
+            notify(org.pixel.commons.logger.LogLevel.WARN, message, params);
+        }
     }
 
     @Override
     public void error(String message, Object... params) {
         this.logger.error(message, params);
+        if (hasListeners() && this.logger.isErrorEnabled()) {
+            notify(org.pixel.commons.logger.LogLevel.ERROR, message, params);
+        }
+    }
+
+    /** Pass the formatted message to the engine's log listeners (e.g. the dev tools' log). */
+    private void notify(org.pixel.commons.logger.LogLevel level, String message, Object... params) {
+        String text = factory.newMessage(message, params).getFormattedMessage();
+        for (Object param : params) {
+            if (param instanceof Throwable t) {
+                text = text + " (" + t + ")";
+            }
+        }
+        notifyListeners(level, logger.getName(), text);
     }
 }

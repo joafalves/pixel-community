@@ -7,8 +7,8 @@ package org.pixel.commons;
 
 public class DeltaTime {
 
-    private final long startTimestamp;
-    private long lastTimestamp;
+    private final long startTimestamp; // System.nanoTime(): monotonic, unaffected by clock changes
+    private long lastTimestamp;        // nanoseconds
     private long elapsedMilliseconds;
     private float elapsedSeconds;
 
@@ -16,8 +16,8 @@ public class DeltaTime {
      * Constructor.
      */
     public DeltaTime() {
-        this.startTimestamp = System.currentTimeMillis();
-        this.lastTimestamp = System.nanoTime() / 1000000;
+        this.startTimestamp = System.nanoTime();
+        this.lastTimestamp = startTimestamp;
     }
 
     /**
@@ -44,7 +44,7 @@ public class DeltaTime {
      * @return Total time elapsed in seconds.
      */
     public float getTotalElapsed() {
-        return (System.currentTimeMillis() - startTimestamp) / 1000f;
+        return (System.nanoTime() - startTimestamp) / 1e9f;
     }
 
     /**
@@ -53,16 +53,19 @@ public class DeltaTime {
      * @return Total time elapsed in milliseconds.
      */
     public float getTotalElapsedMs() {
-        return System.currentTimeMillis() - startTimestamp;
+        return (System.nanoTime() - startTimestamp) / 1e6f;
     }
 
     /**
      * Update elapsed time (calculates delta since last tick).
      */
     public void tick() {
-        long now = System.nanoTime() / 1000000;
-        elapsedMilliseconds = now - lastTimestamp;
-        elapsedSeconds = elapsedMilliseconds / 1000f;
+        // nanosecond precision: in whole milliseconds, a 1.4 ms frame would read as 1 or 2 ms (games jitter at high
+        // frame rates, and frame statistics swing by a factor of two)
+        long now = System.nanoTime();
+        long nanos = now - lastTimestamp;
+        elapsedSeconds = nanos / 1e9f;
+        elapsedMilliseconds = Math.round(nanos / 1e6);
         lastTimestamp = now;
     }
 

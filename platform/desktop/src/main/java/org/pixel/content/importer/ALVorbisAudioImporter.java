@@ -78,6 +78,7 @@ public class ALVorbisAudioImporter implements ContentImporter<Sound> {
         int bufferPointer = alGenBuffers();
 
         // send the sound data to OpenAl:
+        long bytes = (long) rawAudioBuffer.remaining() * Short.BYTES;
         alBufferData(bufferPointer, format, rawAudioBuffer, sampleRate);
 
         // free stb allocated memory
@@ -87,6 +88,6 @@ public class ALVorbisAudioImporter implements ContentImporter<Sound> {
         int sourcePointer = alGenSources();
         alSourcei(sourcePointer, AL_BUFFER, bufferPointer);
 
-        return new ALSound(sourcePointer, bufferPointer);
+        return new ALSound(sourcePointer, bufferPointer, bytes);
     }
 }

@@ -33,7 +33,10 @@ import java.util.Arrays;
 public final class Canvas {
 
     private static final Logger log = LoggerFactory.getLogger(Canvas.class);
-    private static final float AA_MARGIN = 2f; // quad margin around shapes for the anti-aliased edge (pixels)
+    // quad margin around shapes for the anti-aliased edge (pixels): coverage fades out half a pixel past the edge, so
+    // one pixel is enough (a larger margin only adds overdraw)
+    private static final float AA_MARGIN = 1f;
+    private static final float FRINGE = 1f; // width of path fill fringes (pixels)
 
     private final DrawList list;
     private final Affine transform = new Affine();
@@ -409,7 +412,7 @@ public final class Canvas {
 
     /** Width of path anti-aliasing fringes: one pixel in the finest view. */
     private float fringeWidth() {
-        return AA_MARGIN * 0.5f / pixelScale(false);
+        return FRINGE / pixelScale(false);
     }
 
     private void addShapeQuad(ShapeType type, float cx, float cy, float ux, float uy, float ex, float ey,
@@ -435,12 +438,21 @@ public final class Canvas {
      * @param <T> The concrete builder (for fluent chaining).
      */
     abstract static class Command<T extends Command<T>> {
+        float depthValue;
         Material material;
         boolean hasMaterialData;
         float data0, data1, data2, data3;
         int pickId;
 
         abstract void commit();
+
+        /**
+         * Depth (only meaningful in a sorted layer: lower depths are drawn first).
+         */
+        public T depth(float depth) {
+            depthValue = depth;
+            return self();
+        }
 
         /**
          * Make this command pickable: after the frame is rendered, {@code pipeline.lastFrame().pick(layer, x, y)}
@@ -505,7 +517,6 @@ public final class Canvas {
         int strokeRgba;
         float strokeWidth;
         StrokeAlign strokeAlign;
-        float depthValue;
         // gradient
         float paintType;
         float gx0, gy0, gx1, gy1, gRadius;
@@ -630,13 +641,6 @@ public final class Canvas {
             return self();
         }
 
-        /**
-         * Depth (only meaningful in a sorted layer).
-         */
-        public T depth(float depth) {
-            depthValue = depth;
-            return self();
-        }
 
         boolean isVisible() {
             return (fillRgba >>> 24) != 0 || (paintType != StyleTable.PAINT_SOLID && (gradientEndRgba >>> 24) != 0)
@@ -679,18 +683,9 @@ public final class Canvas {
                 r[StyleTable.DASH_GAP] = dashGap;
                 r[StyleTable.DASH_PHASE] = dashPhase;
             }
-            r[StyleTable.PAINT_TYPE] = paintType;
-            if (paintType != StyleTable.PAINT_SOLID) {
-                r[StyleTable.GRADIENT_GEOMETRY] = localX(gx0 - cx, gy0 - cy, ux, uy);
-                r[StyleTable.GRADIENT_GEOMETRY + 1] = localY(gx0 - cx, gy0 - cy, ux, uy);
-                if (paintType == StyleTable.PAINT_LINEAR) {
-                    r[StyleTable.GRADIENT_GEOMETRY + 2] = localX(gx1 - cx, gy1 - cy, ux, uy);
-                    r[StyleTable.GRADIENT_GEOMETRY + 3] = localY(gx1 - cx, gy1 - cy, ux, uy);
-                } else {
-                    r[StyleTable.GRADIENT_GEOMETRY + 2] = gRadius;
-                }
-                unpack(gradientEndRgba, r, StyleTable.GRADIENT_END_COLOR);
-            }
+            writePaint(r, paintType, localX(gx0 - cx, gy0 - cy, ux, uy), localY(gx0 - cx, gy0 - cy, ux, uy),
+                    localX(gx1 - cx, gy1 - cy, ux, uy), localY(gx1 - cx, gy1 - cy, ux, uy), gRadius,
+                    gradientEndRgba); // in the shape's local frame
             if (hasShadow) {
                 unpack(shadowRgba, r, StyleTable.SHADOW_COLOR);
                 r[StyleTable.SHADOW_OFFSET_X] = localX(shadowX, shadowY, ux, uy);
@@ -703,6 +698,31 @@ public final class Canvas {
     }
 
     private final float[] styleRecord = new float[StyleTable.FLOATS];
+
+    /**
+     * Write the paint into a style record: its type and, for gradients, their geometry (linear: from (x0, y0) to (x1,
+     * y1); radial: center (x0, y0) and radius) and end color.
+     */
+    private static void writePaint(float[] r, float type, float x0, float y0, float x1, float y1, float radius,
+                                   int endRgba) {
+        r[StyleTable.PAINT_TYPE] = type;
+        if (type == StyleTable.PAINT_SOLID) {
+            return;
+        }
+        r[StyleTable.GRADIENT_GEOMETRY] = x0;
+        r[StyleTable.GRADIENT_GEOMETRY + 1] = y0;
+        if (type == StyleTable.PAINT_LINEAR) {
+            r[StyleTable.GRADIENT_GEOMETRY + 2] = x1;
+            r[StyleTable.GRADIENT_GEOMETRY + 3] = y1;
+        } else {
+            r[StyleTable.GRADIENT_GEOMETRY + 2] = radius;
+        }
+        unpack(endRgba, r, StyleTable.GRADIENT_END_COLOR);
+    }
+
+    private static boolean finite(float a, float b, float c, float d) {
+        return Float.isFinite(a) && Float.isFinite(b) && Float.isFinite(c) && Float.isFinite(d);
+    }
 
     private static float localX(float dx, float dy, float ux, float uy) {
         return dx * ux + dy * uy;
@@ -755,8 +775,8 @@ public final class Canvas {
 
         @Override
         void commit() {
-            if (width == 0f || height == 0f || !isVisible()) {
-                return;
+            if (width == 0f || height == 0f || !finite(x, y, width, height) || !isVisible()) {
+                return; // empty, or not a number (nothing sensible to draw)
             }
             float pad = outsideExtent() + aaMargin();
             float hw = width * 0.5f, hh = height * 0.5f;
@@ -800,7 +820,7 @@ public final class Canvas {
 
         @Override
         void commit() {
-            if (rx == 0f || ry == 0f || !isVisible()) {
+            if (rx == 0f || ry == 0f || !finite(cx, cy, rx, ry) || !isVisible()) {
                 return;
             }
             float pad = outsideExtent() + aaMargin();
@@ -863,7 +883,7 @@ public final class Canvas {
 
         @Override
         void commit() {
-            if (width == 0f || !isVisible()) {
+            if (width == 0f || !finite(x1, y1, x2, y2) || !Float.isFinite(width) || !isVisible()) {
                 return;
             }
             float dx = x2 - x1, dy = y2 - y1;
@@ -890,7 +910,6 @@ public final class Canvas {
         private float srcX, srcY, srcWidth, srcHeight;
         private boolean hasSource;
         private int tintRgba;
-        private float depthValue;
 
         void reset(Texture texture, float x, float y) {
             this.texture = texture;
@@ -952,13 +971,6 @@ public final class Canvas {
             return this;
         }
 
-        /**
-         * Depth (only meaningful in a sorted layer).
-         */
-        public Image depth(float depth) {
-            depthValue = depth;
-            return this;
-        }
 
         @Override
         void commit() {
@@ -1097,7 +1109,6 @@ public final class Canvas {
         private LineJoin join;
         private LineCap cap;
         private float miterLimit;
-        private float depthValue;
 
         void reset() {
             pointCount = 0;
@@ -1214,6 +1225,9 @@ public final class Canvas {
         }
 
         private void addPoint(float x, float y, boolean first) {
+            if (!Float.isFinite(x) || !Float.isFinite(y)) {
+                return; // not a number: dropped (it would poison the whole path's geometry)
+            }
             if (!first && pointCount > subStart[subCount - 1] && lastX() == x && lastY() == y) {
                 return; // skip zero-length segments
             }
@@ -1346,16 +1360,7 @@ public final class Canvas {
             }
             float[] r = styleRecord;
             java.util.Arrays.fill(r, 0f);
-            r[StyleTable.PAINT_TYPE] = paintType;
-            r[StyleTable.GRADIENT_GEOMETRY] = gx0;
-            r[StyleTable.GRADIENT_GEOMETRY + 1] = gy0;
-            if (paintType == StyleTable.PAINT_LINEAR) {
-                r[StyleTable.GRADIENT_GEOMETRY + 2] = gx1;
-                r[StyleTable.GRADIENT_GEOMETRY + 3] = gy1;
-            } else {
-                r[StyleTable.GRADIENT_GEOMETRY + 2] = gRadius;
-            }
-            unpack(gradientEndRgba, r, StyleTable.GRADIENT_END_COLOR);
+            writePaint(r, paintType, gx0, gy0, gx1, gy1, gRadius, gradientEndRgba); // in path coordinates
             return list.styles().intern(r);
         }
 
@@ -1401,6 +1406,9 @@ public final class Canvas {
         private void strokeSubPath(int start, int end, boolean closed, float aa) {
             int count = end - start;
             if (count < 2) {
+                if (count == 1 && cap == LineCap.ROUND) { // a zero-length stroke: a dot, like line() draws
+                    roundDot(points[start * 2], points[start * 2 + 1], strokeWidth * 0.5f);
+                }
                 return;
             }
             float[] p = points;
@@ -1442,11 +1450,22 @@ public final class Canvas {
             if (Math.abs(cross) < 1e-4f && u1x * u2x + u1y * u2y > 0) {
                 return; // straight continuation
             }
+            float side = cross > 0 ? -1f : 1f; // outer side of the turn
+            float cosTurn = u1x * u2x + u1y * u2y; // cos of the turn angle
+            float cosHalfTurn = (float) Math.sqrt(Math.max(0f, (1f + cosTurn) * 0.5f));
+            if (cosHalfTurn > 1e-4f && w * (1f / cosHalfTurn - 1f) < tolerance()) {
+                // a slight turn (e.g. along a flattened curve): every join type looks the same; a bevel (triangle and
+                // its anti-aliased edge) instead of miter triangles or overlapping round dots
+                float n1x = -u1y * side, n1y = u1x * side, n2x = -u2y * side, n2y = u2x * side;
+                float pax = vx + n1x * w, pay = vy + n1y * w, pbx = vx + n2x * w, pby = vy + n2y * w;
+                fillTriangle(vx, vy, pax, pay, pbx, pby, strokeRgba, 0, depthValue);
+                edgeFringe(pax, pay, pbx, pby, vx, vy, aa);
+                return;
+            }
             if (join == LineJoin.ROUND) {
                 roundDot(vx, vy, w);
                 return;
             }
-            float side = cross > 0 ? -1f : 1f; // outer side of the turn
             float n1x = -u1y * side, n1y = u1x * side; // outward normals
             float n2x = -u2y * side, n2y = u2x * side;
             float pax = vx + n1x * w, pay = vy + n1y * w; // outer corner of the incoming segment
@@ -1496,7 +1515,6 @@ public final class Canvas {
         private float x, y, width, height;
         private float left, top, right, bottom;
         private int tintRgba;
-        private float depthValue;
         private final float[] xs = new float[4], ys = new float[4], us = new float[4], vs = new float[4];
 
         void reset(Texture texture, float x, float y, float width, float height) {
@@ -1723,20 +1741,25 @@ public final class Canvas {
             TextLayout l = prepared;
             font = null; // don't keep these reachable after the command is committed
             prepared = null;
+            if (!isVisible()) {
+                return; // nothing to draw: no layout either
+            }
+            boolean preparedLayout = l != null;
             if (l == null) {
                 l = textLayout.reset().maxWidth(maxWidth).wrap(wrap).maxLines(maxLines).ellipsis(ellipsis)
                         .align(align).letterSpacing(letterSpacing).lineSpacing(lineSpacing)
                         .layout(f, chars, size);
             }
             float textSize = l.size();
-            if (!isVisible() || l.glyphCount() == 0 || textSize <= 0f) {
+            if (l.glyphCount() == 0 || !(textSize > 0f)) {
                 return;
             }
             float range = f.distanceRange(textSize);
             // distances reach half the range beyond the edge; minus half an atlas pixel, since pre-baked atlases
             // inset glyph quads by that much
             float w = clampEffects(Math.max(0f, f.getDistanceRange() - 1f) * 0.5f * textSize / f.getGlyphSize());
-            float left = x - l.boxWidth() * align.factor();
+            // a prepared layout keeps its own alignment (the builder's layout settings don't apply to it)
+            float left = x - l.boxWidth() * (preparedLayout ? l.alignment() : align).factor();
             float top = y - switch (baseline) {
                 case TOP -> 0f;
                 case MIDDLE -> l.height() * 0.5f;
@@ -1748,7 +1771,8 @@ public final class Canvas {
             if (hasShadow) {
                 emitGlyphs(f, l, left + shadowX, top + shadowY, 2f, range, w, trueDistance, styleId);
             }
-            if (hasStroke) {
+            if (hasStroke && strokeAlign.outsideExtent(strokeWidth) > 0f) {
+                // the outline layer draws outside the glyph edge only: nothing to draw for an inside outline
                 emitGlyphs(f, l, left, top, 1f, range, w, trueDistance, styleId);
             }
             // the fill layer also draws the stroke on and inside the glyph edge, so it is needed with a stroke too
@@ -1817,18 +1841,7 @@ public final class Canvas {
                 r[StyleTable.STROKE_WIDTH] = clampedStroke;
                 r[StyleTable.STROKE_OFFSET] = strokeAlign.offset(clampedStroke);
             }
-            r[StyleTable.PAINT_TYPE] = paintType;
-            if (paintType != StyleTable.PAINT_SOLID) { // gradients in canvas coordinates
-                r[StyleTable.GRADIENT_GEOMETRY] = gx0;
-                r[StyleTable.GRADIENT_GEOMETRY + 1] = gy0;
-                if (paintType == StyleTable.PAINT_LINEAR) {
-                    r[StyleTable.GRADIENT_GEOMETRY + 2] = gx1;
-                    r[StyleTable.GRADIENT_GEOMETRY + 3] = gy1;
-                } else {
-                    r[StyleTable.GRADIENT_GEOMETRY + 2] = gRadius;
-                }
-                unpack(gradientEndRgba, r, StyleTable.GRADIENT_END_COLOR);
-            }
+            writePaint(r, paintType, gx0, gy0, gx1, gy1, gRadius, gradientEndRgba); // in canvas coordinates
             if (hasShadow) {
                 unpack(shadowRgba, r, StyleTable.SHADOW_COLOR);
                 r[StyleTable.SHADOW_OFFSET_X] = shadowX; // applied to the quads; kept so styles stay distinct

@@ -227,7 +227,7 @@ class DrawListSpriteBatchTest {
                 batch.draw(textures[i % 3], position, i % 2 == 0 ? null : source, Color.WHITE, anchor, 1, 1,
                         i * 0.01f, i % 7);
             }
-            batch.drawText(font, "ab ab ab ab", position, Color.WHITE);
+            batch.drawText(font, "ab ab ab ab é", position, Color.WHITE); // é: glyph lookups beyond ASCII too
             batch.end();
         };
         for (int i = 0; i < 30; i++) {

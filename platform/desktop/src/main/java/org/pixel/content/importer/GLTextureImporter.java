@@ -1,5 +1,8 @@
 package org.pixel.content.importer;
 
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_BINDING_2D;
+import static org.lwjgl.opengl.GL11C.glGetInteger;
+
 import org.pixel.graphics.opengl.LwjglGLApi;
 import static org.lwjgl.BufferUtils.createByteBuffer;
 import static org.lwjgl.opengl.GL11C.*;
@@ -46,12 +49,17 @@ public class GLTextureImporter implements ContentImporter<Texture> {
             int wrapT = GL_REPEAT;
             int minFilter = GL_NEAREST;
             int magFilter = GL_NEAREST;
+            boolean premultiply = true;
 
             if (ctx.getSettings() instanceof TextureImporterSettings settings) {
                 wrapS = settings.getWrapSMode();
                 wrapT = settings.getWrapTMode();
                 minFilter = settings.getMinFilterMode();
                 magFilter = settings.getMagFilterMode();
+                premultiply = settings.isPremultiplyAlpha();
+            }
+            if (premultiply) {
+                GLTexture.premultiply(imageData); // no fringes with smooth filtering
             }
 
             // create and setup texture
@@ -59,6 +67,7 @@ public class GLTextureImporter implements ContentImporter<Texture> {
             int width = w.get();
             int height = h.get();
 
+            int previous = glGetInteger(GL_TEXTURE_BINDING_2D); // the renderer caches unit bindings: restore it
             glBindTexture(GL_TEXTURE_2D, textureId);
 
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
@@ -67,10 +76,10 @@ public class GLTextureImporter implements ContentImporter<Texture> {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
 
-            glBindTexture(GL_TEXTURE_2D, 0); // unbind
+            glBindTexture(GL_TEXTURE_2D, previous);
             free(imageData);
 
-            return new GLTexture(LwjglGLApi.INSTANCE, textureId, width, height);
+            return new GLTexture(LwjglGLApi.INSTANCE, textureId, width, height, premultiply);
 
         } catch (Exception e) {
             log.error("Exception caught!", e);

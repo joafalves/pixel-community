@@ -72,6 +72,7 @@ public final class RenderPipeline implements Disposable {
     private final float[] bounds = new float[4];
     private final ShaderEffect copy = new ShaderEffect("vec4 effect(vec2 uv) {\n    return texture(uSource, uv);\n}\n");
     private final FrameInfo frameInfo;
+    private final int[] screen; // screen size, updated by render()
     private int frame;
     private boolean rendering;
     private boolean disposed;
@@ -83,6 +84,7 @@ public final class RenderPipeline implements Disposable {
         this.passes = builder.passes.toArray(new Pass[0]);
         this.effects = builder.effects.toArray(new PostEffect[0]);
         this.renderData = new RenderData(backend.capabilities().maxTextureSlots());
+        this.screen = builder.screen;
 
         List<FrameInfo.PassStats> passStats = new ArrayList<>();
         List<FrameInfo.LayerStats> layerStats = new ArrayList<>();
@@ -159,6 +161,8 @@ public final class RenderPipeline implements Disposable {
         frameInfo.begin(frame);
         try {
             int screenWidth = backend.getScreenWidth(), screenHeight = backend.getScreenHeight();
+            screen[0] = screenWidth; // what target views measure pixels against until the next render()
+            screen[1] = screenHeight;
             for (TargetState target : targets) {
                 if (target.screenScale > 0f) {
                     target.target.resize(Builder.scaled(screenWidth, target.screenScale),
@@ -309,6 +313,13 @@ public final class RenderPipeline implements Disposable {
         throw new IllegalArgumentException("No pass of this pipeline draws " + layer + ".");
     }
 
+    /**
+     * @return Whether {@link #dispose()} was called.
+     */
+    public boolean isDisposed() {
+        return disposed;
+    }
+
     private void checkActive() {
         if (disposed) {
             throw new IllegalStateException("Render pipeline has been disposed.");
@@ -322,6 +333,9 @@ public final class RenderPipeline implements Disposable {
     public void dispose() {
         if (disposed) {
             return;
+        }
+        if (rendering) {
+            throw new IllegalStateException("A pipeline can't be disposed while it renders (e.g. from a custom pass).");
         }
         disposed = true;
         frameInfo.begin(0); // no references to the last frame's materials
@@ -400,12 +414,12 @@ public final class RenderPipeline implements Disposable {
     private static final class TargetView implements View {
         private final View view;
         private final TargetState target;
-        private final RenderBackend backend;
+        private final int[] screen; // the pipeline's screen size, measured once per render()
 
-        TargetView(View view, TargetState target, RenderBackend backend) {
+        TargetView(View view, TargetState target, int[] screen) {
             this.view = view;
             this.target = target;
-            this.backend = backend;
+            this.screen = screen;
         }
 
         @Override
@@ -416,12 +430,11 @@ public final class RenderPipeline implements Disposable {
         @Override
         public float getPixelsPerUnit() {
             float[][] m = view.getViewMatrix().toUnsafeArray(); // clip units per layer unit, per axis
-            float width = target.screenScale > 0f ? backend.getScreenWidth() * target.screenScale
-                    : target.target.getWidth();
-            float height = target.screenScale > 0f ? backend.getScreenHeight() * target.screenScale
-                    : target.target.getHeight();
-            float sx = (float) Math.hypot(m[0][0], m[0][1]) * width * 0.5f;
-            float sy = (float) Math.hypot(m[1][0], m[1][1]) * height * 0.5f;
+            float width = target.screenScale > 0f ? screen[0] * target.screenScale : target.target.getWidth();
+            float height = target.screenScale > 0f ? screen[1] * target.screenScale : target.target.getHeight();
+            // sqrt rather than Math.hypot (which guards against overflow at many times the cost): asked per command
+            float sx = (float) Math.sqrt(m[0][0] * m[0][0] + m[0][1] * m[0][1]) * width * 0.5f;
+            float sy = (float) Math.sqrt(m[1][0] * m[1][0] + m[1][1] * m[1][1]) * height * 0.5f;
             return Math.min(sx, sy);
         }
     }
@@ -497,9 +510,13 @@ public final class RenderPipeline implements Disposable {
         private final List<TargetState> targets = new ArrayList<>();
         private final List<Pass> passes = new ArrayList<>();
         private final List<PostEffect> effects = new ArrayList<>();
+        // screen size shared with the target views (canvases ask them for every command: no GPU query each time)
+        private final int[] screen = new int[2];
 
         private Builder(RenderBackend backend) {
             this.backend = backend;
+            screen[0] = backend.getScreenWidth();
+            screen[1] = backend.getScreenHeight();
         }
 
         /**
@@ -507,6 +524,7 @@ public final class RenderPipeline implements Disposable {
          * scene), owned by the pipeline.
          */
         public RenderTarget screenTarget(float scale) {
+            checkNotBuilt();
             if (!(scale > 0f)) {
                 throw new IllegalArgumentException("Scale must be positive.");
             }
@@ -520,6 +538,7 @@ public final class RenderPipeline implements Disposable {
          * A fixed-size target owned by the pipeline (e.g. a minimap).
          */
         public RenderTarget target(int width, int height) {
+            checkNotBuilt();
             RenderTarget target = backend.createTarget(width, height);
             targets.add(new TargetState(target, true, 0f));
             return target;
@@ -540,13 +559,14 @@ public final class RenderPipeline implements Disposable {
          * cleared the first time a pass draws into it in a frame.
          */
         public Builder pass(View view, RenderTarget target, Layer... layers) {
+            checkNotBuilt();
             if (view == null || layers == null || layers.length == 0) {
                 throw new IllegalArgumentException("A pass needs a view and at least one layer.");
             }
             Pass pass = new Pass(Kind.LAYERS);
             pass.view = view;
             pass.target = target != null ? stateFor(target) : null;
-            View scaled = target != null ? new TargetView(view, pass.target, backend) : view; // the target's pixels
+            View scaled = target != null ? new TargetView(view, pass.target, screen) : view; // the target's pixels
             pass.layers = new LayerState[layers.length];
             for (int i = 0; i < layers.length; i++) {
                 if (layers[i] == null) {
@@ -575,6 +595,7 @@ public final class RenderPipeline implements Disposable {
          * screen).
          */
         public Builder post(RenderTarget source, RenderTarget destination, PostEffect... effects) {
+            checkNotBuilt();
             if (source == null) {
                 throw new IllegalArgumentException("A post pass needs a source target.");
             }
@@ -602,6 +623,7 @@ public final class RenderPipeline implements Disposable {
          * Run custom code with direct backend access at this point of the frame.
          */
         public Builder custom(CustomPass custom) {
+            checkNotBuilt();
             if (custom == null) {
                 throw new IllegalArgumentException("Custom pass cannot be null.");
             }
@@ -612,13 +634,23 @@ public final class RenderPipeline implements Disposable {
         }
 
         public RenderPipeline build() {
+            checkNotBuilt();
             if (passes.isEmpty()) {
                 throw new IllegalStateException("A pipeline needs at least one pass.");
             }
             for (LayerState state : layers) {
                 state.canvas.setViews(state.views.toArray(new View[0]));
             }
+            built = true; // the pipeline owns the builder's layers, canvases and targets from now on
             return new RenderPipeline(this);
+        }
+
+        private boolean built;
+
+        private void checkNotBuilt() {
+            if (built) {
+                throw new IllegalStateException("This builder already built its pipeline: start a new one.");
+            }
         }
 
         private static int scaled(int size, float scale) {

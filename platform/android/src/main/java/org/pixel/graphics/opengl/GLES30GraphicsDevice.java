@@ -48,6 +48,7 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
         this.state = State.INITIALIZING;
 
         this.setEGLContextClientVersion(3); // Setting OpenGL ES 3.0 as the rendering context.
+        this.setEGLConfigChooser(8, 8, 8, 8, 0, 0); // RGBA8, no depth or stencil buffer: 2D needs neither
         // keep GPU resources when the activity pauses (devices may still drop the context; see the Android notes)
         this.setPreserveEGLContextOnPause(true);
         this.setRenderer(new GLSurfaceView.Renderer() {
@@ -125,7 +126,7 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
     public void clear() {
         // set every time: render passes clearing targets change the GL clear color
         GLES30.glClearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
-        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT); // 2D: no depth or stencil buffer
     }
 
     @Override
@@ -172,8 +173,6 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
         // Enable blending for transparent pixels.
         GLES30.glEnable(GLES30.GL_BLEND);
         GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
-
-        // Stencil test settings (if you use stencil operations).
-        GLES30.glEnable(GLES30.GL_STENCIL_TEST);
     }
+
 }

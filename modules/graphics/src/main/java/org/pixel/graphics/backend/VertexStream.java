@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 /**
- * CPU-side vertex data of one pass, ready to be uploaded by the backend.
+ * CPU-side vertex data of one layer in a pass, ready to be uploaded by the backend.
  * <p>
  * Backed by a direct, native-order buffer that grows (doubling) but never shrinks, so steady-state frames don't
  * allocate. Quads are written as 4 vertices (top-left, top-right, bottom-right, bottom-left); the backend draws them
@@ -62,13 +62,16 @@ public final class VertexStream {
      * @param vertices The number of additional vertices.
      */
     public void reserve(int vertices) {
-        int needed = buffer.position() + vertices * layout.stride();
+        long needed = buffer.position() + (long) vertices * layout.stride();
         if (needed > buffer.capacity()) {
-            int capacity = buffer.capacity();
+            long capacity = buffer.capacity();
             while (capacity < needed) {
                 capacity *= 2;
             }
-            ByteBuffer grown = ByteBuffer.allocateDirect(capacity).order(ByteOrder.nativeOrder());
+            if (capacity > Integer.MAX_VALUE) {
+                throw new IllegalStateException("Vertex stream over 2 GB (" + needed + " bytes needed).");
+            }
+            ByteBuffer grown = ByteBuffer.allocateDirect((int) capacity).order(ByteOrder.nativeOrder());
             buffer.flip();
             grown.put(buffer);
             buffer = grown;
@@ -86,13 +89,17 @@ public final class VertexStream {
      * @param slot Texture slot of the batch (0..255).
      */
     public void putSpriteVertex(float x, float y, float u, float v, int rgba, int slot) {
-        // (layout is checked by the batcher, which owns one stream per layout)
-        buffer.putFloat(x);
-        buffer.putFloat(y);
-        buffer.putFloat(u);
-        buffer.putFloat(v);
-        buffer.putInt(LITTLE_ENDIAN ? rgba : Integer.reverseBytes(rgba));
-        buffer.putInt(LITTLE_ENDIAN ? (slot & 0xFF) : (slot & 0xFF) << 24);
+        // (layout is checked by the batcher, which owns one stream per layout). Absolute puts and one position update
+        // per vertex: measurably faster than relative puts, which check and move the position on every value.
+        ByteBuffer b = buffer;
+        int p = b.position();
+        b.putFloat(p, x);
+        b.putFloat(p + 4, y);
+        b.putFloat(p + 8, u);
+        b.putFloat(p + 12, v);
+        b.putInt(p + 16, LITTLE_ENDIAN ? rgba : Integer.reverseBytes(rgba));
+        b.putInt(p + 20, LITTLE_ENDIAN ? (slot & 0xFF) : (slot & 0xFF) << 24);
+        b.position(p + 24);
         vertexCount++;
     }
 
@@ -117,22 +124,25 @@ public final class VertexStream {
      */
     public void putFullVertex(float x, float y, float u, float v, int rgba, float localX, float localY,
                               float p0, float p1, float p2, float p3, int shapeType, int slot, int clip, int style) {
-        buffer.putFloat(x);
-        buffer.putFloat(y);
-        buffer.putFloat(u);
-        buffer.putFloat(v);
-        buffer.putInt(LITTLE_ENDIAN ? rgba : Integer.reverseBytes(rgba));
-        buffer.putFloat(localX);
-        buffer.putFloat(localY);
-        buffer.putFloat(p0);
-        buffer.putFloat(p1);
-        buffer.putFloat(p2);
-        buffer.putFloat(p3);
-        buffer.put((byte) shapeType);
-        buffer.put((byte) slot);
-        buffer.putShort((short) clip);
-        buffer.putShort((short) style);
-        buffer.putShort((short) 0);
+        ByteBuffer b = buffer;
+        int p = b.position();
+        b.putFloat(p, x);
+        b.putFloat(p + 4, y);
+        b.putFloat(p + 8, u);
+        b.putFloat(p + 12, v);
+        b.putInt(p + 16, LITTLE_ENDIAN ? rgba : Integer.reverseBytes(rgba));
+        b.putFloat(p + 20, localX);
+        b.putFloat(p + 24, localY);
+        b.putFloat(p + 28, p0);
+        b.putFloat(p + 32, p1);
+        b.putFloat(p + 36, p2);
+        b.putFloat(p + 40, p3);
+        b.put(p + 44, (byte) shapeType);
+        b.put(p + 45, (byte) slot);
+        b.putShort(p + 46, (short) clip);
+        b.putShort(p + 48, (short) style);
+        b.putShort(p + 50, (short) 0);
+        b.position(p + 52);
         vertexCount++;
     }
 

@@ -11,6 +11,7 @@ import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.core.Camera2D;
 import org.pixel.core.GameApp;
+import org.pixel.core.GameSettings;
 import org.pixel.input.keyboard.Keyboard;
 import org.pixel.input.keyboard.KeyboardKey;
 import org.pixel.math.Vector2;
@@ -20,6 +21,15 @@ public abstract class DemoGame extends GameApp {
     protected final static Logger log = LoggerFactory.getLogger(DemoGame.class);
 
     protected Camera2D gameCamera;
+
+    /**
+     * Demo settings: dev mode on and the engine's dev tools open from the start (F1 hides them).
+     */
+    protected static <S extends GameSettings> S withDevTools(S settings) {
+        settings.setDevMode(true);
+        settings.setDevToolsVisible(true);
+        return settings;
+    }
 
     private final Timer debugTimer = new Timer(1000);
 

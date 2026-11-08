@@ -24,8 +24,10 @@ public class GLTexture extends Texture {
     }
 
     /**
-     * @param premultiplied Whether the pixels hold premultiplied colors (render targets); the renderer then
-     *                      un-premultiplies when sampling, so the texture blends like any other.
+     * @param premultiplied Whether the pixels hold premultiplied colors (images as imported, render targets). The
+     *                      renderer works in premultiplied colors: it uses such texels as they are, and premultiplies
+     *                      the others (e.g. font atlases, whose channels are distances) when it samples them as
+     *                      colors.
      */
     public GLTexture(GLApi gl, int id, int width, int height, boolean premultiplied) {
         super(width, height);
@@ -35,6 +37,25 @@ public class GLTexture extends Texture {
         this.gl = gl;
         this.id = id;
         this.premultiplied = premultiplied;
+    }
+
+    /**
+     * Premultiply RGBA8 pixels in place ({@code rgb *= a}), so linear filtering never mixes in the color of
+     * transparent texels (no dark or bright fringes around smoothly scaled sprites).
+     *
+     * @param rgba The pixels, from position to limit.
+     */
+    public static void premultiply(java.nio.ByteBuffer rgba) {
+        for (int i = rgba.position(), end = rgba.limit() - 3; i < end; i += 4) {
+            int a = rgba.get(i + 3) & 0xFF;
+            if (a == 255) {
+                continue;
+            }
+            for (int c = 0; c < 3; c++) {
+                int v = rgba.get(i + c) & 0xFF;
+                rgba.put(i + c, (byte) ((v * a + 127) / 255));
+            }
+        }
     }
 
     /**

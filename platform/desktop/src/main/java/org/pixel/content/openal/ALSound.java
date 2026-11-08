@@ -9,6 +9,7 @@ public class ALSound extends Sound {
 
     private final int sourcePointer;
     private final int bufferPointer;
+    private final long memorySize;
     private boolean disposed;
 
     /**
@@ -18,8 +19,21 @@ public class ALSound extends Sound {
      * @param bufferPointer The buffer holding the audio data, owned (and released) by this sound; 0 if none.
      */
     public ALSound(int sourcePointer, int bufferPointer) {
+        this(sourcePointer, bufferPointer, 0);
+    }
+
+    /**
+     * @param memorySize Bytes of audio data in the buffer.
+     */
+    public ALSound(int sourcePointer, int bufferPointer, long memorySize) {
         this.sourcePointer = sourcePointer;
         this.bufferPointer = bufferPointer;
+        this.memorySize = memorySize;
+    }
+
+    @Override
+    public long getMemorySize() {
+        return memorySize;
     }
 
     @Override

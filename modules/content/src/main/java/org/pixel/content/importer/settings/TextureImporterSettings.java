@@ -20,4 +20,10 @@ public class TextureImporterSettings implements ContentImporterSettings {
     private int wrapTMode;
     private int minFilterMode;
     private int magFilterMode;
+    /**
+     * Store colors premultiplied by alpha (the default): smooth filtering then has no fringes. Turn it off for data
+     * textures whose channels aren't colors (e.g. distance-field font atlases).
+     */
+    @Builder.Default
+    private boolean premultiplyAlpha = true;
 }

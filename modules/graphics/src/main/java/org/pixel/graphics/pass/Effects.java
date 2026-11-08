@@ -29,7 +29,7 @@ public final class Effects {
 
     /** Multiply by a color (alpha included). */
     public static Tint tint(Color color) {
-        return new Tint().setColor(color);
+        return new Tint().setColor(color != null ? color : Color.WHITE);
     }
 
     /** Square blocks of {@code size} source pixels. */
@@ -205,8 +205,8 @@ public final class Effects {
     }
 
     /**
-     * Bloom in four passes at half resolution: keep pixels above the threshold, blur them horizontally and
-     * vertically (a 9-tap Gaussian, twice), then add the result to the source.
+     * Bloom in six draws: keep pixels above the threshold (at half resolution), blur them horizontally and vertically
+     * (a 9-tap Gaussian, twice: four draws), then add the result to the source (full resolution).
      */
     public static final class Bloom extends PostEffect {
         private final ShaderEffect bright = new ShaderEffect("""

@@ -47,6 +47,7 @@ public class CanvasShapesDemo extends DemoGame {
         super.load();
         gameCamera.setOrigin(Vector2.zero());
         pipeline = RenderPipeline.builder(graphics().getRenderBackend()).pass(gameCamera, MAIN).build();
+        devTools().track(pipeline, "canvas"); // its passes and layers in the dev tools' Render tab
         content = content();
         earth = content.load("images/earth-48x48.png", Texture.class);
     }
@@ -144,6 +145,6 @@ public class CanvasShapesDemo extends DemoGame {
         settings.setMultisampling(0); // anti-aliasing comes from the distance fields, not MSAA
         settings.setVsync(true);
         settings.setBackgroundColor(new Color(0.08f, 0.09f, 0.12f, 1f));
-        DesktopLauncher.run(new CanvasShapesDemo(), settings);
+        DesktopLauncher.run(new CanvasShapesDemo(), withDevTools(settings));
     }
 }

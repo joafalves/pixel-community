@@ -1,5 +1,12 @@
 package org.pixel.core;
 
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.system.MemoryStack;
+import org.pixel.core.dev.DevTools;
+import org.pixel.input.keyboard.Keyboard;
+import org.pixel.input.keyboard.KeyboardKey;
+import org.pixel.input.mouse.Mouse;
+import org.pixel.input.mouse.MouseButton;
 import org.pixel.commons.DeltaTime;
 import org.pixel.commons.lifecycle.State;
 import org.pixel.commons.logger.Logger;
@@ -9,6 +16,7 @@ import org.pixel.graphics.GraphicsDevice;
 import java.util.concurrent.locks.LockSupport;
 
 import static org.lwjgl.glfw.GLFW.glfwGetTime;
+import java.nio.IntBuffer;
 
 /**
  * Host base for windowed platforms: owns the window manager and the game loop.
@@ -141,5 +149,40 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
             drawFrame(delta);
             this.windowManager.endFrame();
         }
+    }
+
+    /**
+     * Dev tools input: the mouse and F1 to show or hide them.
+     */
+    @Override
+    protected void updateDevToolsInput(DevTools devTools) {
+        if (!devTools.isAvailable()) {
+            return;
+        }
+        if (Keyboard.isKeyPressed(KeyboardKey.F1)) {
+            devTools.requestToggle();
+        }
+        if (!devTools.isVisible()) {
+            devTools.pointer(-1f, -1f, false); // hidden: only the key matters (no window queries)
+            return;
+        }
+        // The window size is in framebuffer pixels and the mouse in screen coordinates: their ratio maps the mouse
+        // (2 on a Retina display, 1 on Windows/Linux). The OS content scale (2 on Retina, 1.5 at 150% on Windows) keeps
+        // the dev tools the same physical size everywhere.
+        float ratio = 1f, contentScale = 1f;
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer width = stack.mallocInt(1), height = stack.mallocInt(1);
+            long handle = windowManager.getWindowHandle();
+            GLFW.glfwGetWindowSize(handle, width, height);
+            if (width.get(0) > 0) {
+                ratio = window().getWidth() / (float) width.get(0);
+            }
+            java.nio.FloatBuffer scaleX = stack.mallocFloat(1), scaleY = stack.mallocFloat(1);
+            GLFW.glfwGetWindowContentScale(handle, scaleX, scaleY);
+            contentScale = scaleX.get(0) > 0f ? scaleX.get(0) : ratio;
+        }
+        devTools.setScale(contentScale);
+        devTools.pointer(Mouse.getX() * ratio, Mouse.getY() * ratio, Mouse.isMouseButtonDown(MouseButton.LEFT));
+        devTools.scroll(Mouse.getScrollY());
     }
 }

@@ -166,8 +166,9 @@ public class GLFWWindowManager extends DesktopWindowManager {
 
     @Override
     public void endFrame() {
-        // Clear single-frame mapped keys
+        // Clear single-frame mapped keys and the frame's scrolling (events of the next frame are polled below)
         Keyboard.clear();
+        Mouse.clearScroll();
 
         // NOTE: The following code, MUST be at the end of the render cycle:
         // Swap buffers and poll events
@@ -386,6 +387,8 @@ public class GLFWWindowManager extends DesktopWindowManager {
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the windowHnd will stay hidden after creation
         glfwWindowHint(GLFW_RESIZABLE, this.windowSettings.isWindowResizable() ? GLFW_TRUE : GLFW_FALSE);
         glfwWindowHint(GLFW_SAMPLES, this.windowSettings.getMultisampling());
+        glfwWindowHint(GLFW_DEPTH_BITS, 0);   // 2D: no depth or stencil buffer (less memory and bandwidth)
+        glfwWindowHint(GLFW_STENCIL_BITS, 0);
         glfwWindowHint(GLFW_SCALE_TO_MONITOR, this.windowSettings.isWindowHighDpi() ? GLFW_TRUE : GLFW_FALSE);
         glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, this.windowSettings.isWindowHighDpi() ? GLFW_TRUE : GLFW_FALSE);
 
@@ -516,6 +519,7 @@ public class GLFWWindowManager extends DesktopWindowManager {
         glfwSetCharCallback(windowHandle, new Keyboard.KeyboardCharacterHandler());
         glfwSetCursorPosCallback(windowHandle, new Mouse.CursorPositionHandler());
         glfwSetMouseButtonCallback(windowHandle, new Mouse.MouseButtonHandler());
+        glfwSetScrollCallback(windowHandle, new Mouse.ScrollHandler());
 
         // Framebuffer resize callback (in pixels). Unlike the window-size callback, this also fires when the
         // window moves between monitors with a different DPI scale.

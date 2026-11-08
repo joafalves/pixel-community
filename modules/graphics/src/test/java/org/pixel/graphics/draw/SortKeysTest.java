@@ -24,8 +24,7 @@ class SortKeysTest {
 
     @Test
     void keyOrdersByDepthThenSequence() {
-        assertTrue(SortKeys.depthThenSequence(-1f, 900) < SortKeys.depthThenSequence(0f, 1));
-        assertTrue(SortKeys.depthThenSequence(3f, 1) < SortKeys.depthThenSequence(3f, 2));
-        assertEquals(42, SortKeys.sequence(SortKeys.depthThenSequence(-7.5f, 42)));
+        assertTrue(SortKeys.orderedDepth(-1f) < SortKeys.orderedDepth(0f));
+        assertTrue(SortKeys.orderedDepth(3f) < SortKeys.orderedDepth(3.0001f));
     }
 }

@@ -2,6 +2,7 @@ package org.pixel.core;
 
 import org.pixel.audio.AudioPlayer;
 import org.pixel.content.ContentManager;
+import org.pixel.core.dev.DevTools;
 import org.pixel.graphics.GraphicsDevice;
 
 /**
@@ -40,6 +41,12 @@ public interface GameContext {
      * @return The game settings.
      */
     GameSettings settings();
+
+    /**
+     * @return The in-game dev tools (frame times, rendering statistics, assets, log, and the game's own watches and
+     * switches). Always present; it shows only when available ({@code GameSettings.setDevToolsMode}).
+     */
+    DevTools devTools();
 
     /**
      * Request the game to exit: the current frame finishes, then the game is disposed.

@@ -20,11 +20,18 @@ final class GLRenderTarget implements RenderTarget {
     private TargetTexture texture;
     private boolean disposed;
     private int generation; // context generation the GL objects belong to
+    private final java.util.function.IntSupplier currentGeneration; // the backend's
 
-    GLRenderTarget(GLApi gl, int width, int height, int generation) {
+    GLRenderTarget(GLApi gl, int width, int height, int generation, java.util.function.IntSupplier currentGeneration) {
         this.gl = gl;
         this.generation = generation;
+        this.currentGeneration = currentGeneration;
         allocate(width, height);
+    }
+
+    /** Whether the GL names belong to a context that was lost (then they must never be deleted: they may be reused). */
+    private boolean stale() {
+        return generation != currentGeneration.getAsInt();
     }
 
     /**
@@ -93,11 +100,14 @@ final class GLRenderTarget implements RenderTarget {
     @Override
     public void resize(int width, int height) {
         checkActive();
-        if (width == getWidth() && height == getHeight()) {
+        if (stale()) { // a new context: allocate there, at the new size (the old names died with their context)
+            generation = currentGeneration.getAsInt();
+        } else if (width == getWidth() && height == getHeight()) {
             return;
+        } else {
+            gl.deleteFramebuffer(framebuffer);
+            gl.deleteTexture(texture.getId());
         }
-        gl.deleteFramebuffer(framebuffer);
-        gl.deleteTexture(texture.getId());
         try {
             allocate(width, height);
         } catch (RuntimeException e) {
@@ -130,8 +140,10 @@ final class GLRenderTarget implements RenderTarget {
     public void dispose() {
         if (!disposed) {
             disposed = true;
-            gl.deleteFramebuffer(framebuffer);
-            gl.deleteTexture(texture.getId());
+            if (!stale()) {
+                gl.deleteFramebuffer(framebuffer);
+                gl.deleteTexture(texture.getId());
+            }
         }
     }
 

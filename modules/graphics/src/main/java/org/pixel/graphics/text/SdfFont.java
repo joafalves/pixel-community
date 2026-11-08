@@ -15,7 +15,7 @@ import java.util.Arrays;
  * <p>
  * Lookups are allocation-free. Metrics are in em: multiply by the font size in pixels.
  */
-public class SdfFont implements Disposable {
+public class SdfFont implements Disposable, org.pixel.content.SizedAsset {
 
     private static final int ASCII = 128;
 
@@ -231,28 +231,52 @@ public class SdfFont implements Disposable {
     }
 
     /**
-     * Width of a single line of text at {@code size} (kerning included, no line breaks).
+     * Width of text at {@code size}: the widest line (kerning included), with the same rules as {@link TextLayout}
+     * ({@code \n} starts a line, {@code \r} is ignored, a tab is four spaces). No wrapping.
      */
     public float measure(CharSequence text, float size) {
-        float width = 0f;
+        return measure(text, size, 0f);
+    }
+
+    /**
+     * Width of text at {@code size} with extra space between characters (see {@link #measure(CharSequence, float)}).
+     */
+    public float measure(CharSequence text, float size, float letterSpacing) {
+        float widest = 0f, pen = 0f, lineWidth = 0f;
         int previous = -1;
         for (int i = 0; i < text.length(); ) {
             int cp = Character.codePointAt(text, i);
             i += Character.charCount(cp);
-            int g = glyphOrFallback(cp);
+            if (cp == '\n') {
+                widest = Math.max(widest, lineWidth);
+                pen = 0f;
+                lineWidth = 0f;
+                previous = -1;
+                continue;
+            }
+            if (cp == '\r') {
+                continue;
+            }
+            boolean tab = cp == '\t';
+            int g = glyphOrFallback(tab ? ' ' : cp);
             if (g < 0) {
                 continue;
             }
-            if (previous >= 0) {
-                width += kerning(previous, cp) * size;
-            }
-            width += advances[g] * size;
+            float x = pen + (previous >= 0 ? kerning(previous, cp) * size : 0f);
+            lineWidth = x + advances[g] * size * (tab ? 4 : 1);
+            pen = lineWidth + letterSpacing;
             previous = cp;
         }
-        return width;
+        return Math.max(widest, lineWidth);
     }
 
     // endregion
+
+    /** @return The atlas and the glyph and kerning tables. */
+    @Override
+    public long getMemorySize() {
+        return atlas.getMemorySize() + glyphCount() * 48L;
+    }
 
     @Override
     public void dispose() {

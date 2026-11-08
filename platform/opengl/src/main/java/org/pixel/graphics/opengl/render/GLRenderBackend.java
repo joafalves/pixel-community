@@ -73,9 +73,12 @@ public final class GLRenderBackend implements RenderBackend {
     private ProgramState currentProgram;
     private int passSerial;
     private GLRenderTarget passTarget;           // target of the current pass (null = screen)
-    private final int[] savedViewport = new int[4];
-    private final int[] viewport = new int[4];
-    private int savedFramebuffer;
+    private boolean targetBound;                 // a render target is bound (pass or post draw)
+    // the screen's viewport and framebuffer, queried once per frame: GL queries stall the CPU until the GPU catches
+    // up (badly on Android), and canvases, pipelines and passes ask for the screen size all the time
+    private final int[] screen = new int[4];
+    private int screenFramebuffer;
+    private long screenFrame = Long.MIN_VALUE;
     private int generation; // bumped when the context is recreated
     private long drawCallCount;
 
@@ -104,6 +107,8 @@ public final class GLRenderBackend implements RenderBackend {
     private void createGlObjects() {
         int slots = capabilities.maxTextureSlots();
         whiteTexture = createWhiteTexture();
+        clipCapacity = 0;
+        styleCapacity = 0;
 
         ebo = gl.genBuffer();
         spritePipeline = new LayoutPipeline(VertexLayout.SPRITE, new GLSpriteProgram(gl, slots), slots, ebo);
@@ -131,6 +136,8 @@ public final class GLRenderBackend implements RenderBackend {
         current = null;
         currentProgram = null;
         passTarget = null;
+        targetBound = false;
+        screenFrame = Long.MIN_VALUE;
         generation++; // targets and effects made before rebuild themselves on next use
         createGlObjects(); // the old names died with their context: nothing to delete
     }
@@ -156,6 +163,7 @@ public final class GLRenderBackend implements RenderBackend {
         if (inPass) {
             throw new IllegalStateException("beginPass() called twice without endPass().");
         }
+        refreshScreen();
         RenderTarget target = passState.getTarget();
         passTarget = target != null ? glTarget(target) : null;
         inPass = true;
@@ -189,12 +197,29 @@ public final class GLRenderBackend implements RenderBackend {
             default -> gl.blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         }
 
-        // Other renderers may have changed texture bindings since the last pass: forget what we think is bound, and
-        // make sure every unit the programs sample has a valid texture (some drivers, e.g. macOS, complain otherwise).
+        // Custom passes may have changed texture bindings since the last pass: forget what we think is bound (the
+        // units still hold valid textures, see refreshScreen()).
         Arrays.fill(boundTextures, -1);
-        for (int unit = 0; unit < boundTextures.length; unit++) {
-            bindTexture(unit, whiteTexture);
+    }
+
+    /**
+     * Once per frame (and after a lost context): query the screen's viewport and framebuffer, and give every texture
+     * unit a valid texture (some drivers, e.g. macOS, complain about samplers on empty units). Not counted as binds.
+     */
+    private void refreshScreen() {
+        long frame = stats.lastFrame().getFrameNumber();
+        if (frame == screenFrame || targetBound) {
+            return;
         }
+        screenFrame = frame;
+        gl.getIntegerv(GL_VIEWPORT, screen);
+        screenFramebuffer = gl.getInteger(GL_FRAMEBUFFER_BINDING);
+        for (int unit = 0; unit < boundTextures.length; unit++) {
+            gl.activeTexture(GL_TEXTURE0 + unit);
+            gl.bindTexture(GL_TEXTURE_2D, whiteTexture);
+            boundTextures[unit] = whiteTexture;
+        }
+        gl.activeTexture(GL_TEXTURE0);
     }
 
     @Override
@@ -243,6 +268,9 @@ public final class GLRenderBackend implements RenderBackend {
             int premultiplied = 0;
             for (int slot = 0, t = batches.textureCount(b); slot < t; slot++) {
                 Texture texture = batches.texture(b, slot);
+                if (texture == null) {
+                    continue; // a hole (sticky slots): nothing samples it
+                }
                 bindTexture(slot, textureId(texture));
                 if (texture instanceof GLTexture glTexture && glTexture.isPremultiplied()) {
                     premultiplied |= 1 << slot;
@@ -278,7 +306,7 @@ public final class GLRenderBackend implements RenderBackend {
         current = null;
         currentProgram = null;
 
-        // restore the shared defaults other renderers rely on
+        // leave the GL defaults other GL code (custom passes) expects
         gl.bindVertexArray(0);
         gl.bindBuffer(GL_ARRAY_BUFFER, 0);
         gl.bindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -289,6 +317,34 @@ public final class GLRenderBackend implements RenderBackend {
             restoreFramebuffer();
             passTarget = null;
         }
+    }
+
+    @Override
+    public Texture createTexture(int width, int height, ByteBuffer pixels, boolean smooth) {
+        checkActive();
+        if (width <= 0 || height <= 0) {
+            throw new IllegalArgumentException("Texture size must be positive: " + width + "x" + height);
+        }
+        int bytes = width * height * 4;
+        if (pixels == null || pixels.remaining() < bytes) {
+            throw new IllegalArgumentException("Expected " + bytes + " bytes of RGBA8 pixels.");
+        }
+        ByteBuffer data = pixels.slice().limit(bytes);
+        if (!data.isDirect()) {
+            data = ByteBuffer.allocateDirect(bytes).order(ByteOrder.nativeOrder()).put(data).flip();
+        }
+        int previous = gl.getInteger(GL_TEXTURE_BINDING_2D);
+        int id = gl.genTexture();
+        gl.bindTexture(GL_TEXTURE_2D, id);
+        gl.texImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        int filter = smooth ? GL_LINEAR : GL_NEAREST;
+        gl.texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+        gl.texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+        gl.texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        gl.texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        gl.bindTexture(GL_TEXTURE_2D, previous);
+        Arrays.fill(boundTextures, -1); // the active unit's binding was touched
+        return new GLTexture(gl, id, width, height);
     }
 
     // region materials
@@ -329,7 +385,7 @@ public final class GLRenderBackend implements RenderBackend {
     @Override
     public RenderTarget createTarget(int width, int height) {
         checkActive();
-        return new GLRenderTarget(gl, width, height, generation);
+        return new GLRenderTarget(gl, width, height, generation, this::getContextGeneration);
     }
 
     @Override
@@ -343,11 +399,8 @@ public final class GLRenderBackend implements RenderBackend {
     }
 
     private int[] screenViewport() {
-        if (passTarget != null) {
-            return savedViewport;
-        }
-        gl.getIntegerv(GL_VIEWPORT, viewport);
-        return viewport;
+        refreshScreen();
+        return screen;
     }
 
     @Override
@@ -365,12 +418,17 @@ public final class GLRenderBackend implements RenderBackend {
         if (!(program instanceof GLPostProgram post)) {
             throw new IllegalArgumentException("Not a post program of this backend.");
         }
+        refreshScreen();
         GLRenderTarget target = destination != null ? glTarget(destination) : null;
         int width, height;
         if (target != null) {
             bindTarget(target);
             width = target.getWidth();
             height = target.getHeight();
+            if (!blend) {
+                // replaced entirely: say so, or tile-based (mobile) GPUs load the old contents first
+                gl.clear(GL_COLOR_BUFFER_BIT);
+            }
         } else {
             int[] screen = screenViewport();
             width = screen[2];
@@ -418,7 +476,11 @@ public final class GLRenderBackend implements RenderBackend {
         gl.useProgram(0);
         gl.enable(GL_BLEND);
         gl.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        Arrays.fill(boundTextures, -1); // units 0..3 changed
+        for (int i = 0; i < PostParams.MAX_INPUTS; i++) {
+            if (params.input(i) != null) {
+                boundTextures[i] = textureId(params.input(i)); // what units 0..3 hold now
+            }
+        }
         if (target != null) {
             restoreFramebuffer();
         }
@@ -433,10 +495,10 @@ public final class GLRenderBackend implements RenderBackend {
         GLRenderTarget glTarget = glTarget(target);
         int width = glTarget.getWidth(), height = glTarget.getHeight();
         ByteBuffer pixels = ByteBuffer.allocateDirect(width * height * 4).order(ByteOrder.nativeOrder());
-        int previous = gl.getInteger(GL_FRAMEBUFFER_BINDING);
+        refreshScreen();
         gl.bindFramebuffer(GL_FRAMEBUFFER, glTarget.framebuffer());
         gl.readPixels(0, 0, width, height, pixels); // targets store rows top-down: already in image order
-        gl.bindFramebuffer(GL_FRAMEBUFFER, previous);
+        gl.bindFramebuffer(GL_FRAMEBUFFER, screenFramebuffer);
         byte[] out = new byte[width * height * 4];
         pixels.get(out);
         return out;
@@ -451,15 +513,16 @@ public final class GLRenderBackend implements RenderBackend {
     }
 
     private void bindTarget(GLRenderTarget target) {
-        savedFramebuffer = gl.getInteger(GL_FRAMEBUFFER_BINDING);
-        gl.getIntegerv(GL_VIEWPORT, savedViewport);
         gl.bindFramebuffer(GL_FRAMEBUFFER, target.framebuffer());
         gl.viewport(0, 0, target.getWidth(), target.getHeight());
+        targetBound = true;
     }
 
+    /** Back to the screen (its framebuffer and viewport as queried this frame). */
     private void restoreFramebuffer() {
-        gl.bindFramebuffer(GL_FRAMEBUFFER, savedFramebuffer);
-        gl.viewport(savedViewport[0], savedViewport[1], savedViewport[2], savedViewport[3]);
+        gl.bindFramebuffer(GL_FRAMEBUFFER, screenFramebuffer);
+        gl.viewport(screen[0], screen[1], screen[2], screen[3]);
+        targetBound = false;
     }
 
     // endregion
@@ -495,10 +558,27 @@ public final class GLRenderBackend implements RenderBackend {
         uploadTable(styleUbo, batches.styleData(), batches.styleDataSize(), styleBlockBytes);
     }
 
+    private long clipCapacity, styleCapacity; // bytes allocated for the uniform buffers
+
     private void uploadTable(int ubo, float[] data, int floats, int blockBytes) {
         gl.bindBuffer(GL_UNIFORM_BUFFER, ubo);
-        // orphan, sized so that binding a full block at the last batch offset stays inside the buffer
-        gl.bufferData(GL_UNIFORM_BUFFER, (long) floats * Float.BYTES + blockBytes, GL_STREAM_DRAW);
+        // sized so that binding a full block at the last batch offset stays inside the buffer; storage grows
+        // geometrically and is orphaned at the same size (no reallocation for sizes that change every frame)
+        long needed = (long) floats * Float.BYTES + blockBytes;
+        boolean clips = ubo == clipUbo;
+        long capacity = clips ? clipCapacity : styleCapacity;
+        if (floats == 0 && capacity >= needed) {
+            return; // nothing to write (e.g. no clips): the bound block is never read
+        }
+        if (needed > capacity) {
+            capacity = Math.max(needed, capacity * 2);
+            if (clips) {
+                clipCapacity = capacity;
+            } else {
+                styleCapacity = capacity;
+            }
+        }
+        gl.bufferData(GL_UNIFORM_BUFFER, capacity, GL_STREAM_DRAW); // orphan: the GPU may still read the old one
         if (floats > 0) {
             if (tableUpload.capacity() < floats) {
                 tableUpload = directFloats(Math.max(floats, tableUpload.capacity() * 2));
@@ -532,26 +612,26 @@ public final class GLRenderBackend implements RenderBackend {
         }
     }
 
-    private void configureSpriteAttributes() {
-        int stride = VertexLayout.SPRITE.stride();
+    /** Position, texture coordinates and color: the first 20 bytes of both layouts. */
+    private void configureCommonAttributes(int stride) {
         gl.enableVertexAttribArray(0);
         gl.vertexAttribPointer(0, 2, GL_FLOAT, false, stride, 0);
         gl.enableVertexAttribArray(1);
         gl.vertexAttribPointer(1, 2, GL_FLOAT, false, stride, 8);
         gl.enableVertexAttribArray(2);
         gl.vertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, true, stride, 16);
+    }
+
+    private void configureSpriteAttributes() {
+        int stride = VertexLayout.SPRITE.stride();
+        configureCommonAttributes(stride);
         gl.enableVertexAttribArray(3);
         gl.vertexAttribIPointer(3, 1, GL_UNSIGNED_BYTE, stride, 20);
     }
 
     private void configureShapeAttributes() {
         int stride = VertexLayout.FULL.stride();
-        gl.enableVertexAttribArray(0);
-        gl.vertexAttribPointer(0, 2, GL_FLOAT, false, stride, 0);
-        gl.enableVertexAttribArray(1);
-        gl.vertexAttribPointer(1, 2, GL_FLOAT, false, stride, 8);
-        gl.enableVertexAttribArray(2);
-        gl.vertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, true, stride, 16);
+        configureCommonAttributes(stride);
         gl.enableVertexAttribArray(3);
         gl.vertexAttribPointer(3, 2, GL_FLOAT, false, stride, 20);
         gl.enableVertexAttribArray(4);
@@ -605,6 +685,7 @@ public final class GLRenderBackend implements RenderBackend {
         private final int vbo;
         int chunkStart = -1;
         private int chunkEnd = -1;
+        private int capacity; // bytes allocated for the vertex buffer
 
         /**
          * Creates the objects and leaves the VAO and VBO bound so the caller can configure attributes.
@@ -644,7 +725,13 @@ public final class GLRenderBackend implements RenderBackend {
             int offset = chunkStart * 4 * stride;
             int bytes = (chunkEnd - chunkStart) * 4 * stride;
             stats.recordUpload(bytes);
-            gl.bufferData(GL_ARRAY_BUFFER, vertices.buffer(), offset, bytes, GL_STREAM_DRAW); // orphans
+            // storage grows geometrically and is orphaned at the same size every time (the driver hands out a fresh
+            // block while the GPU still reads the old one; no reallocation when the size changes a little)
+            if (bytes > capacity) {
+                capacity = Math.max(bytes, Math.max(64 * 1024, capacity * 2));
+            }
+            gl.bufferData(GL_ARRAY_BUFFER, capacity, GL_STREAM_DRAW);
+            gl.bufferSubData(GL_ARRAY_BUFFER, 0, vertices.buffer(), offset, bytes);
         }
 
         void dispose() {
