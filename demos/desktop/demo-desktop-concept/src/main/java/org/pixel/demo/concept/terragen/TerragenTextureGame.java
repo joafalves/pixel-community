@@ -1,5 +1,6 @@
 package org.pixel.demo.concept.terragen;
 
+import org.pixel.graphics.opengl.LwjglGLApi;
 import org.pixel.core.DesktopWindowManager;
 import org.pixel.core.DesktopLauncher;
 import static org.lwjgl.opengl.GL11C.GL_NEAREST;
@@ -70,8 +71,8 @@ public class TerragenTextureGame extends GameApp {
         gameCamera.setOrigin(0);
         fpsCounter = new FpsCounter(context(), "Press R to reset seed");
         seed = ThreadLocalRandom.current().nextLong();
-        colorTexture = new GLTexture(glGenTextures(), SCREEN_WIDTH, SCREEN_HEIGHT);
-        heightMapTexture = new GLTexture(glGenTextures(), SCREEN_WIDTH, SCREEN_HEIGHT);
+        colorTexture = new GLTexture(LwjglGLApi.INSTANCE, glGenTextures(), SCREEN_WIDTH, SCREEN_HEIGHT);
+        heightMapTexture = new GLTexture(LwjglGLApi.INSTANCE, glGenTextures(), SCREEN_WIDTH, SCREEN_HEIGHT);
 
         graphics().setClearColor(Color.BLACK);
 

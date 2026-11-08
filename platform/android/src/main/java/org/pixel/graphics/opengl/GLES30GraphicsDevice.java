@@ -10,8 +10,12 @@ import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
 import org.pixel.core.AndroidGameHost;
 import org.pixel.graphics.backend.RenderBackend;
-import org.pixel.graphics.render.GLES30SpriteBatch;
+import org.pixel.graphics.opengl.render.GLRenderBackend;
+import org.pixel.graphics.render.DrawListSpriteBatch;
 import org.pixel.graphics.render.SpriteBatch;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import org.pixel.graphics.GraphicsDevice;
 import org.pixel.graphics.RenderStats;
 
@@ -22,6 +26,7 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
     private static final Logger log = LoggerFactory.getLogger(GLES30GraphicsDevice.class);
 
     private final AndroidGameHost host;
+    private GLRenderBackend renderBackend;
 
     private State state;
 
@@ -42,6 +47,8 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
         this.state = State.INITIALIZING;
 
         this.setEGLContextClientVersion(3); // Setting OpenGL ES 3.0 as the rendering context.
+        // keep GPU resources when the activity pauses (devices may still drop the context; see the Android notes)
+        this.setPreserveEGLContextOnPause(true);
         this.setRenderer(new GLSurfaceView.Renderer() {
             private final DeltaTime delta = new DeltaTime();
 
@@ -50,8 +57,16 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
                 initGLESCapabilities();
                 setClearColor(host.settings().getBackgroundColor());
 
-                // Log the OpenGL ES version.
-                log.debug("OpenGL ES Version: {0}.", GLES30.glGetString(GLES30.GL_VERSION));
+                log.debug("OpenGL ES: {0} ({1}).", GLES30.glGetString(GLES30.GL_VERSION),
+                        GLES30.glGetString(GLES30.GL_RENDERER));
+                if (renderBackend == null) { // URP v2 backend, shared with desktop through GLApi
+                    renderBackend = new GLRenderBackend(AndroidGLApi.INSTANCE, stats);
+                } else {
+                    // called again = a new EGL context: the old one (and every GL object in it) is gone
+                    renderBackend.contextRecreated();
+                    log.error("The OpenGL ES context was recreated: the renderer was restored, but textures and "
+                            + "font atlases loaded before are invalid until content reloading is implemented.");
+                }
 
                 host.onSurfaceCreated(); // loads the game the first time
             }
@@ -82,12 +97,15 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
 
     @Override
     public RenderBackend getRenderBackend() {
-        throw new UnsupportedOperationException("The URP v2 render backend is not implemented for OpenGL ES yet.");
+        if (renderBackend == null) {
+            throw new IllegalStateException("The render backend is created with the GL surface (available from load()).");
+        }
+        return renderBackend;
     }
 
     @Override
     public SpriteBatch createSpriteBatch() {
-        GLES30SpriteBatch spriteBatch = new GLES30SpriteBatch(getContext());
+        SpriteBatch spriteBatch = new DrawListSpriteBatch(getRenderBackend());
         spriteBatch.init();
         return spriteBatch;
     }
@@ -114,11 +132,26 @@ public class GLES30GraphicsDevice extends GLSurfaceView implements GraphicsDevic
 
     @Override
     public byte[] readPixels(int x, int y, int width, int height, boolean opaque) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        // (x, y) in framebuffer pixels with the OpenGL origin (bottom-left); rows are returned bottom-up
+        ByteBuffer pixels = ByteBuffer.allocateDirect(width * height * 4).order(ByteOrder.nativeOrder());
+        GLES30.glPixelStorei(GLES30.GL_PACK_ALIGNMENT, 1);
+        GLES30.glReadPixels(x, y, width, height, GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, pixels);
+        byte[] data = new byte[width * height * 4];
+        pixels.get(data);
+        if (opaque) {
+            for (int i = 3; i < data.length; i += 4) {
+                data[i] = (byte) 255;
+            }
+        }
+        return data;
     }
 
     @Override
     public void dispose() {
+        if (renderBackend != null) {
+            renderBackend.dispose(); // GL thread (the host disposes from there)
+            renderBackend = null;
+        }
         this.state = State.DISPOSED;
     }
 

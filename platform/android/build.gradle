@@ -1,35 +1,31 @@
+/*
+ * This software is available under Apache License
+ * Copyright (c) 2020
+ */
+// Only part of the build when pixel.android is enabled (see settings.gradle).
 buildscript {
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        // Only resolved when the Android build is enabled in settings.gradle.
-        // NOTE: Gradle 9 requires a recent AGP; bump this when re-enabling Android.
-        classpath 'com.android.tools.build:gradle:8.9.2'
+        classpath "com.android.tools.build:gradle:${androidGradlePluginVersion}"
     }
 }
 
 apply plugin: 'com.android.library'
 
 android {
-    namespace "org.pixel.android"
+    namespace "org.pixel.platform.android"
+    compileSdk Integer.parseInt(androidCompileSdk)
 
     defaultConfig {
-        compileSdk 34
-        minSdk 30
-
-        versionCode 1
-        versionName rootProject.version
-
-        consumerProguardFiles 'consumer-rules.pro'
+        minSdk Integer.parseInt(androidMinSdk)
     }
 
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 }
 
@@ -38,6 +34,5 @@ dependencies {
     api project(":${rootProject.name}-content")
     api project(":${rootProject.name}-graphics")
     api project(":${rootProject.name}-core")
+    api project(":${rootProject.name}-opengl")
 }
-
-// TODO: add publishing configuration here

@@ -6,31 +6,31 @@
 // main project settings:
 rootProject.name = "pixel"
 
-// functions:
-def getAndroidSdkPath() {
-    if (System.getenv("ANDROID_HOME") != null) {
-        return System.getenv("ANDROID_HOME");
-    }
-
-    def localProperties = new File(rootDir, "local.properties")
-    if (localProperties.exists()) {
-        def properties = new Properties()
-        localProperties.withInputStream { stream ->
-            properties.load(stream)
-        }
-
-        if (properties.getProperty("sdk.dir")) {
-            return properties.getProperty("sdk.dir");
-        }
-    }
-
-    return null;
+// Android (optional, off by default): set pixel.android=true to build the Android platform and demos.
+// Checked in order: -Ppixel.android=true (command line or gradle.properties), pixel.android=true in local.properties
+// (per developer, not committed), the PIXEL_ANDROID environment variable. The SDK comes from sdk.dir in
+// local.properties (Android Studio writes it) or ANDROID_HOME.
+def localProperties = new Properties()
+def localPropertiesFile = new File(rootDir, "local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { localProperties.load(it) }
 }
 
-// vars:
-var enableAndroidBuild = false
-var androidSdk = getAndroidSdkPath()
-print("Android SDK: " + androidSdk)
+def androidSetting = providers.gradleProperty("pixel.android").getOrNull()
+        ?: localProperties.getProperty("pixel.android")
+        ?: System.getenv("PIXEL_ANDROID")
+def enableAndroidBuild = androidSetting?.trim()?.toBoolean() ?: false
+def androidSdk = localProperties.getProperty("sdk.dir") ?: System.getenv("ANDROID_HOME")
+
+if (enableAndroidBuild) {
+    if (androidSdk == null || !new File(androidSdk).isDirectory()) {
+        throw new GradleException("pixel.android is enabled but no Android SDK was found: set sdk.dir in "
+                + "local.properties or ANDROID_HOME (found: " + androidSdk + ").")
+    }
+    println("Android build: enabled (SDK: " + androidSdk + ")")
+} else {
+    println("Android build: disabled (enable with -Ppixel.android=true or pixel.android=true in local.properties)")
+}
 
 // modules:
 include "modules/commons",
@@ -41,8 +41,9 @@ include "modules/commons",
         "modules/pipeline"
 
 // platform modules:
+include "platform/opengl"
 include "platform/desktop"
-if (enableAndroidBuild && androidSdk != null) {
+if (enableAndroidBuild) {
     include "platform/android"
 }
 
@@ -65,7 +66,7 @@ if (System.properties["PIXEL_RELEASE"] == null) {
             "demos/desktop/demo-desktop-imgui"
 
     // android:
-    if (enableAndroidBuild && androidSdk != null) {
+    if (enableAndroidBuild) {
         include "demos/android/demo-android-learning"
     }
 }

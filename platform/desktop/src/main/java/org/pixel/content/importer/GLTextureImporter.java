@@ -1,5 +1,6 @@
 package org.pixel.content.importer;
 
+import org.pixel.graphics.opengl.LwjglGLApi;
 import static org.lwjgl.BufferUtils.createByteBuffer;
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.stb.STBImage.stbi_failure_reason;
@@ -69,7 +70,7 @@ public class GLTextureImporter implements ContentImporter<Texture> {
             glBindTexture(GL_TEXTURE_2D, 0); // unbind
             free(imageData);
 
-            return new GLTexture(textureId, width, height);
+            return new GLTexture(LwjglGLApi.INSTANCE, textureId, width, height);
 
         } catch (Exception e) {
             log.error("Exception caught!", e);

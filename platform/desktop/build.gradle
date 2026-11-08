@@ -17,6 +17,7 @@ dependencies {
     api project(":${rootProject.name}-content")
     api project(":${rootProject.name}-graphics")
     api project(":${rootProject.name}-core")
+    api project(":${rootProject.name}-opengl")
 
     api "org.lwjgl:lwjgl:${rootProject.ext.dependencyMap["lwjgl"]}"
     api "org.lwjgl:lwjgl-glfw:${rootProject.ext.dependencyMap["lwjgl"]}"

@@ -94,7 +94,7 @@ public class GLGraphicsDevice implements GraphicsDevice {
         }
 
         // URP v2 render backend (needs the GL context created above)
-        this.renderBackend = new GLRenderBackend(stats);
+        this.renderBackend = new GLRenderBackend(LwjglGLApi.INSTANCE, stats);
 
         // Set base clear color:
         setClearColor(windowSettings.getBackgroundColor());

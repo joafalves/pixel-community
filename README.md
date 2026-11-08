@@ -90,8 +90,9 @@ The framework functionality is divided into multiple modules which can be import
         ├── math                    # Math module (Vector, Matrix, ...)
         └── pipeline                # Generic Pipeline processing module
     .platform/
-        ├── android                 # Android platform implementation (OpenGL ES)
-        └── desktop                 # Desktop platform implementation (LWJGL3)
+        ├── android                 # Android platform implementation (OpenGL ES 3.0)
+        ├── desktop                 # Desktop platform implementation (LWJGL3, OpenGL 3.3)
+        └── opengl                  # Renderer shared by desktop and Android (through GLApi)
     .resources/
         └── images                  # Project resource images
     .build.gradle                   # Gradle build file
@@ -128,7 +129,25 @@ For desktop, the same support as the [LWJGL](https://www.lwjgl.org/) dependency,
 
 > Requires OpenGL 3.3+ support.
 
-There is also an Android platform implementation available (OpenGL ES) - **Experimental**.
+There is also an Android platform implementation available (OpenGL ES 3.0, Android 11 / API 30+) - **Experimental**.
+It uses the same renderer as desktop. Audio and touch input are not implemented on Android yet.
+
+#### Building for Android ####
+
+The Android modules are optional and off by default, so an installed Android SDK does not slow down or break
+desktop builds. To include them, set `pixel.android=true` in one of:
+
+- the command line: `./gradlew -Ppixel.android=true ...`
+- `local.properties` (per developer, not committed): `pixel.android=true`
+- the `PIXEL_ANDROID` environment variable
+
+The SDK is taken from `sdk.dir` in `local.properties` (Android Studio writes it) or `ANDROID_HOME`; with
+`pixel.android=true` and no SDK, the build stops with an error. To build, install and start the demo on a
+connected device or a running emulator (add `-Pscreenshot=build/android.png` to save the screen):
+
+```bash
+./gradlew -Ppixel.android=true :pixel-demo-android-learning:androidRun
+```
 
 ### FAQ ###
 

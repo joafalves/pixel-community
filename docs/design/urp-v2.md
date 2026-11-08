@@ -39,9 +39,6 @@ and one batcher at the bottom, with several front-ends on top.
 **Non-goals (for this branch)**
 - GUI framework (Flux/Rune/Weaver successor). It comes later on its own branch and builds on `Canvas`.
 - Editor, game-loop decoupling, scene serialization.
-- *Implementing* the Android/GLES backend. **Mobile is supported by design** (§5.8): everything above the backend is
-  platform-free, and the GL backend and shaders only use what GLES 3.0 also has. Building and testing
-  `GLES30RenderBackend` is the next step after this branch, not a redesign.
 - Vulkan/Metal backends. The backend SPI (§5.7) keeps that door open but nothing is implemented.
 - 3D, lighting, normal maps.
 
@@ -326,8 +323,8 @@ and iOS through ANGLE/MoltenGL if ever needed):
 - **Fonts on mobile:** pre-baked MTSDF atlases (§4.9 source 2), since LWJGL's msdfgen natives are desktop-only.
 - **Texture slots:** capped by `capabilities()`. GLES 3.0 guarantees 16 fragment units.
 
-The existing `platform/android` (`GLES30SpriteBatch`) is not touched in this branch. The follow-up replaces it with a
-`GLES30RenderBackend` that shares the shaders.
+Implemented (see "Platform base: Android" in §8): one `GLRenderBackend` in `platform/opengl` runs on both, through
+`GLApi` (desktop: LWJGL, Android: `GLES30`). The shaders are the same files; only the preamble differs.
 
 ## 6. API sketch
 
@@ -416,7 +413,8 @@ churn around.
 | `platform/desktop` | **New** `org.pixel.graphics.opengl.render`: `GLRenderBackend`, `GLBatchRenderer`, `GLRenderTarget`, `GLMaterialCompiler`, `GLTextureSlots`.<br>**New** shaders in `engine/shader/opengl/urp/` (uber, post effects).<br>**New** `GLSdfFontImporter`: MTSDF generation through `lwjgl-msdfgen` + `lwjgl-freetype` (`MsdfAtlasGenerator`), plus
 pre-baked `msdf-atlas-gen` atlases. **New dependencies:** `org.lwjgl:lwjgl-msdfgen` and `org.lwjgl:lwjgl-freetype`
 (+ natives), same LWJGL version (3.4.3).<br>**Changed:** `GLGraphicsDevice` creates the backend. `GLContentManagerFactory` registers the SDF font importer. The `SpriteBatch` service switches to `DrawListSpriteBatch` after parity.<br>**Deprecated → removed before merge:** `GLSpriteBatch`, `NvgRenderEngine` (and the `lwjgl-nanovg` dependency), the `GL*EffectShader` classes (replaced by effects). |
-| `platform/android` | Untouched and not built. The design stays within GLES 3.0. |
+| `platform/opengl` | **New** (plain Java): `GLApi` (the GL functions the renderer uses), `GLProgram`, `GLTexture`, and the shared `GLRenderBackend` with its programs and shaders. |
+| `platform/android` | Runs the shared backend through `AndroidGLApi` (OpenGL ES 3.0). Optional build: `pixel.android=true`. |
 | `extensions/*` | Unchanged. `ext-ecs` keeps using `SpriteBatch` through the compat path. |
 | `demos` | New `learning/urp/*` demos per phase. The 4 NanoVG-based demos (`RoadCarGame`, `CelestialGravitationGame`, `IsometricGridDemo`, `PrimitivesRenderDemo`) are ported to `Canvas`. A sprite benchmark demo is added. |
 
@@ -583,12 +581,40 @@ Each phase ends green (`./gradlew build`) and is reviewable on its own.
   noise, overlay, pixeler, sepia; none had a user); `GLTextureExporter`, `GLPrimitiveType`; the `Shader` interface
   and `SpriteBatch.getShader()`. Outside graphics: `DataArray` (deprecated for removal), `DataSerializer` (Java
   serialization helper) with its demo, `KeyboardState.downKeys()` and the non-owning `ALSound(int)` constructor.
-- `GLShader` stays as the base of the URP programs (compile, link, uniform lookup).
 - The `renderParity` check is gone with the classic batch it compared against; it did its job as the Phase 1
   gate. Its successor is golden-image render tests on an offscreen `RenderTarget` of fixed size (Phase 3), which
   also makes them independent of the display's pixel ratio. `renderBenchmark` now measures the draw list only.
-- Android (experimental, not compiled) still has its own `GLES30SpriteBatch`; it only lost the `Shader`
-  interface. Its renderer is replaced when the GLES backend for URP v2 is written.
+- Android's own `GLES30SpriteBatch` was replaced right after, by the shared backend (next section).
+
+**Platform base: Android** ✅ (before the pipeline, so Phase 3 is built once for every platform)
+- *Build (M1):* the Android modules are opt-in with `pixel.android=true` (`-P`, `gradle.properties`,
+  `local.properties` or `PIXEL_ANDROID`); off by default, so an installed SDK doesn't affect desktop builds, and
+  enabling it without an SDK is an error instead of a silent skip. Android Gradle Plugin 9.5.1, compile and target
+  SDK 36, min SDK 30; versions live in `gradle.properties`. The demo is plain Java (no Kotlin or AndroidX).
+  `androidRun` builds, installs and starts the demo on a device or emulator, prints the app's warnings and errors,
+  and can save a screenshot.
+- *Shared renderer (M2):* new module `platform/opengl`. `GLApi` holds the ~45 GL functions the renderer uses (the
+  same in OpenGL 3.3 and OpenGL ES 3.0, constants included) and `shaderPreamble()`. `GLRenderBackend`, the sprite
+  and shape programs, `GLProgram` (replaces `GLShader`), `GLTexture` and the GLSL moved there; shader sources load
+  through the class loader on both platforms. `LwjglGLApi` (desktop) uploads by address; `AndroidGLApi` moves the
+  buffer position instead; neither allocates per call.
+- Android: `GLES30GraphicsDevice` creates the backend with the GL surface, `createSpriteBatch()` returns the
+  draw-list batch, `readPixels()` works. The texture importer keeps straight alpha (Android decodes premultiplied
+  by default, which darkened edges) and has the desktop defaults and settings. Removed: `GLES30SpriteBatch`,
+  `GLES30Shader`, `GLES30TextureShader`, the GLES buffer/VAO wrappers, `GLES30Texture` and their shaders.
+- Robustness (from review): 16-bit images (decoded by Android as RGBA_F16) are converted to RGBA8; a recreated GL
+  context rebuilds the backend's GL objects in place (`contextRecreated()`, so batches keep working) and logs that
+  older textures are invalid; the demo activity disposes the game in `onDestroy` and handles density, dark mode
+  and resize itself; `androidRun` checks every adb call, needs one device (or `ANDROID_SERIAL`) and keeps adb's
+  errors out of screenshots.
+- Tests: `GLRenderBackendTest` runs the backend against a recording `GLApi` (no GPU): shader preamble and
+  templates, single upload and indexed draw, chunking beyond 16-bit indices, clip/style table ranges, stats,
+  context recreation, and **0 bytes allocated** for 20 frames of 20,000 sprites plus 500 shapes.
+- Verified: desktop Canvas demos render as before (differences only in their animated regions), and the Android
+  demo (sprites, Canvas shapes, gradients, shadow, path) runs on the API 36.1 emulator with no errors.
+- Verified on the emulator: pause and resume keeps rendering (the context is preserved).
+- Not done yet: reloading textures after a lost context (lifecycle work), touch input, audio, text on Android
+  (pre-baked atlas importer).
 
 **Phase 3.0: game model (prerequisite of the pipeline)** ✅
 - **Blueprint removed.** It was reflection-based DI with classpath scanning at startup (fragile in jars, needs

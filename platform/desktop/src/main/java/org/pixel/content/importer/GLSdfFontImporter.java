@@ -1,5 +1,6 @@
 package org.pixel.content.importer;
 
+import org.pixel.graphics.opengl.LwjglGLApi;
 import org.lwjgl.system.MemoryStack;
 import org.pixel.commons.logger.Logger;
 import org.pixel.commons.logger.LoggerFactory;
@@ -137,7 +138,7 @@ public class GLSdfFontImporter implements ContentImporter<SdfFont> {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glBindTexture(GL_TEXTURE_2D, previous);
         data.pixels(null); // uploaded: let the CPU copy go
-        return new GLTexture(id, data.getAtlasWidth(), data.getAtlasHeight());
+        return new GLTexture(LwjglGLApi.INSTANCE, id, data.getAtlasWidth(), data.getAtlasHeight());
     }
 
     private static String cacheKey(byte[] font, SdfFontSettings settings) {

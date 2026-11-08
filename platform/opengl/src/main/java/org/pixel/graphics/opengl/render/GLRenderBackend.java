@@ -1,7 +1,5 @@
 package org.pixel.graphics.opengl.render;
 
-import org.lwjgl.BufferUtils;
-import org.lwjgl.system.MemoryUtil;
 import org.pixel.commons.lifecycle.State;
 import org.pixel.content.Texture;
 import org.pixel.content.opengl.GLTexture;
@@ -13,25 +11,20 @@ import org.pixel.graphics.backend.RenderBackend;
 import org.pixel.graphics.backend.RenderData;
 import org.pixel.graphics.backend.VertexLayout;
 import org.pixel.graphics.backend.VertexStream;
-import org.pixel.graphics.shader.opengl.GLShader;
+import org.pixel.graphics.opengl.GLApi;
+import org.pixel.graphics.opengl.GLProgram;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.Arrays;
 
-import static org.lwjgl.opengl.GL11C.*;
-import static org.lwjgl.opengl.GL12C.GL_CLAMP_TO_EDGE;
-import static org.lwjgl.opengl.GL13C.GL_TEXTURE0;
-import static org.lwjgl.opengl.GL13C.glActiveTexture;
-import static org.lwjgl.opengl.GL15C.*;
-import static org.lwjgl.opengl.GL20C.*;
-import static org.lwjgl.opengl.GL30C.*;
-import static org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER;
-import static org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT;
+import static org.pixel.graphics.opengl.GLApi.*;
 
 /**
- * OpenGL 3.3 implementation of the URP v2 {@link RenderBackend}.
+ * OpenGL 3.3 / OpenGL ES 3.0 implementation of the URP v2 {@link RenderBackend}, shared by every platform through
+ * {@link GLApi}.
  * <p>
  * Each {@link VertexLayout} has its own program, VAO and vertex buffer. Quads are drawn indexed from one static
  * index buffer ({@code 0,1,2, 2,3,0} per quad, 16-bit indices). Vertices are uploaded in chunks of at most
@@ -51,55 +44,76 @@ public final class GLRenderBackend implements RenderBackend {
     private static final int MAX_CLIPS = 256;   // 4 KB uniform block
     private static final int MAX_STYLES = 128;  // 14 KB uniform block (7 vec4 per style; GLES 3.0 guarantees 16 KB)
 
+    private final GLApi gl;
     private final RenderStats stats;
     private final BackendCapabilities capabilities;
-    private final LayoutPipeline spritePipeline;
-    private final LayoutPipeline shapePipeline;
-    private final int ebo;
-    private final int clipUbo;
-    private final int styleUbo;
+    // GL objects: created with the context, and again by contextRecreated()
+    private LayoutPipeline spritePipeline;
+    private LayoutPipeline shapePipeline;
+    private int ebo;
+    private int clipUbo;
+    private int styleUbo;
     private final int clipBlockBytes = MAX_CLIPS * BatchList.CLIP_FLOATS * Float.BYTES;
     private final int styleBlockBytes = MAX_STYLES * BatchList.STYLE_FLOATS * Float.BYTES;
-    private final int whiteTexture;
+    private int whiteTexture;
     private final int[] boundTextures;
-    private final FloatBuffer matrixBuffer = MemoryUtil.memAllocFloat(16);
-    private FloatBuffer tableUpload = MemoryUtil.memAllocFloat(1024); // staging for clip/style tables
+    private final FloatBuffer matrixBuffer = directFloats(16);
+    private FloatBuffer tableUpload = directFloats(1024); // staging for clip/style tables
 
     private State state = State.INITIALIZED;
     private boolean inPass;
     private LayoutPipeline current;
 
     /**
-     * Constructor (requires a current OpenGL 3.3 context).
+     * Constructor (requires a current OpenGL 3.3 or OpenGL ES 3.0 context).
      *
+     * @param gl    The platform's GL functions.
      * @param stats The device statistics to record GPU work into.
      */
-    public GLRenderBackend(RenderStats stats) {
-        if (stats == null) {
-            throw new IllegalArgumentException("Render stats cannot be null.");
+    public GLRenderBackend(GLApi gl, RenderStats stats) {
+        if (gl == null || stats == null) {
+            throw new IllegalArgumentException("GL functions and render stats cannot be null.");
         }
+        this.gl = gl;
         this.stats = stats;
 
-        int slots = Math.max(1, Math.min(glGetInteger(GL_MAX_TEXTURE_IMAGE_UNITS), MAX_TEXTURE_SLOTS));
-        int alignmentBytes = Math.max(16, glGetInteger(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT));
+        int slots = Math.max(1, Math.min(gl.getInteger(GL_MAX_TEXTURE_IMAGE_UNITS), MAX_TEXTURE_SLOTS));
+        int alignmentBytes = Math.max(16, gl.getInteger(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT));
         int alignmentFloats = (alignmentBytes / Float.BYTES + 3) / 4 * 4; // whole vec4s
         this.capabilities = new BackendCapabilities(slots, MAX_QUADS_PER_BATCH, MAX_CLIPS, MAX_STYLES,
                 alignmentFloats);
         this.boundTextures = new int[slots];
-        this.whiteTexture = createWhiteTexture();
+        createGlObjects();
+    }
 
-        this.ebo = glGenBuffers();
-        this.spritePipeline = new LayoutPipeline(VertexLayout.SPRITE, new GLSpriteProgram(slots), slots, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, createQuadIndices(MAX_QUADS_PER_BATCH), GL_STATIC_DRAW);
+    private void createGlObjects() {
+        int slots = capabilities.maxTextureSlots();
+        whiteTexture = createWhiteTexture();
+
+        ebo = gl.genBuffer();
+        spritePipeline = new LayoutPipeline(VertexLayout.SPRITE, new GLSpriteProgram(gl, slots), slots, ebo);
+        gl.bufferData(GL_ELEMENT_ARRAY_BUFFER, createQuadIndices(MAX_QUADS_PER_BATCH), GL_STATIC_DRAW);
         configureSpriteAttributes();
-        this.shapePipeline = new LayoutPipeline(VertexLayout.FULL, new GLShapeProgram(slots, MAX_CLIPS, MAX_STYLES),
-                slots, ebo);
+        shapePipeline = new LayoutPipeline(VertexLayout.FULL,
+                new GLShapeProgram(gl, slots, MAX_CLIPS, MAX_STYLES), slots, ebo);
         configureShapeAttributes();
-        glBindVertexArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        gl.bindVertexArray(0);
+        gl.bindBuffer(GL_ARRAY_BUFFER, 0);
 
-        this.clipUbo = glGenBuffers();
-        this.styleUbo = glGenBuffers();
+        clipUbo = gl.genBuffer();
+        styleUbo = gl.genBuffer();
+    }
+
+    /**
+     * The GL context was lost and a new one is current (Android can recreate it when the app is paused): every GL
+     * object of the old context is gone, so recreate them. This object, and the batches that use it, stay valid.
+     * Textures created in the old context are <b>not</b> restored here.
+     */
+    public void contextRecreated() {
+        checkActive();
+        inPass = false;
+        current = null;
+        createGlObjects(); // the old names died with their context: nothing to delete
     }
 
     @Override
@@ -122,9 +136,9 @@ public final class GLRenderBackend implements RenderBackend {
         current = null;
 
         switch (passState.getBlendMode()) {
-            case ADDITIVE -> glBlendFunc(GL_ONE, GL_ONE);
-            case MULTIPLY -> glBlendFunc(GL_DST_COLOR, GL_ZERO);
-            default -> glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            case ADDITIVE -> gl.blendFunc(GL_ONE, GL_ONE);
+            case MULTIPLY -> gl.blendFunc(GL_DST_COLOR, GL_ZERO);
+            default -> gl.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         }
 
         // Other renderers may have changed texture bindings since the last pass: forget what we think is bound, and
@@ -167,13 +181,13 @@ public final class GLRenderBackend implements RenderBackend {
                 bindTexture(slot, textureId(batches.texture(b, slot)));
             }
             if (pipeline == shapePipeline) {
-                glBindBufferRange(GL_UNIFORM_BUFFER, GLShapeProgram.CLIP_BINDING, clipUbo,
+                gl.bindBufferRange(GL_UNIFORM_BUFFER, GLShapeProgram.CLIP_BINDING, clipUbo,
                         (long) batches.clipOffset(b) * Float.BYTES, clipBlockBytes);
-                glBindBufferRange(GL_UNIFORM_BUFFER, GLShapeProgram.STYLE_BINDING, styleUbo,
+                gl.bindBufferRange(GL_UNIFORM_BUFFER, GLShapeProgram.STYLE_BINDING, styleUbo,
                         (long) batches.styleOffset(b) * Float.BYTES, styleBlockBytes);
             }
 
-            glDrawElements(GL_TRIANGLES, count * 6, GL_UNSIGNED_SHORT,
+            gl.drawElements(GL_TRIANGLES, count * 6, GL_UNSIGNED_SHORT,
                     (long) (first - pipeline.chunkStart) * 6 * Short.BYTES);
             stats.recordDrawCall(count, count * 4L);
         }
@@ -188,12 +202,12 @@ public final class GLRenderBackend implements RenderBackend {
         current = null;
 
         // restore the shared defaults other renderers rely on
-        glBindVertexArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-        glActiveTexture(GL_TEXTURE0);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glUseProgram(0);
+        gl.bindVertexArray(0);
+        gl.bindBuffer(GL_ARRAY_BUFFER, 0);
+        gl.bindBuffer(GL_UNIFORM_BUFFER, 0);
+        gl.activeTexture(GL_TEXTURE0);
+        gl.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        gl.useProgram(0);
     }
 
     @Override
@@ -204,12 +218,10 @@ public final class GLRenderBackend implements RenderBackend {
         state = State.DISPOSED;
         spritePipeline.dispose();
         shapePipeline.dispose();
-        glDeleteBuffers(ebo);
-        glDeleteBuffers(clipUbo);
-        glDeleteBuffers(styleUbo);
-        glDeleteTextures(whiteTexture);
-        MemoryUtil.memFree(matrixBuffer);
-        MemoryUtil.memFree(tableUpload);
+        gl.deleteBuffer(ebo);
+        gl.deleteBuffer(clipUbo);
+        gl.deleteBuffer(styleUbo);
+        gl.deleteTexture(whiteTexture);
     }
 
     /**
@@ -229,24 +241,24 @@ public final class GLRenderBackend implements RenderBackend {
     }
 
     private void uploadTable(int ubo, float[] data, int floats, int blockBytes) {
-        glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+        gl.bindBuffer(GL_UNIFORM_BUFFER, ubo);
         // orphan, sized so that binding a full block at the last batch offset stays inside the buffer
-        nglBufferData(GL_UNIFORM_BUFFER, (long) floats * Float.BYTES + blockBytes, 0L, GL_STREAM_DRAW);
+        gl.bufferData(GL_UNIFORM_BUFFER, (long) floats * Float.BYTES + blockBytes, GL_STREAM_DRAW);
         if (floats > 0) {
             if (tableUpload.capacity() < floats) {
-                tableUpload = MemoryUtil.memRealloc(tableUpload, Math.max(floats, tableUpload.capacity() * 2));
+                tableUpload = directFloats(Math.max(floats, tableUpload.capacity() * 2));
             }
             tableUpload.clear();
             tableUpload.put(data, 0, floats).flip(); // only the used prefix
-            glBufferSubData(GL_UNIFORM_BUFFER, 0, tableUpload);
+            gl.bufferSubData(GL_UNIFORM_BUFFER, 0, tableUpload);
         }
         stats.recordUpload((long) floats * Float.BYTES);
     }
 
     private void bindTexture(int unit, int textureId) {
         if (boundTextures[unit] != textureId) {
-            glActiveTexture(GL_TEXTURE0 + unit);
-            glBindTexture(GL_TEXTURE_2D, textureId);
+            gl.activeTexture(GL_TEXTURE0 + unit);
+            gl.bindTexture(GL_TEXTURE_2D, textureId);
             boundTextures[unit] = textureId;
             stats.recordTextureBind();
         }
@@ -267,40 +279,45 @@ public final class GLRenderBackend implements RenderBackend {
 
     private void configureSpriteAttributes() {
         int stride = VertexLayout.SPRITE.stride();
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, false, stride, 0);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, false, stride, 8);
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, true, stride, 16);
-        glEnableVertexAttribArray(3);
-        glVertexAttribIPointer(3, 1, GL_UNSIGNED_BYTE, stride, 20);
+        gl.enableVertexAttribArray(0);
+        gl.vertexAttribPointer(0, 2, GL_FLOAT, false, stride, 0);
+        gl.enableVertexAttribArray(1);
+        gl.vertexAttribPointer(1, 2, GL_FLOAT, false, stride, 8);
+        gl.enableVertexAttribArray(2);
+        gl.vertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, true, stride, 16);
+        gl.enableVertexAttribArray(3);
+        gl.vertexAttribIPointer(3, 1, GL_UNSIGNED_BYTE, stride, 20);
     }
 
     private void configureShapeAttributes() {
         int stride = VertexLayout.FULL.stride();
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, false, stride, 0);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, false, stride, 8);
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, true, stride, 16);
-        glEnableVertexAttribArray(3);
-        glVertexAttribPointer(3, 2, GL_FLOAT, false, stride, 20);
-        glEnableVertexAttribArray(4);
-        glVertexAttribPointer(4, 4, GL_FLOAT, false, stride, 28);
-        glEnableVertexAttribArray(5);
-        glVertexAttribIPointer(5, 1, GL_UNSIGNED_BYTE, stride, 44);
-        glEnableVertexAttribArray(6);
-        glVertexAttribIPointer(6, 1, GL_UNSIGNED_BYTE, stride, 45);
-        glEnableVertexAttribArray(7);
-        glVertexAttribIPointer(7, 1, GL_UNSIGNED_SHORT, stride, 46);
-        glEnableVertexAttribArray(8);
-        glVertexAttribIPointer(8, 1, GL_UNSIGNED_SHORT, stride, 48);
+        gl.enableVertexAttribArray(0);
+        gl.vertexAttribPointer(0, 2, GL_FLOAT, false, stride, 0);
+        gl.enableVertexAttribArray(1);
+        gl.vertexAttribPointer(1, 2, GL_FLOAT, false, stride, 8);
+        gl.enableVertexAttribArray(2);
+        gl.vertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, true, stride, 16);
+        gl.enableVertexAttribArray(3);
+        gl.vertexAttribPointer(3, 2, GL_FLOAT, false, stride, 20);
+        gl.enableVertexAttribArray(4);
+        gl.vertexAttribPointer(4, 4, GL_FLOAT, false, stride, 28);
+        gl.enableVertexAttribArray(5);
+        gl.vertexAttribIPointer(5, 1, GL_UNSIGNED_BYTE, stride, 44);
+        gl.enableVertexAttribArray(6);
+        gl.vertexAttribIPointer(6, 1, GL_UNSIGNED_BYTE, stride, 45);
+        gl.enableVertexAttribArray(7);
+        gl.vertexAttribIPointer(7, 1, GL_UNSIGNED_SHORT, stride, 46);
+        gl.enableVertexAttribArray(8);
+        gl.vertexAttribIPointer(8, 1, GL_UNSIGNED_SHORT, stride, 48);
+    }
+
+    private static FloatBuffer directFloats(int count) {
+        return ByteBuffer.allocateDirect(count * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
     }
 
     private static ShortBuffer createQuadIndices(int quads) {
-        ShortBuffer indices = BufferUtils.createShortBuffer(quads * 6);
+        ShortBuffer indices = ByteBuffer.allocateDirect(quads * 6 * Short.BYTES).order(ByteOrder.nativeOrder())
+                .asShortBuffer();
         for (int q = 0; q < quads; q++) {
             int v = q * 4;
             indices.put((short) v).put((short) (v + 1)).put((short) (v + 2))
@@ -309,17 +326,17 @@ public final class GLRenderBackend implements RenderBackend {
         return indices.flip();
     }
 
-    private static int createWhiteTexture() {
-        ByteBuffer pixel = BufferUtils.createByteBuffer(4);
+    private int createWhiteTexture() {
+        ByteBuffer pixel = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder());
         pixel.put((byte) 255).put((byte) 255).put((byte) 255).put((byte) 255).flip();
-        int id = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, id);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        int id = gl.genTexture();
+        gl.bindTexture(GL_TEXTURE_2D, id);
+        gl.texImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+        gl.texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        gl.texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        gl.texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        gl.texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        gl.bindTexture(GL_TEXTURE_2D, 0);
         return id;
     }
 
@@ -328,7 +345,7 @@ public final class GLRenderBackend implements RenderBackend {
      */
     private final class LayoutPipeline {
         private final VertexLayout layout;
-        private final GLShader program;
+        private final GLProgram program;
         private final int uMatrixLocation;
         private final int vao;
         private final int vbo;
@@ -338,34 +355,34 @@ public final class GLRenderBackend implements RenderBackend {
         /**
          * Creates the objects and leaves the VAO and VBO bound so the caller can configure attributes.
          */
-        LayoutPipeline(VertexLayout layout, GLShader program, int slots, int ebo) {
+        LayoutPipeline(VertexLayout layout, GLProgram program, int slots, int ebo) {
             this.layout = layout;
             this.program = program;
-            this.uMatrixLocation = program.getUniformLocation(GLSpriteProgram.U_MATRIX);
+            this.uMatrixLocation = program.uniformLocation(GLSpriteProgram.U_MATRIX);
             program.bind();
             int[] samplerUnits = new int[slots];
             for (int i = 0; i < slots; i++) {
                 samplerUnits[i] = i; // uTextures[i] samples texture unit i
             }
-            glUniform1iv(program.getUniformLocation(GLSpriteProgram.U_TEXTURES), samplerUnits);
+            gl.uniform1iv(program.uniformLocation(GLSpriteProgram.U_TEXTURES), samplerUnits);
             program.unbind();
 
-            this.vao = glGenVertexArrays();
-            this.vbo = glGenBuffers();
-            glBindVertexArray(vao);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo); // element binding is VAO state
-            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            this.vao = gl.genVertexArray();
+            this.vbo = gl.genBuffer();
+            gl.bindVertexArray(vao);
+            gl.bindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo); // element binding is VAO state
+            gl.bindBuffer(GL_ARRAY_BUFFER, vbo);
         }
 
         void setMatrix(FloatBuffer matrix) {
             program.bind();
-            glUniformMatrix4fv(uMatrixLocation, false, matrix);
+            gl.uniformMatrix4fv(uMatrixLocation, matrix);
         }
 
         void bind() {
             program.bind();
-            glBindVertexArray(vao);
-            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            gl.bindVertexArray(vao);
+            gl.bindBuffer(GL_ARRAY_BUFFER, vbo);
         }
 
         void resetChunk() {
@@ -382,19 +399,18 @@ public final class GLRenderBackend implements RenderBackend {
             }
             chunkStart = first;
             chunkEnd = Math.min(vertices.quadCount(), first + MAX_QUADS_PER_BATCH);
-            // upload by address: no ByteBuffer views are created (allocation-free per frame)
+            // a range of the stream's buffer: no buffer views are created (allocation-free per frame)
             int stride = layout.stride();
-            long offset = (long) chunkStart * 4 * stride;
-            long bytes = (long) (chunkEnd - chunkStart) * 4 * stride;
+            int offset = chunkStart * 4 * stride;
+            int bytes = (chunkEnd - chunkStart) * 4 * stride;
             stats.recordUpload(bytes);
-            nglBufferData(GL_ARRAY_BUFFER, bytes, MemoryUtil.memAddress0(vertices.buffer()) + offset,
-                    GL_STREAM_DRAW); // orphans the previous storage
+            gl.bufferData(GL_ARRAY_BUFFER, vertices.buffer(), offset, bytes, GL_STREAM_DRAW); // orphans
         }
 
         void dispose() {
             program.dispose();
-            glDeleteBuffers(vbo);
-            glDeleteVertexArrays(vao);
+            gl.deleteBuffer(vbo);
+            gl.deleteVertexArray(vao);
         }
     }
 }

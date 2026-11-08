@@ -1,5 +1,6 @@
 package org.pixel.demo.concept.spaceshooter.content;
 
+import org.pixel.graphics.opengl.LwjglGLApi;
 import static org.lwjgl.opengl.GL11C.GL_NEAREST;
 import static org.lwjgl.opengl.GL11C.GL_REPEAT;
 import static org.lwjgl.opengl.GL11C.GL_RGBA;
@@ -33,7 +34,7 @@ public class GLBackgroundTexture extends GLTexture {
     private ByteBuffer imageSourceData;
 
     public GLBackgroundTexture() {
-        super(glGenTextures(), 0, 0);
+        super(LwjglGLApi.INSTANCE, glGenTextures(), 0, 0);
     }
 
     public void setData(Texture baseTexture, List<TextureFrame> frames, int blocksX, int blocksY) {

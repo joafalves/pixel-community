@@ -1,5 +1,6 @@
 package org.pixel.content.importer;
 
+import org.pixel.graphics.opengl.LwjglGLApi;
 import org.lwjgl.stb.STBTTPackContext;
 import org.lwjgl.stb.STBTTPackedchar;
 import org.pixel.content.*;
@@ -98,7 +99,7 @@ public class GLFontImporter implements ContentImporter<Font> {
                         .build());
             }
 
-            return new GLFont(new GLTexture(glTextureId, textureSize, textureSize), fontSize, glyphMap);
+            return new GLFont(new GLTexture(LwjglGLApi.INSTANCE, glTextureId, textureSize, textureSize), fontSize, glyphMap);
 
         } catch (Exception e) {
             // Clear the texture if an error occurs:
