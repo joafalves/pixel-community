@@ -108,10 +108,8 @@ final class FakeGLApi implements GLApi {
     int framebuffer;
     final int[] viewportState = {0, 0, 800, 600};
 
-    private void log(String call) {
-        if (capture) {
-            calls.add(call);
-        }
+    private void log(String call) { // callers check capture first: building the message allocates
+        calls.add(call);
     }
 
     @Override
@@ -140,7 +138,9 @@ final class FakeGLApi implements GLApi {
         viewportState[1] = y;
         viewportState[2] = width;
         viewportState[3] = height;
-        log("viewport " + width + "x" + height);
+        if (capture) {
+            log("viewport " + width + "x" + height);
+        }
     }
 
     @Override
@@ -149,12 +149,16 @@ final class FakeGLApi implements GLApi {
 
     @Override
     public void clear(int mask) {
-        log("clear fb" + framebuffer);
+        if (capture) {
+            log("clear fb" + framebuffer);
+        }
     }
 
     @Override
     public void readPixels(int x, int y, int width, int height, ByteBuffer pixels) {
-        log("read fb" + framebuffer);
+        if (capture) {
+            log("read fb" + framebuffer);
+        }
     }
 
     @Override
@@ -172,7 +176,9 @@ final class FakeGLApi implements GLApi {
     @Override
     public void bindFramebuffer(int target, int framebuffer) {
         this.framebuffer = framebuffer;
-        log("bind fb" + framebuffer);
+        if (capture) {
+            log("bind fb" + framebuffer);
+        }
     }
 
     @Override
@@ -187,7 +193,9 @@ final class FakeGLApi implements GLApi {
     @Override
     public void drawArrays(int mode, int first, int count) {
         drawCount++;
-        log("drawArrays fb" + framebuffer);
+        if (capture) {
+            log("drawArrays fb" + framebuffer);
+        }
     }
 
     @Override

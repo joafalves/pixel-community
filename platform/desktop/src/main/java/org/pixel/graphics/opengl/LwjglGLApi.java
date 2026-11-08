@@ -16,14 +16,15 @@ import static org.lwjgl.opengl.GL31C.glUniformBlockBinding;
 import static org.lwjgl.opengl.GL14C.glBlendFuncSeparate;
 
 /**
- * {@link GLApi} on desktop OpenGL 3.3 core through LWJGL. Use {@link #INSTANCE} (its only state is the context
- * generation).
+ * {@link GLApi} on desktop OpenGL 3.3 core through LWJGL. Use {@link #INSTANCE}, from the GL thread only (it keeps
+ * the context generation and a small reused scratch array).
  */
 public final class LwjglGLApi implements GLApi {
 
     public static final LwjglGLApi INSTANCE = new LwjglGLApi();
 
     private int generation; // GL thread only
+    private final int[] scratch = new int[1]; // GL thread only
 
     private static final String PREAMBLE = "#version 330 core\nprecision highp float;\nprecision highp int;\n";
 
@@ -47,7 +48,8 @@ public final class LwjglGLApi implements GLApi {
 
     @Override
     public int getInteger(int name) {
-        return glGetInteger(name);
+        glGetIntegerv(name, scratch); // glGetInteger(name) wraps a stack buffer in a new object: allocates per call
+        return scratch[0];
     }
 
     @Override

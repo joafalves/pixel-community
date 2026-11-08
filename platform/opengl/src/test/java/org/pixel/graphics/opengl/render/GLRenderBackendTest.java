@@ -216,6 +216,41 @@ class GLRenderBackendTest {
     }
 
     @Test
+    void framesWithTargetsAndPostEffectsDoNotAllocate() {
+        FakeGLApi counting = new FakeGLApi(false);
+        GLRenderBackend countingBackend = new GLRenderBackend(counting, new RenderStats());
+        RenderPipeline.Builder builder = RenderPipeline.builder(countingBackend);
+        RenderTarget scene = builder.screenTarget(1f);
+        org.pixel.graphics.pass.ShaderEffect wave = new org.pixel.graphics.pass.ShaderEffect(
+                "uniform vec4 uWave;\nvec4 effect(vec2 uv) { return texture(uSource, uv) * uWave.w; }");
+        RenderPipeline pipeline = builder.pass(() -> WIDE, scene, LAYER)
+                .post(scene, wave, org.pixel.graphics.pass.Effects.bloom(0.7f, 0.8f),
+                        org.pixel.graphics.pass.Effects.vignette(0.3f))
+                .build();
+        float[] time = {0f};
+        Runnable frame = () -> {
+            time[0] += 0.016f;
+            wave.set("uWave", time[0], 0.5f, 0.2f, 1f); // changes every frame, like a shockwave
+            pipeline.canvas(LAYER).circle(10, 10, 5).fill(Color.WHITE);
+            pipeline.render();
+        };
+        for (int i = 0; i < 20; i++) {
+            frame.run();
+        }
+        com.sun.management.ThreadMXBean threads = (com.sun.management.ThreadMXBean) ManagementFactory.getThreadMXBean();
+        long least = Long.MAX_VALUE;
+        for (int window = 0; window < 3; window++) { // the JIT may allocate once
+            long before = threads.getCurrentThreadAllocatedBytes();
+            for (int i = 0; i < 20; i++) {
+                frame.run();
+            }
+            least = Math.min(least, threads.getCurrentThreadAllocatedBytes() - before);
+        }
+        assertEquals(0, least, "bytes allocated by 20 frames");
+        pipeline.dispose();
+    }
+
+    @Test
     void steadyStateFramesDoNotAllocate() {
         FakeGLApi counting = new FakeGLApi(false);
         RenderStats countingStats = new RenderStats();
