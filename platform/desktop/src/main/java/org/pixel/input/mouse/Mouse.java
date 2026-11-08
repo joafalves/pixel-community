@@ -35,6 +35,10 @@ public class Mouse {
     private static volatile float virtualScaleY = 1f;
     private static final Rectangle positionBox;
     private static volatile float scrollX, scrollY; // wheel/trackpad scrolling since the last frame
+    // GLFW's scroll unit, in lines: macOS reports lines already (with the system's speed and acceleration, or a mouse
+    // utility's lines per notch); Windows and Linux report wheel notches, which scroll 3 lines by default there
+    private static final float LINES_PER_SCROLL_UNIT =
+            org.lwjgl.system.Platform.get() == org.lwjgl.system.Platform.MACOSX ? 1f : 3f;
 
     //endregion
 
@@ -169,14 +173,32 @@ public class Mouse {
 
     /**
      * @return Vertical scrolling (mouse wheel or trackpad) during the last frame: positive away from the user ("up"),
-     * in wheel steps (trackpads report fractions).
+     * as GLFW reports it. The unit depends on the OS (lines on macOS, wheel notches on Windows and Linux); to scroll
+     * content, use {@link #getScrollLinesY()}.
      */
     public static float getScrollY() {
         return scrollY;
     }
 
     /**
-     * @return Horizontal scrolling during the last frame (positive to the right).
+     * @return Vertical scrolling during the last frame in lines of text, as the OS would scroll a text view: multiply
+     * by a line's height to scroll a list. Positive away from the user ("up"); trackpads report fractions.
+     */
+    public static float getScrollLinesY() {
+        return scrollY * LINES_PER_SCROLL_UNIT;
+    }
+
+    /**
+     * @return Horizontal scrolling during the last frame in lines (see {@link #getScrollLinesY()}); positive to the
+     * right.
+     */
+    public static float getScrollLinesX() {
+        return scrollX * LINES_PER_SCROLL_UNIT;
+    }
+
+    /**
+     * @return Horizontal scrolling during the last frame (positive to the right), as GLFW reports it (see
+     * {@link #getScrollY()}).
      */
     public static float getScrollX() {
         return scrollX;

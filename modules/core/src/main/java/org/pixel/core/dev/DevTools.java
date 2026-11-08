@@ -125,7 +125,7 @@ public final class DevTools {
     private static final float EDGE = 6f; // the grab zone of each edge (inside the window)
     private int tab;
     private float scroll, scrollGrab = -1f;
-    private float wheel; // this frame's scrolling, in steps
+    private float wheel; // this frame's scrolling, in lines
 
     private final StringBuilder sliderText = new StringBuilder(), titleText = new StringBuilder();
 
@@ -380,11 +380,12 @@ public final class DevTools {
     }
 
     /**
-     * Host: scrolling (mouse wheel, trackpad) this frame, in wheel steps, positive "up" (away from the user); scrolls
-     * the part of the window under the pointer. Call after {@link #pointer}.
+     * Host: scrolling (mouse wheel, trackpad) this frame, in lines of text as the OS scrolls them (its own lines per
+     * wheel notch), positive "up" (away from the user); scrolls the part of the window under the pointer. Call after
+     * {@link #pointer}.
      */
-    public void scroll(float steps) {
-        this.wheel = steps;
+    public void scroll(float lines) {
+        this.wheel = lines;
     }
 
     /** Host: the toggle key or gesture happened (any thread). */
@@ -612,7 +613,7 @@ public final class DevTools {
             ui.noClip();
             c.restore();
             if (wheel != 0f && ui.hover(x, bodyTop, w, bodyHeight)) { // the body and its scroll bar
-                scroll -= wheel * DevUi.LINE * 3; // three lines per wheel step (clamped by the scroll bar)
+                scroll -= wheel * DevUi.LINE; // the OS's lines, ours tall (clamped by the scroll bar)
             }
             scrollbar(c, x + w - DevUi.PAD - SCROLLBAR, bodyTop, bodyHeight, content);
 

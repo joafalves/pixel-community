@@ -855,7 +855,8 @@ pipeline and core)
   disposed while it renders; `ShaderEffect` keeps its program across failed reloads and lost contexts like
   `Material` (with `setSource`/`getError`); `Camera2D.screenToWorld(x, y, out)` without allocation;
   `DeltaTime` has nanosecond precision (frame times were whole milliseconds: at high frame rates games jittered and
-  frame statistics swung by a factor of two); mouse wheel input (`Mouse.getScrollY()`).
+  frame statistics swung by a factor of two); mouse wheel input (`Mouse.getScrollY()`, and
+  `getScrollLinesY()` in the OS's lines: GLFW reports lines on macOS but wheel notches on Windows and Linux).
 - Dev tools: numbers refresh four times a second; FPS history; frames scaled to what happens; a fixed size the user
   resizes from any edge; scrolling; asset memory with sorting; an Android touch hand-off that leaves the game its
   touches.

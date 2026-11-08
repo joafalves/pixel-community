@@ -169,6 +169,6 @@ public abstract class WindowGameContainer<T extends WindowManager, S extends Gra
         float ratio = windowManager.getFramebufferScale();
         devTools.setScale(windowManager.getContentScale());
         devTools.pointer(Mouse.getX() * ratio, Mouse.getY() * ratio, Mouse.isMouseButtonDown(MouseButton.LEFT));
-        devTools.scroll(Mouse.getScrollY());
+        devTools.scroll(Mouse.getScrollLinesY());
     }
 }
