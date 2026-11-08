@@ -21,7 +21,8 @@ available extensions (or how to create your own).
 
 ### Examples ##
 
-Check the :file_folder: [demos folder](https://github.com/joafalves/pixel-community/tree/devel/demos) for examples.
+Check the :file_folder: [demos folder](https://github.com/joafalves/pixel-community/tree/devel/demos) for examples, and
+the Space Shooter for a complete small game (`./gradlew :pixel-demo-desktop-concept:runSpaceShooter`).
 
 ##### Basic example #####
 
